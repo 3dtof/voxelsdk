@@ -1,0 +1,16 @@
+add_library(voxel SHARED
+  Device.cpp
+  Common.cpp
+  Downloader.cpp
+  USBSystem.cpp
+  Logger.cpp
+  )
+  
+target_link_libraries(voxel
+  ${COMMON_LIBS}
+  )
+  
+install(TARGETS voxel
+  LIBRARY
+  DESTINATION lib
+  COMPONENT libraries)
