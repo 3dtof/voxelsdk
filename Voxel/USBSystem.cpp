@@ -7,6 +7,8 @@
 #include "USBSystem.h"
 #include "Logger.h"
 
+#include <libudev.h>
+
 namespace Voxel
 {
   
@@ -136,5 +138,97 @@ libusb_device *USBSystem::getDeviceHandle(const USBDevice &usbd)
   return selected;
 }
 
+// Mainly borrowed from v4l2_devices.c of guvcview
+String USBSystem::getDeviceNode(const USBDevice& usbd)
+{
+  udev *udevHandle = udev_new();
   
+  String devNode;
+  
+  if(!udevHandle)
+  {
+    log(ERROR) << "USBSystem: Init failed to get device node" << endl;
+    return "";
+  }
+  
+  struct udev_enumerate *enumerate;
+  struct udev_list_entry *devices;
+  struct udev_list_entry *devListEntry;
+  
+  /* Create a list of the devices in the 'v4l2' subsystem. */
+  enumerate = udev_enumerate_new(udevHandle);
+  udev_enumerate_add_match_subsystem(enumerate, "video4linux");
+  udev_enumerate_scan_devices(enumerate);
+  devices = udev_enumerate_get_list_entry(enumerate);
+  
+  /*
+   * For each item enumerated, print out its information.
+   * udev_list_entry_foreach is a macro which expands to
+   * a loop. The loop will be executed for each member in
+   * devices, setting dev_list_entry to a list entry
+   * which contains the device's path in /sys.
+   */
+  udev_list_entry_foreach(devListEntry, devices)
+  {
+    const char *path;
+    
+    /*
+     * Get the filename of the /sys entry for the device
+     * and create a udev_device object (dev) representing it
+     */
+    path = udev_list_entry_get_name(devListEntry);
+    struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path);
+    
+    /* usb_device_get_devnode() returns the path to the device node
+     * itself in /dev. 
+     */
+     const char *v4l2Device = udev_device_get_devnode(dev);
+     
+     /* The device pointed to by dev contains information about
+      t he v4l2 device. In orde*r to get information about the
+      USB device, get the parent device with the
+      subsystem/devtype pair of "usb"/"usb_device". This will
+      be several levels up the tree, but the function will find
+      it.*/
+     dev = udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_device");
+     
+     if(!dev)
+     {
+       log(WARNING) << "USBSystem: Unable to find parent usb device." << endl;
+       continue;
+     }
+     
+     /* From here, we can call get_sysattr_value() for each file
+      i n the device's /sys ent*ry. The strings passed into these
+      functions (idProduct, idVendor, serial, etc.) correspond
+      directly to the files in the directory which represents
+      the USB device. Note that USB strings are Unicode, UCS2
+      encoded, but the strings returned from
+      udev_device_get_sysattr_value() are UTF-8 encoded. */
+     
+     uint16_t vendorID, productID;
+     String serial;
+     char *endptr;
+     
+     vendorID = strtol(udev_device_get_sysattr_value(dev, "idVendor"), &endptr, 16);
+     productID = strtol(udev_device_get_sysattr_value(dev, "idProduct"), &endptr, 16);
+     
+     const char *s = udev_device_get_sysattr_value(dev, "serial");
+     if(s) serial = s;
+     
+     udev_device_unref(dev);
+     
+     if(usbd.vendorID() == vendorID && usbd.productID() == productID &&
+        (usbd.serialNumber().size() == 0 || serial == usbd.serialNumber()))
+       devNode = v4l2Device;
+  }
+  /* Free the enumerator object */
+  udev_enumerate_unref(enumerate);
+  
+  udev_unref(udevHandle);
+  
+  return devNode;
+}
+
+
 }
