@@ -15,9 +15,10 @@ endif()
 
 include_directories(
   Voxel
+  TI3DToF
   ${COMMON_INCLUDE}
 )
 
 add_subdirectory(Voxel)
 add_subdirectory(Test)
-
+add_subdirectory(TI3DToF)

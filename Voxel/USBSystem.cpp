@@ -199,7 +199,7 @@ String USBSystem::getDeviceNode(const USBDevice& usbd)
      }
      
      /* From here, we can call get_sysattr_value() for each file
-      i n the device's /sys ent*ry. The strings passed into these
+      in the device's /sys entry. The strings passed into these
       functions (idProduct, idVendor, serial, etc.) correspond
       directly to the files in the directory which represents
       the USB device. Note that USB strings are Unicode, UCS2

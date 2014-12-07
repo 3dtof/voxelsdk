@@ -32,6 +32,12 @@ typedef std::size_t SizeType;
 typedef uint8_t ByteType;
 
 String getHex(uint16_t value);
+
+template<typename T, int sz>
+int arraySize(T(&)[sz])
+{
+  return sz;
+}
 }
 
 #endif //VOXEL_COMMON_H

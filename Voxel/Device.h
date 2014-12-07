@@ -36,11 +36,11 @@ public:
     _id = s.str();
   }
   
-  const String &id() const { return _id; }
+  inline const String &id() const { return _id; }
   
-  Interface interface() const { return _interfaceID; }
-  const String &deviceID() const { return _deviceID; }
-  const String &serialNumber() const { return _serialNumber; }
+  inline Interface interface() const { return _interfaceID; }
+  inline const String &deviceID() const { return _deviceID; }
+  inline const String &serialNumber() const { return _serialNumber; }
 };
 
 typedef Ptr<Device> DevicePtr;
@@ -52,8 +52,8 @@ public:
   USBDevice(uint16_t vendorid, uint16_t productid, const String &serialnumber): 
     Device(Device::USB, getHex(vendorid) + ":" + getHex(productid), serialnumber), _vendorID(vendorid), _productID(productid) {}
   
-  uint16_t vendorID() const { return _vendorID; }
-  uint16_t productID() const { return _productID; }
+  inline uint16_t vendorID() const { return _vendorID; }
+  inline uint16_t productID() const { return _productID; }
 };
 
 class DeviceScanner

@@ -3,3 +3,6 @@ target_link_libraries(DeviceTest voxel)
 
 add_executable(DownloaderTest DownloaderTest.cpp)
 target_link_libraries(DownloaderTest voxel)
+
+add_executable(Voxel14RegisterTest Voxel14RegisterTest.cpp)
+target_link_libraries(Voxel14RegisterTest ti3dtof)

@@ -8,6 +8,7 @@
 #include "SimpleOpt.h"
 #include "Common.h"
 #include "Logger.h"
+#include <VoxelXUProgrammer.h>
 
 using namespace Voxel;
 
@@ -16,7 +17,10 @@ enum Options
   VENDOR_ID = 0,
   PRODUCT_ID = 1,
   SERIAL_NUMBER = 2,
-  FIRMWARE_FILE = 3
+  REGISTER = 3,
+  READ = 4,
+  WRITE = 5,
+  DATA = 6
 };
 
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
@@ -24,7 +28,10 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
   { VENDOR_ID,    "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
   { PRODUCT_ID,   "-p", SO_REQ_SEP, "Product ID of the USB device (hexadecimal)"},
   { SERIAL_NUMBER,"-s", SO_REQ_SEP, "Serial number of the USB device (string)"},
-  { FIRMWARE_FILE,"-f", SO_REQ_SEP, "Firmware file name"},
+  { REGISTER,     "-r", SO_REQ_SEP, "Register address (hexadecimal)"},
+  { READ,         "-i", SO_NONE,    "Read register (specify only one of -i/-o)"},
+  { WRITE,        "-o", SO_NONE,    "Write to register (specify only one of -i/-o)"},
+  { DATA,         "-d", SO_REQ_SEP, "Data to write to register (hexadecimal)"},
   SO_END_OF_OPTIONS
 };
 
@@ -46,11 +53,13 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  log.setDefaultLogLevel(ERROR);
+  log.setDefaultLogLevel(INFO);
   
   uint16_t vid = 0, pid = 0;
   String serialNumber;
-  String firmwareFileName;
+  uint32_t address = -1, data = -1;
+  
+  bool write = true; // read -> false, write -> true
   
   char *endptr;
   
@@ -79,8 +88,20 @@ int main(int argc, char *argv[])
         serialNumber = s.OptionArg();
         break;
         
-      case FIRMWARE_FILE:
-        firmwareFileName = s.OptionArg();
+      case REGISTER:
+        address = (uint32_t)strtol(s.OptionArg(), &endptr, 16);
+        break;
+        
+      case DATA:
+        data = (uint32_t)strtol(s.OptionArg(), &endptr, 16);
+        break;
+        
+      case READ:
+        write = false;
+        break;
+        
+      case WRITE:
+        write = true;
         break;
         
       default:
@@ -89,7 +110,7 @@ int main(int argc, char *argv[])
     };
   }
   
-  if(vid == 0 || pid == 0 || firmwareFileName.size() == 0)
+  if(vid == 0 || pid == 0 || address == -1)
   {
     log(ERROR) << "Required argument missing." << endl;
     help();
@@ -98,13 +119,19 @@ int main(int argc, char *argv[])
   
   DevicePtr ud(new USBDevice(vid, pid, serialNumber));
   
-  USBDownloader d(ud);
+  TI::VoxelXUProgrammer programmer(ud);
   
-  if(d.download(firmwareFileName))
+  if(write)
   {
-    log(INFO) << "Download successful!" << endl;
-    return 0;
+    programmer.writeRegister(address, data);
   }
   else
-    return -1;
+  {
+    if(programmer.readRegister(address, data))
+    {
+      std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << data << std::endl;
+    }
+  }
+  
+  return 0;
 }

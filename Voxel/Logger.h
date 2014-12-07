@@ -75,12 +75,21 @@ public:
   
   typedef Logger &(*LoggerManipulator)(Logger &);
   
+  typedef std::ostream &(*OStreamManipulator)(std::ostream &);
+  
   Logger &operator <<(LoggerManipulator manip)
   {
     if(_currentLogLevel <= _logLevel)
       return (*manip)(*this);
     else
       return *this;
+  }
+  
+  Logger &operator <<(OStreamManipulator manip)
+  {
+    if(_currentLogLevel <= _logLevel)
+      (*manip)(_out);
+    return *this;
   }
   
   virtual ~Logger()
