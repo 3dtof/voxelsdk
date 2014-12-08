@@ -17,7 +17,7 @@ class UVCXU: public UVC
 protected:
   int _xuID;
 public:
-  UVCXU(USBDevice &usb, int xuID);
+  UVCXU(DevicePtr usb, int xuID);
   
   virtual ~UVCXU();
   

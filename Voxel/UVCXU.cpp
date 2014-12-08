@@ -16,7 +16,7 @@
 namespace Voxel
 {
   
-UVCXU::UVCXU(USBDevice &usb, int xuID): UVC(usb), _xuID(xuID) {}
+UVCXU::UVCXU(DevicePtr usb, int xuID): UVC(usb), _xuID(xuID) {}
 
 UVCXU::~UVCXU() {}
 

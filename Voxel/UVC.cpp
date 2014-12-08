@@ -20,7 +20,7 @@ namespace Voxel
   
 int UVC::xioctl(int request, void *arg)
 {
-  if(_fd <= 0)
+  if(!isInitialized())
     return -1;
   
   int ret = 0;
@@ -29,7 +29,7 @@ int UVC::xioctl(int request, void *arg)
   {
     ret = ioctl(_fd, request, arg);
   }
-  while (ret && tries-- && ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
+  while(ret && tries-- && ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
   
   if (ret && (tries <= 0)) 
     log(ERROR) << "UVC: ioctl (" << request << ") retried " << IOCTL_RETRY << " times - giving up: " << strerror(errno) << ")" << endl;
@@ -37,10 +37,14 @@ int UVC::xioctl(int request, void *arg)
   return ret;
 }
 
-UVC::UVC(USBDevice &usb): _usb(usb)
+UVC::UVC(DevicePtr usb): _usb(usb)
 {
   USBSystem sys;
-  _deviceNode = sys.getDeviceNode(usb);
+  
+  if(usb->interface() != Device::USB)
+    return;
+  
+  _deviceNode = sys.getDeviceNode((USBDevice &)*usb);
   
   if(_deviceNode.size() > 0)
   {
@@ -50,7 +54,7 @@ UVC::UVC(USBDevice &usb): _usb(usb)
       log(ERROR) << "Could not open device node " << _deviceNode << ". Please check for permissions." << endl;
   }
   else
-    log(ERROR) << "Could not located device node for " << _usb.id() << "." << endl;
+    log(ERROR) << "Could not located device node for " << _usb->id() << "." << endl;
 }
 
 UVC::~UVC()

@@ -24,9 +24,7 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
   
   _device = device;
   
-  USBDevice &usb = (USBDevice &)*device;
-  
-  _xu = Ptr<UVCXU>(new UVCXU(usb, _XU_ID));
+  _xu = Ptr<UVCXU>(new UVCXU(device, _XU_ID));
   
   uint8_t data[4];
   if(!_xu->getControl(CONTROL_GET_VERSION, arraySize(data), data))

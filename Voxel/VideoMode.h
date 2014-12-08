@@ -7,22 +7,18 @@
 #ifndef VOXEL_VIDEO_MODE_H
 #define VOXEL_VIDEO_MODE_H
 
+#include <stdint.h>
+
 namespace Voxel
 {
   
 class VideoMode
 {
 public:
-  enum FrameRate
-  {
-    FRAME_RATE_30FPS,
-    FRAME_RATE_25FPS,
-    FRAME_RATE_24FPS,
-    FRAME_RATE_23_997FPS
-  };
-  
   size_t frameSize[2];
-  FrameRate frameRate;
+  size_t frameRate[2]; // [0] -> numerator, [1] -> denominator
+  
+  inline float getFrameRate() { return (frameRate[1] == 0)?0:(frameRate[0]/frameRate[1]); }
 };
   
 }

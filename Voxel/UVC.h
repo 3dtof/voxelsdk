@@ -15,14 +15,14 @@ namespace Voxel
 class UVC
 {
 protected:
-  int _fd = 0;
+  int _fd = -1;
   String _deviceNode;
-  USBDevice &_usb;
+  DevicePtr _usb;
 
 public:
-  UVC(USBDevice &usb);
+  UVC(DevicePtr usb);
   
-  inline bool isInitialized() { return _fd > 0; }
+  inline bool isInitialized() { return _fd >= 0; }
   
   int xioctl(int request, void *arg);
   
