@@ -16,7 +16,7 @@ namespace Voxel
 class Frame
 {
 public:
-  int timestamp = 0; // Unix timestamp in milliseconds
+  TimeStampType timestamp = 0; // Unix timestamp in milliseconds
   int id = -1;
 };
 
@@ -125,6 +125,8 @@ class RawDataFrame: public Frame
 public:
   Vector<ByteType> data;
 };
+
+typedef Ptr<RawDataFrame> RawDataFramePtr;
 
 
 class PointCloudFrame: public Frame

@@ -35,7 +35,7 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
   uvc.size = size;
   uvc.data = value;
   
-  if (_ioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
+  if (xioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
   {
     log(ERROR) << "UVCXU: " << _deviceNode << " UVCIOC_CTRL_QUERY failed.\n";
     return false;
@@ -58,7 +58,7 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
   uvc.size = size;
   uvc.data = value;
   
-  if (_ioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
+  if (xioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
   {
     log(ERROR) << "UVCXU: " << _deviceNode << " UVCIOC_CTRL_QUERY failed.\n";
     return false;

@@ -27,9 +27,6 @@ protected:
   
   uint8_t _majorVersion, _minorVersion;
   
-  virtual bool _getValue(Parameter &param, uint32_t &value);
-  virtual bool _setValue(Parameter &param, uint32_t value);
-  
   enum Control
   {
     CONTROL_WRITE_REGISTER_3 = 1, // Write 3 bytes
@@ -46,6 +43,9 @@ public:
   
   virtual bool readRegister(uint32_t address, uint32_t &value);
   virtual bool writeRegister(uint32_t address, uint32_t value);
+  
+  virtual bool getValue(Parameter &param, uint32_t &value);
+  virtual bool setValue(Parameter &param, uint32_t value);
   
   virtual ~VoxelXUProgrammer() {}
 };

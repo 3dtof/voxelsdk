@@ -38,6 +38,10 @@ int arraySize(T(&)[sz])
 {
   return sz;
 }
+
+typedef uint64_t TimeStampType;
+TimeStampType getLocalCurrentTime();
+
 }
 
 #endif //VOXEL_COMMON_H

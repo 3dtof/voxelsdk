@@ -22,20 +22,9 @@ class Parameter;
   
 class RegisterProgrammer
 {
-protected:
-  virtual bool _setValue(Parameter &param, uint32_t value) = 0;
-  virtual bool _getValue(Parameter &param, uint32_t &value) = 0;
-  
 public:
-  virtual bool set(BoolParameter &param, bool value);
-  virtual bool set(IntegerParameter &param, int value);
-  virtual bool set(FloatParameter &param, float value);
-  virtual bool set(EnumParameter &param, int value);
-  
-  virtual bool get(BoolParameter &param);
-  virtual bool get(IntegerParameter &param);
-  virtual bool get(FloatParameter &param);
-  virtual bool get(EnumParameter &param);
+  virtual bool setValue(Parameter &param, uint32_t value) = 0;
+  virtual bool getValue(Parameter &param, uint32_t &value) = 0;
   
   virtual bool readRegister(uint32_t address, uint32_t &value) = 0;
   virtual bool writeRegister(uint32_t address, uint32_t value) = 0;

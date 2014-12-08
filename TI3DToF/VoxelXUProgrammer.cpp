@@ -127,7 +127,7 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
   return true;
 }
 
-bool VoxelXUProgrammer::_getValue(Parameter &param, uint32_t &value)
+bool VoxelXUProgrammer::getValue(Parameter &param, uint32_t &value)
 {
   uint32_t registerValue;
   
@@ -138,7 +138,7 @@ bool VoxelXUProgrammer::_getValue(Parameter &param, uint32_t &value)
   return true;
 }
 
-bool VoxelXUProgrammer::_setValue(Parameter &param, uint32_t value)
+bool VoxelXUProgrammer::setValue(Parameter &param, uint32_t value)
 {
   uint32_t registerValue;
   

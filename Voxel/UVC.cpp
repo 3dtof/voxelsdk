@@ -18,7 +18,7 @@
 namespace Voxel
 {
   
-int UVC::_ioctl(int request, void *arg)
+int UVC::xioctl(int request, void *arg)
 {
   if(_fd <= 0)
     return -1;

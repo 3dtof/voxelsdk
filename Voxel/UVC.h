@@ -18,12 +18,13 @@ protected:
   int _fd = 0;
   String _deviceNode;
   USBDevice &_usb;
-  
-  int _ioctl(int request, void *arg);
+
 public:
   UVC(USBDevice &usb);
   
   inline bool isInitialized() { return _fd > 0; }
+  
+  int xioctl(int request, void *arg);
   
   virtual ~UVC();
 };

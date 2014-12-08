@@ -50,6 +50,7 @@ public:
   friend class RegisterProgrammer;
 };
 
+// NOTE: _value is not initialized and need to be manually done from outside via set() or get(true)
 class BoolParameter: public Parameter
 {
 protected:
@@ -57,13 +58,15 @@ protected:
   
   Vector<String> _valueDescription;
   
+  virtual uint32_t _toRawValue(bool value);
+  virtual bool _fromRawValue(uint32_t value);
+  
 public:
   BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
-                bool defaultValue, const Vector<String> &valueDescription,
+                const Vector<String> &valueDescription,
                 const String &displayName, const String &description):
   Parameter(programmer, name, address, msb, mask, lsb, displayName, description), _valueDescription(valueDescription) 
   {
-    set(defaultValue);
   }
   
   inline const Vector<String> &valueDescription() const { return _valueDescription; }
@@ -71,13 +74,14 @@ public:
   virtual bool set(bool value);
   virtual bool validate(bool value);
   
-  virtual bool get();
+  virtual bool get(bool refresh = false);
   
   virtual ~BoolParameter() {}
   
   friend class RegisterProgrammer;
 };
 
+// NOTE: _value is not initialized and need to be manually done from outside via set() or get(true)
 class IntegerParameter: public Parameter
 {
 protected:
@@ -86,14 +90,16 @@ protected:
   
   String _unit;
   
+  virtual uint32_t _toRawValue(int value);
+  virtual int _fromRawValue(uint32_t value);
+  
 public:
   IntegerParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
-                   int lowerLimit, int upperLimit, int defaultValue,
+                   int lowerLimit, int upperLimit,
                    const String &displayName, const String &description):
   Parameter(programmer, name, address, msb, mask, lsb, displayName, description), 
   _lowerLimit(lowerLimit), _upperLimit(upperLimit), _unit(unit)
   {
-    set(defaultValue);
   }
   
   const String &unit() const { return _unit; }
@@ -101,13 +107,14 @@ public:
   virtual bool set(int value);
   virtual bool validate(int value);
   
-  virtual int get();
+  virtual int get(bool refresh = false);
   
   virtual ~IntegerParameter() {}
   
   friend class RegisterProgrammer;
 };
 
+// NOTE: _value is not initialized and need to be manually done from outside via set() or get(true)
 class FloatParameter: public Parameter
 {
 protected:
@@ -115,14 +122,16 @@ protected:
   float _lowerLimit, _upperLimit;
   String _unit;
   
+  virtual uint32_t _toRawValue(float value);
+  virtual float _fromRawValue(uint32_t value);
+  
 public:
   FloatParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
-                 float lowerLimit, float upperLimit, float defaultValue,
+                 float lowerLimit, float upperLimit,
                  const String &displayName, const String &description):
   Parameter(programmer, name, address, msb, mask, lsb, displayName, description), 
   _lowerLimit(lowerLimit), _upperLimit(upperLimit), _unit(unit)
   {
-    set(defaultValue);
   }
   
   const String &unit() const { return _unit; }
@@ -130,13 +139,14 @@ public:
   virtual bool set(float value);
   virtual bool validate(float value);
   
-  virtual float get();
+  virtual float get(bool refresh = false);
   
   virtual ~FloatParameter() {}
   
   friend class RegisterProgrammer;
 };
 
+// NOTE: _value is not initialized and need to be manually done from outside via set() or get(true)
 class EnumParameter: public Parameter
 {
 protected:
@@ -144,14 +154,16 @@ protected:
   Vector<int> _allowedValues;
   Vector<String> _valueDescription;
   
+  virtual uint32_t _toRawValue(int value);
+  virtual int _fromRawValue(uint32_t value);
+  
 public:
   EnumParameter(RegisterProgrammer &programmer, const String &name, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
-                const Vector<int> &allowedValues, const Vector<String> valueDescription, int defaultValue,
+                const Vector<int> &allowedValues, const Vector<String> valueDescription,
                 const String &displayName, const String &description):
   Parameter(programmer, name, address, msb, mask, lsb, displayName, description), 
   _allowedValues(allowedValues), _valueDescription(valueDescription)
   {
-    set(defaultValue);
   }
   
   inline const Vector<int> &allowedValues() const { return _allowedValues; }
@@ -160,7 +172,7 @@ public:
   virtual bool set(int value);
   virtual bool validate(int value);
   
-  virtual int get();
+  virtual int get(bool refresh = false);
   
   virtual ~EnumParameter() {}
   
