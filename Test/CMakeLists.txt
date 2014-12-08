@@ -6,3 +6,6 @@ target_link_libraries(DownloaderTest voxel)
 
 add_executable(Voxel14RegisterTest Voxel14RegisterTest.cpp)
 target_link_libraries(Voxel14RegisterTest ti3dtof)
+
+add_executable(UVCStreamerTest UVCStreamerTest.cpp)
+target_link_libraries(UVCStreamerTest voxel)

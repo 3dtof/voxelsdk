@@ -26,6 +26,8 @@ public:
   
   int xioctl(int request, void *arg);
   
+  bool read(uint8_t *buffer, size_t size);
+  
   virtual ~UVC();
 };
 

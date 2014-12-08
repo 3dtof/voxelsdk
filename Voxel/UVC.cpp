@@ -12,8 +12,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <assert.h>
 
-#define IOCTL_RETRY 4
+#define FD_RETRY_LIMIT 4
 
 namespace Voxel
 {
@@ -24,7 +25,7 @@ int UVC::xioctl(int request, void *arg)
     return -1;
   
   int ret = 0;
-  int tries = IOCTL_RETRY;
+  int tries = FD_RETRY_LIMIT;
   do
   {
     ret = ioctl(_fd, request, arg);
@@ -32,9 +33,54 @@ int UVC::xioctl(int request, void *arg)
   while(ret && tries-- && ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
   
   if (ret && (tries <= 0)) 
-    log(ERROR) << "UVC: ioctl (" << request << ") retried " << IOCTL_RETRY << " times - giving up: " << strerror(errno) << ")" << endl;
+    log(ERROR) << "UVC: ioctl (" << request << ") retried " << FD_RETRY_LIMIT << " times - giving up: " << strerror(errno) << ")" << endl;
   
   return ret;
+}
+
+/// buffer is assumed to have capacity of atleast "size" bytes
+bool UVC::read(uint8_t *buffer, size_t size)
+{
+  if(!isInitialized())
+    return false;
+  
+  int64_t toRead = size;
+  
+  int64_t bytesRead;
+  
+  int retryCount = 0;
+  
+  while(toRead > 0)
+  {
+    bytesRead = ::read(_fd, (void *)(buffer + (size - toRead)), toRead);
+    
+    if(bytesRead > 0)
+    {
+      toRead -= bytesRead;
+      retryCount = 0;
+    }
+    else if(bytesRead == -1) // error condition
+    {
+      if(errno == EAGAIN || errno == EWOULDBLOCK)
+      {
+        retryCount++;
+        
+        if(retryCount < FD_RETRY_LIMIT)
+          continue;
+        else
+        {
+          log(ERROR) << "UVC: Hit maximum number (" << FD_RETRY_LIMIT << ") of retries to read data" << std::endl;
+          return false;
+        }
+      }
+      else
+        return false;
+    }
+  }
+  
+  assert(toRead == 0);
+  
+  return true;
 }
 
 UVC::UVC(DevicePtr usb): _usb(usb)

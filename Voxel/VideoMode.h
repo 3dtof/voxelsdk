@@ -12,13 +12,25 @@
 namespace Voxel
 {
   
+class FrameSize
+{
+public:
+  size_t width, height;
+};
+
+class FrameRate
+{
+public:
+  size_t numerator, denominator;
+};
+  
 class VideoMode
 {
 public:
-  size_t frameSize[2];
-  size_t frameRate[2]; // [0] -> numerator, [1] -> denominator
+  FrameSize frameSize;
+  FrameRate frameRate;
   
-  inline float getFrameRate() { return (frameRate[1] == 0)?0:(frameRate[0]/frameRate[1]); }
+  inline float getFrameRate() { return (frameRate.denominator == 0)?0:(((float)frameRate.numerator)/frameRate.denominator); }
 };
   
 }
