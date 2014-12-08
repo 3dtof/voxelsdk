@@ -37,7 +37,7 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
 
 void help()
 {
-  std::cout << "DownloadTester v1.0" << std::endl;
+  std::cout << "Voxel14RegisterTest v1.0" << std::endl;
   
   CSimpleOpt::SOption *option = argumentSpecifications.data();
   
