@@ -5,6 +5,7 @@ add_library(voxel SHARED
   Parameter.cpp
   RegisterProgrammer.cpp
   USBSystem.cpp
+  UVC.cpp
   UVCXU.cpp
   Logger.cpp
   )

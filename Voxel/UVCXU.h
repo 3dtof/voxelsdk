@@ -7,21 +7,15 @@
 #ifndef VOXEL_UVCXU_H
 #define VOXEL_UVCXU_H
 
-#include "Device.h"
+#include "UVC.h"
 
 namespace Voxel
 {
 
-class UVCXU
+class UVCXU: public UVC
 {
 protected:
-  int _fd = 0;
-  String _deviceNode;
-  USBDevice &_usb;
-  
   int _xuID;
-  
-  int _ioctl(int request, void *arg);
 public:
   UVCXU(USBDevice &usb, int xuID);
   

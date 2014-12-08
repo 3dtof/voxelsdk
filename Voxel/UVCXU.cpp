@@ -1,3 +1,4 @@
+
 /*
  * TI Voxel Lib component.
  *
@@ -8,65 +9,20 @@
 #include "Logger.h"
 #include "USBSystem.h"
 
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include <linux/uvcvideo.h>
 #include <linux/usb/video.h>
 
-#define IOCTL_RETRY 4
-
 namespace Voxel
 {
+  
+UVCXU::UVCXU(USBDevice &usb, int xuID): UVC(usb), _xuID(xuID) {}
 
-int UVCXU::_ioctl(int request, void *arg)
-{
-  if(_fd <= 0)
-    return -1;
-  
-  int ret = 0;
-  int tries = IOCTL_RETRY;
-  do
-  {
-    ret = ioctl(_fd, request, arg);
-  }
-  while (ret && tries-- && ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
-  
-  if (ret && (tries <= 0)) 
-    log(ERROR) << "UVCXU: ioctl (" << request << ") retried " << IOCTL_RETRY << " times - giving up: " << strerror(errno) << ")" << endl;
-  
-  return ret;
-}
-
-UVCXU::UVCXU(USBDevice &usb, int xuID): _usb(usb), _xuID(xuID)
-{
-  USBSystem sys;
-  _deviceNode = sys.getDeviceNode(usb);
-  
-  if(_deviceNode.size() > 0)
-  {
-    _fd = open(_deviceNode.c_str(), O_RDWR | O_NONBLOCK);
-    
-    if(_fd == -1)
-      log(ERROR) << "Could not open device node " << _deviceNode << ". Please check for permissions." << endl;
-  }
-  else
-    log(ERROR) << "Could not located device node for " << _usb.id() << "." << endl;
-}
-
-UVCXU::~UVCXU()
-{
-  if(_fd > 0)
-  {
-    close(_fd);
-    _fd = 0;
-  }
-}
+UVCXU::~UVCXU() {}
 
 bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
 {
-  if(_fd <= 0)
+  if(!isInitialized())
     return false;
   
   struct uvc_xu_control_query uvc;
@@ -89,7 +45,7 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
 
 bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
 {
-  if(_fd <= 0)
+  if(!isInitialized())
     return false;
   
   struct uvc_xu_control_query uvc;
@@ -101,7 +57,7 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
   uvc.query = UVC_SET_CUR;
   uvc.size = size;
   uvc.data = value;
-    
+  
   if (_ioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
   {
     log(ERROR) << "UVCXU: " << _deviceNode << " UVCIOC_CTRL_QUERY failed.\n";
@@ -109,5 +65,5 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
   }
   return true;
 }
-
+  
 }
