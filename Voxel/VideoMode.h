@@ -30,7 +30,7 @@ public:
   FrameSize frameSize;
   FrameRate frameRate;
   
-  inline float getFrameRate() { return (frameRate.denominator == 0)?0:(((float)frameRate.numerator)/frameRate.denominator); }
+  inline float getFrameRate() const { return (frameRate.denominator == 0)?0:(((float)frameRate.numerator)/frameRate.denominator); }
 };
   
 }

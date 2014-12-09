@@ -8,6 +8,7 @@ add_library(voxel SHARED
   UVC.cpp
   UVCXU.cpp
   Logger.cpp
+  Time.cpp
   Streamer.cpp
   UVCStreamer.cpp
   )

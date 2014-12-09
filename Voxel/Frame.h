@@ -16,7 +16,7 @@ namespace Voxel
 class Frame
 {
 public:
-  TimeStampType timestamp = 0; // Unix timestamp in milliseconds
+  TimeStampType timestamp = 0; // Unix timestamp in micro-seconds
   int id = -1;
 };
 

@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/mman.h>
 
 #define FD_RETRY_LIMIT 4
 
@@ -38,6 +39,7 @@ int UVC::xioctl(int request, void *arg)
   return ret;
 }
 
+/// TODO This is untested code as Voxel-14 does not support read as of now
 /// buffer is assumed to have capacity of atleast "size" bytes
 bool UVC::read(uint8_t *buffer, size_t size)
 {
@@ -83,6 +85,34 @@ bool UVC::read(uint8_t *buffer, size_t size)
   return true;
 }
 
+bool UVC::mmap(uint32_t offset, UVCRawData &data)
+{
+  if(!isInitialized())
+    return false;
+  
+  void *d = ::mmap(NULL /* start anywhere */,
+                data.size,
+                PROT_READ | PROT_WRITE /* required */,
+                MAP_SHARED /* recommended */,
+                _fd, offset);
+  
+  if(d == MAP_FAILED)
+    return false;
+  
+  data.data = Ptr<ByteType>((ByteType *)d, [](ByteType *){}); // encasing in Ptr<> with a null deleter
+  
+  _mappedRawData.push_back(data);
+  return true;
+}
+
+bool UVC::_munmap(UVCRawData &data)
+{
+  if(!isInitialized())
+    return false;
+  
+  return ::munmap((void *)&*data.data, data.size) == -1;
+}
+
 UVC::UVC(DevicePtr usb): _usb(usb)
 {
   USBSystem sys;
@@ -107,9 +137,53 @@ UVC::~UVC()
 {
   if(_fd > 0)
   {
+    for(auto i = 0; i < _mappedRawData.size(); i++)
+      _munmap(_mappedRawData[i]);
+    
     close(_fd);
     _fd = 0;
   }
 }
+
+bool UVC::isReadReady(TimeStampType timeout, bool &timedOut)
+{
+  timedOut = false;
+  
+  if(!isInitialized())
+    return false;
+  
+  while(1)
+  {
+    fd_set fds;
+    struct timeval tv;
+    int r;
+    
+    FD_ZERO(&fds);
+    FD_SET(_fd, &fds);
+    
+    /* Timeout. */
+    tv.tv_sec = timeout/1000;
+    tv.tv_usec = (timeout % 1000)*1000;
+    
+    r = select(_fd + 1, &fds, NULL, NULL, &tv);
+    
+    if(r == -1)
+    {
+      if(EINTR == errno)
+        continue;
+      
+      return false;
+    }
+    
+    if(r == 0)
+    {
+      timedOut = true;
+      return false;
+    }
+    
+    return true;
+  }
+}
+
   
 }

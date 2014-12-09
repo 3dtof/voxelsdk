@@ -136,5 +136,32 @@ int main(int argc, char *argv[])
     } 
   }
   
+  if(!streamer.start())
+  {
+    log(ERROR) << "UVCStreamer not ready for capture" << endl;
+    return -1;
+  }
+  
+  const VideoMode &c = streamer.getCurrentVideoMode();
+  std::cout << "\nCurrent video mode: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
+  
+  RawDataFramePtr p;
+  
+  if(!streamer.capture(p))
+  {
+    log(ERROR) << "UVCStreamer could not capture a frame" << endl;
+  }
+  else
+  {
+    std::cout << "Capture frame " << p->id << "@" << p->timestamp << " of size = " << p->data.size() << std::endl;
+  }
+  
+  if(!streamer.stop())
+  {
+    log(ERROR) << "UVCStreamer could not be stopped" << endl;
+    return -1;
+  }
+  
+  
   return 0;
 }

@@ -37,7 +37,6 @@ int arraySize(T(&)[sz])
 }
 
 typedef uint64_t TimeStampType;
-TimeStampType getLocalCurrentTime();
 
 }
 

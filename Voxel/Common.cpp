@@ -20,12 +20,5 @@ String getHex(uint16_t value)
   return s.str();
 }
 
-TimeStampType getLocalCurrentTime()
-{
-  struct timeval tp;
-  gettimeofday(&tp, NULL);
-  return tp.tv_sec * 1000 + tp.tv_usec / 1000;
-}
-
   
 }
