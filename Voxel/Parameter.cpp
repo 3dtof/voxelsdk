@@ -56,7 +56,7 @@ uint32_t BoolParameter::_toRawValue(bool value)
 
 bool IntegerParameter::validate(int value)
 {
-  return (value < _lowerLimit or value > _upperLimit);
+  return !(value < _lowerLimit or value > _upperLimit);
 }
 
 bool IntegerParameter::set(int value) 
@@ -101,7 +101,7 @@ uint32_t IntegerParameter::_toRawValue(int value)
 
 bool FloatParameter::validate(float value)
 {
-  return (value < _lowerLimit or value > _upperLimit);
+  return !(value < _lowerLimit or value > _upperLimit);
 }
 
 bool FloatParameter::set(float value)

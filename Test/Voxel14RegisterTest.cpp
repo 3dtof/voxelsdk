@@ -8,6 +8,7 @@
 #include "SimpleOpt.h"
 #include "Common.h"
 #include "Logger.h"
+#include <Parameter.h>
 #include <VoxelXUProgrammer.h>
 
 using namespace Voxel;
@@ -20,7 +21,10 @@ enum Options
   REGISTER = 3,
   READ = 4,
   WRITE = 5,
-  DATA = 6
+  DATA = 6,
+  MASK = 7,
+  LSB = 8,
+  MSB = 9
 };
 
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
@@ -32,6 +36,9 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
   { READ,         "-i", SO_NONE,    "Read register (specify only one of -i/-o)"},
   { WRITE,        "-o", SO_NONE,    "Write to register (specify only one of -i/-o)"},
   { DATA,         "-d", SO_REQ_SEP, "Data to write to register (hexadecimal)"},
+  { MASK,         "-m", SO_REQ_SEP, "Mask for the data (hexadecimal) [default = 0]"},
+  { LSB,          "-l", SO_REQ_SEP, "LSB of data (integer) [default = 0]"},
+  { MSB,          "-b", SO_REQ_SEP, "MSB of data (integer) [default = 30]"},
   SO_END_OF_OPTIONS
 };
 
@@ -58,6 +65,10 @@ int main(int argc, char *argv[])
   uint16_t vid = 0, pid = 0;
   String serialNumber;
   uint32_t address = -1, data = -1;
+  
+  uint32_t mask = 0;
+  uint8_t lsb = 0, msb = 30;
+  
   
   bool write = true; // read -> false, write -> true
   
@@ -96,6 +107,18 @@ int main(int argc, char *argv[])
         data = (uint32_t)strtol(s.OptionArg(), &endptr, 16);
         break;
         
+      case MASK:
+        mask = (uint32_t)strtol(s.OptionArg(), &endptr, 16);
+        break;
+        
+      case LSB:
+        lsb = (uint8_t)strtol(s.OptionArg(), &endptr, 10);
+        break;
+        
+      case MSB:
+        msb = (uint8_t)strtol(s.OptionArg(), &endptr, 10);
+        break;
+        
       case READ:
         write = false;
         break;
@@ -121,16 +144,16 @@ int main(int argc, char *argv[])
   
   TI::VoxelXUProgrammer programmer(ud);
   
+  IntegerParameter p(programmer, "", "", address, msb, mask, lsb, 0, 1 << (msb - lsb + 1) - 1, "", "");
+  
   if(write)
   {
-    programmer.writeRegister(address, data);
+    p.set(data);
+    //programmer.writeRegister(address, data);
   }
   else
   {
-    if(programmer.readRegister(address, data))
-    {
-      std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << data << std::endl;
-    }
+    std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << p.get(true) << std::endl;
   }
   
   return 0;
