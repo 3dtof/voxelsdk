@@ -22,8 +22,7 @@ class Parameter
 {
 protected:
   uint32_t _address, _mask;
-  uint8_t _msb;
-  uint8_t _lsb;
+  uint8_t _msb, _lsb, _registerLength;
   // This is to do @_address <- (@_address & _mask) | (_value << _lsb)
   
   String _name;
@@ -32,10 +31,15 @@ protected:
   
   RegisterProgrammer &_programmer;
   
+  void _computeMask();
+  
 public:
-  Parameter(RegisterProgrammer &programmer, const String &name, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
+  Parameter(RegisterProgrammer &programmer, const String &name, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
             const String &displayName, const String &description)
-  : _programmer(programmer), _name(name), _displayName(displayName), _description(description), _address(address), _msb(msb), _mask(mask), _lsb(lsb) {}
+  : _programmer(programmer), _name(name), _displayName(displayName), _description(description), _address(address), _msb(msb), _registerLength(registerLength), _lsb(lsb) 
+  {
+    _computeMask();
+  }
   
   inline const String &name() const { return _name; }
   inline const String &displayName() const { return _displayName; }
@@ -62,10 +66,10 @@ protected:
   virtual bool _fromRawValue(uint32_t value);
   
 public:
-  BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
+  BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
                 const Vector<String> &valueDescription,
                 const String &displayName, const String &description):
-  Parameter(programmer, name, address, msb, mask, lsb, displayName, description), _valueDescription(valueDescription) 
+  Parameter(programmer, name, address, registerLength, msb, lsb, displayName, description), _valueDescription(valueDescription) 
   {
   }
   
@@ -94,10 +98,10 @@ protected:
   virtual int _fromRawValue(uint32_t value);
   
 public:
-  IntegerParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
+  IntegerParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
                    int lowerLimit, int upperLimit,
                    const String &displayName, const String &description):
-  Parameter(programmer, name, address, msb, mask, lsb, displayName, description), 
+  Parameter(programmer, name, address, registerLength, msb, lsb, displayName, description), 
   _lowerLimit(lowerLimit), _upperLimit(upperLimit), _unit(unit)
   {
   }
@@ -126,10 +130,10 @@ protected:
   virtual float _fromRawValue(uint32_t value);
   
 public:
-  FloatParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
+  FloatParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
                  float lowerLimit, float upperLimit,
                  const String &displayName, const String &description):
-  Parameter(programmer, name, address, msb, mask, lsb, displayName, description), 
+  Parameter(programmer, name, address, registerLength, msb, lsb, displayName, description), 
   _lowerLimit(lowerLimit), _upperLimit(upperLimit), _unit(unit)
   {
   }
@@ -158,10 +162,10 @@ protected:
   virtual int _fromRawValue(uint32_t value);
   
 public:
-  EnumParameter(RegisterProgrammer &programmer, const String &name, uint32_t address, uint8_t msb, uint32_t mask, uint8_t lsb, 
+  EnumParameter(RegisterProgrammer &programmer, const String &name, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
                 const Vector<int> &allowedValues, const Vector<String> valueDescription,
                 const String &displayName, const String &description):
-  Parameter(programmer, name, address, msb, mask, lsb, displayName, description), 
+  Parameter(programmer, name, address, registerLength, msb, lsb, displayName, description), 
   _allowedValues(allowedValues), _valueDescription(valueDescription)
   {
   }

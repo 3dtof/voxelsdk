@@ -129,6 +129,9 @@ bool VoxelXUProgrammer::getValue(Parameter &param, uint32_t &value)
 {
   uint32_t registerValue;
   
+  if(param.mask() == -1)
+    return false; // No way to read value
+  
   if(!readRegister(param.address(), registerValue))
     return false;
   
@@ -139,6 +142,9 @@ bool VoxelXUProgrammer::getValue(Parameter &param, uint32_t &value)
 bool VoxelXUProgrammer::setValue(Parameter &param, uint32_t value)
 {
   uint32_t registerValue;
+  
+  if(param.mask() == -1)
+    return true; // Fictitiously accept set
   
   if(!readRegister(param.address(), registerValue))
     return false;

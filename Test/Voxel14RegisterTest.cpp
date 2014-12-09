@@ -22,7 +22,7 @@ enum Options
   READ = 4,
   WRITE = 5,
   DATA = 6,
-  MASK = 7,
+  LENGTH = 7,
   LSB = 8,
   MSB = 9
 };
@@ -36,9 +36,9 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
   { READ,         "-i", SO_NONE,    "Read register (specify only one of -i/-o)"},
   { WRITE,        "-o", SO_NONE,    "Write to register (specify only one of -i/-o)"},
   { DATA,         "-d", SO_REQ_SEP, "Data to write to register (hexadecimal)"},
-  { MASK,         "-m", SO_REQ_SEP, "Mask for the data (hexadecimal) [default = 0]"},
+  { LENGTH,       "-t", SO_REQ_SEP, "Length of the register in bits (integer) [default = 24]"},
   { LSB,          "-l", SO_REQ_SEP, "LSB of data (integer) [default = 0]"},
-  { MSB,          "-b", SO_REQ_SEP, "MSB of data (integer) [default = 30]"},
+  { MSB,          "-b", SO_REQ_SEP, "MSB of data (integer) [default = 23]"},
   SO_END_OF_OPTIONS
 };
 
@@ -66,8 +66,7 @@ int main(int argc, char *argv[])
   String serialNumber;
   uint32_t address = -1, data = -1;
   
-  uint32_t mask = 0;
-  uint8_t lsb = 0, msb = 30;
+  uint8_t lsb = 0, msb = 23, registerLength = 24;
   
   
   bool write = true; // read -> false, write -> true
@@ -107,8 +106,8 @@ int main(int argc, char *argv[])
         data = (uint32_t)strtol(s.OptionArg(), &endptr, 16);
         break;
         
-      case MASK:
-        mask = (uint32_t)strtol(s.OptionArg(), &endptr, 16);
+      case LENGTH:
+        registerLength = (uint8_t)strtol(s.OptionArg(), &endptr, 10);
         break;
         
       case LSB:
@@ -144,7 +143,7 @@ int main(int argc, char *argv[])
   
   TI::VoxelXUProgrammer programmer(ud);
   
-  IntegerParameter p(programmer, "", "", address, msb, mask, lsb, 0, 1 << (msb - lsb + 1) - 1, "", "");
+  IntegerParameter p(programmer, "", "", address, registerLength, msb, lsb, 0, 1 << (msb - lsb + 1) - 1, "", "");
   
   if(write)
   {
