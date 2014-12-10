@@ -33,17 +33,96 @@ bool UVCStreamer::_uvcInit()
   return _uvc->isInitialized();
 }
 
-const VideoMode &UVCStreamer::getCurrentVideoMode()
+bool UVCStreamer::getCurrentVideoMode(VideoMode &videoMode)
 {
   if(!isInitialized())
+    return false;
+  
+  struct v4l2_format fmt;
+  memset(&fmt, 0, sizeof(fmt));
+  
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    _currentVideoMode.frameSize.width = _currentVideoMode.frameSize.height = 0;
-    _currentVideoMode.frameRate.denominator = 0;
+    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    return false;
   }
   
-  return _currentVideoMode;
+  videoMode.frameSize.width = fmt.fmt.pix.width;
+  videoMode.frameSize.height = fmt.fmt.pix.height;
+  
+  _updateFrameByteSize(fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
+  
+  struct v4l2_streamparm parm;
+  memset(&parm, 0, sizeof(parm));
+  
+  parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  
+  if(_uvc->xioctl(VIDIOC_G_PARM, &parm) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
+    return false;
+  }
+  
+  videoMode.frameRate.numerator = parm.parm.capture.timeperframe.denominator;
+  videoMode.frameRate.denominator = parm.parm.capture.timeperframe.numerator;
+  return true;
 }
 
+bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
+{
+  if(!isInitialized() || isRunning())
+    return false;
+  
+  struct v4l2_format fmt;
+  memset(&fmt, 0, sizeof(fmt));
+  
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    return false;
+  }
+  
+  fmt.fmt.pix.width = videoMode.frameSize.width;
+  fmt.fmt.pix.height = videoMode.frameSize.height;
+  
+  if(_uvc->xioctl(VIDIOC_S_FMT, &fmt) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
+    return false;
+  }
+  
+  /// Get once more to set frame size
+  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
+    return false;
+  }
+  
+  _updateFrameByteSize(fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
+  
+  struct v4l2_streamparm parm;
+  memset(&parm, 0, sizeof(parm));
+  
+  parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if(_uvc->xioctl(VIDIOC_G_PARM, &parm) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
+    return false;
+  }
+  
+  parm.parm.capture.timeperframe.denominator = videoMode.frameRate.numerator;
+  parm.parm.capture.timeperframe.numerator = videoMode.frameRate.denominator;
+  
+  if(_uvc->xioctl(VIDIOC_S_PARM, &parm) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not set current capture parameters" << std::endl;
+    return false;
+  }
+  
+  return true;
+}
 
 
 bool UVCStreamer::_initForCapture()
@@ -78,62 +157,13 @@ bool UVCStreamer::_initForCapture()
   }
   
   //// 2. Figure out frame size and frame rate
-  struct v4l2_format fmt;
+  VideoMode currentVideoMode;
   
-  memset(&fmt, 0, sizeof(fmt));
-  
-  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  /* Preserve original settings as set by v4l2-ctl for example */
-  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
+  if(!getCurrentVideoMode(currentVideoMode))
   {
-    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    log(ERROR) << "Could not get the current video mode" << std::endl;
     return _initialized = false;
   }
-  
-  
-  fmt.fmt.pix.width = 320;
-  fmt.fmt.pix.height = 240;
-  /* Preserve original settings as set by v4l2-ctl for example */
-  if(_uvc->xioctl(VIDIOC_S_FMT, &fmt) == -1)
-  {
-    log(WARNING) << "UVCStreamer: Could not set frame format to 640x240" << std::endl;
-  }
-  
-  /* Preserve original settings as set by v4l2-ctl for example */
-  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
-  {
-    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
-    return _initialized = false;
-  }
-  
-  /* Buggy driver paranoia. */
-  size_t min = fmt.fmt.pix.width * 2;
-  if(fmt.fmt.pix.bytesperline < min)
-    fmt.fmt.pix.bytesperline = min;
-  
-  min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
-  
-  if(fmt.fmt.pix.sizeimage < min)
-    _frameByteSize = min;
-  else
-    _frameByteSize = fmt.fmt.pix.sizeimage;
-  
-  _currentVideoMode.frameSize.width = fmt.fmt.pix.width;
-  _currentVideoMode.frameSize.height = fmt.fmt.pix.height;
-  
-  struct v4l2_standard s;
-  
-  if(_uvc->xioctl(VIDIOC_G_STD, &s) == -1)
-  {
-    log(WARNING) << "UVCStreamer: Could not get frame rate" << std::endl;
-    _currentVideoMode.frameRate.denominator = 0;
-  }
-  else
-  {
-    _currentVideoMode.frameRate.numerator = s.frameperiod.denominator;
-    _currentVideoMode.frameRate.denominator = s.frameperiod.numerator;
-  }
-  
   
   return _initialized = true;
 }
@@ -345,10 +375,15 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
       log(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
     }
     
-    p->id = _currentID++;
-    p->timestamp = _time.getCurentRealTime();
+    bool ret = _uvc->read(p->data.data(), _frameByteSize);
     
-    return _uvc->read(p->data.data(), _frameByteSize);
+    if(ret)
+    {
+      p->id = _currentID++;
+      p->timestamp = _time.getCurentRealTime();
+      return true;
+    }
+    return false;
   }
   else if(_captureMode == CAPTURE_MMAP || _captureMode == CAPTURE_USER_POINTER)
   {
@@ -385,6 +420,12 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     assert(buf.index < _rawDataBuffers.size());
     
+    if(buf.bytesused < _frameByteSize)
+    {
+      log(ERROR) << "Incomplete frame data. Skipping it." << endl;
+      return false;
+    }
+    
     if(!p || p->data.size() != buf.bytesused)
     {
       p = RawDataFramePtr(new RawDataFrame());
@@ -392,16 +433,16 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
       log(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
     }
     
-    memcpy(p->data.data(), &*_rawDataBuffers[buf.index].data, buf.bytesused);
-    
-    p->id = _currentID++;
     p->timestamp = _time.convertToRealTime(buf.timestamp.tv_sec*1000000L + buf.timestamp.tv_usec);
+    memcpy(p->data.data(), &*_rawDataBuffers[buf.index].data, buf.bytesused);
     
     if(_uvc->xioctl(VIDIOC_QBUF, &buf) == -1)
     {
       log(ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
       return false;
     }
+    
+    p->id = _currentID++;
     
     return true;
   }

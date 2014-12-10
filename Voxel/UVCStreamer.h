@@ -32,12 +32,11 @@ protected:
   
   size_t _frameByteSize;
   
-  VideoMode _currentVideoMode;
-  
   Vector<UVCRawData> _rawDataBuffers;
   
   bool _uvcInit();
   bool _initForCapture();
+  inline void _updateFrameByteSize(uint32_t width, uint32_t height, uint32_t bytesPerLine, uint32_t frameSize);
   
   virtual bool _start();
   virtual bool _capture(RawDataFramePtr &p);
@@ -52,10 +51,27 @@ public:
   
   virtual bool getSupportedVideoModes(Vector<VideoMode> &videoModes);
   
-  virtual const VideoMode &getCurrentVideoMode();
+  virtual bool getCurrentVideoMode(VideoMode &videoMode);
+  virtual bool setVideoMode(const VideoMode &videoMode);
   
   virtual ~UVCStreamer();
 };
+
+void UVCStreamer::_updateFrameByteSize ( uint32_t width, uint32_t height, uint32_t bytesPerLine, uint32_t frameSize )
+{
+  /* Buggy driver paranoia. */
+  size_t min = width * 2;
+  if(bytesPerLine < min)
+    bytesPerLine = min;
+  
+  min = bytesPerLine * height;
+  
+  if(frameSize < min)
+    _frameByteSize = min;
+  else
+    _frameByteSize = frameSize;
+}
+
 
 }
 

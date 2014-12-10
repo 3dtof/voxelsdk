@@ -45,7 +45,8 @@ public:
   
   virtual bool getSupportedVideoModes(Vector<VideoMode> &videoModes) = 0;
   
-  virtual const VideoMode &getCurrentVideoMode() = 0;
+  virtual bool getCurrentVideoMode(VideoMode &videoMode) = 0;
+  virtual bool setVideoMode(const VideoMode &videoMode) = 0;
 };
 
 }

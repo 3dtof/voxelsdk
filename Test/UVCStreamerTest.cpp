@@ -136,14 +136,31 @@ int main(int argc, char *argv[])
     } 
   }
   
+  VideoMode c; 
+  
+  if(streamer.getCurrentVideoMode(c))
+    std::cout << "\nCurrent video mode: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
+  else
+    log(ERROR) << "UVCStreamerTest: Could not get current video mode" << endl;
+  
+  c.frameSize.width = 320;
+  c.frameSize.height = 240;
+  
+  if(!streamer.setVideoMode(c))
+  {
+    log(ERROR) << "Could not set the video mode to 320x240" << std::endl;
+    return -1;
+  }
+  else
+    std::cout << "Video mode changed to: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
+  
+  
   if(!streamer.start())
   {
     log(ERROR) << "UVCStreamer not ready for capture" << endl;
     return -1;
   }
   
-  const VideoMode &c = streamer.getCurrentVideoMode();
-  std::cout << "\nCurrent video mode: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
   
   RawDataFramePtr p;
   
@@ -151,7 +168,8 @@ int main(int argc, char *argv[])
   {
     if(!streamer.capture(p))
     {
-      log(ERROR) << "UVCStreamer could not capture a frame" << endl;
+      log(WARNING) << "UVCStreamer could not capture a frame" << endl;
+      i--;
     }
     else
     {
