@@ -22,7 +22,8 @@ protected:
   {
     CAPTURE_READ_WRITE,
     CAPTURE_MMAP,
-    CAPTURE_USER_POINTER
+    CAPTURE_USER_POINTER,
+    CAPTURE_STREAMING // This is an intermediate which will be used to decide whether CAPTURE_MMAP or CAPTURE_USER_POINTER can be used
   } _captureMode;
 
   Ptr<UVC> _uvc;

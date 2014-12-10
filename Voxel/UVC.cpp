@@ -135,15 +135,27 @@ UVC::UVC(DevicePtr usb): _usb(usb)
 
 UVC::~UVC()
 {
-  if(_fd > 0)
+  if(_fd >= 0)
   {
-    for(auto i = 0; i < _mappedRawData.size(); i++)
-      _munmap(_mappedRawData[i]);
+    clearMMap();
     
     close(_fd);
     _fd = 0;
   }
 }
+
+bool UVC::clearMMap()
+{
+  if(isInitialized() && _mappedRawData.size() > 0)
+  {
+    for(auto i = 0; i < _mappedRawData.size(); i++)
+      _munmap(_mappedRawData[i]);
+    _mappedRawData.clear();
+    return true;
+  }
+  return false;
+}
+
 
 bool UVC::isReadReady(TimeStampType timeout, bool &timedOut)
 {

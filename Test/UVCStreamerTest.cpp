@@ -147,13 +147,17 @@ int main(int argc, char *argv[])
   
   RawDataFramePtr p;
   
-  if(!streamer.capture(p))
+  for(auto i = 0; i < 100; i++)
   {
-    log(ERROR) << "UVCStreamer could not capture a frame" << endl;
-  }
-  else
-  {
-    std::cout << "Capture frame " << p->id << "@" << p->timestamp << " of size = " << p->data.size() << std::endl;
+    if(!streamer.capture(p))
+    {
+      log(ERROR) << "UVCStreamer could not capture a frame" << endl;
+    }
+    else
+    {
+      std::cout << "Capture frame " << p->id << "@" << p->timestamp << " of size = " << p->data.size() << std::endl;
+      f.write((char *)p->data.data(), p->data.size());
+    }
   }
   
   if(!streamer.stop())

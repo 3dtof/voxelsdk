@@ -147,7 +147,12 @@ int main(int argc, char *argv[])
   
   if(write)
   {
+    uint32_t value;
+    programmer.readRegister(address, value);
+    std::cout << "Register (before set) @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
     p.set(data);
+    programmer.readRegister(address, value);
+    std::cout << "Register (after set) @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
     //programmer.writeRegister(address, data);
   }
   else

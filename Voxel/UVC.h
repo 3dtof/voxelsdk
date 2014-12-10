@@ -41,6 +41,8 @@ public:
   
   bool mmap(uint32_t offset, UVCRawData &data);
   
+  bool clearMMap();
+  
   // timeout in milli-seconds
   bool isReadReady(TimeStampType timeout, bool &timedOut);
   

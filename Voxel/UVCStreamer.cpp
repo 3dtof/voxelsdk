@@ -74,7 +74,77 @@ bool UVCStreamer::_initForCapture()
   else if(cap.capabilities & V4L2_CAP_STREAMING)
   {
     log(INFO) << "UVCStreamer: " << _device->id() << " supports streaming modes" << std::endl;
-    
+    _captureMode = CAPTURE_STREAMING;
+  }
+  
+  //// 2. Figure out frame size and frame rate
+  struct v4l2_format fmt;
+  
+  memset(&fmt, 0, sizeof(fmt));
+  
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  /* Preserve original settings as set by v4l2-ctl for example */
+  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    return _initialized = false;
+  }
+  
+  
+  fmt.fmt.pix.width = 320;
+  fmt.fmt.pix.height = 240;
+  /* Preserve original settings as set by v4l2-ctl for example */
+  if(_uvc->xioctl(VIDIOC_S_FMT, &fmt) == -1)
+  {
+    log(WARNING) << "UVCStreamer: Could not set frame format to 640x240" << std::endl;
+  }
+  
+  /* Preserve original settings as set by v4l2-ctl for example */
+  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    return _initialized = false;
+  }
+  
+  /* Buggy driver paranoia. */
+  size_t min = fmt.fmt.pix.width * 2;
+  if(fmt.fmt.pix.bytesperline < min)
+    fmt.fmt.pix.bytesperline = min;
+  
+  min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
+  
+  if(fmt.fmt.pix.sizeimage < min)
+    _frameByteSize = min;
+  else
+    _frameByteSize = fmt.fmt.pix.sizeimage;
+  
+  _currentVideoMode.frameSize.width = fmt.fmt.pix.width;
+  _currentVideoMode.frameSize.height = fmt.fmt.pix.height;
+  
+  struct v4l2_standard s;
+  
+  if(_uvc->xioctl(VIDIOC_G_STD, &s) == -1)
+  {
+    log(WARNING) << "UVCStreamer: Could not get frame rate" << std::endl;
+    _currentVideoMode.frameRate.denominator = 0;
+  }
+  else
+  {
+    _currentVideoMode.frameRate.numerator = s.frameperiod.denominator;
+    _currentVideoMode.frameRate.denominator = s.frameperiod.numerator;
+  }
+  
+  
+  return _initialized = true;
+}
+
+bool UVCStreamer::_start()
+{
+  if(!_initForCapture())
+    return false;
+  
+  if(_captureMode == CAPTURE_STREAMING)
+  {
     struct v4l2_requestbuffers req;
     
     memset(&req, 0, sizeof(req));
@@ -138,49 +208,7 @@ bool UVCStreamer::_initForCapture()
     }
   }
   
-  //// 2. Figure out frame size and frame rate
-  struct v4l2_format fmt;
-  memset(&fmt, 0, sizeof(fmt));
-  
-  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  /* Preserve original settings as set by v4l2-ctl for example */
-  if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
-  {
-    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
-    return _initialized = false;
-  }
-  
-  /* Buggy driver paranoia. */
-  size_t min = fmt.fmt.pix.width * 2;
-  if(fmt.fmt.pix.bytesperline < min)
-    fmt.fmt.pix.bytesperline = min;
-  
-  min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
-  
-  if(fmt.fmt.pix.sizeimage < min)
-    _frameByteSize = min;
-  else
-    _frameByteSize = fmt.fmt.pix.sizeimage;
-  
-  _currentVideoMode.frameSize.width = fmt.fmt.pix.width;
-  _currentVideoMode.frameSize.height = fmt.fmt.pix.height;
-  
-  
-  struct v4l2_standard s;
-  
-  if(_uvc->xioctl(VIDIOC_G_STD, &s) == -1)
-  {
-    log(WARNING) << "UVCStreamer: Could not get frame rate" << std::endl;
-    _currentVideoMode.frameRate.denominator = 0;
-  }
-  else
-  {
-    _currentVideoMode.frameRate.numerator = s.frameperiod.denominator;
-    _currentVideoMode.frameRate.denominator = s.frameperiod.numerator;
-  }
-  
-  
-  //// 3. Initialize _rawDataBuffers
+  //// Initialize _rawDataBuffers
   if(_captureMode == CAPTURE_MMAP)
   {
     for(auto i = 0; i < _rawDataBuffers.size(); i++)
@@ -218,14 +246,7 @@ bool UVCStreamer::_initForCapture()
     }
   }
   
-  return _initialized = true;
-}
-
-bool UVCStreamer::_start()
-{
-  if(!_initForCapture())
-    return false;
-  
+  /// Enqueue _rawDataBuffers and start streaming
   if(_captureMode == CAPTURE_MMAP || _captureMode == CAPTURE_USER_POINTER)
   {
     for(auto i = 0; i < _rawDataBuffers.size(); i++)
@@ -268,6 +289,7 @@ bool UVCStreamer::_stop()
   if(!isInitialized())
     return false;
   
+  /// Stop streaming
   enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   
   if(_uvc->xioctl(VIDIOC_STREAMOFF, &type) == -1)
@@ -276,13 +298,35 @@ bool UVCStreamer::_stop()
     return _initialized = false;
   }
   
+  /// Remove MMAPs if any
+  _uvc->clearMMap();
+  
+  /// Remove requestbuffers
+  struct v4l2_requestbuffers req;
+  
+  memset(&req, 0, sizeof(req));
+  
+  req.count = 0;
+  req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  req.memory = (_captureMode == CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
+  
+  if(_uvc->xioctl(VIDIOC_REQBUFS, &req) == -1)
+  {
+    log(ERROR) << "UVCStreamer: Failed to remove buffers" << endl;
+    return _initialized = false;
+  }
+  
+  /// Remove buffers
+  _rawDataBuffers.clear();
+  
+  
   return true;
 }
 
 bool UVCStreamer::_capture(RawDataFramePtr &p)
 {
   bool timedOut;
-  TimeStampType waitTime = 500;//ms
+  TimeStampType waitTime = 2000;//ms
   
   if(!isInitialized() || !_uvc->isReadReady(waitTime, timedOut))
   {
@@ -332,7 +376,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     {
       buf.index = _rawDataBuffers.size();
       for(auto i = 0; i < _rawDataBuffers.size(); i++)
-        if(&*_rawDataBuffers[i].data == (ByteType *)buf.m.userptr && _rawDataBuffers[i].size == buf.length)
+        if(&*_rawDataBuffers[i].data == (ByteType *)buf.m.userptr && _rawDataBuffers[i].size == buf.bytesused)
         {
           buf.index = i;
           break;
@@ -358,6 +402,8 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
       log(ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
       return false;
     }
+    
+    return true;
   }
   
 }
@@ -383,7 +429,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
     memset(&frameSizeEnum, 0, sizeof(frameSizeEnum));
     
     frameSizeEnum.index = frameSizeIndex++;
-    frameSizeEnum.pixel_format = V4L2_PIX_FMT_YUYV;
+    frameSizeEnum.pixel_format = V4L2_PIX_FMT_YUYV;//V4L2_PIX_FMT_UYVY;//V4L2_PIX_FMT_YUYV;
     
     if(_uvc->xioctl(VIDIOC_ENUM_FRAMESIZES, &frameSizeEnum) == -1)
     {
