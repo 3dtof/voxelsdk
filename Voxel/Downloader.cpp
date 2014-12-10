@@ -8,8 +8,59 @@
 #include "USBSystem.h"
 #include "Logger.h"
 
+#include <stdlib.h>
+
 namespace Voxel
 {
+  
+void Downloader::_getSearchPaths(Vector<String> &paths)
+{
+  paths.push_back("/lib/firmware/voxel");
+  
+  char *p = getenv("VOXEL_FW_PATH");
+  
+  if(p != 0)
+  {
+    String p1(p);
+    
+    Vector<String> splits;
+    
+    split(p1, ':', splits);
+    
+    paths.reserve(paths.size() + splits.size());
+    paths.insert(paths.end(), splits.begin(), splits.end());
+  }
+  
+  if(log.getDefaultLogLevel() >= DEBUG) 
+  {
+    for(auto i = 0; i < paths.size(); i++)
+    {
+      log(DEBUG) << paths[i];
+      if(i < paths.size() - 1)
+        log(DEBUG) << ":";
+    }
+    log(DEBUG) << endl;
+  }
+}
+
+bool Downloader::_locateFile(String &file)
+{
+  Vector<String> paths;
+  _getSearchPaths(paths);
+  
+  for(auto &p: paths)
+  {
+    std::ifstream f(p + DIR_SEP + file, std::ios::binary);
+    
+    if(f.good())
+    {
+      file = p + DIR_SEP + file;
+      return true;
+    }
+  }
+  return false;
+}
+
 
 bool USBDownloader::download(const String &file)
 {
@@ -19,11 +70,19 @@ bool USBDownloader::download(const String &file)
     return false;
   }
   
-  std::ifstream f(file, std::ios::binary | std::ios::ate);
+  String fil = file;
+  
+  if(!_locateFile(fil))
+  {
+    log(ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
+    return false;
+  }
+  
+  std::ifstream f(fil, std::ios::binary | std::ios::ate);
   
   if(!f.good())
   {
-    log(ERROR) << "USBDownloader: Could not open '" << file << "'." << endl;
+    log(ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
     return false;
   }
   

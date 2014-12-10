@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include "Ptr.h"
 
+#define DIR_SEP "/"
+
 namespace Voxel
 {
 
@@ -29,6 +31,7 @@ typedef std::size_t SizeType;
 typedef uint8_t ByteType;
 
 String getHex(uint16_t value);
+void split(const String &str, const char delimiter, Vector<String> &split);
 
 template<typename T, int sz>
 int arraySize(T(&)[sz])

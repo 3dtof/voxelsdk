@@ -1,7 +1,9 @@
 #!/bin/bash
 
+export VOXEL_FW_PATH="$PWD/../TI3DToF"
 Test/DownloaderTest -v 0x0451 -p 0x9102 -f ../TI3DToF/OPT9220_0v27.fw
 sleep 2
+
 # Illumination settings
 # Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x2D0E -d     0x14 -o
 # Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x2D0F -d     0xFF -o
@@ -36,6 +38,4 @@ Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C35 -d      0x1 -t 24 -b 23 -
 
 # Debug enable
 Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C29 -d      0x1 -t 24 -b  1 -l  1 -o # debug en
-
-sleep 1
 Test/UVCStreamerTest -v 0x0451 -p 0x9103 -f temp.out

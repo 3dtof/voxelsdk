@@ -49,18 +49,23 @@ protected:
 public:
   Logger(LogLevel loglevel = ERROR): _logLevel(loglevel), _currentLogLevel(loglevel) {}
   
-  Logger &operator()(LogLevel loglevel)
+  inline Logger &operator()(LogLevel loglevel)
   {
     _currentLogLevel = loglevel;
     return *this << _logLevelNames[loglevel] << ": ";
   }
   
-  void setDefaultLogLevel(LogLevel loglevel)
+  inline LogLevel getDefaultLogLevel()
+  {
+    return _logLevel;
+  }
+  
+  inline void setDefaultLogLevel(LogLevel loglevel)
   {
     _logLevel = loglevel;
   }
   
-  std::ostream &getStream()
+  inline std::ostream &getStream()
   {
     return _out;
   }
@@ -77,7 +82,7 @@ public:
   
   typedef std::ostream &(*OStreamManipulator)(std::ostream &);
   
-  Logger &operator <<(LoggerManipulator manip)
+  inline Logger &operator <<(LoggerManipulator manip)
   {
     if(_currentLogLevel <= _logLevel)
       return (*manip)(*this);
@@ -85,7 +90,7 @@ public:
       return *this;
   }
   
-  Logger &operator <<(OStreamManipulator manip)
+  inline Logger &operator <<(OStreamManipulator manip)
   {
     if(_currentLogLevel <= _logLevel)
       (*manip)(_out);

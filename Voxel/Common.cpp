@@ -20,5 +20,20 @@ String getHex(uint16_t value)
   return s.str();
 }
 
+void split(const String &str, const char delimiter, Vector<String> &split)
+{
+  int pos = str.find(delimiter, 0);
+  int previous = 0;
+  
+  while (pos != String::npos)
+  {
+    split.push_back(str.substr(previous, pos));
+    
+    previous = pos + 1;
+    pos = str.find(delimiter, previous);
+  }
+  
+  split.push_back(str.substr(previous, pos));
+}
   
 }
