@@ -157,7 +157,11 @@ int main(int argc, char *argv[])
   }
   else
   {
-    std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << p.get(true) << std::endl;
+    int value;
+    if(p.get(value, true))
+      std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
+    else
+      log(ERROR) << "Could not read register @0x" << std::hex << address << std::endl;
   }
   
   return 0;

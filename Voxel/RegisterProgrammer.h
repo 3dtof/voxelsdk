@@ -14,10 +14,6 @@
 namespace Voxel
 {
   
-class BoolParameter;
-class IntegerParameter;
-class FloatParameter;
-class EnumParameter;
 class Parameter;
   
 class RegisterProgrammer

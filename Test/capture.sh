@@ -38,4 +38,4 @@ Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C35 -d      0x1 -t 24 -b 23 -
 
 # Debug enable
 Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C29 -d      0x1 -t 24 -b  1 -l  1 -o # debug en
-Test/UVCStreamerTest -v 0x0451 -p 0x9103 -f temp.out
+Test/UVCStreamerTest -v 0x0451 -p 0x9103 -f temp.out -n 100 
