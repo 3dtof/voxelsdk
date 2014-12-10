@@ -12,6 +12,10 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <functional>
+
+#include <thread>
+
 #include "Ptr.h"
 
 #define DIR_SEP "/"
@@ -25,11 +29,17 @@ using Vector = std::vector<T>;
 template <typename K, typename V>
 using Map = std::unordered_map<K, V>;
 
+template <typename T>
+using Function = std::function<T>;
+
 typedef std::string String;
 typedef int IndexType;
 typedef std::size_t SizeType;
 typedef uint8_t ByteType;
 typedef uint64_t TimeStampType;
+
+typedef std::thread Thread;
+typedef Ptr<Thread> ThreadPtr;
 
 
 /// String functions

@@ -34,6 +34,8 @@ class RawFrame: public Frame
 {
 };
 
+typedef Ptr<RawFrame> RawFramePtr;
+
 class ToFRawFrame: public RawFrame
 {
 public:
@@ -120,7 +122,7 @@ protected:
   }
 };
 
-class RawDataFrame: public Frame
+class RawDataFrame: public RawFrame
 {
 public:
   Vector<ByteType> data;
@@ -160,6 +162,8 @@ public:
 
 typedef PointCloudFrameTemplate<Point> XYZPointCloudFrame;
 typedef PointCloudFrameTemplate<IntensityPoint> XYZIPointCloudFrame;
+
+typedef Ptr<XYZPointCloudFrame> XYZPointCloudFramePtr;
 
 }
 

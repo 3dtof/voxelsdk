@@ -171,5 +171,23 @@ int main(int argc, char *argv[])
   
   std::cout << "Successfully loaded depth camera for device " << toConnect->id() << endl;
   
+  int count = 0;
+  
+  depthCamera->registerCallback([&](DepthCamera &dc, RawFramePtr rawFrame) {
+    RawDataFrame &d = (RawDataFrame &)*rawFrame;
+    
+    std::cout << "Capture frame " << d.id << "@" << d.timestamp << " of size = " << d.data.size() << std::endl;
+    
+    f.write((char *)d.data.data(), d.data.size());
+    
+    count++;
+    
+    if(count >= 100)
+      dc.stop();
+  });
+  
+  if(depthCamera->start())
+    depthCamera->wait();
+  
   return 0;
 }

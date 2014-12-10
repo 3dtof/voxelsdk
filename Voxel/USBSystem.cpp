@@ -195,6 +195,7 @@ String USBSystem::getDeviceNode(const USBDevice& usbd)
      if(!dev)
      {
        log(WARNING) << "USBSystem: Unable to find parent usb device." << endl;
+       udev_device_unref(dev);
        continue;
      }
      

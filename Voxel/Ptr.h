@@ -37,6 +37,8 @@ public:
   
   Ptr(): std::shared_ptr<T>() {}
   
+  Ptr(const std::shared_ptr<T> &p): std::shared_ptr<T>(p) {}
+  
   virtual ~Ptr() {}
 };
 

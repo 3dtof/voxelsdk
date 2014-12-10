@@ -23,6 +23,11 @@ protected:
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
   
+  virtual bool _captureDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame);
+  virtual bool _captureRawFrame(RawFramePtr &rawFrame);
+  virtual bool _start();
+  virtual bool _stop();
+  
 public:
   ToFCamera(DevicePtr device): DepthCamera(device) {}
   
