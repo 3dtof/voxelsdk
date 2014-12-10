@@ -15,10 +15,10 @@ namespace Voxel
 class DepthCamera
 {
 protected:
-  DevicePtr _device, _controlDevice, _streamDevice;
+  DevicePtr _device;
   
 public:
-  DepthCamera(DevicePtr device, DevicePtr controlDevice, DevicePtr streamDevice): _device(device), _controlDevice(controlDevice), _streamDevice(streamDevice) {}
+  DepthCamera(DevicePtr device): _device(device) {}
   
   virtual bool isInitialized() = 0;
 };

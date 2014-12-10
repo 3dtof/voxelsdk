@@ -15,7 +15,7 @@ namespace Voxel
 namespace TI
 {
   
-Voxel14Camera::Voxel14Camera(DevicePtr device, DevicePtr controlDevice, DevicePtr streamDevice): ToFHaddockCamera(device, controlDevice, streamDevice)
+Voxel14Camera::Voxel14Camera(Voxel::DevicePtr device): ToFHaddockCamera(device)
 {
   _init();
 }
@@ -23,6 +23,8 @@ Voxel14Camera::Voxel14Camera(DevicePtr device, DevicePtr controlDevice, DevicePt
 bool Voxel14Camera::_init()
 {
   USBDevice &d = (USBDevice &)*_device;
+  
+  DevicePtr controlDevice;
   
   if(d.productID() == VOXEL_14_PRODUCT_ID1)
   {
@@ -34,10 +36,14 @@ bool Voxel14Camera::_init()
     }
     else 
       std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // wait for device to get ready after loading firmware
+      
+    controlDevice = DevicePtr(new USBDevice(VOXEL_14_VENDOR_ID, VOXEL_14_PRODUCT_ID2, _device->serialNumber()));
   }
+  else
+    controlDevice = _device;
   
-  _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(_controlDevice));
-  _streamer = Ptr<Streamer>(new UVCStreamer(_streamDevice));
+  _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(controlDevice));
+  _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
   
   if(!_programmer->isInitialized() || _streamer->isInitialized())
     return false;

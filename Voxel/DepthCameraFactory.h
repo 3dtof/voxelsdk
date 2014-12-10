@@ -21,12 +21,6 @@ protected:
   
   inline void _addSupportedDevices(const Vector<DevicePtr> &devices);
   
-  // Get control device used for register programming. This might return same device as given in input.
-  virtual DevicePtr _getControlDevice(DevicePtr device) = 0; 
-  
-  // Get stream device for capturing stream. This might return same device as given in input.
-  virtual DevicePtr _getStreamDevice(DevicePtr device) = 0;
-  
   String _name;
   
 public:

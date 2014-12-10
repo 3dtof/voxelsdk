@@ -28,7 +28,7 @@ protected:
   bool _init();
   
 public:
-  Voxel14Camera(DevicePtr device, DevicePtr controlDevice, DevicePtr streamDevice);
+  Voxel14Camera(DevicePtr device);
 };
 
 }

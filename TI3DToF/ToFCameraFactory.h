@@ -17,8 +17,6 @@ namespace TI
 
 class ToFCameraFactory: public DepthCameraFactory
 {
-  virtual DevicePtr _getControlDevice(DevicePtr device);
-  virtual DevicePtr _getStreamDevice(DevicePtr device);
 public:
   ToFCameraFactory(const String &name);
   

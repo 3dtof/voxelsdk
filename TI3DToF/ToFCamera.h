@@ -24,7 +24,7 @@ protected:
   Ptr<Streamer> _streamer;
   
 public:
-  ToFCamera(DevicePtr device, DevicePtr controlDevice, DevicePtr streamDevice): DepthCamera(device, controlDevice, streamDevice) {}
+  ToFCamera(DevicePtr device): DepthCamera(device) {}
   
   virtual bool isInitialized()
   {
