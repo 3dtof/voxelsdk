@@ -9,6 +9,7 @@
 #include <iomanip>
 
 #include <sys/time.h>
+#include <dirent.h>
 
 namespace Voxel
 {
@@ -35,5 +36,31 @@ void split(const String &str, const char delimiter, Vector<String> &split)
   
   split.push_back(str.substr(previous, pos));
 }
+
+
+int getFiles(const String &dir, const String &matchString, Vector<String> &files)
+{
+  DIR *dp;
+  struct dirent *dirp;
+  
+  if((dp  = opendir(dir.c_str())) == NULL)
+    return -1;
+  
+  while ((dirp = readdir(dp)) != NULL) 
+  {
+    if(dirp->d_type != DT_REG) // regular file or not?
+      continue;
+    
+    String n = dirp->d_name;
+    
+    if(n.find(matchString) != String::npos)
+    {
+      files.push_back(dir + DIR_SEP + n);
+    }
+  }
+  closedir(dp);
+  return files.size();
+}
+
   
 }

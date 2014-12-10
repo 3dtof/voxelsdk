@@ -23,6 +23,8 @@ class Parameter;
 class RegisterProgrammer
 {
 public:
+  virtual bool isInitialized() = 0;
+  
   virtual bool setValue(Parameter &param, uint32_t value) = 0;
   virtual bool getValue(Parameter &param, uint32_t &value) = 0;
   

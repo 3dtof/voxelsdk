@@ -4,6 +4,9 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
+
+#include "CameraSystem.h"
+
 #include "SimpleOpt.h"
 #include "Common.h"
 #include "Logger.h"
@@ -25,7 +28,7 @@ enum Options
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { VENDOR_ID,    "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
-  { PRODUCT_ID,   "-p", SO_REQ_SEP, "Product ID of the USB device (hexadecimal)"},
+  { PRODUCT_ID,   "-p", SO_REQ_SEP, "Comma separated list of Product IDs of the USB devices (hexadecimal)"},
   { SERIAL_NUMBER,"-s", SO_REQ_SEP, "Serial number of the USB device (string)"},
   { DUMP_FILE,    "-f", SO_REQ_SEP, "Name of the file to dump extracted frames"},
   { NUM_OF_FRAMES,"-n", SO_REQ_SEP, "Number of frames to dump [default = 1]"},
@@ -34,7 +37,7 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
 
 void help()
 {
-  std::cout << "UVCStreamerTest v1.0" << std::endl;
+  std::cout << "CameraSystemTest v1.0" << std::endl;
   
   CSimpleOpt::SOption *option = argumentSpecifications.data();
   
@@ -52,7 +55,9 @@ int main(int argc, char *argv[])
   
   log.setDefaultLogLevel(INFO);
   
-  uint16_t vid = 0, pid = 0;
+  uint16_t vid = 0;
+  
+  Vector<uint16_t> pids;
   String serialNumber;
   String dumpFileName;
   
@@ -71,6 +76,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
+    Vector<String> splits;
     switch (s.OptionId())
     {
       case VENDOR_ID:
@@ -78,7 +84,11 @@ int main(int argc, char *argv[])
         break;
         
       case PRODUCT_ID:
-        pid = (uint16_t)strtol(s.OptionArg(), &endptr, 16);
+        split(s.OptionArg(), ',', splits);
+        
+        for(auto &s1: splits)
+          pids.push_back((uint16_t)strtol(s1.c_str(), &endptr, 16));
+        
         break;
         
       case SERIAL_NUMBER:
@@ -99,7 +109,7 @@ int main(int argc, char *argv[])
     };
   }
   
-  if(vid == 0 || pid == 0 || dumpFileName.size() == 0)
+  if(vid == 0 || pids.size() == 0 || pids[0] == 0 || dumpFileName.size() == 0)
   {
     log(ERROR) << "Required argument missing." << endl;
     help();
@@ -114,76 +124,52 @@ int main(int argc, char *argv[])
     return -1;
   }
   
-  DevicePtr ud(new USBDevice(vid, pid, serialNumber));
+  CameraSystem sys;
   
-  UVCStreamer streamer(ud);
+  // Get all valid detected devices
+  const Vector<DevicePtr> &devices = sys.scan();
   
-  if(!streamer.isInitialized())
+  DevicePtr toConnect;
+  
+  std::cout << "Detected devices: " << std::endl;
+  for(auto &d: devices)
   {
-    log(ERROR) << "UVCStreamer not initialized" << endl;
-    return -1;
-  }
-  
-  Vector<VideoMode> videoModes;
-  
-  if(streamer.getSupportedVideoModes(videoModes))
-  {
-    std::cout << "Supported video modes" << std::endl;
+    std::cout << d->id() << std::endl;
     
-    for(auto i = 0; i < videoModes.size(); i++)
+    if(d->interface() == Device::USB)
     {
-      std::cout << videoModes[i].frameSize.width << "x" << videoModes[i].frameSize.height << "@" << videoModes[i].getFrameRate() << "fps" << std::endl;
-    } 
-  }
-  
-  VideoMode c; 
-  
-  if(streamer.getCurrentVideoMode(c))
-    std::cout << "\nCurrent video mode: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
-  else
-    log(ERROR) << "UVCStreamerTest: Could not get current video mode" << endl;
-  
-  c.frameSize.width = 320;
-  c.frameSize.height = 240;
-  
-  if(!streamer.setVideoMode(c))
-  {
-    log(ERROR) << "Could not set the video mode to 320x240" << std::endl;
-    return -1;
-  }
-  else
-    std::cout << "Video mode changed to: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
-  
-  
-  if(!streamer.start())
-  {
-    log(ERROR) << "UVCStreamer not ready for capture" << endl;
-    return -1;
-  }
-  
-  
-  RawDataFramePtr p;
-  
-  for(auto i = 0; i < frameCount; i++)
-  {
-    if(!streamer.capture(p))
-    {
-      log(WARNING) << "UVCStreamer could not capture a frame" << endl;
-      i--;
-    }
-    else
-    {
-      std::cout << "Capture frame " << p->id << "@" << p->timestamp << " of size = " << p->data.size() << std::endl;
-      f.write((char *)p->data.data(), p->data.size());
+      USBDevice &usb = (USBDevice &)*d;
+      
+      if(usb.vendorID() == vid && (serialNumber.size() == 0 || usb.serialNumber() == serialNumber))
+      {
+        for(auto pid: pids)
+          if(usb.productID() == pid)
+            toConnect = d;
+      }
     }
   }
   
-  if(!streamer.stop())
+  if(!toConnect)
   {
-    log(ERROR) << "UVCStreamer could not be stopped" << endl;
+    log(ERROR) << "No valid device found for the specified VID:PID:serialnumber" << endl;
+    return -1;
+  }
+    
+  DepthCameraPtr depthCamera = sys.connect(toConnect);
+  
+  if(!depthCamera)
+  {
+    log(ERROR) << "Could not load depth camera for device " << toConnect->id() << endl;
+    return -1;
+  }
+
+  if(!depthCamera->isInitialized())
+  {
+    log(ERROR) << "Depth camera not initialized for device " << toConnect->id() << endl;
     return -1;
   }
   
+  std::cout << "Successfully loaded depth camera for device " << toConnect->id() << endl;
   
   return 0;
 }

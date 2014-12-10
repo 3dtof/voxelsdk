@@ -11,11 +11,14 @@ add_library(voxel SHARED
   Time.cpp
   Streamer.cpp
   UVCStreamer.cpp
-  )
+  CameraSystem.cpp
+  DepthCamera.cpp
+  DepthCameraLibrary.cpp
+)
   
 target_link_libraries(voxel
   ${COMMON_LIBS}
-  )
+)
   
 install(TARGETS voxel
   LIBRARY

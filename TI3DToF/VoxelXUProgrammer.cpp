@@ -14,6 +14,12 @@ namespace Voxel
 namespace TI
 {
   
+bool VoxelXUProgrammer::isInitialized()
+{
+  return (bool)_xu;
+}
+
+  
 VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
 {
   if(device->interface() != Device::USB)
@@ -29,7 +35,7 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
   uint8_t data[4];
   if(!_xu->getControl(CONTROL_GET_VERSION, arraySize(data), data))
   {
-    log(ERROR) << "VoxelXUProgrammer: Could not get XU version." << std::endl;
+    log(WARNING) << "VoxelXUProgrammer: Could not get XU version." << std::endl;
     return;
   }
   _minorVersion = data[0];
@@ -40,7 +46,7 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
 
 bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value)
 {
-  if(!_xu)
+  if(!isInitialized())
   {
     log(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
     return false;
@@ -90,6 +96,12 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value)
 
 bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
 {
+  if(!isInitialized())
+  {
+    log(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
+    return false;
+  }
+  
   uint8_t i2cSlaveAddress, i2cRegisterAddress;
   
   i2cSlaveAddress = (address & 0xFF00) >> 8;

@@ -47,6 +47,8 @@ public:
   virtual bool getValue(Parameter &param, uint32_t &value);
   virtual bool setValue(Parameter &param, uint32_t value);
   
+  virtual bool isInitialized();
+  
   virtual ~VoxelXUProgrammer() {}
 };
 

@@ -9,3 +9,6 @@ target_link_libraries(Voxel14RegisterTest ti3dtof)
 
 add_executable(UVCStreamerTest UVCStreamerTest.cpp)
 target_link_libraries(UVCStreamerTest voxel)
+
+add_executable(CameraSystemTest CameraSystemTest.cpp)
+target_link_libraries(CameraSystemTest voxel)

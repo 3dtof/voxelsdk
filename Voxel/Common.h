@@ -29,17 +29,22 @@ typedef std::string String;
 typedef int IndexType;
 typedef std::size_t SizeType;
 typedef uint8_t ByteType;
+typedef uint64_t TimeStampType;
 
+
+/// String functions
 String getHex(uint16_t value);
 void split(const String &str, const char delimiter, Vector<String> &split);
 
+/// Array handling template
 template<typename T, int sz>
 int arraySize(T(&)[sz])
 {
   return sz;
 }
 
-typedef uint64_t TimeStampType;
+/// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
+int getFiles(const String &dir, const String &matchString, Vector<String> &files);
 
 }
 

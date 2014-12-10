@@ -15,6 +15,7 @@ namespace Voxel
   
 void Downloader::_getSearchPaths(Vector<String> &paths)
 {
+  paths.clear();
   paths.push_back("/lib/firmware/voxel");
   
   char *p = getenv("VOXEL_FW_PATH");
