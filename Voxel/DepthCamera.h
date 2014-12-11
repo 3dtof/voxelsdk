@@ -19,6 +19,8 @@ class DepthCamera
 protected:
   DevicePtr _device;
   
+  String _name;
+  
   Map<String, ParameterPtr> _parameters;
   
   void _addParameters(const Vector<ParameterPtr> &params);
@@ -47,19 +49,19 @@ protected:
   bool _running; // is capture running?
   
 public:
-  DepthCamera(DevicePtr device): _device(device) {}
+  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name) {}
   
   virtual bool isInitialized() = 0;
   
+  inline const String &name() { return _name; }
+  
   inline bool isRunning() { return _running; }
   
-  virtual bool get(const String &name, bool &value, bool refresh = false);
-  virtual bool get(const String &name, int &value, bool refresh = false); // works for int type and enum type
-  virtual bool get(const String &name, float &value, bool refresh = false);
+  template <typename T>
+  bool get(const String &name, T &value, bool refresh = false);
   
-  virtual bool set(const String &name, bool value);
-  virtual bool set(const String &name, int value); // works for int type and enum type
-  virtual bool set(const String &name, float value);
+  template <typename T>
+  bool set(const String &name, const T &value);
   
   virtual bool registerCallback(DepthFrameCallbackType f);
   virtual bool registerCallback(XYZPointCloudFrameCallbackType f);

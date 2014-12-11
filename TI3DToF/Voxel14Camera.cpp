@@ -15,7 +15,7 @@ namespace Voxel
 namespace TI
 {
   
-Voxel14Camera::Voxel14Camera(Voxel::DevicePtr device): ToFHaddockCamera(device)
+Voxel14Camera::Voxel14Camera(Voxel::DevicePtr device): ToFHaddockCamera("Voxel14Camera", device)
 {
   _init();
 }
@@ -47,6 +47,8 @@ bool Voxel14Camera::_init()
   
   if(!_programmer->isInitialized() || _streamer->isInitialized())
     return false;
+  
+  return true;
 }
 
 

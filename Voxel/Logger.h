@@ -17,14 +17,11 @@ namespace Voxel
   
 enum LogLevel
 {
+  CRITICAL,
   ERROR, 
   WARNING, 
   INFO, 
-  DEBUG, 
-  DEBUG1, 
-  DEBUG2, 
-  DEBUG3, 
-  DEBUG4
+  DEBUG
 };
   
 class Logger
@@ -35,15 +32,12 @@ protected:
   LogLevel _logLevel, // Allow log statements equal to or below _logLevel
   _currentLogLevel; // This holds log level for current statements
   
-  const std::string _logLevelNames[8] = {
+  const std::string _logLevelNames[5] = {
+    "CRITICAL",
     "ERROR",
     "WARNING",
     "INFO",
-    "DEBUG",
-    "DEBUG1",
-    "DEBUG2",
-    "DEBUG3",
-    "DEBUG4"
+    "DEBUG"
   };
   
 public:

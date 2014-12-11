@@ -29,7 +29,7 @@ protected:
   virtual bool _stop();
   
 public:
-  ToFCamera(DevicePtr device): DepthCamera(device) {}
+  ToFCamera(const String &name, DevicePtr device): DepthCamera(name, device) {}
   
   virtual bool isInitialized()
   {

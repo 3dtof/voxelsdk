@@ -18,7 +18,7 @@ namespace TI
 class ToFHaddockCamera: public ToFCamera
 {
 public:
-  ToFHaddockCamera(DevicePtr device): ToFCamera(device) {}
+  ToFHaddockCamera(const String &name, DevicePtr device): ToFCamera(name, device) {}
 };
 
 }

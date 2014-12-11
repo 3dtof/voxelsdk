@@ -57,95 +57,55 @@ bool DepthCamera::clearRawFrameCallback()
   _rawFrameCallbackType = 0;
 }
 
-bool DepthCamera::get(const String &name, int &value, bool refresh)
+template <typename T>
+bool DepthCamera::get(const String &name, T &value, bool refresh)
 {
   auto p = _parameters.find(name);
   
   if(p != _parameters.end())
   {
-    if(typeid(*p->second) == typeid(IntegerParameter))
-      return ((IntegerParameter &)*p->second).get(value, refresh);
-    else if(typeid(*p->second) == typeid(EnumParameter))
-      return ((EnumParameter &)*p->second).get(value, refresh);
-    else
+    ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T>>(p->second.get());
+    
+    if(param == 0)
+    {
+      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
+    }
+    
+    if(!param->get(value, refresh))
+    {
+      log(ERROR) << "Could not get value for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      return false;
+    }
+    
+    return true;
   }
   else
     return false;
 }
 
-bool DepthCamera::get(const String &name, bool &value, bool refresh)
+template <typename T>
+bool DepthCamera::set(const String &name, const T &value)
 {
   auto p = _parameters.find(name);
   
   if(p != _parameters.end())
   {
-    if(typeid(*p->second) == typeid(BoolParameter))
-      return ((BoolParameter &)*p->second).get(value, refresh);
-    else
+    ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T>>(p->second.get());
+    
+    if(param == 0)
+    {
+      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
-  }
-  else
-    return false;
-}
-
-bool DepthCamera::get(const String &name, float &value, bool refresh)
-{
-  auto p = _parameters.find(name);
-  
-  if(p != _parameters.end())
-  {
-    if(typeid(*p->second) == typeid(FloatParameter))
-      return ((FloatParameter &)*p->second).get(value, refresh);
-    else
+    }
+    
+    if(!param->set(value))
+    {
+      log(ERROR) << "Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
-  }
-  else
-    return false;
-}
-
-bool DepthCamera::set(const String &name, int value)
-{
-  auto p = _parameters.find(name);
-  
-  if(p != _parameters.end())
-  {
-    if(typeid(*p->second) == typeid(IntegerParameter))
-      return ((IntegerParameter &)*p->second).set(value);
-    else if(typeid(*p->second) == typeid(EnumParameter))
-      return ((EnumParameter &)*p->second).set(value);
-    else
-      return false;
-  }
-  else
-    return false;
-}
-
-bool DepthCamera::set(const String &name, bool value)
-{
-  auto p = _parameters.find(name);
-  
-  if(p != _parameters.end())
-  {
-    if(typeid(*p->second) == typeid(BoolParameter))
-      return ((BoolParameter &)*p->second).set(value);
-    else
-      return false;
-  }
-  else
-    return false;
-}
-
-bool DepthCamera::set(const String &name, float value)
-{
-  auto p = _parameters.find(name);
-  
-  if(p != _parameters.end())
-  {
-    if(typeid(*p->second) == typeid(FloatParameter))
-      return ((FloatParameter &)*p->second).set(value);
-    else
-      return false;
+    }
+    
+    return true;
   }
   else
     return false;
