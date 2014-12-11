@@ -174,11 +174,17 @@ int main(int argc, char *argv[])
   int count = 0;
   
   depthCamera->registerCallback([&](DepthCamera &dc, RawFramePtr rawFrame) {
-    RawDataFrame &d = (RawDataFrame &)*rawFrame;
+    RawDataFrame *d = dynamic_cast<RawDataFrame *>(rawFrame.get());
     
-    std::cout << "Capture frame " << d.id << "@" << d.timestamp << " of size = " << d.data.size() << std::endl;
+    if(!d)
+    {
+      std::cout << "Null frame captured? or not of type RawDataFrame" << std::endl;
+      return;
+    }
     
-    f.write((char *)d.data.data(), d.data.size());
+    std::cout << "Capture frame " << d->id << "@" << d->timestamp << " of size = " << d->data.size() << std::endl;
+    
+    f.write((char *)d->data.data(), d->data.size());
     
     count++;
     

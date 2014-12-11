@@ -18,6 +18,8 @@ class Frame
 public:
   TimeStampType timestamp = 0; // Unix timestamp in micro-seconds
   int id = -1;
+  
+  virtual ~Frame() {}
 };
 
 class DepthFrame: public Frame
@@ -26,12 +28,16 @@ public:
   Vector<float> depth; // depth frame row-wise. Unit: meters
   Vector<float> amplitude; // amplitude of each depth pixel normalized to value between 0 and 1
   SizeType size[2];
+  
+  virtual ~DepthFrame() {}
 };
 
 typedef Ptr<DepthFrame> DepthFramePtr;
 
 class RawFrame: public Frame
 {
+public:
+  virtual ~RawFrame() {}
 };
 
 typedef Ptr<RawFrame> RawFramePtr;
@@ -55,6 +61,8 @@ public:
   virtual SizeType histogramSize() = 0; // number of elements in the histogram
 
   SizeType size[2];
+  
+  virtual ~ToFRawFrame() {}
 };
 
 template <typename PhaseWidth, typename AmbientWidth>
@@ -120,12 +128,16 @@ protected:
   {
     return _histogram.size();
   }
+  
+  virtual ~ToFRawFrameTemplate() {}
 };
 
 class RawDataFrame: public RawFrame
 {
 public:
   Vector<ByteType> data;
+  
+  virtual ~RawDataFrame() {}
 };
 
 typedef Ptr<RawDataFrame> RawDataFramePtr;
@@ -136,6 +148,8 @@ class PointCloudFrame: public Frame
 public:
   virtual SizeType size() = 0;
   virtual Point *operator [](IndexType index) = 0;
+  
+  virtual ~PointCloudFrame() {}
 };
 
 typedef Ptr<PointCloudFrame> PointCloudFramePtr;
@@ -158,6 +172,8 @@ public:
     else
       return 0;
   }
+  
+  virtual ~PointCloudFrameTemplate() {}
 };
 
 typedef PointCloudFrameTemplate<Point> XYZPointCloudFrame;
