@@ -15,3 +15,12 @@ install(TARGETS ti3dtof
   DESTINATION lib
   COMPONENT libraries
 )
+
+### Copy DML and firmware files to build directory
+add_custom_command(TARGET ti3dtof PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_SOURCE_DIR}/TI3DToF/OPT9220_0v27.fw $<TARGET_FILE_DIR:ti3dtof>)
+                   
+add_custom_command(TARGET ti3dtof PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_SOURCE_DIR}/TI3DToF/OPT9220A.dml $<TARGET_FILE_DIR:ti3dtof>)
