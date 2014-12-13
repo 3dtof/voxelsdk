@@ -268,7 +268,36 @@ public:
   virtual ~RangeParameterTemplate() {}
 };
 
-typedef RangeParameterTemplate<int> IntegerParameter;
+class IntegerParameter: public RangeParameterTemplate<int>
+{
+protected:
+  virtual uint32_t _toRawValue(int value)
+  {
+    if(value < 0) // negative?
+    {
+      return ((uint32_t)value & ((1 << (_msb - _lsb + 1)) - 1)); // remove sign extension
+    }
+    else
+      return (uint32_t)value;
+  }
+  
+  virtual int _fromRawValue(uint32_t value)
+  {
+    if(value & (1 << (_msb - _lsb))) // negative?
+      return (value | ((uint32_t)(-1) - ((1 << (_msb - _lsb + 1)) - 1))); // extend sign
+    else
+      return (int)value;
+  }
+  
+public:
+  IntegerParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
+                 int lowerLimit, int upperLimit, const int &defaultValue,
+                 const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
+  RangeParameterTemplate<int>(programmer, name, unit, address, registerLength, msb, lsb, lowerLimit, upperLimit, defaultValue, displayName, description, ioType, dependencies)
+  {
+  }
+};
+
 typedef RangeParameterTemplate<uint> UnsignedIntegerParameter;
 
 class FloatParameter: public RangeParameterTemplate<float>
