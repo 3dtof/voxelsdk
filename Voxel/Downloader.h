@@ -20,8 +20,7 @@ class Downloader
 protected:
   DevicePtr _device;
   
-  virtual void _getSearchPaths(Vector<String> &paths);
-  virtual bool _locateFile(String &file );
+  virtual bool _locateFile(String &file);
   
 public:
   Downloader(DevicePtr device): _device(device) {}

@@ -28,6 +28,8 @@ protected:
   virtual bool _start();
   virtual bool _stop();
   
+  virtual bool _initStartParams() = 0;
+  
 public:
   ToFCamera(const String &name, DevicePtr device): DepthCamera(name, device) {}
   

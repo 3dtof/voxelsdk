@@ -40,6 +40,9 @@ bool ToFCamera::_start()
   if(!isInitialized())
     return false;
   
+  if(!_initStartParams()) // Initialize parameters to starts streaming
+    return false;
+  
   // Set parameters here
   VideoMode m;
   if(_streamer->getCurrentVideoMode(m))

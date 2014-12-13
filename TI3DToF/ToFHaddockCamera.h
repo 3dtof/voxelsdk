@@ -17,8 +17,13 @@ namespace TI
 
 class ToFHaddockCamera: public ToFCamera
 {
+protected:
+  bool _init();
+  
+  virtual bool _initStartParams();
+  
 public:
-  ToFHaddockCamera(const String &name, DevicePtr device): ToFCamera(name, device) {}
+  ToFHaddockCamera(const String &name, DevicePtr device);
 };
 
 }

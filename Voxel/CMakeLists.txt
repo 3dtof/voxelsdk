@@ -14,6 +14,9 @@ add_library(voxel SHARED
   CameraSystem.cpp
   DepthCamera.cpp
   DepthCameraLibrary.cpp
+  TinyXML2.cpp # for parsing DML files
+  ParameterDMLParser.cpp
+  Configuration.cpp
 )
   
 target_link_libraries(voxel

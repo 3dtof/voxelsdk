@@ -45,7 +45,10 @@ bool Voxel14Camera::_init()
   _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(controlDevice));
   _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
   
-  if(!_programmer->isInitialized() || _streamer->isInitialized())
+  if(!_programmer->isInitialized() || !_streamer->isInitialized())
+    return false;
+  
+  if(!ToFHaddockCamera::_init())
     return false;
   
   return true;

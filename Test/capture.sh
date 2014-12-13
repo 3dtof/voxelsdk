@@ -28,13 +28,21 @@ Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C35 -d      0x1 -t 24 -b 23 -
 # Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C83 -d      0x4 -t 24 -b  7 -l  4 -o #sub frames
 # Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x584c -d     0x14 -t 24 -b  6 -l  0 -o #integration duty cycle
 
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3C -d      0x1 -t 24 -b  2 -l  2 -i #block header enable
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3C -d    0x400 -t 24 -b 23 -l  4 -i #block size
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C40 -d      0x1 -t 24 -b 14 -l 14 -i #op cs
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3F -d      0x1 -t 24 -b  0 -l  0 -i #fb ready
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5882 -d  0x1d4c0 -t 24 -b 21 -l  0 -i #pix count max
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5880 -d      0x1 -t 24 -b  0 -l  0 -i #tg enable
-# Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C35 -d      0x1 -t 24 -b 23 -l 23 -i #illum_en_pol
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3C -d      0x1 -t 24 -b  2 -l  2 -i #block header enable
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3C -d    0x400 -t 24 -b 23 -l  4 -i #block size
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C40 -d      0x1 -t 24 -b 14 -l 14 -i #op cs
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3F -d      0x1 -t 24 -b  0 -l  0 -i #fb ready
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5882 -d  0x1d4c0 -t 24 -b 21 -l  0 -i #pix count max
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5880 -d      0x1 -t 24 -b  0 -l  0 -i #tg enable
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C35 -d      0x1 -t 24 -b 23 -l 23 -i #illum_en_pol
+
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3C -t 24 -i #block header enable
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C40 -t 24 -i #op cs
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C3F -t 24 -i #fb ready
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5882 -t 24 -i #pix count max
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5880 -t 24 -i #tg enable
+Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C35 -t 24 -i #illum_en_pol
+
 
 # Debug enable
 Test/Voxel14RegisterTest -v 0x0451 -p 0x9103 -r 0x5C29 -d      0x1 -t 24 -b  1 -l  1 -o # debug en

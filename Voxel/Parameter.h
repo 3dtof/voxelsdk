@@ -19,7 +19,7 @@
 namespace Voxel
 {
   
-class RegisterProgrammer;
+class ParameterDMLParser;
 
 class Parameter
 {
@@ -64,7 +64,12 @@ public:
   inline uint32_t mask() const { return _mask; }
   inline uint8_t lsb() const { return _lsb; }
   
+  inline void setName(const String &n) { _name = n; }
+  inline void setAddress(uint32_t a) { _address = a; }
+  
   virtual ~Parameter() {}
+  
+  friend class ParameterDMLParser;
 };
 
 typedef Ptr<Parameter> ParameterPtr;
@@ -88,8 +93,9 @@ protected:
   
 public:
   ParameterTemplate(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
+                    const T &defaultValue,
                     const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  Parameter(programmer, name, address, registerLength, msb, lsb, displayName, description, ioType, dependencies)
+  Parameter(programmer, name, address, registerLength, msb, lsb, displayName, description, ioType, dependencies), _value(defaultValue)
   {
   }
   
@@ -145,16 +151,33 @@ public:
   virtual ~ParameterTemplate() {}
 };
 
-
-class BoolParameter: public ParameterTemplate<bool>
+template <typename T>
+class EnumParameterTemplate: public ParameterTemplate<T>
 {
 protected:
+  Vector<String> _valueMeaning;
   Vector<String> _valueDescription;
-
-  BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t lsb, 
-                const Vector<String> &valueDescription,
+  
+  EnumParameterTemplate(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
+                const Vector<String> &valueDescription, const Vector<String> &valueMeaning, const T &defaultValue,
                 const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  ParameterTemplate<bool>(programmer, name, address, registerLength, lsb, lsb, displayName, description, ioType, dependencies), _valueDescription(valueDescription) 
+  ParameterTemplate<T>(programmer, name, address, registerLength, lsb, lsb, defaultValue, displayName, description, ioType, dependencies), _valueDescription(valueDescription), _valueMeaning(valueMeaning)
+  {
+  }
+  
+  inline const Vector<String> &valueDescription() const { return _valueDescription; }
+  inline const Vector<String> &valueMeaning() const { return _valueMeaning; }
+  
+  virtual ~EnumParameterTemplate() {}
+};
+
+class BoolParameter: public EnumParameterTemplate<bool>
+{
+public:
+  BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t lsb, 
+                const Vector<String> &valueDescription, const Vector<String> &valueMeaning, const bool &defaultValue,
+                const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
+  EnumParameterTemplate<bool>(programmer, name, address, registerLength, lsb, lsb, valueDescription, valueMeaning, defaultValue, displayName, description, ioType, dependencies)
   {
   }
   
@@ -163,18 +186,16 @@ protected:
     return true; 
   }
   
-  inline const Vector<String> &valueDescription() const { return _valueDescription; }
-              
   virtual ~BoolParameter() {}
 };
 
 class StrobeBoolParameter: public BoolParameter
 {
-protected:
+public:
   StrobeBoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t lsb, 
-                const Vector<String> &valueDescription,
+                const Vector<String> &valueDescription, const Vector<String> &valueMeaning, const bool &defaultValue,
                 const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  BoolParameter(programmer, name, address, registerLength, lsb, valueDescription, displayName, description, ioType, dependencies)
+  BoolParameter(programmer, name, address, registerLength, lsb, valueDescription, valueMeaning, defaultValue, displayName, description, ioType, dependencies)
   {
   }
   
@@ -186,23 +207,21 @@ protected:
   virtual ~StrobeBoolParameter() {}
 };
 
-class EnumParameter: public ParameterTemplate<int>
+class EnumParameter: public EnumParameterTemplate<int>
 {
 protected:
   Vector<int> _allowedValues;
-  Vector<String> _valueDescription;
   
 public:
   EnumParameter(RegisterProgrammer &programmer, const String &name, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
-                const Vector<int> &allowedValues, const Vector<String> valueDescription,
+                const Vector<int> &allowedValues, const Vector<String> valueDescription, const Vector<String> &valueMeaning, const int &defaultValue,
                 const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  ParameterTemplate<int>(programmer, name, address, registerLength, msb, lsb, displayName, description, ioType, dependencies), 
-  _allowedValues(allowedValues), _valueDescription(valueDescription)
+  EnumParameterTemplate<int>(programmer, name, address, registerLength, msb, lsb, valueDescription, valueMeaning, defaultValue, displayName, description, ioType, dependencies), 
+  _allowedValues(allowedValues)
   {
   }
   
   inline const Vector<int> &allowedValues() const { return _allowedValues; }
-  inline const Vector<String> &valueDescription() const { return _valueDescription; }
   
   virtual bool validate(const int &value) 
   {
@@ -232,9 +251,9 @@ protected:
 
 public:
   RangeParameterTemplate(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
-                   T lowerLimit, T upperLimit,
+                   const T &lowerLimit, const T &upperLimit, const T &defaultValue,
                    const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  ParameterTemplate<T>(programmer, name, address, registerLength, msb, lsb, displayName, description, ioType, dependencies), 
+  ParameterTemplate<T>(programmer, name, address, registerLength, msb, lsb, defaultValue, displayName, description, ioType, dependencies), 
   _lowerLimit(lowerLimit), _upperLimit(upperLimit), _unit(unit)
   {
   }
@@ -250,6 +269,7 @@ public:
 };
 
 typedef RangeParameterTemplate<int> IntegerParameter;
+typedef RangeParameterTemplate<uint> UnsignedIntegerParameter;
 
 class FloatParameter: public RangeParameterTemplate<float>
 {
@@ -277,9 +297,9 @@ protected:
   
 public:
   FloatParameter(RegisterProgrammer &programmer, const String &name, const String &unit, uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
-                         float lowerLimit, float upperLimit,
+                         float lowerLimit, float upperLimit, const float &defaultValue,
                  const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  RangeParameterTemplate<float>(programmer, name, unit, address, registerLength, msb, lsb, lowerLimit, upperLimit, displayName, description, ioType, dependencies)
+  RangeParameterTemplate<float>(programmer, name, unit, address, registerLength, msb, lsb, lowerLimit, upperLimit, defaultValue, displayName, description, ioType, dependencies)
   {
   }
   

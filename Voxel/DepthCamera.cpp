@@ -10,7 +10,7 @@
 namespace Voxel
 {
   
-void DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
+bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
 {
   _parameters.reserve(_parameters.size() + params.size());
   
@@ -22,9 +22,11 @@ void DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
     }
     else
     {
-      log(WARNING) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
+      log(ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
+      return false;
     }
   }
+  return true;
 }
 
 bool DepthCamera::registerCallback(XYZPointCloudFrameCallbackType f)
@@ -55,60 +57,6 @@ bool DepthCamera::clearDepthFrameCallback()
 bool DepthCamera::clearRawFrameCallback()
 {
   _rawFrameCallbackType = 0;
-}
-
-template <typename T>
-bool DepthCamera::get(const String &name, T &value, bool refresh)
-{
-  auto p = _parameters.find(name);
-  
-  if(p != _parameters.end())
-  {
-    ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T>>(p->second.get());
-    
-    if(param == 0)
-    {
-      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
-      return false;
-    }
-    
-    if(!param->get(value, refresh))
-    {
-      log(ERROR) << "Could not get value for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
-      return false;
-    }
-    
-    return true;
-  }
-  else
-    return false;
-}
-
-template <typename T>
-bool DepthCamera::set(const String &name, const T &value)
-{
-  auto p = _parameters.find(name);
-  
-  if(p != _parameters.end())
-  {
-    ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T>>(p->second.get());
-    
-    if(param == 0)
-    {
-      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
-      return false;
-    }
-    
-    if(!param->set(value))
-    {
-      log(ERROR) << "Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
-      return false;
-    }
-    
-    return true;
-  }
-  else
-    return false;
 }
 
 void DepthCamera::_captureLoop()

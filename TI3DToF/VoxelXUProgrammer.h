@@ -4,8 +4,8 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
-#ifndef VOXEL_TI_VOXELXU_H
-#define VOXEL_TI_VOXELXU_H
+#ifndef VOXEL_TI_VOXELXU_PROGRAMMER_H
+#define VOXEL_TI_VOXELXU_PROGRAMMER_H
 
 #include "RegisterProgrammer.h"
 #include "Device.h"
@@ -55,4 +55,4 @@ public:
 }
 }
 
-#endif // VOXEL_TI_VOXELXU_H
+#endif // VOXEL_TI_VOXELXU_PROGRAMMER_H

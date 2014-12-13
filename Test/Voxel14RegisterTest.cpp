@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
   
   TI::VoxelXUProgrammer programmer(ud);
   
-  IntegerParameter p(programmer, "", "", address, registerLength, msb, lsb, 0, 1 << (msb - lsb + 1) - 1, "", "");
+  UnsignedIntegerParameter p(programmer, "", "", address, registerLength, msb, lsb, 0, (1 << (msb - lsb + 1)) - 1, 0, "", "");
   
   if(write)
   {
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    int value;
+    uint value;
     if(p.get(value, true))
       std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
     else

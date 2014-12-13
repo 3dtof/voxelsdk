@@ -23,7 +23,7 @@ protected:
   
   Map<String, ParameterPtr> _parameters;
   
-  void _addParameters(const Vector<ParameterPtr> &params);
+  bool _addParameters(const Vector<ParameterPtr> &params);
   
   typedef Function<void (DepthCamera &camera, DepthFramePtr frame)> DepthFrameCallbackType;
   DepthFrameCallbackType _depthFrameCallbackType;
@@ -79,6 +79,59 @@ public:
   virtual ~DepthCamera() {}
 };
 
+template <typename T>
+bool DepthCamera::get(const String &name, T &value, bool refresh)
+{
+  auto p = _parameters.find(name);
+  
+  if(p != _parameters.end())
+  {
+    ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T> *>(p->second.get());
+    
+    if(param == 0)
+    {
+      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      return false;
+    }
+    
+    if(!param->get(value, refresh))
+    {
+      log(ERROR) << "Could not get value for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      return false;
+    }
+    
+    return true;
+  }
+  else
+    return false;
+}
+
+template <typename T>
+bool DepthCamera::set(const String &name, const T &value)
+{
+  auto p = _parameters.find(name);
+  
+  if(p != _parameters.end())
+  {
+    ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T> *>(p->second.get());
+    
+    if(param == 0)
+    {
+      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      return false;
+    }
+    
+    if(!param->set(value))
+    {
+      log(ERROR) << "Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      return false;
+    }
+    
+    return true;
+  }
+  else
+    return false;
+}
 
 typedef Ptr<DepthCamera> DepthCameraPtr;
 

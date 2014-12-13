@@ -6,6 +6,7 @@
 
 #include "CameraSystem.h"
 #include <Logger.h>
+#include "Configuration.h"
 
 #include <fstream>
 
@@ -22,35 +23,11 @@ CameraSystem::CameraSystem()
 
 void CameraSystem::_init()
 {
+  Configuration c;
+  
   Vector<String> paths;
   
-  paths.clear();
-  paths.push_back("/usr/lib/voxel");
-  
-  char *p = getenv("VOXEL_LIB_PATH");
-  
-  if(p != 0)
-  {
-    String p1(p);
-    
-    Vector<String> splits;
-    
-    split(p1, ':', splits);
-    
-    paths.reserve(paths.size() + splits.size());
-    paths.insert(paths.end(), splits.begin(), splits.end());
-  }
-  
-  if(log.getDefaultLogLevel() >= DEBUG) 
-  {
-    for(auto i = 0; i < paths.size(); i++)
-    {
-      log(DEBUG) << paths[i];
-      if(i < paths.size() - 1)
-        log(DEBUG) << ":";
-    }
-    log(DEBUG) << endl;
-  }
+  c.getLibPaths(paths);
   
   _loadLibraries(paths);
 }
