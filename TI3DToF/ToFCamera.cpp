@@ -46,7 +46,7 @@ bool ToFCamera::_start()
   m.frameSize.width = 320;
   m.frameSize.height = 240;
   
-  m.frameRate.numerator = 30;
+  m.frameRate.numerator = 25;
   m.frameRate.denominator = 1;
     
   if(!_streamer->setVideoMode(m) || !setFrameRate(m.frameRate))
@@ -55,7 +55,7 @@ bool ToFCamera::_start()
   if(!_streamer->getCurrentVideoMode(m))// || !setFrameRate(m.frameRate))
     return false;
   
-  log(INFO) << "Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
+  logger(INFO) << "Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
   
   if(!_initStartParams()) // Initialize parameters to starts streaming
     return false;

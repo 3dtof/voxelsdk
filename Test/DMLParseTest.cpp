@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  log.setDefaultLogLevel(DEBUG);
+  logger.setDefaultLogLevel(DEBUG);
   
   String xmlFile;
   
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   
   if(xmlFile.size() == 0)
   {
-    log(ERROR) << "Required argument missing." << endl;
+    logger(ERROR) << "Required argument missing." << endl;
     help();
     return -1;
   }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    log(ERROR) << "Failed to open '" << xmlFile << "'" << endl;
+    logger(ERROR) << "Failed to open '" << xmlFile << "'" << endl;
     return -1;
   }
   

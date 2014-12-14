@@ -39,15 +39,15 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     paths.insert(paths.end(), splits.begin(), splits.end());
   }
   
-  if(log.getDefaultLogLevel() >= DEBUG) 
+  if(logger.getDefaultLogLevel() >= DEBUG) 
   {
     for(auto i = 0; i < paths.size(); i++)
     {
-      log(DEBUG) << paths[i];
+      logger(DEBUG) << paths[i];
       if(i < paths.size() - 1)
-        log(DEBUG) << ":";
+        logger(DEBUG) << ":";
     }
-    log(DEBUG) << endl;
+    logger(DEBUG) << endl;
   }
   
   return true;

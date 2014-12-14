@@ -25,7 +25,7 @@ bool USBDownloader::download(const String &file)
 {
   if(_device->interface() != Device::USB)
   {
-    log(ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
+    logger(ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
     return false;
   }
   
@@ -33,7 +33,7 @@ bool USBDownloader::download(const String &file)
   
   if(!_locateFile(fil))
   {
-    log(ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
+    logger(ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
     return false;
   }
   
@@ -41,7 +41,7 @@ bool USBDownloader::download(const String &file)
   
   if(!f.good())
   {
-    log(ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
+    logger(ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
     return false;
   }
   
@@ -57,7 +57,7 @@ bool USBDownloader::download(const String &file)
   
   if(!sys.getContext())
   {
-    log(ERROR) << "USBDownloader: USBSystem init failed." << endl;
+    logger(ERROR) << "USBDownloader: USBSystem init failed." << endl;
     return false;
   }
   
@@ -71,7 +71,7 @@ bool USBDownloader::download(const String &file)
     {
       if((rc = libusb_claim_interface(handle, 0)) != LIBUSB_SUCCESS)
       {
-        log(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
+        logger(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
         libusb_close(handle);
         libusb_unref_device(device);
         return false;
@@ -87,14 +87,14 @@ bool USBDownloader::download(const String &file)
     }
     else
     {
-      log(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
+      logger(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
       libusb_unref_device(device);
       return false;
     }
   }
   else
   {
-    log(ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
+    logger(ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
     return false;
   }
   
@@ -120,7 +120,7 @@ bool USBDownloader::_configureForDownload(libusb_device_handle* device)
                                    buffer, 4, 5000);
   if (status != 4)
   {
-    log(ERROR) << "USBDownloader: Control transfer issue: Status " << status << endl;
+    logger(ERROR) << "USBDownloader: Control transfer issue: Status " << status << endl;
     return false;
   }
   
@@ -143,13 +143,13 @@ bool USBDownloader::_download(libusb_device_handle *device, std::ifstream &file,
     status = file.gcount();
     
     if (status < transferSize)
-      log(DEBUG) << "USBDownloader: Read less bytes than expected" << endl;
+      logger(DEBUG) << "USBDownloader: Read less bytes than expected" << endl;
     
     int rc = libusb_bulk_transfer(device, endpointOut, buffer, transferSize, &transferred, 10000);
     
     if(rc != 0 && rc != LIBUSB_ERROR_TIMEOUT)
     {
-      log(ERROR) << "USBDownloader: Bulk transfer failed." << endl;
+      logger(ERROR) << "USBDownloader: Bulk transfer failed." << endl;
       return false;
     }
     
@@ -159,7 +159,7 @@ bool USBDownloader::_download(libusb_device_handle *device, std::ifstream &file,
       
       if(rc != 0 && rc != LIBUSB_ERROR_TIMEOUT)
       {
-        log(ERROR) << "USBDownloader: Bulk transfer failed." << endl;
+        logger(ERROR) << "USBDownloader: Bulk transfer failed." << endl;
         return false;
       }
       transferred += t;

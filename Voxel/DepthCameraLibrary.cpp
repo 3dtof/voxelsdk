@@ -18,7 +18,7 @@ bool DepthCameraLibrary::load()
   
   if(!_handle) 
   {
-    log(ERROR) << "DepthCameraFactory: Failed to load " << _libName << ". Error: " << dlerror() << endl;
+    logger(ERROR) << "DepthCameraFactory: Failed to load " << _libName << ". Error: " << dlerror() << endl;
     return false;
   }
   
@@ -37,7 +37,7 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
   char *error;
   if ((error = dlerror()) != NULL)  
   {
-    log(ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << dlerror() << endl;
+    logger(ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << dlerror() << endl;
     return 0;
   }
   

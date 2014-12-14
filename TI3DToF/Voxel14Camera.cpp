@@ -31,7 +31,7 @@ bool Voxel14Camera::_init()
     _downloader = Ptr<Downloader>(new USBDownloader(_device));
     if(!_downloader->download("OPT9220_0v27.fw")) // TODO: This needs to come from a configuration
     {
-      log(ERROR) << "Voxel14Camera: Firmware download failed" << endl;
+      logger(ERROR) << "Voxel14Camera: Firmware download failed" << endl;
       return false;
     }
     else 

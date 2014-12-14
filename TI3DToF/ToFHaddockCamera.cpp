@@ -27,7 +27,7 @@ bool ToFHaddockCamera::_init()
   
   if(!c.getConfFile(name)) // true => name is now a proper path
   {
-    log(ERROR) << "ToFHaddockCamera: Failed to locate/read DML file '" << name << "'" << std::endl;
+    logger(ERROR) << "ToFHaddockCamera: Failed to locate/read DML file '" << name << "'" << std::endl;
     return false;
   }
   
@@ -37,7 +37,7 @@ bool ToFHaddockCamera::_init()
   
   if(!p.getParameters(params))
   {
-    log(ERROR) << "ToFHaddockCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
+    logger(ERROR) << "ToFHaddockCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
     return false;
   }
   
@@ -85,7 +85,7 @@ bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
   
   pixCount = (uint)(((long)r.denominator*sysClkFrequency*1000000)/((long)quadCount*subFrameCount*r.numerator));
   
-  log(DEBUG) << "ToFHaddockCamera: Setting pix_cnt_max = " << pixCount << std::endl;
+  logger(DEBUG) << "ToFHaddockCamera: Setting pix_cnt_max = " << pixCount << std::endl;
   
   if(!set("pix_cnt_max", pixCount) || !get("pix_cnt_max_set_failed", pixCountSetFailed) || pixCountSetFailed)
     return false;
@@ -93,6 +93,16 @@ bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
   return true;
 }
 
+bool ToFHaddockCamera::getFrameSize(FrameSize &s)
+{
+  return true; // dummy to be coded later
+}
+
+
+bool ToFHaddockCamera::setFrameSize(const FrameSize &s)
+{
+  return true; // dummy to be coded later
+}
 
 
 bool ToFHaddockCamera::_initStartParams()

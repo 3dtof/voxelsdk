@@ -12,7 +12,7 @@ using namespace Voxel;
 
 int main()
 {
-  log.setDefaultLogLevel(ERROR);
+  logger.setDefaultLogLevel(ERROR);
   
   Vector<DevicePtr> devices = DeviceScanner::scan();
   

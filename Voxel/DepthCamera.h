@@ -11,12 +11,26 @@
 #include <Parameter.h>
 #include <Frame.h>
 #include "VideoMode.h"
+#include <FrameBuffer.h>
+
+#define MAX_FRAME_BUFFERS 2
 
 namespace Voxel
 {
   
 class DepthCamera
 {
+public:
+  enum FrameCallBackType
+  {
+      CALLBACK_RAW_FRAME_UNPROCESSED,
+      CALLBACK_RAW_FRAME_PROCESSED,
+      CALLBACK_DEPTH_FRAME,
+      CALLBACK_XYZ_POINT_CLOUD_FRAME
+  };
+  
+  typedef Function<void (DepthCamera &camera, Frame &frame, FrameCallBackType callBackType)> CallbackType;
+  
 protected:
   DevicePtr _device;
   
@@ -24,16 +38,15 @@ protected:
   
   Map<String, ParameterPtr> _parameters;
   
+  FrameBuffer<RawFrame> _rawFrameBuffers;
+  FrameBuffer<DepthFrame> _depthFrameBuffers;
+  FrameBuffer<PointCloudFrame> _pointCloudBuffers;
+  
   bool _addParameters(const Vector<ParameterPtr> &params);
   
-  typedef Function<void (DepthCamera &camera, DepthFramePtr frame)> DepthFrameCallbackType;
-  DepthFrameCallbackType _depthFrameCallbackType;
+  CallbackType _callback;
   
-  typedef Function<void (DepthCamera &camera, XYZPointCloudFramePtr frame)> XYZPointCloudFrameCallbackType;
-  XYZPointCloudFrameCallbackType _xyzPointCloudFrameCallbackType;
-  
-  typedef Function<void (DepthCamera &camera, RawFramePtr frame)> RawFrameCallbackType;
-  RawFrameCallbackType _rawFrameCallbackType;
+  FrameCallBackType _callBackType;
   
   ThreadPtr _captureThread;
   
@@ -50,7 +63,8 @@ protected:
   bool _running; // is capture running?
   
 public:
-  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")") {}
+  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")"),
+  _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS) {}
   
   virtual bool isInitialized() = 0;
   
@@ -69,20 +83,19 @@ public:
   virtual bool setFrameRate(const FrameRate &r) = 0;
   virtual bool getFrameRate(FrameRate &r) = 0;
   
-  virtual bool registerCallback(DepthFrameCallbackType f);
-  virtual bool registerCallback(XYZPointCloudFrameCallbackType f);
-  virtual bool registerCallback(RawFrameCallbackType f);
+  virtual bool setFrameSize(const FrameSize &s) = 0;
+  virtual bool getFrameSize(FrameSize &s) = 0;
   
-  virtual bool clearDepthFrameCallback();
-  virtual bool clearXYZPointCloudFrameCallback();
-  virtual bool clearRawFrameCallback();
+  virtual bool registerCallback(FrameCallBackType type, CallbackType f);
+  
+  virtual bool clearCallback();
   
   virtual bool start();
   virtual bool stop();
   
   virtual void wait();
   
-  virtual ~DepthCamera() {}
+  virtual ~DepthCamera();
 };
 
 template <typename T>
@@ -96,20 +109,23 @@ bool DepthCamera::get(const String &name, T &value, bool refresh)
     
     if(param == 0)
     {
-      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(ERROR) << "DepthCamera: Invalid value type '" << typeid(value).name() << "' used to set parameter " << _id << "." << name << std::endl;
       return false;
     }
     
     if(!param->get(value, refresh))
     {
-      log(ERROR) << "Could not get value for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(ERROR) << "DepthCamera:Could not get value for parameter " << _id << "." << name << std::endl;
       return false;
     }
     
     return true;
   }
   else
+  {
+    logger(ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
     return false;
+  }
 }
 
 template <typename T>
@@ -123,13 +139,13 @@ bool DepthCamera::set(const String &name, const T &value)
     
     if(param == 0)
     {
-      log(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
     }
     
     if(!param->set(value))
     {
-      log(ERROR) << "Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(ERROR) << "Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
     }
     

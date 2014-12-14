@@ -44,7 +44,7 @@ bool UVCStreamer::getCurrentVideoMode(VideoMode &videoMode)
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
     return false;
   }
   
@@ -60,7 +60,7 @@ bool UVCStreamer::getCurrentVideoMode(VideoMode &videoMode)
   
   if(_uvc->xioctl(VIDIOC_G_PARM, &parm) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
     return false;
   }
   
@@ -80,7 +80,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
     return false;
   }
   
@@ -89,14 +89,14 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   
   if(_uvc->xioctl(VIDIOC_S_FMT, &fmt) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
     return false;
   }
   
   /// Get once more to set frame size
   if(_uvc->xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
     return false;
   }
   
@@ -108,7 +108,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if(_uvc->xioctl(VIDIOC_G_PARM, &parm) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
     return false;
   }
   
@@ -117,7 +117,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   
   if(_uvc->xioctl(VIDIOC_S_PARM, &parm) == -1)
   {
-    log(ERROR) << "UVCStreamer: Could not set current capture parameters" << std::endl;
+    logger(ERROR) << "UVCStreamer: Could not set current capture parameters" << std::endl;
     return false;
   }
   
@@ -135,24 +135,24 @@ bool UVCStreamer::_initForCapture()
   
   if(_uvc->xioctl(VIDIOC_QUERYCAP, &cap) == -1)
   {
-    log(ERROR) << "UVCStreamer: " << _device->id() << " is not a V4L2 device" << std::endl;
+    logger(ERROR) << "UVCStreamer: " << _device->id() << " is not a V4L2 device" << std::endl;
     return _initialized = false;
   }
   
   if(!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
   {
-    log(ERROR) << "UVCStreamer: " << _device->id() << " is no video capture device" << std::endl;
+    logger(ERROR) << "UVCStreamer: " << _device->id() << " is no video capture device" << std::endl;
     return _initialized = false;
   }
   
   if(cap.capabilities & V4L2_CAP_READWRITE)
   {
-    log(INFO) << "UVCStreamer: " << _device->id() << " does not support read()/write() calls" << std::endl;
+    logger(INFO) << "UVCStreamer: " << _device->id() << " does not support read()/write() calls" << std::endl;
     _captureMode = CAPTURE_READ_WRITE;
   }
   else if(cap.capabilities & V4L2_CAP_STREAMING)
   {
-    log(INFO) << "UVCStreamer: " << _device->id() << " supports streaming modes" << std::endl;
+    logger(INFO) << "UVCStreamer: " << _device->id() << " supports streaming modes" << std::endl;
     _captureMode = CAPTURE_STREAMING;
   }
   
@@ -161,7 +161,7 @@ bool UVCStreamer::_initForCapture()
   
   if(!getCurrentVideoMode(currentVideoMode))
   {
-    log(ERROR) << "Could not get the current video mode" << std::endl;
+    logger(ERROR) << "Could not get the current video mode" << std::endl;
     return _initialized = false;
   }
   
@@ -187,7 +187,7 @@ bool UVCStreamer::_start()
     {
       if(EINVAL == errno)
       {
-        log(ERROR) << "UVCStreamer: " << _device->id() << " does not support mmap" << std::endl;
+        logger(ERROR) << "UVCStreamer: " << _device->id() << " does not support mmap" << std::endl;
         
         memset(&req, 0, sizeof(req));
         
@@ -199,18 +199,18 @@ bool UVCStreamer::_start()
         {
           if(EINVAL == errno)
           {
-            log(ERROR) << "UVCStreamer: " << _device->id() << " does not support user pointer" << std::endl;
+            logger(ERROR) << "UVCStreamer: " << _device->id() << " does not support user pointer" << std::endl;
             return _initialized = false; // No usable capture mode available
           }
         }
         else
         {
-          log(INFO) << "UVCStreamer: " << _device->id() << " supports user pointer" << std::endl;
+          logger(INFO) << "UVCStreamer: " << _device->id() << " supports user pointer" << std::endl;
           _captureMode = CAPTURE_USER_POINTER;
           
           if(req.count < 2)
           {
-            log(ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
+            logger(ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
             return _initialized = false;
           }
           
@@ -219,18 +219,18 @@ bool UVCStreamer::_start()
       }
       else
       {
-        log(ERROR) << "UVCStreamer: " << _device->id() << " VIDIC_REQBUFS failed" << std::endl;
+        logger(ERROR) << "UVCStreamer: " << _device->id() << " VIDIC_REQBUFS failed" << std::endl;
         return _initialized = false;
       }
     }
     else
     {
-      log(INFO) << "UVCStreamer: " << _device->id() << " supports mmap" << std::endl;
+      logger(INFO) << "UVCStreamer: " << _device->id() << " supports mmap" << std::endl;
       _captureMode = CAPTURE_MMAP;
       
       if(req.count < 2)
       {
-        log(ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
+        logger(ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
         return _initialized = false;
       }
       
@@ -253,7 +253,7 @@ bool UVCStreamer::_start()
       
       if(_uvc->xioctl(VIDIOC_QUERYBUF, &buf) == -1)
       {
-        log(ERROR) << "UVCStreamer: Could not prepare raw data buffer '" << i << "'" << endl;
+        logger(ERROR) << "UVCStreamer: Could not prepare raw data buffer '" << i << "'" << endl;
         return _initialized = false;
       }
       
@@ -261,7 +261,7 @@ bool UVCStreamer::_start()
       
       if(!_uvc->mmap(buf.m.offset, _rawDataBuffers[i]))
       {
-        log(ERROR) << "UVCStreamer: Failed to get raw memory mapped buffer '" << i << "'" << endl;
+        logger(ERROR) << "UVCStreamer: Failed to get raw memory mapped buffer '" << i << "'" << endl;
         return _initialized = false;
       }
     }
@@ -297,7 +297,7 @@ bool UVCStreamer::_start()
       
       if(_uvc->xioctl(VIDIOC_QBUF, &buf) == -1)
       {
-        log(ERROR) << "UVCStreamer: Could not queue raw data buffer '" << i << "'" << endl;
+        logger(ERROR) << "UVCStreamer: Could not queue raw data buffer '" << i << "'" << endl;
         return _initialized = false;
       }
     }
@@ -306,7 +306,7 @@ bool UVCStreamer::_start()
     
     if(_uvc->xioctl(VIDIOC_STREAMON, &type) == -1)
     {
-      log(ERROR) << "UVCStreamer: Failed to start capture stream" << endl;
+      logger(ERROR) << "UVCStreamer: Failed to start capture stream" << endl;
       return _initialized = false;
     }
   }
@@ -324,7 +324,7 @@ bool UVCStreamer::_stop()
   
   if(_uvc->xioctl(VIDIOC_STREAMOFF, &type) == -1)
   {
-    log(ERROR) << "UVCStreamer: Failed to stop capture stream" << endl;
+    logger(ERROR) << "UVCStreamer: Failed to stop capture stream" << endl;
     return _initialized = false;
   }
   
@@ -342,7 +342,7 @@ bool UVCStreamer::_stop()
   
   if(_uvc->xioctl(VIDIOC_REQBUFS, &req) == -1)
   {
-    log(ERROR) << "UVCStreamer: Failed to remove buffers" << endl;
+    logger(ERROR) << "UVCStreamer: Failed to remove buffers" << endl;
     return _initialized = false;
   }
   
@@ -361,7 +361,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
   if(!isInitialized() || !_uvc->isReadReady(waitTime, timedOut))
   {
     if(timedOut)
-      log(ERROR) << "No data available. Waited for " << waitTime << " ms" << endl;
+      logger(ERROR) << "No data available. Waited for " << waitTime << " ms" << endl;
     
     return false;
   }
@@ -372,7 +372,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     {
       p = RawDataFramePtr(new RawDataFrame());
       p->data.resize(_frameByteSize);
-      log(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
+      logger(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
     }
     
     bool ret = _uvc->read(p->data.data(), _frameByteSize);
@@ -402,7 +402,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
           /* fall through */
           
         default:
-          log(ERROR) << "UVCStreamer: Failed to dequeue a raw frame buffer" << endl;
+          logger(ERROR) << "UVCStreamer: Failed to dequeue a raw frame buffer" << endl;
           return false;
       }
     }
@@ -422,7 +422,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(buf.bytesused < _frameByteSize)
     {
-      log(ERROR) << "Incomplete frame data. Skipping it." << endl;
+      logger(ERROR) << "Incomplete frame data. Skipping it." << endl;
       return false;
     }
     
@@ -430,7 +430,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     {
       p = RawDataFramePtr(new RawDataFrame());
       p->data.resize(buf.bytesused);
-      log(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
+      logger(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
     }
     
     p->timestamp = _time.convertToRealTime(buf.timestamp.tv_sec*1000000L + buf.timestamp.tv_usec);
@@ -438,7 +438,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(_uvc->xioctl(VIDIOC_QBUF, &buf) == -1)
     {
-      log(ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
+      logger(ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
       return false;
     }
     
@@ -482,7 +482,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
     
     if(frameSizeEnum.type != V4L2_FRMSIZE_TYPE_DISCRETE)
     {
-      log(WARNING) << "Frame types other than discrete, are not supported currently." << endl;
+      logger(WARNING) << "Frame types other than discrete, are not supported currently." << endl;
       continue;
     }
     
@@ -509,7 +509,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
       
       if(frameIntervalEnum.type != V4L2_FRMIVAL_TYPE_DISCRETE)
       {
-        log(WARNING) << "Frame interval types other than discrete, are not supported currently." << endl;
+        logger(WARNING) << "Frame interval types other than discrete, are not supported currently." << endl;
         continue;
       }
       

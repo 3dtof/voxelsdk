@@ -32,7 +32,7 @@ public:
   
   DepthCameraPtr connect(DevicePtr device);
   
-  virtual ~CameraSystem() {}
+  virtual ~CameraSystem();
 };
 
 }

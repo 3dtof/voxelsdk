@@ -23,7 +23,9 @@ protected:
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
   
-  virtual bool _captureDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame);
+  RawDataFrame _rawDataFrame; // Used by _captureDepthFrame(). This is not exposed to DepthCamera
+  
+  virtual bool _captureDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame);  
   virtual bool _captureRawFrame(RawFramePtr &rawFrame);
   virtual bool _start();
   virtual bool _stop();
@@ -38,6 +40,8 @@ public:
     return _programmer and _programmer->isInitialized() and 
             _streamer and _streamer->isInitialized();
   }
+  
+  virtual ~ToFCamera() {}
 };
 
 }

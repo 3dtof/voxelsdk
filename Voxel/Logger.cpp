@@ -9,7 +9,7 @@
 namespace Voxel
 {
   
-Logger log(WARNING);
+Logger logger(WARNING);
 
 Logger &endl(Logger &l)
 {

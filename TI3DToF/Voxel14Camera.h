@@ -29,6 +29,8 @@ protected:
   
 public:
   Voxel14Camera(DevicePtr device);
+  
+  virtual ~Voxel14Camera() {}
 };
 
 }

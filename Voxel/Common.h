@@ -13,10 +13,11 @@
 #include <iostream>
 #include <unordered_map>
 #include <functional>
+#include <list>
 
 #include <thread>
 
-#include "Ptr.h"
+#include <Ptr.h>
 
 #define DIR_SEP "/"
 
@@ -25,6 +26,9 @@ namespace Voxel
 
 template <typename T>
 using Vector = std::vector<T>;
+
+template <typename T>
+using List = std::list<T>;
 
 template <typename K, typename V>
 using Map = std::unordered_map<K, V>;

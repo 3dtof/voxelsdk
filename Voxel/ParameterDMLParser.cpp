@@ -16,7 +16,7 @@ ParameterDMLParser::ParameterDMLParser(RegisterProgrammer &registerProgrammer, c
   
   if(_doc.Error())
   {
-    log(ERROR) << "ParameterDMLParser: Error parsing the XML file '" << xmlFileName.c_str() << "'" << std::endl;
+    logger(ERROR) << "ParameterDMLParser: Error parsing the XML file '" << xmlFileName.c_str() << "'" << std::endl;
     _initialized = false;
     return;
   }
@@ -30,19 +30,19 @@ bool ParameterDMLParser::_prepare()
   
   if(_regMap->Attribute("name") and _regMap->Attribute("version"))
   {
-    log(INFO) << "ParameterDMLParser: Found register map with name '" << _regMap->Attribute("name") << "' (v" << _regMap->Attribute("version") << ")" << std::endl;
+    logger(INFO) << "ParameterDMLParser: Found register map with name '" << _regMap->Attribute("name") << "' (v" << _regMap->Attribute("version") << ")" << std::endl;
   }
   
   
   if(!(_propertyList = _goTo(_regMap, { "propertyViewList", "propertyView", "propertyList" })))
   {
-    log(ERROR) << "ParameterDMLParser: Could not get 'propertyList' from the DML file '" << _xmlFileName << "'" << std::endl;
+    logger(ERROR) << "ParameterDMLParser: Could not get 'propertyList' from the DML file '" << _xmlFileName << "'" << std::endl;
     return false;
   }
     
   if(!(_sectionList = _goTo(_regMap, { "guiViewList", "guiView", "sectionList" }))) // Picks the first guiView
   {
-    log(ERROR) << "ParameterDMLParser: Could not get 'sectionList' from the DML file '" << _xmlFileName << "'" << std::endl;
+    logger(ERROR) << "ParameterDMLParser: Could not get 'sectionList' from the DML file '" << _xmlFileName << "'" << std::endl;
     return false;
   }
   
@@ -50,7 +50,7 @@ bool ParameterDMLParser::_prepare()
   
   if(!_wordLength)
   {
-    log(ERROR) << "ParameterDMLParser: Got wordLength to be zero. Please check DML file '" << _xmlFileName << "'" << std::endl;
+    logger(ERROR) << "ParameterDMLParser: Got wordLength to be zero. Please check DML file '" << _xmlFileName << "'" << std::endl;
   }
   
   return true;
@@ -67,7 +67,7 @@ TinyXML2::XMLElement *ParameterDMLParser::_goTo(TinyXML2::XMLElement *current, c
     if(!x)
     {
       if(report)
-        log(ERROR) << "ParameterDMLParser: In XML file '" << _xmlFileName.c_str() << "'. Could not get '" << g << "'" << std::endl;
+        logger(ERROR) << "ParameterDMLParser: In XML file '" << _xmlFileName.c_str() << "'. Could not get '" << g << "'" << std::endl;
       return 0;
     }
   }
@@ -85,7 +85,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
   
   if(!(s = property->Attribute("id")))
   {
-    log(ERROR) << "Found a 'property' with no 'id'. " << property->GetText() << std::endl;
+    logger(ERROR) << "Found a 'property' with no 'id'. " << property->GetText() << std::endl;
     return 0;
   }
   
@@ -101,7 +101,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
   if(!(range = _goTo(property, { "rangeList", "range" }, false)))
   {
     if(bitCount != 0)
-      log(ERROR) << "ParameterDMLParser: Could not get 'range' for parameter with id = '" << id << "' with bitCount = " << bitCount << std::endl;
+      logger(ERROR) << "ParameterDMLParser: Could not get 'range' for parameter with id = '" << id << "' with bitCount = " << bitCount << std::endl;
     skipIfNull = true;
     return 0; // No range => no valid parameter
   }
@@ -113,7 +113,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
 
   if(address >= 256)
   {
-    log(ERROR) << "ParameterDMLParser: Address value = '" << address << "' which is beyond 256 for parameter with id = '" << id << "'" << std::endl;
+    logger(ERROR) << "ParameterDMLParser: Address value = '" << address << "' which is beyond 256 for parameter with id = '" << id << "'" << std::endl;
     return 0;
   }
   
@@ -121,7 +121,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
         
   if(msb < lsb)
   {
-    log(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has msb (" << msb << ") < lsb(" << lsb << ")" << std::endl;
+    logger(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has msb (" << msb << ") < lsb(" << lsb << ")" << std::endl;
     return 0;
   }
   
@@ -144,19 +144,19 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
   {
     if(bitCount == 1) // This boolean does not have value descriptions :(
     {
-      log(WARNING) << "ParameterDMLParser: Found a boolean parameter with id = '" << id << "' which does not have valueList" << std::endl;
+      logger(WARNING) << "ParameterDMLParser: Found a boolean parameter with id = '" << id << "' which does not have valueList" << std::endl;
       
       bool defaultValue = property->BoolAttribute("default");
       
       if(!strobe)
       {
-        log(DEBUG) << "ParameterDMLParser: Adding boolean parameter with id = '" << id << "'" << std::endl;
+        logger(DEBUG) << "ParameterDMLParser: Adding boolean parameter with id = '" << id << "'" << std::endl;
         return ParameterPtr(new BoolParameter(_registerProgrammer, "", address, _wordLength, lsb, {"", ""}, {"", ""}, defaultValue, "", description,
                                             ioType));
       }
       else
       {
-        log(DEBUG) << "ParameterDMLParser: Adding strobe (boolean) parameter with id = '" << id << "'" << std::endl;
+        logger(DEBUG) << "ParameterDMLParser: Adding strobe (boolean) parameter with id = '" << id << "'" << std::endl;
         return ParameterPtr(new StrobeBoolParameter(_registerProgrammer, "", address, _wordLength, lsb, {"", ""}, {"", ""}, defaultValue, "", description,
                                             ioType));
       }
@@ -164,17 +164,17 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
     else if(bitCount > 1)
     {
       if(strobe)
-        log(WARNING) << "ParameterDMLParser: Found a non-boolean parameter with id ='" << id << "' marked as strobe. Ignoring 'strobe' for this." << std::endl;
+        logger(WARNING) << "ParameterDMLParser: Found a non-boolean parameter with id ='" << id << "' marked as strobe. Ignoring 'strobe' for this." << std::endl;
       
       if(sign)
       {
         if((int)max < (int)min)
         {
-          log(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has max (" << max << ") < min(" << min << ")" << std::endl;
+          logger(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has max (" << max << ") < min(" << min << ")" << std::endl;
           return 0;
         }
         
-        log(DEBUG) << "ParameterDMLParser: Adding int parameter with id = '" << id << "'" << std::endl;
+        logger(DEBUG) << "ParameterDMLParser: Adding int parameter with id = '" << id << "'" << std::endl;
         int defaultValue = property->IntAttribute("default");
         return ParameterPtr(new IntegerParameter(_registerProgrammer, "", units, address, _wordLength, msb, lsb, min, max, defaultValue, "", description,
                                               ioType));
@@ -183,11 +183,11 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
       {
         if(max < min)
         {
-          log(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has max (" << max << ") < min(" << min << ")" << std::endl;
+          logger(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has max (" << max << ") < min(" << min << ")" << std::endl;
           return 0;
         }
         
-        log(DEBUG) << "ParameterDMLParser: Adding unsigned int parameter with id = '" << id << "'" << std::endl;
+        logger(DEBUG) << "ParameterDMLParser: Adding unsigned int parameter with id = '" << id << "'" << std::endl;
         uint defaultValue = property->UnsignedAttribute("default");
         return ParameterPtr(new UnsignedIntegerParameter(_registerProgrammer, "", units, address, _wordLength, msb, lsb, min, max, defaultValue, "", description,
                                                  ioType));
@@ -195,7 +195,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
     }
     else //bitCount == 0
     {
-      log(WARNING) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has bitCount = 0." << std::endl;
+      logger(WARNING) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has bitCount = 0." << std::endl;
       skipIfNull = true;
       return 0;
     }
@@ -230,20 +230,20 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
         }
         else
         {
-          log(ERROR) << "ParameterDMLParser: Found a boolean parameter with id = '" << id << "' which has possible value as '" << v << "'" << std::endl;
+          logger(ERROR) << "ParameterDMLParser: Found a boolean parameter with id = '" << id << "' which has possible value as '" << v << "'" << std::endl;
           return 0;
         }
       }
       
       if(!strobe)
       {
-        log(DEBUG) << "ParameterDMLParser: Adding boolean parameter with id = '" << id << "'" << std::endl;
+        logger(DEBUG) << "ParameterDMLParser: Adding boolean parameter with id = '" << id << "'" << std::endl;
         return ParameterPtr(new BoolParameter(_registerProgrammer, "", address, _wordLength, lsb, valueDescription, valueMeaning, defaultValue, "", description,
                                               ioType));
       }
       else
       {
-        log(DEBUG) << "ParameterDMLParser: Adding strobe (boolean) parameter with id = '" << id << "'" << std::endl;
+        logger(DEBUG) << "ParameterDMLParser: Adding strobe (boolean) parameter with id = '" << id << "'" << std::endl;
         return ParameterPtr(new StrobeBoolParameter(_registerProgrammer, "", address, _wordLength, lsb, valueDescription, valueMeaning, defaultValue, "", description,
                                               ioType));
       }
@@ -251,7 +251,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
     else if(bitCount > 1)
     {
       if(strobe)
-        log(WARNING) << "ParameterDMLParser: Found a non-boolean parameter with id ='" << id << "' marked as strobe. Ignoring 'strobe' for this." << std::endl;
+        logger(WARNING) << "ParameterDMLParser: Found a non-boolean parameter with id ='" << id << "' marked as strobe. Ignoring 'strobe' for this." << std::endl;
       
       Vector<String> valueMeaning, valueDescription;
       Vector<int> values;
@@ -271,7 +271,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
         values.push_back(value->IntAttribute("value"));
       }
       
-      log(DEBUG) << "ParameterDMLParser: Adding enum parameter with id = '" << id << "'" << std::endl;
+      logger(DEBUG) << "ParameterDMLParser: Adding enum parameter with id = '" << id << "'" << std::endl;
       
       int defaultValue = property->IntAttribute("default");
       return ParameterPtr(new EnumParameter(_registerProgrammer, "", address, _wordLength, msb, lsb, values, valueDescription, valueMeaning, defaultValue, "", description,
@@ -279,7 +279,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
     }
     else //bitCount == 0
     {
-      log(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has bitCount = 0 but has value list." << std::endl;
+      logger(ERROR) << "ParameterDMLParser: Found a parameter with id ='" << id << "' which has bitCount = 0 but has value list." << std::endl;
       return 0;
     }
   }
@@ -315,14 +315,14 @@ bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
     
     if(paramMap.find(id) != paramMap.end())
     {
-      log(ERROR) << "ParameterDMLParser: Found an existing parameter with id = '" << id << "'" << std::endl;
+      logger(ERROR) << "ParameterDMLParser: Found an existing parameter with id = '" << id << "'" << std::endl;
       return false;
     }
     
     paramMap[id] = p;
   }
   
-  log(DEBUG) << "ParameterDMLParser: Total number of valid parameters = " << paramMap.size() << std::endl;
+  logger(DEBUG) << "ParameterDMLParser: Total number of valid parameters = " << paramMap.size() << std::endl;
   
   TinyXML2::XMLElement *section = _sectionList->FirstChildElement("section");
   
@@ -333,7 +333,7 @@ bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
   {
     if(!section->Attribute("name"))
     {
-      log(ERROR) << "ParameterDMLParser: Found a section with no name in DML file '" << _xmlFileName << std::endl;
+      logger(ERROR) << "ParameterDMLParser: Found a section with no name in DML file '" << _xmlFileName << std::endl;
       return false;
     }
     
@@ -343,7 +343,7 @@ bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
     {
       if(!group->Attribute("name"))
       {
-        log(ERROR) << "ParameterDMLParser: Found a group with no name in section " << section->Attribute("name") << " in DML file '" << _xmlFileName << std::endl;
+        logger(ERROR) << "ParameterDMLParser: Found a group with no name in section " << section->Attribute("name") << " in DML file '" << _xmlFileName << std::endl;
         return false;
       }
       
@@ -353,7 +353,7 @@ bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
       {
         if(!property->Attribute("name") || !property->Attribute("propertyId"))
         {
-          log(ERROR) << "ParameterDMLParser: Found a property with no name or propertyId, in " << section->Attribute("name") << "." << group->Attribute("name") << std::endl;
+          logger(ERROR) << "ParameterDMLParser: Found a property with no name or propertyId, in " << section->Attribute("name") << "." << group->Attribute("name") << std::endl;
           return false;
         }
         
@@ -369,14 +369,14 @@ bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
         }
         else if(name != "...")
         {
-          log(ERROR) << "ParameterDMLParser: Could not find a parameter with id = " << id << ", in " << section->Attribute("name") << "." << group->Attribute("name") << std::endl;
+          logger(ERROR) << "ParameterDMLParser: Could not find a parameter with id = " << id << ", in " << section->Attribute("name") << "." << group->Attribute("name") << std::endl;
           return false;
         }
       }
     }
   }
   
-  log(DEBUG) << "ParameterDMLParser: Total number of valid parameters = " << parameters.size() << std::endl;
+  logger(DEBUG) << "ParameterDMLParser: Total number of valid parameters = " << parameters.size() << std::endl;
   
   return true;
 }

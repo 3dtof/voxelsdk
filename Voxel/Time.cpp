@@ -21,7 +21,7 @@ bool Time::init()
   
   if(r1 == -1 || r2 == -1)
   {
-    log(ERROR) << "Time: Failed to get current time." << std::endl;
+    logger(ERROR) << "Time: Failed to get current time." << std::endl;
     return _initialized = false;
   }
   

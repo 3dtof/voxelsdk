@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  log.setDefaultLogLevel(INFO);
+  logger.setDefaultLogLevel(INFO);
   
   uint16_t vid = 0;
   
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pids.size() == 0 || pids[0] == 0 || dumpFileName.size() == 0)
   {
-    log(ERROR) << "Required argument missing." << std::endl;
+    logger(ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    log(ERROR) << "Failed to open '" << dumpFileName << "'" << std::endl;
+    logger(ERROR) << "Failed to open '" << dumpFileName << "'" << std::endl;
     return -1;
   }
   
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   
   if(!toConnect)
   {
-    log(ERROR) << "No valid device found for the specified VID:PID:serialnumber" << std::endl;
+    logger(ERROR) << "No valid device found for the specified VID:PID:serialnumber" << std::endl;
     return -1;
   }
     
@@ -159,13 +159,13 @@ int main(int argc, char *argv[])
   
   if(!depthCamera)
   {
-    log(ERROR) << "Could not load depth camera for device " << toConnect->id() << std::endl;
+    logger(ERROR) << "Could not load depth camera for device " << toConnect->id() << std::endl;
     return -1;
   }
 
   if(!depthCamera->isInitialized())
   {
-    log(ERROR) << "Depth camera not initialized for device " << toConnect->id() << std::endl;
+    logger(ERROR) << "Depth camera not initialized for device " << toConnect->id() << std::endl;
     return -1;
   }
   
@@ -175,8 +175,8 @@ int main(int argc, char *argv[])
   
   TimeStampType lastTimeStamp = 0;
   
-  depthCamera->registerCallback([&](DepthCamera &dc, RawFramePtr rawFrame) {
-    RawDataFrame *d = dynamic_cast<RawDataFrame *>(rawFrame.get());
+  depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED, [&](DepthCamera &dc, Frame &frame, DepthCamera::FrameCallBackType c) {
+    RawDataFrame *d = dynamic_cast<RawDataFrame *>(&frame);
     
     if(!d)
     {
@@ -205,11 +205,11 @@ int main(int argc, char *argv[])
   {
     FrameRate r;
     if(depthCamera->getFrameRate(r))
-      log(INFO) << "Capturing at a frame rate of " << r.getFrameRate() << " fps" << std::endl;
+      logger(INFO) << "Capturing at a frame rate of " << r.getFrameRate() << " fps" << std::endl;
     depthCamera->wait();
   }
   else
-    log(ERROR) << "Could not start the depth camera " << depthCamera->id() << std::endl;
+    logger(ERROR) << "Could not start the depth camera " << depthCamera->id() << std::endl;
   
   return 0;
 }

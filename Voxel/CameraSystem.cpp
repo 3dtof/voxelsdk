@@ -54,7 +54,7 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
         
         if(!p->load())
         {
-          log(WARNING) << "CameraSystem: Failed to load library " << file << ". Ignoring it." << endl;
+          logger(WARNING) << "CameraSystem: Failed to load library " << file << ". Ignoring it." << endl;
           continue;
         }
         
@@ -62,7 +62,7 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
         
         if(!factory || !addDepthCameraFactory(factory))
         {
-          log(WARNING) << "CameraSystem: Failed to load or register a depth camera factory from library " << file  <<". Ignoring this library." << endl;
+          logger(WARNING) << "CameraSystem: Failed to load or register a depth camera factory from library " << file  <<". Ignoring this library." << endl;
           continue;
         }
         
@@ -71,15 +71,15 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
         
         numberOfLoadLibraries++;
         
-        log(INFO) << "CameraSystem: Successfully loaded factory from library " << file << endl;
+        logger(INFO) << "CameraSystem: Successfully loaded factory from library " << file << endl;
       }
       else
-        log(WARNING) << "CameraSystem: Library file " << file << " is not readable. Ignoring it." << endl;
+        logger(WARNING) << "CameraSystem: Library file " << file << " is not readable. Ignoring it." << endl;
     }
   }
   
   if(!numberOfLoadLibraries)
-    log(WARNING) << "CameraSystem: No depth camera library found or loaded." << endl;
+    logger(WARNING) << "CameraSystem: No depth camera library found or loaded." << endl;
 }
 
 
@@ -97,14 +97,14 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
   {
     if(device->serialNumber().size())
     {
-      log(WARNING) << "CameraSystem: Device type " << device->id() << " being registered from factory has serial number. Ignoring it." << endl;
+      logger(WARNING) << "CameraSystem: Device type " << device->id() << " being registered from factory has serial number. Ignoring it." << endl;
       continue;
     }
     
     auto f = _factories.find(device->id());
     if(f != _factories.end())
     {
-      log(WARNING) << "CameraSystem: Device type " << device->id() << " already has a factory '" << f->second->name() << "'. Not overwriting it." << endl;
+      logger(WARNING) << "CameraSystem: Device type " << device->id() << " already has a factory '" << f->second->name() << "'. Not overwriting it." << endl;
       continue;
     }
     
@@ -115,7 +115,7 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
   
   if(!numberOfDevicesAdded)
   {
-    log(WARNING) << "CameraSystem: No devices added from factory '" << factory->name() << ". Ignoring this factory." << endl;
+    logger(WARNING) << "CameraSystem: No devices added from factory '" << factory->name() << ". Ignoring this factory." << endl;
     return false;
   }
   
@@ -143,16 +143,34 @@ Vector<DevicePtr> CameraSystem::scan()
 
 DepthCameraPtr CameraSystem::connect(DevicePtr device)
 {
+  auto c = _depthCameras.find(device->id());
+  
+  if(c != _depthCameras.end())
+  {
+    logger(INFO) << "CameraSystem: DepthCamera for " << device->id() << " was already created. Returning it." << std::endl;
+    return c->second;
+  }
+  
   Device d(device->interface(), device->deviceID(), ""); // get device ID without serial number
   
   auto f = _factories.find(d.id());
   
   if(f != _factories.end())
-    return f->second->getDepthCamera(device);
+  {
+    DepthCameraPtr p = f->second->getDepthCamera(device);
+    _depthCameras[device->id()] = p;
+    return p;
+  }
   else
     return 0;
 }
 
+CameraSystem::~CameraSystem()
+{
+  _depthCameras.clear();
+  _factories.clear();
+  _libraries.clear();
+}
 
   
 }

@@ -27,6 +27,11 @@ public:
   
   virtual bool setFrameRate(const FrameRate &r);
   virtual bool getFrameRate(FrameRate &r);
+  
+  virtual bool getFrameSize(FrameSize &s);
+  virtual bool setFrameSize(const FrameSize &s);
+  
+  virtual ~ToFHaddockCamera() {}
 };
 
 }

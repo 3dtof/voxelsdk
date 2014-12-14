@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  log.setDefaultLogLevel(INFO);
+  logger.setDefaultLogLevel(INFO);
   
   uint16_t vid = 0, pid = 0;
   String serialNumber;
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pid == 0 || address == -1)
   {
-    log(ERROR) << "Required argument missing." << endl;
+    logger(ERROR) << "Required argument missing." << endl;
     help();
     return -1;
   }
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
     if(p.get(value, true))
       std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
     else
-      log(ERROR) << "Could not read register @0x" << std::hex << address << std::endl;
+      logger(ERROR) << "Could not read register @0x" << std::hex << address << std::endl;
   }
   
   return 0;

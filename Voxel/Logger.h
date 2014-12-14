@@ -96,7 +96,7 @@ public:
   }
 };
 
-extern Logger log;
+extern Logger logger;
 
 Logger &endl(Logger &l);
 

@@ -22,50 +22,35 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
     }
     else
     {
-      log(ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
+      logger(ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
       return false;
     }
   }
   return true;
 }
 
-bool DepthCamera::registerCallback(XYZPointCloudFrameCallbackType f)
+bool DepthCamera::clearCallback()
 {
-  _xyzPointCloudFrameCallbackType = f;
+  _callback = 0;
 }
 
-bool DepthCamera::registerCallback(DepthFrameCallbackType f)
+bool DepthCamera::registerCallback(FrameCallBackType type, CallbackType f)
 {
-  _depthFrameCallbackType = f;
+  _callback = f;
+  _callBackType = type;
 }
 
-bool DepthCamera::registerCallback(RawFrameCallbackType f)
-{
-  _rawFrameCallbackType = f;
-}
-
-bool DepthCamera::clearXYZPointCloudFrameCallback()
-{
-  _xyzPointCloudFrameCallbackType = 0;
-}
-
-bool DepthCamera::clearDepthFrameCallback()
-{
-  _depthFrameCallbackType = 0;
-}
-
-bool DepthCamera::clearRawFrameCallback()
-{
-  _rawFrameCallbackType = 0;
-}
 
 void DepthCamera::_captureLoop()
 {
   while(_running)
   {
-    RawFramePtr rawFrame;
-    if(_captureRawFrame(rawFrame) && _rawFrameCallbackType)
-      _rawFrameCallbackType(*this, rawFrame);
+    if(_callBackType == CALLBACK_RAW_FRAME_UNPROCESSED)
+    {
+      RawFramePtr &f = _rawFrameBuffers.get();
+      if(_captureRawFrame(f))
+        _callback(*this, (Frame &)(*f), _callBackType);
+    }
   }
   
   if(!_running)
@@ -81,6 +66,12 @@ void DepthCamera::_captureThreadWrapper()
 
 bool DepthCamera::start()
 {
+  if(!_callback)
+  {
+    logger(ERROR) << "DepthCamera: Please register a callback to " << _id << " before starting capture" << std::endl;
+    return false;
+  }
+  
   if(!_start())
     return false;
   
@@ -102,6 +93,15 @@ void DepthCamera::wait()
 {
   if(isRunning())
     _captureThread->join();
+}
+
+DepthCamera::~DepthCamera()
+{
+  _rawFrameBuffers.clear();
+  _depthFrameBuffers.clear();
+  _pointCloudBuffers.clear();
+  
+  _parameters.clear();
 }
 
   
