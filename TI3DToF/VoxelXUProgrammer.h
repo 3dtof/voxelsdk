@@ -20,7 +20,7 @@ namespace TI
 class VoxelXUProgrammer: public RegisterProgrammer
 {
 protected:
-  Ptr<UVCXU> _xu;
+  UVCXUPtr _xu;
   DevicePtr _device;
   
   const int _XU_ID = 3;

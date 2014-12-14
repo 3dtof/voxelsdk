@@ -177,7 +177,7 @@ String USBSystem::getDeviceNode(const USBDevice& usbd)
      * and create a udev_device object (dev) representing it
      */
     path = udev_list_entry_get_name(devListEntry);
-    struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path);
+    struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path), *pdev;
     
     /* usb_device_get_devnode() returns the path to the device node
      * itself in /dev. 
@@ -190,9 +190,9 @@ String USBSystem::getDeviceNode(const USBDevice& usbd)
       subsystem/devtype pair of "usb"/"usb_device". This will
       be several levels up the tree, but the function will find
       it.*/
-     dev = udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_device");
+     pdev = udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_device");
      
-     if(!dev)
+     if(!pdev)
      {
        logger(WARNING) << "USBSystem: Unable to find parent usb device." << endl;
        udev_device_unref(dev);
@@ -211,17 +211,17 @@ String USBSystem::getDeviceNode(const USBDevice& usbd)
      String serial;
      char *endptr;
      
-     vendorID = strtol(udev_device_get_sysattr_value(dev, "idVendor"), &endptr, 16);
-     productID = strtol(udev_device_get_sysattr_value(dev, "idProduct"), &endptr, 16);
+     vendorID = strtol(udev_device_get_sysattr_value(pdev, "idVendor"), &endptr, 16);
+     productID = strtol(udev_device_get_sysattr_value(pdev, "idProduct"), &endptr, 16);
      
-     const char *s = udev_device_get_sysattr_value(dev, "serial");
+     const char *s = udev_device_get_sysattr_value(pdev, "serial");
      if(s) serial = s;
-     
-     udev_device_unref(dev);
      
      if(usbd.vendorID() == vendorID && usbd.productID() == productID &&
         (usbd.serialNumber().size() == 0 || serial == usbd.serialNumber()))
        devNode = v4l2Device;
+     
+     udev_device_unref(dev);
   }
   /* Free the enumerator object */
   udev_enumerate_unref(enumerate);

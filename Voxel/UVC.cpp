@@ -113,7 +113,7 @@ bool UVC::_munmap(UVCRawData &data)
   return ::munmap((void *)&*data.data, data.size) == -1;
 }
 
-UVC::UVC(DevicePtr usb): _usb(usb)
+UVC::UVC(DevicePtr usb): _usb(usb), _fd(-1)
 {
   USBSystem sys;
   

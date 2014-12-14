@@ -25,5 +25,7 @@ public:
   bool getControl(int controlnumber, int size, uint8_t *value);
 };
 
+typedef Ptr<UVCXU> UVCXUPtr;
+
 }
 #endif // UVCXU_H

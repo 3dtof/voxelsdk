@@ -27,6 +27,8 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
   
   struct uvc_xu_control_query uvc;
   
+  memset(&uvc, 0, sizeof(uvc));
+  
   logger(DEBUG) << "UVCXU: get control " << controlnumber << ", size " << size << ", value[0] 0x" << std::hex << value[0] << endl;
   
   uvc.unit = _xuID;
@@ -49,6 +51,8 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
     return false;
   
   struct uvc_xu_control_query uvc;
+  
+  memset(&uvc, 0, sizeof(uvc));
   
   logger(DEBUG) << "UVCXU: set control " << controlnumber << ", size " << size << ", value[0] 0x" << std::hex << value[0] << endl;
   

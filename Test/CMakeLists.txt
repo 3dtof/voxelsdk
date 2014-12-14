@@ -11,7 +11,7 @@ add_executable(UVCStreamerTest UVCStreamerTest.cpp)
 target_link_libraries(UVCStreamerTest voxel)
 
 add_executable(CameraSystemTest CameraSystemTest.cpp)
-target_link_libraries(CameraSystemTest voxel)
+target_link_libraries(CameraSystemTest voxel ti3dtof)
 
 add_executable(DMLParseTest DMLParseTest.cpp)
 target_link_libraries(DMLParseTest voxel ti3dtof)

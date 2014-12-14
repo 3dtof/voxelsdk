@@ -30,7 +30,7 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
   
   _device = device;
   
-  _xu = Ptr<UVCXU>(new UVCXU(device, _XU_ID));
+  _xu = UVCXUPtr(new UVCXU(device, _XU_ID));
   
   uint8_t data[4];
   if(!_xu->getControl(CONTROL_GET_VERSION, arraySize(data), data))
@@ -66,7 +66,7 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value)
   if(addr[0] == 0x2D) // TPS
   {
     uint8_t data[1];
-    data[0] = 0xAA; // FIXME: Document these numbers
+    data[0] = 0x0;
     
     if(!_xu->getControl(CONTROL_READ_REGISTER_1, arraySize(data), data))
     {
@@ -79,9 +79,9 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value)
   else // ToF
   {
     uint8_t data[3];
-    data[0] = 0xAA; // FIXME: Document these numbers
-    data[1] = 0x55;
-    data[2] = 0xCC;
+    data[0] = 0x0;
+    data[1] = 0x0;
+    data[2] = 0x0;
     if(!_xu->getControl(CONTROL_READ_REGISTER_3, arraySize(data), data))
     {
       logger(ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
