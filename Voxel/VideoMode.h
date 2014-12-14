@@ -22,6 +22,8 @@ class FrameRate
 {
 public:
   size_t numerator, denominator;
+  
+  inline float getFrameRate() const { return (denominator == 0)?0:(((float)numerator)/denominator); }
 };
   
 class VideoMode
@@ -30,7 +32,7 @@ public:
   FrameSize frameSize;
   FrameRate frameRate;
   
-  inline float getFrameRate() const { return (frameRate.denominator == 0)?0:(((float)frameRate.numerator)/frameRate.denominator); }
+  inline float getFrameRate() const { return frameRate.getFrameRate(); }
 };
   
 }

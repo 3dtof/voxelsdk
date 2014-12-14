@@ -62,5 +62,22 @@ int getFiles(const String &dir, const String &matchString, Vector<String> &files
   return files.size();
 }
 
+//gcf function - return gcd of two numbers
+uint gcd(uint n, uint m)
+{
+  uint gcd, remainder;
+  
+  while (n != 0)
+  {
+    remainder = m % n;
+    m = n;
+    n = remainder;
+  }
+  
+  gcd = m;
+  
+  return gcd;
+}
+
   
 }

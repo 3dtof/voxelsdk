@@ -56,6 +56,8 @@ int arraySize(T(&)[sz])
 /// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
 int getFiles(const String &dir, const String &matchString, Vector<String> &files);
 
+uint gcd(uint n, uint m);
+
 }
 
 #endif //VOXEL_COMMON_H

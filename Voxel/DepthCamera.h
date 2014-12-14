@@ -10,6 +10,7 @@
 #include <Device.h>
 #include <Parameter.h>
 #include <Frame.h>
+#include "VideoMode.h"
 
 namespace Voxel
 {
@@ -19,7 +20,7 @@ class DepthCamera
 protected:
   DevicePtr _device;
   
-  String _name;
+  String _name, _id;
   
   Map<String, ParameterPtr> _parameters;
   
@@ -49,11 +50,13 @@ protected:
   bool _running; // is capture running?
   
 public:
-  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name) {}
+  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")") {}
   
   virtual bool isInitialized() = 0;
   
-  inline const String &name() { return _name; }
+  inline const String &name() const { return _name; }
+  
+  inline const String &id() const { return _id; }
   
   inline bool isRunning() { return _running; }
   
@@ -62,6 +65,9 @@ public:
   
   template <typename T>
   bool set(const String &name, const T &value);
+  
+  virtual bool setFrameRate(const FrameRate &r) = 0;
+  virtual bool getFrameRate(FrameRate &r) = 0;
   
   virtual bool registerCallback(DepthFrameCallbackType f);
   virtual bool registerCallback(XYZPointCloudFrameCallbackType f);

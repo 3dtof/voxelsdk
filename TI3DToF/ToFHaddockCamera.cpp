@@ -52,14 +52,56 @@ bool ToFHaddockCamera::_init()
   return _addParameters(params);
 }
 
+bool ToFHaddockCamera::getFrameRate(FrameRate &r)
+{
+  bool pixCountSetFailed;
+  
+  uint quadCount, subFrameCount, pixCount, sysClkFrequency;
+  
+  if(!get("pix_cnt_max_set_failed", pixCountSetFailed) || pixCountSetFailed)
+    return false;
+  
+  if(!get("pix_cnt_max", pixCount) || !get("quad_cnt_max", quadCount) || !get("uframe_cnt_max", subFrameCount) || !get("sys_clk_freq", sysClkFrequency))
+    return false;
+  
+  uint numerator = sysClkFrequency*1000000,
+  denominator = pixCount*quadCount*subFrameCount;
+  
+  uint g = gcd(numerator, denominator);
+  
+  r.numerator = numerator/g;
+  r.denominator = denominator/g;
+  return true;
+}
+
+bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
+{
+  bool pixCountSetFailed;
+  
+  uint quadCount, subFrameCount, sysClkFrequency, pixCount;
+  
+  if(!get("quad_cnt_max", quadCount) || !get("uframe_cnt_max", subFrameCount) || !get("sys_clk_freq", sysClkFrequency))
+    return false;
+  
+  pixCount = (uint)(((long)r.denominator*sysClkFrequency*1000000)/((long)quadCount*subFrameCount*r.numerator));
+  
+  log(DEBUG) << "ToFHaddockCamera: Setting pix_cnt_max = " << pixCount << std::endl;
+  
+  if(!set("pix_cnt_max", pixCount) || !get("pix_cnt_max_set_failed", pixCountSetFailed) || pixCountSetFailed)
+    return false;
+  
+  return true;
+}
+
+
+
 bool ToFHaddockCamera::_initStartParams()
 {
   return set("tg_en", true) and 
          set<uint>("blk_size", 1024) and
          set("blk_header_en", true) and
          set("op_cs_pol", true) and
-         set("fb_ready_en", true) and
-         set<uint>("pix_cnt_max", 120000);
+         set("fb_ready_en", true);
 }
 
   

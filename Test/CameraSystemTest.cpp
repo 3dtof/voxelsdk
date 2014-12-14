@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pids.size() == 0 || pids[0] == 0 || dumpFileName.size() == 0)
   {
-    log(ERROR) << "Required argument missing." << endl;
+    log(ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    log(ERROR) << "Failed to open '" << dumpFileName << "'" << endl;
+    log(ERROR) << "Failed to open '" << dumpFileName << "'" << std::endl;
     return -1;
   }
   
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   
   if(!toConnect)
   {
-    log(ERROR) << "No valid device found for the specified VID:PID:serialnumber" << endl;
+    log(ERROR) << "No valid device found for the specified VID:PID:serialnumber" << std::endl;
     return -1;
   }
     
@@ -159,19 +159,21 @@ int main(int argc, char *argv[])
   
   if(!depthCamera)
   {
-    log(ERROR) << "Could not load depth camera for device " << toConnect->id() << endl;
+    log(ERROR) << "Could not load depth camera for device " << toConnect->id() << std::endl;
     return -1;
   }
 
   if(!depthCamera->isInitialized())
   {
-    log(ERROR) << "Depth camera not initialized for device " << toConnect->id() << endl;
+    log(ERROR) << "Depth camera not initialized for device " << toConnect->id() << std::endl;
     return -1;
   }
   
-  std::cout << "Successfully loaded depth camera for device " << toConnect->id() << endl;
+  std::cout << "Successfully loaded depth camera for device " << toConnect->id() << std::endl;
   
   int count = 0;
+  
+  TimeStampType lastTimeStamp = 0;
   
   depthCamera->registerCallback([&](DepthCamera &dc, RawFramePtr rawFrame) {
     RawDataFrame *d = dynamic_cast<RawDataFrame *>(rawFrame.get());
@@ -182,8 +184,15 @@ int main(int argc, char *argv[])
       return;
     }
     
-    std::cout << "Capture frame " << d->id << "@" << d->timestamp << " of size = " << d->data.size() << std::endl;
+    std::cout << "Capture frame " << d->id << "@" << d->timestamp << " of size = " << d->data.size();
     
+    if(lastTimeStamp != 0)
+      std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
+      
+    std::cout << std::endl;
+    
+    lastTimeStamp = d->timestamp;
+      
     f.write((char *)d->data.data(), d->data.size());
     
     count++;
@@ -193,7 +202,14 @@ int main(int argc, char *argv[])
   });
   
   if(depthCamera->start())
+  {
+    FrameRate r;
+    if(depthCamera->getFrameRate(r))
+      log(INFO) << "Capturing at a frame rate of " << r.getFrameRate() << " fps" << std::endl;
     depthCamera->wait();
+  }
+  else
+    log(ERROR) << "Could not start the depth camera " << depthCamera->id() << std::endl;
   
   return 0;
 }

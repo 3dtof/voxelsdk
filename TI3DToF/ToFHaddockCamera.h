@@ -24,6 +24,9 @@ protected:
   
 public:
   ToFHaddockCamera(const String &name, DevicePtr device);
+  
+  virtual bool setFrameRate(const FrameRate &r);
+  virtual bool getFrameRate(FrameRate &r);
 };
 
 }
