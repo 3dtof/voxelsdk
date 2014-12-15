@@ -13,6 +13,121 @@ namespace Voxel
   
 namespace TI
 {
+  
+/// Custom parameters
+class VCOFrequency: public FloatParameter
+{
+  DepthCamera &_depthCamera;
+public:
+  VCOFrequency(DepthCamera &depthCamera, RegisterProgrammer &programmer):
+  FloatParameter(programmer, VCO_FREQ, "MHz", 0, 0, 0, 1, 600, 1300, 864, "VCO frequency", 
+                 "Frequency of the VCO used for generating modulation frequencies", IOType::IO_READ_WRITE, {MOD_M, MOD_N}), _depthCamera(depthCamera) {}
+                 
+  virtual bool get(float &value, bool refresh = true)
+  {
+    uint modM, modN, systemClockFrequency;
+    if(!_depthCamera.get(MOD_M, modM) or !_depthCamera.get(MOD_N, modN) or !_depthCamera.get(SYS_CLK_FREQ, systemClockFrequency))
+      return false;
+    
+    float v = systemClockFrequency*modM/modN;
+    
+    if(!validate(v))
+      return false;
+    
+    _value = value = v;
+    return true;
+  }
+  
+  virtual bool set(const float &value)
+  {
+    if(!validate(value))
+      return false;
+    
+    if(!_depthCamera.set(MOD_PLL_UPDATE, true))
+      return false;
+    
+    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera.set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+    
+    uint modM, modN, systemClockFrequency;
+    if(!_depthCamera.get(SYS_CLK_FREQ, systemClockFrequency))
+      return false;
+    
+    modN = 18;
+    
+    modM = value*18/systemClockFrequency;
+    
+    if(!_depthCamera.set(MOD_M, modM) or !_depthCamera.set(MOD_N, modN))
+      return false;
+    
+    _value = modM*systemClockFrequency/modN;
+    
+    return true;
+  }
+  
+  virtual ~VCOFrequency() {}
+};
+
+class ModulationFrequencyParameter: public FloatParameter
+{
+  DepthCamera &_depthCamera;
+  String _psName;
+public:
+  ModulationFrequencyParameter(DepthCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &psName):
+  FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 6.25, 433.333, 18, "Modulation frequency", "Frequency used for modulation of illumination", 
+                 Parameter::IO_READ_WRITE, {psName}), _psName(psName), _depthCamera(depthCamera) {}
+                 
+  virtual bool get(float &value, bool refresh = true)
+  {
+    float vcoFrequency;
+    
+    uint modulationPS;
+    
+    if(!_depthCamera.get(VCO_FREQ, vcoFrequency) or !_depthCamera.get(_psName, modulationPS))
+      return false;
+    
+    float v = vcoFrequency/3/modulationPS;
+    
+    if(!validate(v))
+      return false;
+    
+    _value = value = v;
+    return true;
+  }
+  
+  virtual bool set(const float &value)
+  {
+    if(!validate(value))
+      return false;
+    
+    ParameterPtr p = _depthCamera.getParam(VCO_FREQ);
+    
+    if(!p)
+      return false;
+    
+    VCOFrequency &v = (VCOFrequency &)*p;
+    
+    uint modulationPS = v.upperLimit()/3/value;
+    
+    if(!v.set(modulationPS*3*value))
+      return false;
+    
+    if(!_depthCamera.set(MOD_PLL_UPDATE, true))
+      return false;
+    
+    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera.set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+    
+    if(!_depthCamera.set(_psName, modulationPS))
+      return false;
+    
+    float val;
+    
+    if(!v.get(val))
+      return false;
+    
+    return true;
+  }
+};
+  
 
 ToFHaddockCamera::ToFHaddockCamera(const String &name, DevicePtr device): ToFCamera(name, device)
 {
@@ -50,7 +165,17 @@ bool ToFHaddockCamera::_init()
       p->setAddress((0x5C << 8) + (p->address() & 0xFF));
   }
   
-  return _addParameters(params);
+  if(!_addParameters(params))
+    return false;
+  
+  params.clear();
+  
+  params.push_back(ParameterPtr(new VCOFrequency(*this, *_programmer)));
+  params.push_back(ParameterPtr(new ModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, MOD_PS1)));
+  params.push_back(ParameterPtr(new ModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, MOD_PS2)));
+  
+  if(!_addParameters(params))
+    return false;
 }
 
 bool ToFHaddockCamera::getFrameRate(FrameRate &r)
@@ -111,13 +236,57 @@ bool ToFHaddockCamera::setFrameSize(const FrameSize &s)
 bool ToFHaddockCamera::_initStartParams()
 {
   return set(TG_EN, true) and 
-         set<uint>(BLK_SIZE, 1024) and
+         set(BLK_SIZE, 1024U) and
          set(BLK_HEADER_EN, true) and
          set(OP_CS_POL, true) and
-         set(FB_READY_EN, true);
+         set(FB_READY_EN, true) and
+         set(DEBUG_EN, true);
 }
 
-bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
+// FIXME: Should amplitude_scale parameter be used for this?
+bool ToFHaddockCamera::_getAmplitudeNormalizingFactor(float &factor)
+{
+  factor = 1.0/(1 << 12);
+  return true;
+}
+
+// FIXME: Should frequency_scale parameter be used for this?
+bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
+{
+  float modulationFrequency1, modulationFrequency2;
+  bool dealiasingEnabled;
+  
+  uint modulationPS1, modulationPS2;
+  
+  if(!get(DEALIAS_EN, dealiasingEnabled))
+    return false;
+  
+  if(dealiasingEnabled)
+  {
+    if(!get(MOD_FREQ1, modulationFrequency1) || !get(MOD_FREQ2, modulationFrequency2)) // ensure that these are valid
+      return false;
+    
+    if(!get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2))
+      return false;
+    
+    float freq = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
+    
+    factor = SPEED_OF_LIGHT/(2*(1 << 12)*freq);
+    
+    return true;
+  }
+  else
+  {
+    if(!get(MOD_FREQ1, modulationFrequency1))
+      return false;
+    
+    factor = SPEED_OF_LIGHT/2/modulationFrequency1/(1 << 12);
+    return true;
+  }
+}
+
+
+bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
 {
   FrameSize s;
   
@@ -194,7 +363,7 @@ bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr 
         for (auto j = 0; j < s.width/8; j++) 
         {
           index1 = i*s.width*2 + j*16;
-          index2 = i*s.width + j;
+          index2 = i*s.width + j*8;
           
           //logger(INFO) << "i = " << i << ", j = " << j << ", index1 = " << index1 << ", index2 = " << index2 << std::endl;
           

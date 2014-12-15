@@ -144,7 +144,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
   {
     if(bitCount == 1) // This boolean does not have value descriptions :(
     {
-      logger(WARNING) << "ParameterDMLParser: Found a boolean parameter with id = '" << id << "' which does not have valueList" << std::endl;
+      logger(DEBUG) << "ParameterDMLParser: Found a boolean parameter with id = '" << id << "' which does not have valueList" << std::endl;
       
       bool defaultValue = property->BoolAttribute("default");
       

@@ -37,7 +37,7 @@ class DepthFrame: public Frame
 public:
   Vector<float> depth; // depth frame row-wise. Unit: meters
   Vector<float> amplitude; // amplitude of each depth pixel normalized to value between 0 and 1
-  SizeType size[2];
+  FrameSize size;
   
   virtual ~DepthFrame() {}
 };
@@ -55,20 +55,20 @@ typedef Ptr<RawFrame> RawFramePtr;
 class ToFRawFrame: public RawFrame
 {
 public:
-  virtual uint8_t *phase() = 0;
-  virtual SizeType phaseWordWidth() = 0; // in bytes
+  virtual const uint8_t *phase() const = 0;
+  virtual SizeType phaseWordWidth() const = 0; // in bytes
 
-  virtual uint8_t *amplitude() = 0;
-  virtual SizeType amplitudeWordWidth() = 0; // in bytes
+  virtual const uint8_t *amplitude() const = 0;
+  virtual SizeType amplitudeWordWidth() const = 0; // in bytes
 
-  virtual uint8_t *flags() = 0;
-  virtual SizeType flagsWordWidth() = 0; // in bytes
+  virtual const uint8_t *flags() const = 0;
+  virtual SizeType flagsWordWidth() const = 0; // in bytes
 
-  virtual uint8_t *ambient() = 0;
-  virtual SizeType ambientWordWidth() = 0; // in bytes
+  virtual const uint8_t *ambient() const = 0;
+  virtual SizeType ambientWordWidth() const = 0; // in bytes
 
-  virtual uint16_t *histogram() = 0;
-  virtual SizeType histogramSize() = 0; // number of elements in the histogram
+  virtual const uint16_t *histogram() const = 0;
+  virtual SizeType histogramSize() const = 0; // number of elements in the histogram
 
   FrameSize size;
   
@@ -92,51 +92,51 @@ public:
 
   Vector<uint16_t> _histogram;
 
-  virtual uint8_t *ambient()
+  virtual const uint8_t *ambient() const
   {
-    return (uint8_t *)_ambient.data();
+    return (const uint8_t *)_ambient.data();
   }
-  virtual SizeType ambientWordWidth()
+  virtual SizeType ambientWordWidth() const
   {
     return sizeof(AmbientByteType);
   }
 
-  virtual uint8_t *amplitude()
+  virtual const uint8_t *amplitude() const
   {
-    return (uint8_t *)_amplitude.data();
+    return (const uint8_t *)_amplitude.data();
   }
   
-  virtual SizeType amplitudeWordWidth()
+  virtual SizeType amplitudeWordWidth() const
   {
     return sizeof(AmplitudeByteType);
   }
 
-  virtual uint8_t *phase()
+  virtual const uint8_t *phase() const
   {
-    return (uint8_t *)_phase.data();
+    return (const uint8_t *)_phase.data();
   }
   
-  virtual SizeType phaseWordWidth()
+  virtual SizeType phaseWordWidth() const
   {
     return sizeof(PhaseByteType);
   }
 
-  virtual uint8_t *flags()
+  virtual const uint8_t *flags() const
   {
-    return (uint8_t *)_flags.data();
+    return (const uint8_t *)_flags.data();
   }
   
-  virtual SizeType flagsWordWidth()
+  virtual SizeType flagsWordWidth() const
   {
     return sizeof(FlagsByteType);
   }
   
-  virtual uint16_t *histogram()
+  virtual const uint16_t *histogram() const
   {
     return _histogram.data();
   }
   
-  virtual SizeType histogramSize()
+  virtual SizeType histogramSize() const
   {
     return _histogram.size();
   }

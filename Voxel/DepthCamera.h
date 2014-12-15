@@ -23,13 +23,14 @@ class DepthCamera
 public:
   enum FrameCallBackType
   {
-      CALLBACK_RAW_FRAME_UNPROCESSED,
-      CALLBACK_RAW_FRAME_PROCESSED,
-      CALLBACK_DEPTH_FRAME,
-      CALLBACK_XYZ_POINT_CLOUD_FRAME
+    CALLBACK_NONE,
+    CALLBACK_RAW_FRAME_UNPROCESSED,
+    CALLBACK_RAW_FRAME_PROCESSED,
+    CALLBACK_DEPTH_FRAME,
+    CALLBACK_XYZ_POINT_CLOUD_FRAME
   };
   
-  typedef Function<void (DepthCamera &camera, Frame &frame, FrameCallBackType callBackType)> CallbackType;
+  typedef Function<void (DepthCamera &camera, const Frame &frame, FrameCallBackType callBackType)> CallbackType;
   
 protected:
   DevicePtr _device;
@@ -46,7 +47,7 @@ protected:
   
   CallbackType _callback;
   
-  FrameCallBackType _callBackType;
+  FrameCallBackType _callBackType = CALLBACK_NONE;
   
   ThreadPtr _captureThread;
   
@@ -54,9 +55,9 @@ protected:
   virtual bool _stop() = 0;
   
   virtual bool _captureRawUnprocessedFrame(RawFramePtr &rawFrame) = 0;
-  virtual bool _processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput) = 0; // here output raw frame will have processed data, like ToF data for ToF cameras
-  virtual bool _convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
-  virtual bool _convertToPointCloudFrame(DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame);
+  virtual bool _processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput) = 0; // here output raw frame will have processed data, like ToF data for ToF cameras
+  virtual bool _convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
+  virtual bool _convertToPointCloudFrame(const DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame);
   
   virtual void _captureLoop(); // the main capture loop
   
@@ -77,10 +78,12 @@ public:
   inline bool isRunning() { return _running; }
   
   template <typename T>
-  bool get(const String &name, T &value, bool refresh = false);
+  bool get(const String &name, T &value, bool refresh = true);
   
   template <typename T>
   bool set(const String &name, const T &value);
+  
+  inline ParameterPtr getParam(const String &name);
   
   virtual bool setFrameRate(const FrameRate &r) = 0;
   virtual bool getFrameRate(FrameRate &r) = 0;
@@ -141,21 +144,38 @@ bool DepthCamera::set(const String &name, const T &value)
     
     if(param == 0)
     {
-      logger(ERROR) << "Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(ERROR) << "DepthCamera: Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
     }
     
     if(!param->set(value))
     {
-      logger(ERROR) << "Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(ERROR) << "DepthCamera: Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
     }
     
     return true;
   }
   else
+  {
+    logger(ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
     return false;
+  }
 }
+
+ParameterPtr DepthCamera::getParam(const String &name)
+{
+  auto p = _parameters.find(name);
+  
+  if(p != _parameters.end())
+    return p->second;
+  else
+  {
+    logger(ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
+    return 0;
+  }
+}
+
 
 typedef Ptr<DepthCamera> DepthCameraPtr;
 

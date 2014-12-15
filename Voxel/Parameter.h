@@ -161,7 +161,7 @@ protected:
   EnumParameterTemplate(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
                 const Vector<String> &valueDescription, const Vector<String> &valueMeaning, const T &defaultValue,
                 const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
-  ParameterTemplate<T>(programmer, name, address, registerLength, lsb, lsb, defaultValue, displayName, description, ioType, dependencies), _valueDescription(valueDescription), _valueMeaning(valueMeaning)
+  ParameterTemplate<T>(programmer, name, address, registerLength, msb, lsb, defaultValue, displayName, description, ioType, dependencies), _valueDescription(valueDescription), _valueMeaning(valueMeaning)
   {
   }
   
@@ -260,6 +260,9 @@ public:
   
   const String &unit() const { return _unit; }
   
+  const T &lowerLimit() const { return _lowerLimit; }
+  const T &upperLimit() const { return _upperLimit; }
+  
   virtual bool validate(const T &value) 
   {
     return !(value < _lowerLimit or value > _upperLimit); 
@@ -296,6 +299,8 @@ public:
   RangeParameterTemplate<int>(programmer, name, unit, address, registerLength, msb, lsb, lowerLimit, upperLimit, defaultValue, displayName, description, ioType, dependencies)
   {
   }
+  
+  virtual ~IntegerParameter() {}
 };
 
 typedef RangeParameterTemplate<uint> UnsignedIntegerParameter;

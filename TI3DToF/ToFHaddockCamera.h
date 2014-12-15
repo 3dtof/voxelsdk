@@ -21,9 +21,26 @@
 #define OP_CS_POL "op_cs_pol"
 #define FB_READY_EN "fb_ready_en"
 
+#define DEBUG_EN "debug_en"
+
 #define PIXEL_DATA_SIZE "pixel_data_size"
 #define OP_DATA_ARRANGE_MODE "op_data_arrange_mode"
 #define HISTOGRAM_EN "histogram_en"
+
+#define INTG_TIME "intg_time"  // Integration time
+#define ILLUM_POWER "illum_power" // Illumination power
+
+#define MOD_FREQ1 "mod_freq1" // Modulation frequency for first source (MHz)
+#define MOD_FREQ2 "mod_freq2" // Modulation frequency for second source (MHz)
+#define VCO_FREQ "vco_freq"
+#define DEALIAS_EN "dealias_en"
+#define MOD_PS1 "mod_ps1"
+#define MOD_PS2 "mod_ps2"
+#define MOD_M "mod_m"
+#define MOD_N "mod_n"
+#define MOD_PLL_UPDATE "mod_pll_update"
+
+#define SPEED_OF_LIGHT 3E8
 
 namespace Voxel
 {
@@ -38,7 +55,10 @@ protected:
   
   virtual bool _initStartParams();
   
-  virtual bool _processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput); // here output raw frame will have processed data, like ToF data for ToF cameras
+  virtual bool _processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput); // here output raw frame will have processed data, like ToF data for ToF cameras
+  
+  virtual bool _getAmplitudeNormalizingFactor(float &factor);
+  virtual bool _getDepthScalingFactor(float &factor);
   
 public:
   ToFHaddockCamera(const String &name, DevicePtr device);

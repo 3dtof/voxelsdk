@@ -175,12 +175,74 @@ int main(int argc, char *argv[])
   
   TimeStampType lastTimeStamp = 0;
   
-  depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_PROCESSED, [&](DepthCamera &dc, Frame &frame, DepthCamera::FrameCallBackType c) {
-    ToFRawFrame *d = dynamic_cast<ToFRawFrame *>(&frame);
+//   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+//     const RawDataFrame *d = dynamic_cast<const RawDataFrame *>(&frame);
+//     
+//     if(!d)
+//     {
+//       std::cout << "Null frame captured? or not of type RawDataFrame" << std::endl;
+//       return;
+//     }
+//     
+//     std::cout << "Capture frame " << d->id << "@" << d->timestamp;
+//     
+//     if(lastTimeStamp != 0)
+//       std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
+//     
+//     std::cout << std::endl;
+//     
+//     lastTimeStamp = d->timestamp;
+//     
+//     f.write((char *)d->data.data(), d->data.size());
+//     
+//     count++;
+//     
+//     if(count >= 100)
+//       dc.stop();
+//   });
+  
+//   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_PROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+//     const ToFRawFrame *d = dynamic_cast<const ToFRawFrame *>(&frame);
+//     
+//     if(!d)
+//     {
+//       std::cout << "Null frame captured? or not of type ToFRawFrame" << std::endl;
+//       return;
+//     }
+//     
+//     std::cout << "Capture frame " << d->id << "@" << d->timestamp;
+//     
+//     if(lastTimeStamp != 0)
+//       std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
+//       
+//     std::cout << std::endl;
+//     
+//     lastTimeStamp = d->timestamp;
+//       
+//     if(d->phase())
+//       f.write((char *)d->phase(), d->phaseWordWidth()*d->size.width*d->size.height);
+//     
+//     if(d->amplitude())
+//       f.write((char *)d->amplitude(), d->amplitudeWordWidth()*d->size.width*d->size.height);
+//     
+//     if(d->ambient())
+//       f.write((char *)d->ambient(), d->ambientWordWidth()*d->size.width*d->size.height);
+//     
+//     if(d->flags())
+//       f.write((char *)d->flags(), d->flagsWordWidth()*d->size.width*d->size.height);
+//     
+//     count++;
+//     
+//     if(count >= 100)
+//       dc.stop();
+//   });
+  
+  depthCamera->registerCallback(DepthCamera::CALLBACK_DEPTH_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+    const DepthFrame *d = dynamic_cast<const DepthFrame *>(&frame);
     
     if(!d)
     {
-      std::cout << "Null frame captured? or not of type ToFRawFrame" << std::endl;
+      std::cout << "Null frame captured? or not of type DepthFrame" << std::endl;
       return;
     }
     
@@ -188,22 +250,13 @@ int main(int argc, char *argv[])
     
     if(lastTimeStamp != 0)
       std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
-      
+    
     std::cout << std::endl;
     
     lastTimeStamp = d->timestamp;
-      
-    if(d->phase())
-      f.write((char *)d->phase(), d->phaseWordWidth()*d->size.width*d->size.height);
     
-    if(d->amplitude())
-      f.write((char *)d->amplitude(), d->amplitudeWordWidth()*d->size.width*d->size.height);
-    
-    if(d->ambient())
-      f.write((char *)d->ambient(), d->ambientWordWidth()*d->size.width*d->size.height);
-    
-    if(d->flags())
-      f.write((char *)d->flags(), d->flagsWordWidth()*d->size.width*d->size.height);
+    f.write((char *)d->depth.data(), sizeof(float)*d->size.width*d->size.height);
+    f.write((char *)d->amplitude.data(), sizeof(float)*d->size.width*d->size.height);
     
     count++;
     

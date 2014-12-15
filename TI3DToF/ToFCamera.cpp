@@ -26,9 +26,68 @@ bool ToFCamera::_captureRawUnprocessedFrame(RawFramePtr &rawFrame)
   return false;
 }
 
-bool ToFCamera::_convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame)
+
+template <typename T>
+void scaleAndCopy(float *dest, const T *source, SizeType count, float scale)
 {
-  return false;
+  while(count--)
+    (*dest++) = (*source++)*scale;
+}
+
+bool ToFCamera::_convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame)
+{
+  ToFRawFramePtr toFRawFramePtr = std::dynamic_pointer_cast<ToFRawFrame>(rawFrame);
+  
+  if(!toFRawFramePtr)
+  {
+    logger(ERROR) << "ToFCamera: Expecting ToFRawFrame but got some other type for conversion to depth frame." << std::endl;
+    return false;
+  }
+  
+  if(!depthFrame)
+    depthFrame = DepthFramePtr(new DepthFrame());
+  
+  depthFrame->size = toFRawFramePtr->size;
+  depthFrame->id = toFRawFramePtr->id;
+  depthFrame->timestamp = toFRawFramePtr->timestamp;
+  
+  auto totalSize = depthFrame->size.width*depthFrame->size.height;
+  
+  depthFrame->depth.resize(depthFrame->size.width*depthFrame->size.height);
+  depthFrame->amplitude.resize(depthFrame->size.width*depthFrame->size.height);
+  
+  float amplitudeNormalizingFactor, depthScalingFactor;
+  
+  if(!_getAmplitudeNormalizingFactor(amplitudeNormalizingFactor) or !_getDepthScalingFactor(depthScalingFactor))
+    return false;
+  
+  // NOTE: Add more sizes as necessary
+  if(toFRawFramePtr->phaseWordWidth() == 1)
+    scaleAndCopy(depthFrame->depth.data(), toFRawFramePtr->phase(), depthFrame->depth.size(), depthScalingFactor);
+  else if(toFRawFramePtr->phaseWordWidth() == 2)
+    scaleAndCopy(depthFrame->depth.data(), (uint16_t *)toFRawFramePtr->phase(), depthFrame->depth.size(), depthScalingFactor);
+  else if(toFRawFramePtr->phaseWordWidth() == 4)
+    scaleAndCopy(depthFrame->depth.data(), (uint32_t *)toFRawFramePtr->phase(), depthFrame->depth.size(), depthScalingFactor);
+  else
+  {
+    logger(ERROR) << "ToFCamera: Don't know how to convert ToF frame data with phase data element size in bytes = " << toFRawFramePtr->phaseWordWidth() << std::endl;
+    return false;
+  }
+  
+  // NOTE: Add more sizes as necessary
+  if(toFRawFramePtr->amplitudeWordWidth() == 1)
+    scaleAndCopy(depthFrame->amplitude.data(), toFRawFramePtr->amplitude(), depthFrame->amplitude.size(), amplitudeNormalizingFactor);
+  else if(toFRawFramePtr->amplitudeWordWidth() == 2)
+    scaleAndCopy(depthFrame->amplitude.data(), (uint16_t *)toFRawFramePtr->amplitude(), depthFrame->amplitude.size(), amplitudeNormalizingFactor);
+  else if(toFRawFramePtr->amplitudeWordWidth() == 4)
+    scaleAndCopy(depthFrame->amplitude.data(), (uint32_t *)toFRawFramePtr->amplitude(), depthFrame->amplitude.size(), amplitudeNormalizingFactor);
+  else
+  {
+    logger(ERROR) << "ToFCamera: Don't know how to convert ToF frame data with amplitude data element size in bytes = " << toFRawFramePtr->amplitudeWordWidth() << std::endl;
+    return false;
+  }
+  
+  return true;
 }
 
 

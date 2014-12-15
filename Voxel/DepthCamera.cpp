@@ -45,10 +45,10 @@ void DepthCamera::_captureLoop()
 {
   while(_running)
   {
-    if(_callBackType == CALLBACK_RAW_FRAME_UNPROCESSED)
+    if(_callBackType == CALLBACK_NONE or _callBackType == CALLBACK_RAW_FRAME_UNPROCESSED)
     {
       auto f = _rawFrameBuffers.get();
-      if(_captureRawUnprocessedFrame(*f))
+      if(_captureRawUnprocessedFrame(*f) and _callback)
         _callback(*this, (Frame &)(**f), _callBackType);
     }
     else
@@ -97,7 +97,7 @@ void DepthCamera::_captureLoop()
   }
 }
 
-bool DepthCamera::_convertToPointCloudFrame(DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame)
+bool DepthCamera::_convertToPointCloudFrame(const Voxel::DepthFramePtr &depthFrame, Voxel::PointCloudFramePtr &pointCloudFrame)
 {
   return false;
 }

@@ -11,12 +11,6 @@
 #include <RegisterProgrammer.h>
 #include <Streamer.h>
 
-// These parameters are to be defined in the derived classes using the following names
-#define INTG_TIME "intg_time"  // Integration time
-#define ILLUM_POWER "illum_power" // Illumination power
-#define ILLUM_FREQ1 "illum_freq1" // Illumination frequency (MHz)
-#define ILLUM_FREQ2 "illum_freq2" // Illumination frequency (MHz)
-
 namespace Voxel
 {
   
@@ -31,12 +25,15 @@ protected:
   
   RawDataFramePtr _rawDataFrame; // Used by _captureDepthFrame(). This is not exposed to DepthCamera
   virtual bool _captureRawUnprocessedFrame(RawFramePtr &rawFrame);
-  virtual bool _convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame);
+  virtual bool _convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame);
   
   virtual bool _start();
   virtual bool _stop();
   
   virtual bool _initStartParams() = 0;
+  
+  virtual bool _getAmplitudeNormalizingFactor(float &factor) = 0;
+  virtual bool _getDepthScalingFactor(float &factor) = 0;
   
 public:
   ToFCamera(const String &name, DevicePtr device): DepthCamera(name, device) {}
