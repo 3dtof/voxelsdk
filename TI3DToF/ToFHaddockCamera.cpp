@@ -18,6 +18,7 @@ ToFHaddockCamera::ToFHaddockCamera(const String &name, DevicePtr device): ToFCam
 {
 }
 
+
   
 bool ToFHaddockCamera::_init()
 {
@@ -58,10 +59,10 @@ bool ToFHaddockCamera::getFrameRate(FrameRate &r)
   
   uint quadCount, subFrameCount, pixCount, sysClkFrequency;
   
-  if(!get("pix_cnt_max_set_failed", pixCountSetFailed) || pixCountSetFailed)
+  if(!get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
   
-  if(!get("pix_cnt_max", pixCount) || !get("quad_cnt_max", quadCount) || !get("uframe_cnt_max", subFrameCount) || !get("sys_clk_freq", sysClkFrequency))
+  if(!get(PIX_CNT_MAX, pixCount) || !get(QUAD_CNT_MAX, quadCount) || !get(SUBFRAME_CNT_MAX, subFrameCount) || !get(SYS_CLK_FREQ, sysClkFrequency))
     return false;
   
   uint numerator = sysClkFrequency*1000000,
@@ -80,14 +81,14 @@ bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
   
   uint quadCount, subFrameCount, sysClkFrequency, pixCount;
   
-  if(!get("quad_cnt_max", quadCount) || !get("uframe_cnt_max", subFrameCount) || !get("sys_clk_freq", sysClkFrequency))
+  if(!get(QUAD_CNT_MAX, quadCount) || !get(SUBFRAME_CNT_MAX, subFrameCount) || !get(SYS_CLK_FREQ, sysClkFrequency))
     return false;
   
   pixCount = (uint)(((long)r.denominator*sysClkFrequency*1000000)/((long)quadCount*subFrameCount*r.numerator));
   
-  logger(DEBUG) << "ToFHaddockCamera: Setting pix_cnt_max = " << pixCount << std::endl;
+  logger(DEBUG) << "ToFHaddockCamera: Setting " << PIX_CNT_MAX << " = " << pixCount << std::endl;
   
-  if(!set("pix_cnt_max", pixCount) || !get("pix_cnt_max_set_failed", pixCountSetFailed) || pixCountSetFailed)
+  if(!set(PIX_CNT_MAX, pixCount) || !get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
   
   return true;
@@ -109,11 +110,11 @@ bool ToFHaddockCamera::setFrameSize(const FrameSize &s)
 
 bool ToFHaddockCamera::_initStartParams()
 {
-  return set("tg_en", true) and 
-         set<uint>("blk_size", 1024) and
-         set("blk_header_en", true) and
-         set("op_cs_pol", true) and
-         set("fb_ready_en", true);
+  return set(TG_EN, true) and 
+         set<uint>(BLK_SIZE, 1024) and
+         set(BLK_HEADER_EN, true) and
+         set(OP_CS_POL, true) and
+         set(FB_READY_EN, true);
 }
 
 bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
@@ -135,9 +136,9 @@ bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr 
   }
   
   int bytesPerPixel, dataArrangeMode;
-  if(!get("pixel_data_size", bytesPerPixel) or !get("op_data_arrange_mode", dataArrangeMode))
+  if(!get(PIXEL_DATA_SIZE, bytesPerPixel) or !get(OP_DATA_ARRANGE_MODE, dataArrangeMode))
   {
-    logger(ERROR) << "ToFHaddockCamera: Failed to read pixel_data_size or op_data_arrange_mode" << std::endl;
+    logger(ERROR) << "ToFHaddockCamera: Failed to read " << PIXEL_DATA_SIZE << " or " << OP_DATA_ARRANGE_MODE << std::endl;
     return false;
   }
   
@@ -233,7 +234,7 @@ bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr 
   {
     if(dataArrangeMode != 0)
     {
-      logger(ERROR) << "ToFHaddockCamera: op_data_arrange_mode is expected to be zero, but got = " << dataArrangeMode << " for pixel_data_size = " << bytesPerPixel << std::endl;
+      logger(ERROR) << "ToFHaddockCamera: " << OP_DATA_ARRANGE_MODE << " is expected to be zero, but got = " << dataArrangeMode << " for " << PIXEL_DATA_SIZE << " = " << bytesPerPixel << std::endl;
       return false;
     }
     
@@ -267,12 +268,12 @@ bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr 
   }
   else
   {
-    logger(ERROR) << "ToFHaddockCamera: Don't know to handle pixel_data_size = " << bytesPerPixel << std::endl;
+    logger(ERROR) << "ToFHaddockCamera: Don't know to handle " << PIXEL_DATA_SIZE << " = " << bytesPerPixel << std::endl;
     return false;
   }
   
   bool histogramEnabled;
-  if(!get("histogram_en", histogramEnabled))
+  if(!get(HISTOGRAM_EN, histogramEnabled))
   {
     logger(ERROR) << "ToFHaddockCamera: Failed to find whether histogram is enabled or not" << std::endl;
     return false;
@@ -296,12 +297,6 @@ bool ToFHaddockCamera::_processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr 
   
   return true;
 }
-
-
-bool ToFHaddockCamera::_convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame)
-{
-  return false;
-}
-  
+ 
 }
 }

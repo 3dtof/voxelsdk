@@ -26,6 +26,12 @@ bool ToFCamera::_captureRawUnprocessedFrame(RawFramePtr &rawFrame)
   return false;
 }
 
+bool ToFCamera::_convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame)
+{
+  return false;
+}
+
+
 bool ToFCamera::_start()
 {
   if(!isInitialized())
