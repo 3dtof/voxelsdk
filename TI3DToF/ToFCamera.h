@@ -23,10 +23,10 @@ protected:
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
   
-  RawDataFrame _rawDataFrame; // Used by _captureDepthFrame(). This is not exposed to DepthCamera
+  RawDataFramePtr _rawDataFrame; // Used by _captureDepthFrame(). This is not exposed to DepthCamera
   
-  virtual bool _captureDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame);  
-  virtual bool _captureRawFrame(RawFramePtr &rawFrame);
+  virtual bool _captureRawUnprocessedFrame(RawFramePtr &rawFrame);
+  
   virtual bool _start();
   virtual bool _stop();
   

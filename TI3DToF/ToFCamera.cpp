@@ -12,27 +12,18 @@ namespace Voxel
 namespace TI
 {
   
-bool ToFCamera::_captureDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame)
-{
-  return false;
-}
-
-bool ToFCamera::_captureRawFrame(RawFramePtr &rawFrame)
+bool ToFCamera::_captureRawUnprocessedFrame(RawFramePtr &rawFrame)
 {
   if(!isInitialized() || !_streamer->isRunning())
     return false;
   
-  RawDataFramePtr r;
-  
-  bool ret = _streamer->capture(r);
-  
-  if(ret)
+  if(_streamer->capture(_rawDataFrame))
   {
-    rawFrame = std::dynamic_pointer_cast<RawFrame, RawDataFrame>(r);
+    rawFrame = std::dynamic_pointer_cast<RawFrame>(_rawDataFrame);
     return true;
   }
-  else
-    return false;
+  
+  return false;
 }
 
 bool ToFCamera::_start()

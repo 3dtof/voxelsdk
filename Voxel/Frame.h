@@ -7,8 +7,11 @@
 #ifndef VOXEL_FRAME_H
 #define VOXEL_FRAME_H
 
-#include "Common.h"
-#include "Point.h"
+#include <Common.h>
+#include <Point.h>
+#include "VideoMode.h"
+
+#include <sstream>
 
 namespace Voxel
 {
@@ -18,6 +21,13 @@ class Frame
 public:
   TimeStampType timestamp = 0; // Unix timestamp in micro-seconds
   int id = -1;
+  
+  inline operator String()
+  {
+    std::ostringstream s;
+    s << id << "@" << timestamp;
+    return s.str();
+  }
   
   virtual ~Frame() {}
 };
@@ -45,81 +55,83 @@ typedef Ptr<RawFrame> RawFramePtr;
 class ToFRawFrame: public RawFrame
 {
 public:
-  virtual void *phase() = 0;
+  virtual uint8_t *phase() = 0;
   virtual SizeType phaseWordWidth() = 0; // in bytes
 
-  virtual void *amplitude() = 0;
+  virtual uint8_t *amplitude() = 0;
   virtual SizeType amplitudeWordWidth() = 0; // in bytes
 
-  virtual void *flags() = 0;
+  virtual uint8_t *flags() = 0;
   virtual SizeType flagsWordWidth() = 0; // in bytes
 
-  virtual void *ambient() = 0;
+  virtual uint8_t *ambient() = 0;
   virtual SizeType ambientWordWidth() = 0; // in bytes
 
-  virtual float *histogram() = 0;
+  virtual uint16_t *histogram() = 0;
   virtual SizeType histogramSize() = 0; // number of elements in the histogram
 
-  SizeType size[2];
+  FrameSize size;
   
   virtual ~ToFRawFrame() {}
 };
 
-template <typename PhaseWidth, typename AmbientWidth>
+typedef Ptr<ToFRawFrame> ToFRawFramePtr;
+
+template <typename PhaseByteType, typename AmbientByteType>
 class ToFRawFrameTemplate: public ToFRawFrame
 {
-protected:
-  typedef PhaseWidth AmplitudeWidth;
-  typedef AmbientWidth FlagsWidth;
+public:
+  typedef PhaseByteType AmplitudeByteType;
+  typedef AmbientByteType FlagsByteType;
   
-  Vector<PhaseWidth> _phase;
-  Vector<AmplitudeWidth> _amplitude;
+  Vector<PhaseByteType> _phase;
+  Vector<AmplitudeByteType> _amplitude;
 
-  Vector<AmbientWidth> _ambient;
-  Vector<FlagsWidth> _flags;
+  Vector<AmbientByteType> _ambient;
+  Vector<FlagsByteType> _flags;
 
-  Vector<float> _histogram;
+  Vector<uint16_t> _histogram;
 
-  virtual void *ambient()
+  virtual uint8_t *ambient()
   {
-    return _ambient.data();
+    return (uint8_t *)_ambient.data();
   }
   virtual SizeType ambientWordWidth()
   {
-    return sizeof(AmbientWidth);
+    return sizeof(AmbientByteType);
   }
 
-  virtual void *amplitude()
+  virtual uint8_t *amplitude()
   {
-    return _amplitude.data();
+    return (uint8_t *)_amplitude.data();
   }
   
   virtual SizeType amplitudeWordWidth()
   {
-    return sizeof(AmplitudeWidth);
+    return sizeof(AmplitudeByteType);
   }
 
-  virtual void *phase()
+  virtual uint8_t *phase()
   {
-    return _phase.data();
+    return (uint8_t *)_phase.data();
   }
   
   virtual SizeType phaseWordWidth()
   {
-    return sizeof(PhaseWidth);
+    return sizeof(PhaseByteType);
   }
 
-  virtual void *flags()
+  virtual uint8_t *flags()
   {
-    return _flags.data();
+    return (uint8_t *)_flags.data();
   }
   
   virtual SizeType flagsWordWidth()
   {
-    return sizeof(FlagsWidth);
+    return sizeof(FlagsByteType);
   }
   
-  virtual float *histogram()
+  virtual uint16_t *histogram()
   {
     return _histogram.data();
   }

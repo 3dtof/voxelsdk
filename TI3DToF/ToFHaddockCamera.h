@@ -22,6 +22,9 @@ protected:
   
   virtual bool _initStartParams();
   
+  virtual bool _processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput); // here output raw frame will have processed data, like ToF data for ToF cameras
+  virtual bool _convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame);
+  
 public:
   ToFHaddockCamera(const String &name, DevicePtr device);
   

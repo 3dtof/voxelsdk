@@ -53,8 +53,10 @@ protected:
   virtual bool _start() = 0;
   virtual bool _stop() = 0;
   
-  virtual bool _captureRawFrame(RawFramePtr &rawFrame) = 0;
-  virtual bool _captureDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
+  virtual bool _captureRawUnprocessedFrame(RawFramePtr &rawFrame) = 0;
+  virtual bool _processRawFrame(RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput) = 0; // here output raw frame will have processed data, like ToF data for ToF cameras
+  virtual bool _convertToDepthFrame(RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
+  virtual bool _convertToPointCloudFrame(DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame);
   
   virtual void _captureLoop(); // the main capture loop
   
