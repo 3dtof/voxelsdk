@@ -29,10 +29,10 @@ void deleter(T *data)
 template <typename T>
 class Ptr: public std::shared_ptr<T>
 {
-  typedef void (*_Deleter)(T *);
 public:
   Ptr(T *data): std::shared_ptr<T>(data, deleter<T>) {}
   
+  template <typename _Deleter>
   Ptr(T *data, _Deleter d): std::shared_ptr<T>(data, d) {}
   
   Ptr(): std::shared_ptr<T>() {}

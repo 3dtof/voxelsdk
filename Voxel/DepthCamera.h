@@ -38,9 +38,9 @@ protected:
   
   Map<String, ParameterPtr> _parameters;
   
-  FrameBuffer<RawFrame> _rawFrameBuffers;
-  FrameBuffer<DepthFrame> _depthFrameBuffers;
-  FrameBuffer<PointCloudFrame> _pointCloudBuffers;
+  FrameBufferManager<RawFrame> _rawFrameBuffers;
+  FrameBufferManager<DepthFrame> _depthFrameBuffers;
+  FrameBufferManager<PointCloudFrame> _pointCloudBuffers;
   
   bool _addParameters(const Vector<ParameterPtr> &params);
   

@@ -15,13 +15,39 @@
 namespace Voxel
 {
 
-// This maintains a minimum number of buffers for use and re-use.
-// Call to release() on unused buffers is important for it be either freed or reused 
 template <typename BufferType>
-class FrameBuffer
+class FrameBufferManager;
+
+// Auto-releases the obtained buffer when FrameBuffer<> instance is terminated
+template <typename BufferType>
+class FrameBuffer: public Ptr<BufferType>
 {
 public:
   typedef Ptr<BufferType> BufferPtr;
+  
+  BufferPtr &_buffer;
+  
+  FrameBufferManager<BufferType> &_manager;
+  
+  FrameBuffer(BufferPtr &buffer, FrameBufferManager<BufferType> &manager): _buffer(buffer), _manager(manager), 
+    Ptr<BufferType>(nullptr, [this](BufferType *) { this->release(); }) // The deleter gets called when FrameBuffer<> goes out of scope. Deleter releases the held buffer
+    {}
+  
+  inline BufferPtr &operator *() { return _buffer; }
+  
+  inline void release();
+  
+  virtual ~FrameBuffer() {}
+};
+  
+// This maintains a minimum number of buffers for use and re-use.
+// Call to release() on unused buffers is important for it be either freed or reused 
+template <typename BufferType>
+class FrameBufferManager
+{
+public:
+  typedef Ptr<BufferType> BufferPtr;
+  typedef FrameBuffer<BufferType> FrameBufferType;
   
 protected:
   List<BufferPtr> _inUse;
@@ -30,24 +56,20 @@ protected:
   SizeType _minimumBufferCount;
   
 public:
-  FrameBuffer(SizeType minBufferCount): _minimumBufferCount(minBufferCount)
+  FrameBufferManager(SizeType minBufferCount): _minimumBufferCount(minBufferCount)
   {
     for(auto i = 0; i < minBufferCount; i++)
       _available.push_back(BufferPtr());
   }
   
-  BufferPtr &get()
+  FrameBufferType get()
   {
     if(_available.size() > 0)
-    {
       _inUse.splice(_inUse.begin(), _available, _available.begin());
-      return *_inUse.begin();
-    }
     else
-    {
       _inUse.push_front(BufferPtr());
-      return *_inUse.begin();
-    }
+    
+    return FrameBufferType(*_inUse.begin(), *this);
   }
   
   bool release(BufferPtr &p)
@@ -71,8 +93,15 @@ public:
     _available.clear();
   }
   
-  virtual ~FrameBuffer() { clear(); }
+  virtual ~FrameBufferManager() { clear(); }
 };
+
+template <typename BufferType>
+inline void FrameBuffer<BufferType>::release()
+{
+  _manager.release(_buffer);
+}
+
 
 }
 
