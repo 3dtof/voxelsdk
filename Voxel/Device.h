@@ -41,6 +41,8 @@ public:
   inline Interface interface() const { return _interfaceID; }
   inline const String &deviceID() const { return _deviceID; }
   inline const String &serialNumber() const { return _serialNumber; }
+  
+  virtual ~Device() {}
 };
 
 typedef Ptr<Device> DevicePtr;
@@ -54,6 +56,8 @@ public:
   
   inline uint16_t vendorID() const { return _vendorID; }
   inline uint16_t productID() const { return _productID; }
+  
+  virtual ~USBDevice() {}
 };
 
 class DeviceScanner
@@ -62,6 +66,8 @@ protected:
   virtual Vector<DevicePtr> _scan() = 0;
 public:
   static Vector<DevicePtr> scan();
+  
+  virtual ~DeviceScanner() {}
 };
 
 class USBDeviceScanner: public DeviceScanner
@@ -69,6 +75,8 @@ class USBDeviceScanner: public DeviceScanner
 protected:
   virtual Vector<DevicePtr> _scan();
   friend class DeviceScanner;
+  
+  virtual ~USBDeviceScanner() {}
 };
 
 }

@@ -26,6 +26,8 @@ public:
   Downloader(DevicePtr device): _device(device) {}
   
   virtual bool download(const String &file) = 0;
+  
+  virtual ~Downloader() {}
 };
 
 class USBDownloader: public Downloader
@@ -38,6 +40,8 @@ public:
   USBDownloader(DevicePtr device): Downloader(device) {}
   
   virtual bool download (const String &file);
+  
+  virtual ~USBDownloader() {}
 };
 
 }

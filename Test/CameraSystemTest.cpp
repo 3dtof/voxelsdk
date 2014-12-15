@@ -210,6 +210,6 @@ int main(int argc, char *argv[])
   }
   else
     logger(ERROR) << "Could not start the depth camera " << depthCamera->id() << std::endl;
-  
+
   return 0;
 }
