@@ -14,6 +14,9 @@
 #define VOXEL_14_PRODUCT_ID1 0x9102
 #define VOXEL_14_PRODUCT_ID2 0x9103
 
+#define ILLUM_VOLTAGE "illum_volt" // Illumination voltage
+#define MIX_VOLTAGE "mix_volt" // Mixing voltage
+
 namespace Voxel
 {
   
@@ -28,6 +31,8 @@ protected:
   bool _init();
   
   virtual bool _getFieldOfView(float &fovHalfAngle) const;
+  
+  virtual bool _initStartParams();
   
 public:
   Voxel14Camera(DevicePtr device);

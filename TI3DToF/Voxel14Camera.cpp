@@ -9,6 +9,8 @@
 #include <Logger.h>
 #include <UVCStreamer.h>
 
+#include <Parameter.h>
+
 namespace Voxel
 {
   
@@ -19,6 +21,64 @@ Voxel14Camera::Voxel14Camera(Voxel::DevicePtr device): ToFHaddockCamera("Voxel14
 {
   _init();
 }
+
+class MixVoltageParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    if(value > 0x80U)
+      return (value - 0x80U)*25 + 500;
+    else
+      return 500;
+  }
+  
+  virtual uint32_t _toRawValue(uint value) const
+  {
+    if(value > 500)
+      return (value - 500)/25 + 0x80U;
+    else
+      return 0x80U;
+  }
+  
+public:
+  MixVoltageParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, MIX_VOLTAGE, "mV", 0x2D05, 8, 7, 0, 500, 2075, 1500, "Mixing voltage", 
+                           "Mixing voltage?", Parameter::IO_READ_WRITE, {})
+  {}
+  
+  virtual ~MixVoltageParameter() {}
+};
+
+
+class IlluminationVoltageParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    if(value > 0x80U)
+      return (value - 0x80U)*50 + 500;
+    else
+      return 500;
+  }
+  
+  virtual uint32_t _toRawValue(uint value) const
+  {
+    if(value > 500)
+      return (value - 500)/50 + 0x80U;
+    else
+      return 0x80U;
+  }
+  
+public:
+  IlluminationVoltageParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, ILLUM_VOLTAGE, "mV", 0x2D0E, 8, 7, 0, 500, 3650, 1500, "Illumination voltage", 
+                           "Voltage applied to the infra-red Illumination source", Parameter::IO_READ_WRITE, {})
+  {}
+  
+  virtual ~IlluminationVoltageParameter() {}
+};
+
 
 bool Voxel14Camera::_init()
 {
@@ -51,8 +111,22 @@ bool Voxel14Camera::_init()
   if(!ToFHaddockCamera::_init())
     return false;
   
+  _addParameters({
+    ParameterPtr(new MixVoltageParameter(*_programmer)),
+    ParameterPtr(new IlluminationVoltageParameter(*_programmer)),
+  });
+  
   return true;
 }
+
+bool Voxel14Camera::_initStartParams()
+{
+  return 
+  set(ILLUM_VOLTAGE, 1500U) and 
+  set(MIX_VOLTAGE, 1500U) and
+  Voxel::TI::ToFHaddockCamera::_initStartParams();
+}
+
 
 
 bool Voxel14Camera::_getFieldOfView(float &fovHalfAngle) const

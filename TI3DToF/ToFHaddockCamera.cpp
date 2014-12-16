@@ -127,6 +127,57 @@ public:
     return true;
   }
 };
+
+class IntegrationTimeParameter: public FloatParameter
+{
+  DepthCamera &_depthCamera;
+public:
+  IntegrationTimeParameter(DepthCamera &depthCamera, RegisterProgrammer &programmer):
+  FloatParameter(programmer, INTG_TIME, "%", 0, 0, 0, 1, 0, 100, 0, "Integration time", 
+                "Integration time as percentage of total cycle time", Parameter::IO_READ_WRITE, {INTG_DUTY_CYCLE}), _depthCamera(depthCamera) {}
+                
+  virtual bool get(float &value, bool refresh = true) const
+  {
+    uint integrationDutyCycle;
+    
+    bool integrationDutyCycleSetFailed;
+    
+    if(!_depthCamera.get(INTG_DUTY_CYCLE, integrationDutyCycle) or 
+      !_depthCamera.get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
+      or integrationDutyCycleSetFailed)
+      return false;
+    
+    
+    float v = integrationDutyCycle*100/63;
+    
+    if(v > 100) v = 100;
+    if(v < 0) v = 0;
+    
+    value = v;
+    return true;
+  }
+  
+  virtual bool set(const float &value)
+  {
+    if(!validate(value))
+      return false;
+    
+    uint integrationDutyCycle = (value/100)*63;
+    
+    if(integrationDutyCycle > 63) integrationDutyCycle = 63;
+    
+    if(!_depthCamera.set(INTG_DUTY_CYCLE, integrationDutyCycle))
+      return false;
+    
+    bool integrationDutyCycleSetFailed;
+    
+    if(!_depthCamera.get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
+      or integrationDutyCycleSetFailed)
+      return false;
+    
+    return true;
+  }
+};
   
 
 ToFHaddockCamera::ToFHaddockCamera(const String &name, DevicePtr device): ToFCamera(name, device)
@@ -168,14 +219,17 @@ bool ToFHaddockCamera::_init()
   if(!_addParameters(params))
     return false;
   
-  params.clear();
   
-  params.push_back(ParameterPtr(new VCOFrequency(*this, *_programmer)));
-  params.push_back(ParameterPtr(new ModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, MOD_PS1)));
-  params.push_back(ParameterPtr(new ModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, MOD_PS2)));
-  
-  if(!_addParameters(params))
+  if(!_addParameters({
+    ParameterPtr(new VCOFrequency(*this, *_programmer)),
+    ParameterPtr(new ModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, MOD_PS1)),
+    ParameterPtr(new ModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, MOD_PS2)),
+    ParameterPtr(new IntegrationTimeParameter(*this, *_programmer))
+  }))
     return false;
+  
+  
+  return true;
 }
 
 bool ToFHaddockCamera::getFrameRate(FrameRate &r) const
@@ -221,7 +275,7 @@ bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
 
 bool ToFHaddockCamera::getFrameSize(Voxel::FrameSize &s) const
 {
-  s.width = 160;
+  s.width = 320;
   s.height = 240;
   return true; // dummy to be coded later
 }
@@ -239,7 +293,10 @@ bool ToFHaddockCamera::_initStartParams()
          set(BLK_SIZE, 1024U) and
          set(BLK_HEADER_EN, true) and
          set(OP_CS_POL, true) and
-         set(FB_READY_EN, true);
+         set(FB_READY_EN, true) and
+         set(CONFIDENCE_THRESHOLD, 1U) and
+         set(ILLUM_EN_POL, true);// and
+         //set(INTG_TIME, 40.0f);
 }
 
 // FIXME: Should amplitude_scale parameter be used for this?

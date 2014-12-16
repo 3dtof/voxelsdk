@@ -172,6 +172,8 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
       p.x = r*sin(theta)*cos(phi);
       p.y = r*sin(theta)*sin(phi);
       p.z = r*cos(theta);
+      
+      //logger(INFO) << "Point = " << p.i << "@(" << p.x << ", " << p.y << ", " << p.z << ")" << std::endl;
     }
     
   return true;

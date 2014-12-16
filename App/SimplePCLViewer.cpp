@@ -21,10 +21,20 @@ public:
       logger(ERROR) << "SimplePCLViewer: Could not find a compatible device." << std::endl;
   }
   
-  void cloud_cb_ (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &cloud)
+  bool firstTime = true;
+  
+  void cloud_cb_ (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &cloud)
   {
     if (!_viewer.wasStopped())
-      _viewer.showCloud (cloud);
+     _viewer.showCloud (cloud);
+    
+    if(firstTime)
+    {
+      _viewer.runOnVisualizationThreadOnce([](pcl::visualization::PCLVisualizer &viz){
+        viz.setCameraPosition(15, 15, 20, 0, 0, 5, 0, 0, 1);
+      });
+      firstTime = false;
+    }
   }
   
   void run()
@@ -34,7 +44,7 @@ public:
     
     pcl::Grabber* interface = new Voxel::PCLGrabber(*_depthCamera);
     
-    boost::function<void (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr&)> f =
+    boost::function<void (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&)> f =
     boost::bind (&SimplePCLViewer::cloud_cb_, this, _1);
     
     interface->registerCallback(f);
@@ -57,6 +67,7 @@ protected:
 
 int main ()
 {
+  Voxel::logger.setDefaultLogLevel(Voxel::INFO);
   Voxel::SimplePCLViewer v;
   v.run();
   return 0;

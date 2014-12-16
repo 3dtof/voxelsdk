@@ -99,7 +99,7 @@ bool ToFCamera::_start()
   // Set parameters here
   VideoMode m;
   
-  m.frameSize.width = 320;
+  m.frameSize.width = 640;
   m.frameSize.height = 240;
   
   m.frameRate.numerator = 25;

@@ -21,6 +21,10 @@
 #define OP_CS_POL "op_cs_pol"
 #define FB_READY_EN "fb_ready_en"
 
+#define CONFIDENCE_THRESHOLD "confidence_threshold"
+
+#define ILLUM_EN_POL "illum_en_pol"
+
 #define DEBUG_EN "debug_en"
 
 #define PIXEL_DATA_SIZE "pixel_data_size"
@@ -28,8 +32,8 @@
 #define HISTOGRAM_EN "histogram_en"
 
 #define INTG_TIME "intg_time"  // Integration time
-#define ILLUM_POWER "illum_power" // Illumination power
-
+#define INTG_DUTY_CYCLE "intg_duty_cycle"
+#define INTG_DUTY_CYCLE_SET_FAILED "intg_duty_cycle_set_failed"
 #define MOD_FREQ1 "mod_freq1" // Modulation frequency for first source (MHz)
 #define MOD_FREQ2 "mod_freq2" // Modulation frequency for second source (MHz)
 #define VCO_FREQ "vco_freq"

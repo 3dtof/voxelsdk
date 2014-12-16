@@ -59,7 +59,13 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
         
         if(!*pointCloud)
         {
-          (*pointCloud) = Ptr<pcl::PointCloud<pcl::PointXYZ>>(new pcl::PointCloud<pcl::PointXYZ>());
+          (*pointCloud) = Ptr<pcl::PointCloud<pcl::PointXYZI>>(new pcl::PointCloud<pcl::PointXYZI>());
+          
+          (*pointCloud)->sensor_origin_.setZero ();
+          (*pointCloud)->sensor_orientation_.w () = 1.0f;
+          (*pointCloud)->sensor_orientation_.x () = 0.0f;
+          (*pointCloud)->sensor_orientation_.y () = 0.0f;
+          (*pointCloud)->sensor_orientation_.z () = 0.0f;  
         }
         
         (*pointCloud)->points.resize(f->points.size());
@@ -71,7 +77,8 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
           q.x = p.x;
           q.y = p.y;
           q.z = p.z;
-          //q.intensity = 256;// p.i;
+          q.intensity = p.i*256;
+          index++;
         }
         
         (*_pointCloudSignal)(make_shared_ptr(*pointCloud));

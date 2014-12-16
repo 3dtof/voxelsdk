@@ -18,7 +18,7 @@ namespace Voxel
 class PCLGrabber: public pcl::Grabber
 {
 public:
-  typedef void (PointCloudCallBack) (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &);
+  typedef void (PointCloudCallBack) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &);
   typedef void (DepthImageCallBack) (const Voxel::DepthFrame &);
   typedef void (RawImageCallBack) (const Voxel::RawFrame &, const Voxel::DepthCamera::FrameCallBackType type); 
   // For ToF type depth cameras, this could return reference to Voxel::ToFRawFrame or Voxel::RawDataFrame base on the 'type'
@@ -26,7 +26,7 @@ public:
 protected:
   DepthCamera &_depthCamera;
   
-  FrameBufferManager<pcl::PointCloud<pcl::PointXYZ>> _pointCloudBuffer;
+  FrameBufferManager<pcl::PointCloud<pcl::PointXYZI>> _pointCloudBuffer;
   
   boost::signals2::signal<PointCloudCallBack>* _pointCloudSignal;
   boost::signals2::signal<DepthImageCallBack>* _depthImageSignal;
