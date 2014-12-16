@@ -97,9 +97,63 @@ void DepthCamera::_captureLoop()
   }
 }
 
-bool DepthCamera::_convertToPointCloudFrame(const Voxel::DepthFramePtr &depthFrame, Voxel::PointCloudFramePtr &pointCloudFrame)
+bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame)
 {
-  return false;
+  if(!depthFrame)
+  {
+    logger(ERROR) << "DepthCamera: Blank depth frame." << std::endl;
+    return false;
+  }
+  
+  XYZIPointCloudFrame *f = dynamic_cast<XYZIPointCloudFrame *>(pointCloudFrame.get());
+  
+  if(!f)
+  {
+    f = new XYZIPointCloudFrame();
+    pointCloudFrame = PointCloudFramePtr(f);
+  }
+  
+  f->id = depthFrame->id;
+  f->timestamp = depthFrame->timestamp;
+  f->points.resize(depthFrame->size.width*depthFrame->size.height);
+  
+  auto index = 0;
+  
+  auto x1 = 0, y1 = 0;
+  
+  auto theta = 0.0f, phi = 0.0f, thetaMax = 0.0f;
+  
+  auto w = depthFrame->size.width;
+  auto h = depthFrame->size.height;
+  
+  auto scaleMax = sqrt(w*w/4.0f + h*h/4.0f);
+  
+  if(!_getFieldOfView(thetaMax))
+    return false;
+  
+  auto r = 0.0f;
+  
+  for(auto y = 0; y < h; y++)
+    for(auto x = 0; x < w; x++, index++)
+    {
+      IntensityPoint &p = f->points[index];
+      
+      x1 = x - w/2;
+      y1 = y - h/2;
+      
+      phi = tan(y1*1.0/x1);
+      
+      theta = sqrt(x1*x1 + y1*y1)/scaleMax*thetaMax;
+      
+      r = depthFrame->depth[index];
+      p.i = depthFrame->amplitude[index];
+      
+      p.x = r*sin(theta)*cos(phi);
+      p.y = r*sin(theta)*sin(phi);
+      p.z = r*cos(theta);
+    }
+    
+  return true;
 }
 
 

@@ -27,7 +27,7 @@ public:
     CALLBACK_RAW_FRAME_UNPROCESSED,
     CALLBACK_RAW_FRAME_PROCESSED,
     CALLBACK_DEPTH_FRAME,
-    CALLBACK_XYZ_POINT_CLOUD_FRAME
+    CALLBACK_XYZI_POINT_CLOUD_FRAME
   };
   
   typedef Function<void (DepthCamera &camera, const Frame &frame, FrameCallBackType callBackType)> CallbackType;
@@ -58,6 +58,8 @@ protected:
   virtual bool _processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput) = 0; // here output raw frame will have processed data, like ToF data for ToF cameras
   virtual bool _convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
   virtual bool _convertToPointCloudFrame(const DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame);
+  
+  virtual bool _getFieldOfView(float &fovHalfAngle) = 0;
   
   virtual void _captureLoop(); // the main capture loop
   

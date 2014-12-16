@@ -27,6 +27,8 @@ protected:
   
   bool _init();
   
+  virtual bool _getFieldOfView(float &fovHalfAngle);
+  
 public:
   Voxel14Camera(DevicePtr device);
   

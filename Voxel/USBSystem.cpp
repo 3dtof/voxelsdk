@@ -107,7 +107,7 @@ libusb_device *USBSystem::getDeviceHandle(const USBDevice &usbd)
     rc = libusb_get_device_descriptor(device, &desc);
     
     if(rc != LIBUSB_SUCCESS)
-      logger(WARNING) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
+      logger(DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
     
     if ((rc = libusb_open(device, &deviceHandle)) == 0)
     {
@@ -128,7 +128,7 @@ libusb_device *USBSystem::getDeviceHandle(const USBDevice &usbd)
     }
     else
     {
-      logger(WARNING) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
+      logger(DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
       libusb_unref_device(device);
     }
   }

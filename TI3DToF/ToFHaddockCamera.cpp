@@ -239,8 +239,7 @@ bool ToFHaddockCamera::_initStartParams()
          set(BLK_SIZE, 1024U) and
          set(BLK_HEADER_EN, true) and
          set(OP_CS_POL, true) and
-         set(FB_READY_EN, true) and
-         set(DEBUG_EN, true);
+         set(FB_READY_EN, true);
 }
 
 // FIXME: Should amplitude_scale parameter be used for this?

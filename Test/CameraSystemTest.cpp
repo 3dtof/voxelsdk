@@ -237,12 +237,39 @@ int main(int argc, char *argv[])
 //       dc.stop();
 //   });
   
-  depthCamera->registerCallback(DepthCamera::CALLBACK_DEPTH_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
-    const DepthFrame *d = dynamic_cast<const DepthFrame *>(&frame);
+//   depthCamera->registerCallback(DepthCamera::CALLBACK_DEPTH_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+//     const DepthFrame *d = dynamic_cast<const DepthFrame *>(&frame);
+//     
+//     if(!d)
+//     {
+//       std::cout << "Null frame captured? or not of type DepthFrame" << std::endl;
+//       return;
+//     }
+//     
+//     std::cout << "Capture frame " << d->id << "@" << d->timestamp;
+//     
+//     if(lastTimeStamp != 0)
+//       std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
+//     
+//     std::cout << std::endl;
+//     
+//     lastTimeStamp = d->timestamp;
+//     
+//     f.write((char *)d->depth.data(), sizeof(float)*d->size.width*d->size.height);
+//     f.write((char *)d->amplitude.data(), sizeof(float)*d->size.width*d->size.height);
+//     
+//     count++;
+//     
+//     if(count >= 100)
+//       dc.stop();
+//   });
+  
+  depthCamera->registerCallback(DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+    const XYZIPointCloudFrame *d = dynamic_cast<const XYZIPointCloudFrame *>(&frame);
     
     if(!d)
     {
-      std::cout << "Null frame captured? or not of type DepthFrame" << std::endl;
+      std::cout << "Null frame captured? or not of type XYZIPointCloudFrame" << std::endl;
       return;
     }
     
@@ -255,14 +282,14 @@ int main(int argc, char *argv[])
     
     lastTimeStamp = d->timestamp;
     
-    f.write((char *)d->depth.data(), sizeof(float)*d->size.width*d->size.height);
-    f.write((char *)d->amplitude.data(), sizeof(float)*d->size.width*d->size.height);
+    f.write((char *)d->points.data(), sizeof(IntensityPoint)*d->points.size());
     
     count++;
     
     if(count >= 100)
       dc.stop();
   });
+  
   
   if(depthCamera->start())
   {
