@@ -25,10 +25,12 @@ class FrameBuffer: public Ptr<BufferType>
 public:
   typedef Ptr<BufferType> BufferPtr;
   
+protected:
   BufferPtr &_buffer;
   
   FrameBufferManager<BufferType> &_manager;
   
+public:
   FrameBuffer(BufferPtr &buffer, FrameBufferManager<BufferType> &manager): _buffer(buffer), _manager(manager), 
     Ptr<BufferType>(nullptr, [this](BufferType *) { this->release(); }) // The deleter gets called when FrameBuffer<> goes out of scope. Deleter releases the held buffer
     {}

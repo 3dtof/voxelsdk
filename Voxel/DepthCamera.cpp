@@ -31,13 +31,35 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
 
 bool DepthCamera::clearCallback()
 {
-  _callback = 0;
+  for(auto i = 0; i < CALLBACK_TYPE_COUNT; i++)
+    _callback[i] = 0;
 }
 
 bool DepthCamera::registerCallback(FrameCallBackType type, CallbackType f)
 {
-  _callback = f;
-  _callBackType = type;
+  if(type < CALLBACK_TYPE_COUNT)
+  {
+    if(_callback[type])
+      logger(WARNING) << "DepthCamera: " << id() << " already has a callback for this type = " << type << ". Overwriting it now." << std::endl;
+    
+    _callBackTypesRegistered |= (1 << type);
+    _callback[type] = f;
+    return true;
+  }
+  logger(ERROR) << "DepthCamera: Invalid callback type = " << type << " attempted for depth camera " << id() << std::endl;
+  return false;
+}
+
+bool DepthCamera::_callbackAndContinue(uint32_t &callBackTypesToBeCalled, DepthCamera::FrameCallBackType type, const Frame &frame)
+{
+  if((callBackTypesToBeCalled | type) and _callback[type])
+  {
+    _callback[type](*this, frame, type);
+  }
+  
+  callBackTypesToBeCalled &= ~type;
+  
+  return callBackTypesToBeCalled != 0;
 }
 
 
@@ -45,11 +67,13 @@ void DepthCamera::_captureLoop()
 {
   while(_running)
   {
-    if(_callBackType == CALLBACK_NONE or _callBackType == CALLBACK_RAW_FRAME_UNPROCESSED)
+    uint32_t callBackTypesToBeCalled = _callBackTypesRegistered;
+    
+    if(_callBackTypesRegistered == 0 or _callBackTypesRegistered == CALLBACK_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
     {
       auto f = _rawFrameBuffers.get();
       if(_captureRawUnprocessedFrame(*f) and _callback)
-        _callback(*this, (Frame &)(**f), _callBackType);
+        _callback[CALLBACK_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**f), CALLBACK_RAW_FRAME_UNPROCESSED);
     }
     else
     {
@@ -57,37 +81,31 @@ void DepthCamera::_captureLoop()
       if(!_captureRawUnprocessedFrame(f1))
         continue;
       
+      if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_RAW_FRAME_UNPROCESSED, *f1))
+        continue;
+      
       auto f = _rawFrameBuffers.get();
       
       if(!_processRawFrame(f1, *f))
         continue;
-
-      if(_callBackType == CALLBACK_RAW_FRAME_PROCESSED)
-      {
-        _callback(*this, (Frame &)(**f), _callBackType);
-        continue;
-      }
       
+      if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_RAW_FRAME_PROCESSED, **f))
+        continue;
       
       auto d = _depthFrameBuffers.get();
       
       if(!_convertToDepthFrame(*f, *d))
         continue;
       
-      if(_callBackType == CALLBACK_DEPTH_FRAME)
-      {
-        _callback(*this, (Frame &)(**d), _callBackType);
+      if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_DEPTH_FRAME, **d))
         continue;
-      }
       
       auto p = _pointCloudBuffers.get();
       
       if(!_convertToPointCloudFrame(*d, *p))
-      {
         continue;
-      }
       
-      _callback(*this, (Frame &)(**p), _callBackType); // point cloud type callback
+      _callbackAndContinue(callBackTypesToBeCalled, CALLBACK_XYZI_POINT_CLOUD_FRAME, **p);
     }
   }
   
@@ -141,7 +159,10 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
       x1 = x - w/2;
       y1 = y - h/2;
       
-      phi = tan(y1*1.0/x1);
+      phi = atan(y1*1.0/x1);
+      
+      if(x1 < 0)
+        phi = M_PI + phi; // atan() principal range [-PI/2, PI/2]. outside that add PI
       
       theta = sqrt(x1*x1 + y1*y1)/scaleMax*thetaMax;
       
@@ -159,7 +180,9 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
 
 void DepthCamera::_captureThreadWrapper()
 {
+  _threadActive = true;
   _captureLoop();
+  _threadActive = false;
 }
 
 bool DepthCamera::start()
@@ -189,7 +212,7 @@ bool DepthCamera::stop()
 
 void DepthCamera::wait()
 {
-  if(isRunning())
+  if(_threadActive)
     _captureThread->join();
 }
 

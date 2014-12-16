@@ -41,13 +41,13 @@ protected:
 public:
   VoxelXUProgrammer(DevicePtr device);
   
-  virtual bool readRegister(uint32_t address, uint32_t &value);
+  virtual bool readRegister(uint32_t address, uint32_t &value) const;
   virtual bool writeRegister(uint32_t address, uint32_t value);
   
-  virtual bool getValue(Parameter &param, uint32_t &value);
-  virtual bool setValue(Parameter &param, uint32_t value);
+  virtual bool getValue(const Parameter &param, uint32_t &value) const;
+  virtual bool setValue(const Parameter &param, uint32_t value);
   
-  virtual bool isInitialized();
+  virtual bool isInitialized() const;
   
   virtual ~VoxelXUProgrammer() {}
 };

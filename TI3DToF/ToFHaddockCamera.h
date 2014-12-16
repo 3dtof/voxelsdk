@@ -64,9 +64,9 @@ public:
   ToFHaddockCamera(const String &name, DevicePtr device);
   
   virtual bool setFrameRate(const FrameRate &r);
-  virtual bool getFrameRate(FrameRate &r);
+  virtual bool getFrameRate(FrameRate &r) const;
   
-  virtual bool getFrameSize(FrameSize &s);
+  virtual bool getFrameSize(FrameSize &s) const;
   virtual bool setFrameSize(const FrameSize &s);
   
   virtual ~ToFHaddockCamera() {}

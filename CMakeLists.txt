@@ -1,5 +1,8 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8.11)
 project (TIVoxel)
+
+#set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+#set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 MESSAGE(${CMAKE_SYSTEM_NAME})
 
@@ -22,3 +25,4 @@ include_directories(
 add_subdirectory(Voxel)
 add_subdirectory(Test)
 add_subdirectory(TI3DToF)
+add_subdirectory(App)

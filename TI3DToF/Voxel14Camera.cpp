@@ -55,7 +55,7 @@ bool Voxel14Camera::_init()
 }
 
 
-bool Voxel14Camera::_getFieldOfView(float &fovHalfAngle)
+bool Voxel14Camera::_getFieldOfView(float &fovHalfAngle) const
 {
   fovHalfAngle = M_PI/4;
   return true;

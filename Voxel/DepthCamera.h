@@ -23,11 +23,11 @@ class DepthCamera
 public:
   enum FrameCallBackType
   {
-    CALLBACK_NONE,
-    CALLBACK_RAW_FRAME_UNPROCESSED,
-    CALLBACK_RAW_FRAME_PROCESSED,
-    CALLBACK_DEPTH_FRAME,
-    CALLBACK_XYZI_POINT_CLOUD_FRAME
+    CALLBACK_RAW_FRAME_UNPROCESSED = 0,
+    CALLBACK_RAW_FRAME_PROCESSED = 1,
+    CALLBACK_DEPTH_FRAME = 2,
+    CALLBACK_XYZI_POINT_CLOUD_FRAME = 3,
+    CALLBACK_TYPE_COUNT = 4
   };
   
   typedef Function<void (DepthCamera &camera, const Frame &frame, FrameCallBackType callBackType)> CallbackType;
@@ -45,11 +45,15 @@ protected:
   
   bool _addParameters(const Vector<ParameterPtr> &params);
   
-  CallbackType _callback;
+  CallbackType _callback[CALLBACK_TYPE_COUNT];
   
-  FrameCallBackType _callBackType = CALLBACK_NONE;
+  uint32_t _callBackTypesRegistered = 0;
   
+  Atomic<bool> _threadActive;
   ThreadPtr _captureThread;
+  
+  // Callback the registered function for 'type' if present and decide whether continue processing or not
+  virtual bool _callbackAndContinue(uint32_t &callBackTypesToBeCalled, FrameCallBackType type, const Frame &frame);
   
   virtual bool _start() = 0;
   virtual bool _stop() = 0;
@@ -59,7 +63,7 @@ protected:
   virtual bool _convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
   virtual bool _convertToPointCloudFrame(const DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame);
   
-  virtual bool _getFieldOfView(float &fovHalfAngle) = 0;
+  virtual bool _getFieldOfView(float &fovHalfAngle) const = 0;
   
   virtual void _captureLoop(); // the main capture loop
   
@@ -71,27 +75,27 @@ public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")"),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS) {}
   
-  virtual bool isInitialized() = 0;
+  virtual bool isInitialized() const = 0;
   
   inline const String &name() const { return _name; }
   
   inline const String &id() const { return _id; }
   
-  inline bool isRunning() { return _running; }
+  inline bool isRunning() const { return _running; }
   
   template <typename T>
-  bool get(const String &name, T &value, bool refresh = true);
+  bool get(const String &name, T &value, bool refresh = true) const;
   
   template <typename T>
   bool set(const String &name, const T &value);
   
-  inline ParameterPtr getParam(const String &name);
+  inline const ParameterPtr getParam(const String &name) const;
   
   virtual bool setFrameRate(const FrameRate &r) = 0;
-  virtual bool getFrameRate(FrameRate &r) = 0;
+  virtual bool getFrameRate(FrameRate &r) const = 0;
   
   virtual bool setFrameSize(const FrameSize &s) = 0;
-  virtual bool getFrameSize(FrameSize &s) = 0;
+  virtual bool getFrameSize(FrameSize &s) const = 0;
   
   virtual bool registerCallback(FrameCallBackType type, CallbackType f);
   
@@ -106,7 +110,7 @@ public:
 };
 
 template <typename T>
-bool DepthCamera::get(const String &name, T &value, bool refresh)
+bool DepthCamera::get(const String &name, T &value, bool refresh) const
 {
   auto p = _parameters.find(name);
   
@@ -165,7 +169,7 @@ bool DepthCamera::set(const String &name, const T &value)
   }
 }
 
-ParameterPtr DepthCamera::getParam(const String &name)
+const ParameterPtr DepthCamera::getParam(const String &name) const
 {
   auto p = _parameters.find(name);
   

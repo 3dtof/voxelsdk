@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <functional>
 #include <list>
+#include <atomic>
 
 #include <thread>
 
@@ -44,6 +45,9 @@ typedef uint64_t TimeStampType;
 
 typedef std::thread Thread;
 typedef Ptr<Thread> ThreadPtr;
+
+template <typename T>
+using Atomic = std::atomic<T>;
 
 
 /// String functions

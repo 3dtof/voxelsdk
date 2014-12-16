@@ -38,7 +38,7 @@ protected:
 public:
   ToFCamera(const String &name, DevicePtr device): DepthCamera(name, device) {}
   
-  virtual bool isInitialized()
+  virtual bool isInitialized() const
   {
     return _programmer and _programmer->isInitialized() and 
             _streamer and _streamer->isInitialized();

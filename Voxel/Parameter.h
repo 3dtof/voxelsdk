@@ -81,12 +81,12 @@ class ParameterTemplate: public Parameter
 protected:
   T _value;
   
-  virtual uint32_t _toRawValue(T value)
+  virtual uint32_t _toRawValue(T value) const
   {
     return (uint32_t)value;
   }
   
-  virtual T _fromRawValue(uint32_t value)
+  virtual T _fromRawValue(uint32_t value) const
   {
     return (T)value;
   }
@@ -115,9 +115,9 @@ public:
       return false;
   }
   
-  virtual bool validate(const T &value) = 0;
+  virtual bool validate(const T &value) const = 0;
   
-  virtual bool get(T &value, bool refresh = true)
+  virtual bool get(T &value, bool refresh = true) const
   {
     if(!refresh)
     {
@@ -137,7 +137,7 @@ public:
       val = _fromRawValue(v);
       if(validate(val))
       {
-        value = _value = val;
+        value = val;
         return true;
       }
       else
@@ -181,7 +181,7 @@ public:
   {
   }
   
-  virtual bool validate(const bool &value) 
+  virtual bool validate(const bool &value) const
   {
     return true; 
   }
@@ -199,7 +199,7 @@ public:
   {
   }
   
-  virtual bool get(bool &value, bool refresh = true)
+  virtual bool get(bool &value, bool refresh = true) const
   {
     return BoolParameter::get(value, true); // ignore the refresh set by user and force it to true
   }
@@ -223,7 +223,7 @@ public:
   
   inline const Vector<int> &allowedValues() const { return _allowedValues; }
   
-  virtual bool validate(const int &value) 
+  virtual bool validate(const int &value) const
   {
     bool allowed = false;
     for(auto a : _allowedValues)
@@ -263,7 +263,7 @@ public:
   const T &lowerLimit() const { return _lowerLimit; }
   const T &upperLimit() const { return _upperLimit; }
   
-  virtual bool validate(const T &value) 
+  virtual bool validate(const T &value) const
   {
     return !(value < _lowerLimit or value > _upperLimit); 
   }
@@ -274,7 +274,7 @@ public:
 class IntegerParameter: public RangeParameterTemplate<int>
 {
 protected:
-  virtual uint32_t _toRawValue(int value)
+  virtual uint32_t _toRawValue(int value) const
   {
     if(value < 0) // negative?
     {
@@ -284,7 +284,7 @@ protected:
       return (uint32_t)value;
   }
   
-  virtual int _fromRawValue(uint32_t value)
+  virtual int _fromRawValue(uint32_t value) const
   {
     if(value & (1 << (_msb - _lsb))) // negative?
       return (value | ((uint32_t)(-1) - ((1 << (_msb - _lsb + 1)) - 1))); // extend sign
@@ -308,7 +308,7 @@ typedef RangeParameterTemplate<uint> UnsignedIntegerParameter;
 class FloatParameter: public RangeParameterTemplate<float>
 {
 protected:
-  virtual float _fromRawValue(uint32_t value)
+  virtual float _fromRawValue(uint32_t value) const
   {
     float v;
     v = value/(1 << (msb() - lsb() + 1)); // normalized value
@@ -318,7 +318,7 @@ protected:
     return v;
   }
   
-  virtual uint32_t _toRawValue(float value)
+  virtual uint32_t _toRawValue(float value) const
   {
     uint32_t maxValue = (1 << (msb() - lsb() + 1));
     uint32_t v = (uint32_t)value*maxValue; // normalized value

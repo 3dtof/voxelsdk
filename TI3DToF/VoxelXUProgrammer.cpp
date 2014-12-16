@@ -14,7 +14,7 @@ namespace Voxel
 namespace TI
 {
   
-bool VoxelXUProgrammer::isInitialized()
+bool VoxelXUProgrammer::isInitialized() const
 {
   return (bool)_xu;
 }
@@ -44,7 +44,7 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
   logger(INFO) << "VoxelXUProgrammer: XU controller version " << (int)_majorVersion << "." << (int)_minorVersion << std::endl;
 }
 
-bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value)
+bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
 {
   if(!isInitialized())
   {
@@ -137,7 +137,7 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
   return true;
 }
 
-bool VoxelXUProgrammer::getValue(Parameter &param, uint32_t &value)
+bool VoxelXUProgrammer::getValue(const Voxel::Parameter &param, uint32_t &value) const
 {
   uint32_t registerValue;
   
@@ -151,7 +151,7 @@ bool VoxelXUProgrammer::getValue(Parameter &param, uint32_t &value)
   return true;
 }
 
-bool VoxelXUProgrammer::setValue(Parameter &param, uint32_t value)
+bool VoxelXUProgrammer::setValue(const Parameter &param, uint32_t value)
 {
   uint32_t registerValue;
   

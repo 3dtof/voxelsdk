@@ -23,7 +23,7 @@ public:
   FloatParameter(programmer, VCO_FREQ, "MHz", 0, 0, 0, 1, 600, 1300, 864, "VCO frequency", 
                  "Frequency of the VCO used for generating modulation frequencies", IOType::IO_READ_WRITE, {MOD_M, MOD_N}), _depthCamera(depthCamera) {}
                  
-  virtual bool get(float &value, bool refresh = true)
+  virtual bool get(float &value, bool refresh = true) const
   {
     uint modM, modN, systemClockFrequency;
     if(!_depthCamera.get(MOD_M, modM) or !_depthCamera.get(MOD_N, modN) or !_depthCamera.get(SYS_CLK_FREQ, systemClockFrequency))
@@ -34,7 +34,7 @@ public:
     if(!validate(v))
       return false;
     
-    _value = value = v;
+    value = v;
     return true;
   }
   
@@ -76,7 +76,7 @@ public:
   FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 6.25, 433.333, 18, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {psName}), _psName(psName), _depthCamera(depthCamera) {}
                  
-  virtual bool get(float &value, bool refresh = true)
+  virtual bool get(float &value, bool refresh = true) const
   {
     float vcoFrequency;
     
@@ -90,7 +90,7 @@ public:
     if(!validate(v))
       return false;
     
-    _value = value = v;
+    value = v;
     return true;
   }
   
@@ -178,7 +178,7 @@ bool ToFHaddockCamera::_init()
     return false;
 }
 
-bool ToFHaddockCamera::getFrameRate(FrameRate &r)
+bool ToFHaddockCamera::getFrameRate(FrameRate &r) const
 {
   bool pixCountSetFailed;
   
@@ -219,7 +219,7 @@ bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
   return true;
 }
 
-bool ToFHaddockCamera::getFrameSize(FrameSize &s)
+bool ToFHaddockCamera::getFrameSize(Voxel::FrameSize &s) const
 {
   s.width = 160;
   s.height = 240;
@@ -270,7 +270,7 @@ bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
     
     float freq = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
     
-    factor = SPEED_OF_LIGHT/(2*(1 << 12)*freq);
+    factor = SPEED_OF_LIGHT/1E6/(2*(1 << 12)*freq);
     
     return true;
   }
@@ -279,7 +279,7 @@ bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
     if(!get(MOD_FREQ1, modulationFrequency1))
       return false;
     
-    factor = SPEED_OF_LIGHT/2/modulationFrequency1/(1 << 12);
+    factor = SPEED_OF_LIGHT/1E6/2/modulationFrequency1/(1 << 12);
     return true;
   }
 }
