@@ -54,7 +54,11 @@ public:
   
   virtual void stop() { _depthCamera.stop(); _depthCamera.wait(); }
   
-  virtual ~PCLGrabber() {}
+  virtual ~PCLGrabber() 
+  {
+    if(isRunning())
+      stop();
+  }
 };
 
 /// Support for std::shared_ptr <-> boost::shared_ptr
