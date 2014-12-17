@@ -100,6 +100,23 @@ extern Logger logger;
 
 Logger &endl(Logger &l);
 
+class LogLevelChanger
+{
+  LogLevel _currentLogLevel;
+  LogLevel _desiredLogLevel;
+public:
+  LogLevelChanger(LogLevel desired): _desiredLogLevel(desired)
+  {
+    _currentLogLevel = logger.getDefaultLogLevel();
+    logger.setDefaultLogLevel(_desiredLogLevel);
+  }
+  
+  ~LogLevelChanger()
+  {
+    logger.setDefaultLogLevel(_currentLogLevel);
+  }
+};
+
 }
   
 #endif // VOXEL_LOGGER_H

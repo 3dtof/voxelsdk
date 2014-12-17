@@ -46,6 +46,8 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
 
 bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
 {
+  //LogLevelChanger _(DEBUG);
+  
   if(!isInitialized())
   {
     logger(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
@@ -91,11 +93,15 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
     value = data[0] + (data[1] << 8) + (data[2] << 16);
   }
   
+  logger(DEBUG) << "VoxelXUProgrammer: register read @0x" << std::hex << address << " = " << value << std::endl;
+  
   return true;
 }
 
 bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
 {
+  //LogLevelChanger _(DEBUG);
+  
   if(!isInitialized())
   {
     logger(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
@@ -134,6 +140,9 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
       return false;
     }
   }
+  
+  logger(DEBUG) << "VoxelXUProgrammer: register write @0x" << std::hex << address << " = " << value << std::endl;
+  
   return true;
 }
 
