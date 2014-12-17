@@ -9,13 +9,16 @@ target_link_libraries(voxelpcl voxel ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}
 add_executable(SimplePCLViewer SimplePCLViewer.cpp)
 target_link_libraries(SimplePCLViewer voxelpcl)
 
+add_executable(VoxelCLI VoxelCLI.cpp CLIManager.cpp LineNoise.cpp)
+target_link_libraries(VoxelCLI voxelpcl voxel)
+
 install(TARGETS voxelpcl
   LIBRARY
   DESTINATION lib
   COMPONENT pcl
 )
 
-install(TARGETS SimplePCLViewer
+install(TARGETS SimplePCLViewer VoxelCLI
   RUNTIME
   DESTINATION bin
   COMPONENT apps

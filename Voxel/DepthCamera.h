@@ -13,6 +13,10 @@
 #include "VideoMode.h"
 #include <FrameBuffer.h>
 
+#include <RegisterProgrammer.h>
+#include <Streamer.h>
+
+
 #define MAX_FRAME_BUFFERS 2
 
 namespace Voxel
@@ -38,6 +42,9 @@ protected:
   String _name, _id;
   
   Map<String, ParameterPtr> _parameters;
+  
+  Ptr<RegisterProgrammer> _programmer;
+  Ptr<Streamer> _streamer;
   
   FrameBufferManager<RawFrame> _rawFrameBuffers;
   FrameBufferManager<DepthFrame> _depthFrameBuffers;
@@ -75,7 +82,11 @@ public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")"),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS) {}
   
-  virtual bool isInitialized() const = 0;
+  virtual bool isInitialized() const
+  {
+    return _programmer and _programmer->isInitialized() and 
+           _streamer and _streamer->isInitialized();
+  }
   
   inline const String &name() const { return _name; }
   
@@ -98,13 +109,15 @@ public:
   virtual bool getFrameSize(FrameSize &s) const = 0;
   
   virtual bool registerCallback(FrameCallBackType type, CallbackType f);
-  
   virtual bool clearCallback();
   
   virtual bool start();
   virtual bool stop();
   
   virtual void wait();
+  
+  inline Ptr<RegisterProgrammer> getProgrammer() { return _programmer; }
+  inline Ptr<Streamer> getStreamer() { return _streamer; }
   
   virtual ~DepthCamera();
 };

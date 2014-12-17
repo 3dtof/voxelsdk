@@ -295,7 +295,7 @@ bool ToFHaddockCamera::_initStartParams()
          set(OP_CS_POL, true) and
          set(FB_READY_EN, true) and
          set(CONFIDENCE_THRESHOLD, 1U) and
-         set(ILLUM_EN_POL, true);// and
+         set(ILLUM_EN_POL, false);// and
          //set(INTG_TIME, 40.0f);
 }
 

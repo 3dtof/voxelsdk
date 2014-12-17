@@ -1,3 +1,9 @@
+/*
+ * TI Voxel Lib component.
+ *
+ * Copyright (c) 2014 Texas Instruments Inc.
+ */
+
 #include <CameraSystem.h>
 #include <Common.h>
 
@@ -9,20 +15,20 @@ int main ()
 {
   Voxel::logger.setDefaultLogLevel(Voxel::INFO);
   
-  Voxel::CameraSystem _sys;
-  Voxel::DepthCameraPtr _depthCamera;
+  Voxel::CameraSystem sys;
+  Voxel::DepthCameraPtr depthCamera;
   
-  const Voxel::Vector<Voxel::DevicePtr> &devices = _sys.scan();
+  const Voxel::Vector<Voxel::DevicePtr> &devices = sys.scan();
   
   if(devices.size() > 0)
-    _depthCamera = _sys.connect(devices[0]); // Connect to first available device
+    depthCamera = sys.connect(devices[0]); // Connect to first available device
   else
   {
     std::cerr << "SimplePCLViewer: Could not find a compatible device." << std::endl;
     return -1;
   }
   
-  if(!_depthCamera)
+  if(!depthCamera)
   {
     std::cerr << "SimplePCLViewer: Could not open a depth camera." << std::endl;
     return -1;
@@ -30,7 +36,7 @@ int main ()
     
   Voxel::PCLViewer v;
   
-  v.setDepthCamera(_depthCamera);
+  v.setDepthCamera(depthCamera);
   
   v.start();
   

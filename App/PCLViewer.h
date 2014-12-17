@@ -49,6 +49,8 @@ public:
   bool isRunning();
   void stop();
   
+  bool viewerStopped();
+  
   virtual ~PCLViewer() 
   {
     if(isRunning()) stop();

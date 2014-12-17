@@ -101,7 +101,7 @@ public:
   
   virtual bool set(const T &value)
   {
-    if(!validate(value))
+    if(_ioType == IO_READ_ONLY or !validate(value))
     {
       return false;
     }
@@ -158,6 +158,7 @@ protected:
   Vector<String> _valueMeaning;
   Vector<String> _valueDescription;
   
+public:
   EnumParameterTemplate(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t msb, uint8_t lsb, 
                 const Vector<String> &valueDescription, const Vector<String> &valueMeaning, const T &defaultValue,
                 const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):

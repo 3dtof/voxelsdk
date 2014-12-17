@@ -7,6 +7,7 @@
 #include "PCLViewer.h"
 #include <pcl/visualization/cloud_viewer.h>
 #include "PCLGrabber.h"
+#include <vtkRenderWindow.h>
 
 namespace Voxel
 {
@@ -46,6 +47,11 @@ void PCLViewer::start()
   if(!_depthCamera)
     return;
   
+  if(!_viewer or _viewer->wasStopped())
+  {
+    _viewer = Ptr<pcl::visualization::CloudViewer>(new pcl::visualization::CloudViewer("PCL Voxel Viewer"));
+  }
+  
   _firstRun = true;
   
   _grabber = Ptr<pcl::Grabber>(new Voxel::PCLGrabber(*_depthCamera));
@@ -58,7 +64,12 @@ void PCLViewer::start()
 
 bool PCLViewer::isRunning()
 {
-  return _grabber and _grabber->isRunning() and !_viewer->wasStopped();
+  return _grabber and _grabber->isRunning() and !viewerStopped();
+}
+
+bool PCLViewer::viewerStopped()
+{
+  return !_viewer or _viewer->wasStopped();
 }
 
 void PCLViewer::stop()
@@ -66,6 +77,9 @@ void PCLViewer::stop()
   if(_grabber)
   {
     _grabber = nullptr;
+    
+    if(_viewer and _viewer->wasStopped())
+      _viewer = nullptr;
   }
 }
 
