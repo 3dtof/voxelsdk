@@ -5,16 +5,78 @@
  */
 
 #include "PCLViewer.h"
-#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_visualizer.h>
 #include "PCLGrabber.h"
-#include <vtkRenderWindow.h>
 
 namespace Voxel
 {
+  
+#define CLOUD_NAME "cloud"
 
-PCLViewer::PCLViewer(): _viewer(Ptr<pcl::visualization::CloudViewer>(new pcl::visualization::CloudViewer("PCL Voxel Viewer")))
+PCLViewer::PCLViewer()
 {
 }
+
+void PCLViewer::_renderLoop()
+{
+  if(!_viewer)
+  {
+    _viewer =  Ptr<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer("PCL Voxel Viewer"));
+    _viewer->setBackgroundColor(0, 0, 0);
+    //_viewer->createInteractor();
+    _viewer->addCoordinateSystem(1.0);
+    _viewer->initCameraParameters();
+    _viewer->resetCameraViewpoint();
+    _viewer->setCameraPosition(15, 15, 20, 0, 0, 5, 0, 0, 1);
+  }
+  
+  if(_viewer->wasStopped())
+    _viewer->resetStoppedFlag();
+  
+  bool firstTime = false;
+  
+  while(!_stopLoop and !_viewer->wasStopped())
+  {
+    {
+      Lock<Mutex> _(_cloudUpdateMutex);
+      
+      if(_cloud and _handler)
+      {
+        double psize = 1.0, opacity = 1.0, linesize =1.0;
+        _viewer->getPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, linesize, CLOUD_NAME);
+        _viewer->getPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_OPACITY, opacity, CLOUD_NAME);
+        _viewer->getPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, psize, CLOUD_NAME);
+        
+        if(!_viewer->updatePointCloud(_cloud, *_handler, CLOUD_NAME))
+        {
+          _viewer->addPointCloud(_cloud, *_handler, CLOUD_NAME);
+          _viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, CLOUD_NAME);
+        }
+        else
+        {
+          _viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, psize, CLOUD_NAME);
+          _viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, linesize, CLOUD_NAME);
+          _viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_OPACITY, opacity, CLOUD_NAME);
+        }
+      }
+    }
+    
+    _viewer->spinOnce(10);
+    std::this_thread::sleep_for(std::chrono::microseconds(10000));
+    
+    if(firstTime)
+    {
+      _viewer->setCameraPosition(15, 15, 20, 0, 0, 5, 0, 0, 1);
+      firstTime = false;
+    }
+  }
+  
+  //_viewer->close();
+  //_viewer = nullptr;
+  _stopLoop = true;
+}
+
+
 
 void PCLViewer::setDepthCamera(DepthCameraPtr depthCamera)
 {
@@ -30,15 +92,12 @@ void PCLViewer::setDepthCamera(DepthCameraPtr depthCamera)
 
 void PCLViewer::_cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud)
 {
-  if (!_viewer->wasStopped())
-    _viewer->showCloud(cloud);
-  
-  if(_firstRun)
+  if(_viewer and !_viewer->wasStopped())
   {
-    _viewer->runOnVisualizationThreadOnce([](pcl::visualization::PCLVisualizer &viz){
-      viz.setCameraPosition(15, 15, 20, 0, 0, 5, 0, 0, 1);
-    });
-    _firstRun = false;
+    Lock<Mutex> _(_cloudUpdateMutex);
+    _cloud = boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>>(cloud);
+    _handler = Ptr<pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>>(
+      new pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>(_cloud, "intensity"));
   }
 }
 
@@ -47,13 +106,15 @@ void PCLViewer::start()
   if(!_depthCamera)
     return;
   
-  if(!_viewer or _viewer->wasStopped())
-  {
-    _viewer = Ptr<pcl::visualization::CloudViewer>(new pcl::visualization::CloudViewer("PCL Voxel Viewer"));
-  }
+  _stopLoop = true;
   
-  _firstRun = true;
+  if(_renderThread.joinable())
+    _renderThread.join();
   
+  _stopLoop = false;
+  
+  _renderThread = std::thread(&PCLViewer::_renderLoop, this);
+    
   _grabber = Ptr<pcl::Grabber>(new Voxel::PCLGrabber(*_depthCamera));
   
   boost::function<void (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&)> f = boost::bind(&PCLViewer::_cloudRenderCallback, this, _1);
@@ -64,7 +125,7 @@ void PCLViewer::start()
 
 bool PCLViewer::isRunning()
 {
-  return _grabber and _grabber->isRunning() and !viewerStopped();
+  return _grabber and _grabber->isRunning() and !_stopLoop and !viewerStopped();
 }
 
 bool PCLViewer::viewerStopped()
@@ -74,13 +135,8 @@ bool PCLViewer::viewerStopped()
 
 void PCLViewer::stop()
 {
-  if(_grabber)
-  {
-    _grabber = nullptr;
-    
-    if(_viewer and _viewer->wasStopped())
-      _viewer = nullptr;
-  }
+  _stopLoop = true;
+  _grabber = nullptr;
 }
 
 }

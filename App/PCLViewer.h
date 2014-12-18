@@ -15,7 +15,10 @@ namespace pcl
 {
 namespace visualization
 {
-class CloudViewer;
+class PCLVisualizer;
+
+template <typename T>
+class PointCloudColorHandlerGenericField;
 }
 
 template <typename T>
@@ -32,13 +35,26 @@ namespace Voxel
 class PCLViewer
 {
 protected:
-  Voxel::DepthCameraPtr _depthCamera;
+  DepthCameraPtr _depthCamera;
   
-  Ptr<pcl::visualization::CloudViewer> _viewer;
+  Mutex _cloudUpdateMutex;
+  
+  Ptr<pcl::visualization::PCLVisualizer> _viewer;
+  Ptr<pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>> _handler;
+  
+  bool _stopLoop = false;
+  
   Ptr<pcl::Grabber> _grabber; // This will link to our Voxel::PCLGrabber
   
-  bool _firstRun = true;
+  boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> _cloud;
+  
   void _cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud);
+  
+  void _getViewer();
+  
+  void _renderLoop();
+  
+  std::thread _renderThread;
   
 public:
   PCLViewer();
@@ -54,6 +70,8 @@ public:
   virtual ~PCLViewer() 
   {
     if(isRunning()) stop();
+    
+    if(_renderThread.joinable()) _renderThread.join();
   }
 };
 
