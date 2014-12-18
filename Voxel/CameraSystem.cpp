@@ -141,7 +141,7 @@ Vector<DevicePtr> CameraSystem::scan()
   return toReturn;
 }
 
-DepthCameraPtr CameraSystem::connect(DevicePtr device)
+DepthCameraPtr CameraSystem::connect(const DevicePtr &device)
 {
   auto c = _depthCameras.find(device->id());
   
@@ -164,6 +164,23 @@ DepthCameraPtr CameraSystem::connect(DevicePtr device)
   else
     return 0;
 }
+
+bool CameraSystem::disconnect(const DepthCameraPtr &depthCamera, bool reset)
+{
+  auto f = _depthCameras.find(depthCamera->getDevice()->id());
+  
+  if(f != _depthCameras.end())
+  {
+    _depthCameras.erase(f);
+     
+    if(reset)
+      return depthCamera->reset();
+    return true;
+  }
+  
+  return false;
+}
+
 
 CameraSystem::~CameraSystem()
 {

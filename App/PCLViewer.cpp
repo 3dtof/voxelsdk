@@ -90,6 +90,16 @@ void PCLViewer::setDepthCamera(DepthCameraPtr depthCamera)
     _depthCamera = depthCamera;
 }
 
+void PCLViewer::removeDepthCamera()
+{
+  if(isRunning())
+  {
+    stop();
+  }
+  _depthCamera = nullptr;
+}
+
+
 void PCLViewer::_cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud)
 {
   if(_viewer and !_viewer->wasStopped())

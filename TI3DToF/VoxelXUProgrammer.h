@@ -49,6 +49,8 @@ public:
   
   virtual bool isInitialized() const;
   
+  virtual bool reset();
+  
   virtual ~VoxelXUProgrammer() {}
 };
 

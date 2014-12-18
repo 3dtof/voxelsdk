@@ -175,6 +175,21 @@ bool VoxelXUProgrammer::setValue(const Parameter &param, uint32_t value)
   return writeRegister(param.address(), registerValue);
 }
 
+bool VoxelXUProgrammer::reset()
+{
+  if(!isInitialized())
+    return false;
+  
+  uint8_t data[1];
+  if(!_xu->setControl(CONTROL_REBOOT_FW_MODE, arraySize(data), data))
+  {
+    logger(ERROR) << "VoxelXUProgrammer: Could not reset the device." << std::endl;
+    return false;
+  }
+  return true;
+}
+
+
   
 }
 }

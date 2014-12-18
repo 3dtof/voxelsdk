@@ -27,6 +27,8 @@ public:
   virtual bool readRegister(uint32_t address, uint32_t &value) const = 0;
   virtual bool writeRegister(uint32_t address, uint32_t value) = 0;
   
+  virtual bool reset() = 0;
+  
   virtual ~RegisterProgrammer() {}
 };
   

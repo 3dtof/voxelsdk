@@ -30,7 +30,10 @@ public:
   
   Vector<DevicePtr> scan();
   
-  DepthCameraPtr connect(DevicePtr device);
+  DepthCameraPtr connect(const DevicePtr &device);
+  
+  // Remove local reference. Outside calling function should remove reference to its DepthCamera as well
+  bool disconnect(const DepthCameraPtr &depthCamera, bool reset = false);
   
   virtual ~CameraSystem();
 };

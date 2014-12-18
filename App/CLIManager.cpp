@@ -9,7 +9,8 @@
 
 #include "LineNoise.h"
 
-#define _C(F) std::bind(F, this, std::placeholders::_1)
+#define _C(F) std::bind(F, this, std::placeholders::_1, std::placeholders::_2)
+#define _P(F) std::bind(F, this, std::placeholders::_1)
 #define _H(F) std::bind(F, this)
 
 #include <string.h>
@@ -20,18 +21,20 @@ namespace Voxel
 CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
 {
   _commands = Map<String, Command>({
-    {"list",    Command(_H(&CLIManager::_listHelp),         _C(&CLIManager::_list),         0)},
-    {"current", Command(_H(&CLIManager::_currentHelp),      _C(&CLIManager::_current),      0)},
-    {"connect", Command(_H(&CLIManager::_connectHelp),      _C(&CLIManager::_connect),      0)},
-    {"start",   Command(_H(&CLIManager::_startHelp),        _C(&CLIManager::_start),        0)},
-    {"stop",    Command(_H(&CLIManager::_stopHelp),         _C(&CLIManager::_stop),         0)},
-    {"getr",    Command(_H(&CLIManager::_getRegisterHelp),  _C(&CLIManager::_getRegister),  0)},
-    {"setr",    Command(_H(&CLIManager::_setRegisterHelp),  _C(&CLIManager::_setRegister),  0)},
-    {"get",     Command(_H(&CLIManager::_getParameterHelp), _C(&CLIManager::_getParameter), 0)},
-    {"set",     Command(_H(&CLIManager::_setParameterHelp), _C(&CLIManager::_setParameter), 0)},
-    {"cap",     Command(_H(&CLIManager::_capabilitiesHelp), _C(&CLIManager::_capabilities), 0)},
-    {"help",    Command(_H(&CLIManager::_helpHelp),         _C(&CLIManager::_help),         0)},
-    {"exit",    Command(_H(&CLIManager::_exitHelp),         _C(&CLIManager::_exit),         0)},
+    {"list",      Command(_H(&CLIManager::_listHelp),         _P(&CLIManager::_list),         0)},
+    {"status",    Command(_H(&CLIManager::_currentHelp),      _P(&CLIManager::_current),      0)},
+    {"connect",   Command(_H(&CLIManager::_connectHelp),      _P(&CLIManager::_connect),      _C(&CLIManager::_connectCompletion))},
+    {"start",     Command(_H(&CLIManager::_startHelp),        _P(&CLIManager::_start),        0)},
+    {"stop",      Command(_H(&CLIManager::_stopHelp),         _P(&CLIManager::_stop),         0)},
+    {"getr",      Command(_H(&CLIManager::_getRegisterHelp),  _P(&CLIManager::_getRegister),  0)},
+    {"setr",      Command(_H(&CLIManager::_setRegisterHelp),  _P(&CLIManager::_setRegister),  0)},
+    {"get",       Command(_H(&CLIManager::_getParameterHelp), _P(&CLIManager::_getParameter), _C(&CLIManager::_getParameterCompletion))},
+    {"set",       Command(_H(&CLIManager::_setParameterHelp), _P(&CLIManager::_setParameter), _C(&CLIManager::_setParameterCompletion))},
+    {"cap",       Command(_H(&CLIManager::_capabilitiesHelp), _P(&CLIManager::_capabilities), _C(&CLIManager::_capabilitiesCompletion))},
+    {"help",      Command(_H(&CLIManager::_helpHelp),         _P(&CLIManager::_help),         0)},
+    {"disconnect",Command(_H(&CLIManager::_disconnectHelp),   _P(&CLIManager::_disconnect),   0)},
+    {"reset",     Command(_H(&CLIManager::_resetHelp),        _P(&CLIManager::_reset),        0)},
+    {"exit",      Command(_H(&CLIManager::_exitHelp),         _P(&CLIManager::_exit),         0)},
   });
   
   
@@ -54,6 +57,14 @@ void CLIManager::run()
   _commandLoop();
 }
 
+void CLIManager::_getPrompt(String &prompt)
+{
+  if(_currentDepthCamera)
+    prompt = "voxel:" + _currentDepthCamera->id() + "> ";
+  else
+    prompt = "voxel:> ";
+}
+
 
 void CLIManager::_commandLoop()
 {
@@ -64,8 +75,15 @@ void CLIManager::_commandLoop()
   linenoiseHistorySetMaxLen(1000);
   linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
   
+  linenoiseSetCompletionCallback(std::bind(&CLIManager::_completionCallback, this, std::placeholders::_1, std::placeholders::_2));
+  
+  
   char *line;
   Vector<String> tokens;
+  
+  String prompt;
+  
+  _getPrompt(prompt);
   
   /* Now this is the main loop of the typical linenoise-based application.
    * The call to linenoise() will block as long as the user types something
@@ -73,7 +91,7 @@ void CLIManager::_commandLoop()
    *
    * The typed string is returned as a malloc() allocated string by
    * linenoise, so the user needs to free() it. */
-  while(_keepRunning and (line = linenoise("voxel> ")) != NULL) 
+  while(_keepRunning and (line = linenoise(prompt.c_str())) != NULL) 
   {
     /* Do something with the string. */
     if (line[0] != '\0') 
@@ -105,6 +123,7 @@ void CLIManager::_commandLoop()
       }
       
       c->second.process(tokens);
+      _getPrompt(prompt);
       
       continue;
     }
@@ -190,7 +209,7 @@ void CLIManager::_exitHelp()          { std::cout << "exit\t\t\t Exit VoxelCLI" 
 void CLIManager::_connectHelp()       { std::cout << "connect <dev>\t\t Connect to a specific device. <dev> needs to be device ID\n"
                                                   << "\t\t\t in the format INTERFACE::DEVICE::SERIAL. Use double-quotes for the ID if it contains spaces" << std::endl; }
 void CLIManager::_listHelp()          { std::cout << "list\t\t\t Scan and list all valid Voxel connectable devices" << std::endl; }
-void CLIManager::_currentHelp()       { std::cout << "current\t\t\t Show the current connected device ID if present" << std::endl; }
+void CLIManager::_currentHelp()       { std::cout << "status\t\t\t Show the current connected device ID if present" << std::endl; }
 void CLIManager::_startHelp()         { std::cout << "start\t\t\t Start streaming and showing the current device" << std::endl; }
 void CLIManager::_stopHelp()          { std::cout << "stop\t\t\t Stop streaming the current device" << std::endl; }
 void CLIManager::_getRegisterHelp()   { std::cout << "getr <reg>\t\t Get register value at <reg>. Use '0x' prefix for hexadecimal" << std::endl; }
@@ -199,6 +218,8 @@ void CLIManager::_getParameterHelp()  { std::cout << "get <param>\t\t Get parame
 void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]\t Get capabilities of the current depth camera. Optionally a parameter name can be given to list only thatparameter details given by name <param>.\n"
                                                   << "\t\t\t A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
 void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>\t Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_disconnectHelp()    { std::cout << "disconnect\t\t Disconnect the currently connected depth camera" << std::endl; }
+void CLIManager::_resetHelp()         { std::cout << "reset\t\t\t Reset and disconnect the currently connected depth camera" << std::endl; }
 
 
 void CLIManager::_help(const Vector<String> &tokens)
@@ -274,12 +295,16 @@ void CLIManager::_connect(const Vector<String> &tokens)
         return;
       }
       
-      
       bool wasRunning = false;
       if(_viewer and _viewer->isRunning())
       {
         _stop(tokens);
         wasRunning = true;
+      }
+      
+      if(_currentDepthCamera)
+      {
+        _disconnect(tokens); // disconnect currently connected depth camera
       }
       
       _currentDepthCamera = p;
@@ -835,6 +860,139 @@ void CLIManager::_showParameterInfo(const ParameterPtr &param)
   }
   
 }
+
+void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
+{
+  Vector<String> tokens;
+  
+  _getTokens(buf, tokens);
+  
+  if(tokens.size() == 0)
+    return;
+  
+  uint length = strlen(buf);
+  
+  if(tokens.size() > 1 or buf[length - 1] == ' ' or buf[length - 1] == '\t') // seems like one complete command has been given
+  {
+    auto c = _commands.find(tokens[0]);
+    
+    if(c == _commands.end())
+      return;
+    
+    if(c->second.complete)
+      c->second.complete(tokens, lc);
+  }
+  else // still typing the main command itself...
+  {
+    for(auto &c: _commands)
+    {
+      if(c.first.size() >= tokens[0].size() and c.first.compare(0, tokens[0].size(), tokens[0]) == 0)
+        linenoiseAddCompletion(lc, c.first.c_str());
+    }
+  }
+}
+
+void CLIManager::_connectCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(tokens.size() == 2)
+  {
+    Vector<DevicePtr> devices = _sys.scan();
+    
+    for(auto &d: devices)
+    {
+      if(d->id().size() >= tokens[1].size() and d->id().compare(0, tokens[1].size(), tokens[1]) == 0)
+        linenoiseAddCompletion(lc, (tokens[0] + " \"" + d->id() + "\"").c_str());
+    }   
+  }
+  else if(tokens.size() == 1)
+  {
+    Vector<DevicePtr> devices = _sys.scan();
+    
+    for(auto &d: devices)
+    {
+      linenoiseAddCompletion(lc, (tokens[0] + " \"" + d->id() + "\"").c_str());
+    }
+  }
+}
+
+void CLIManager::_paramCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  uint count = 0;
+  if(tokens.size() == 2)
+  {
+    for(auto &p: _currentDepthCamera->getParameters())
+    {
+      if(p.first.size() >= tokens[1].size() and p.first.compare(0, tokens[1].size(), tokens[1]) == 0)
+      {
+        linenoiseAddCompletion(lc, (tokens[0] + " " + p.first).c_str());
+        count++;
+        
+        if(count >= 100) // return a maximum of 100 matches
+          return;
+      }
+    }   
+  }
+  else if(tokens.size() == 1)
+  {
+    for(auto &p: _currentDepthCamera->getParameters())
+    {
+      linenoiseAddCompletion(lc, (tokens[0] + " " + p.first).c_str());
+      count++;
+        
+      if(count >= 100) // return a maximum of 100 matches
+        return;
+    }
+  }
+}
+
+void CLIManager::_capabilitiesCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  _paramCompletion(tokens, lc);
+}
+
+
+void CLIManager::_getParameterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  _paramCompletion(tokens, lc);
+}
+
+void CLIManager::_setParameterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  _paramCompletion(tokens, lc);
+}
+
+void CLIManager::_disconnect(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(ERROR) << "No depth camera is current connected" << std::endl;
+    return;
+  }
+  
+  _stop(tokens);
+  _viewer->removeDepthCamera();
+  _sys.disconnect(_currentDepthCamera);
+  _currentDepthCamera = nullptr;
+}
+
+void CLIManager::_reset(const Vector< String > &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(ERROR) << "No depth camera is current connected" << std::endl;
+    return;
+  }
+  
+  _stop(tokens);
+  
+  _viewer->removeDepthCamera();
+  _sys.disconnect(_currentDepthCamera, true);
+  _currentDepthCamera = nullptr;
+}
+
 
 
   

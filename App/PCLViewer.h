@@ -50,8 +50,6 @@ protected:
   
   void _cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud);
   
-  void _getViewer();
-  
   void _renderLoop();
   
   std::thread _renderThread;
@@ -60,6 +58,7 @@ public:
   PCLViewer();
   
   void setDepthCamera(Voxel::DepthCameraPtr depthCamera);
+  void removeDepthCamera();
   
   void start();
   bool isRunning();

@@ -227,5 +227,21 @@ DepthCamera::~DepthCamera()
   _parameters.clear();
 }
 
+bool DepthCamera::reset()
+{
+  if(!stop())
+    return false;
+  
+  if(!_programmer->reset())
+  {
+    logger(ERROR) << "DepthCamera: Failed to reset device " << id() << std::endl;
+    return false;
+  }
+  _programmer = nullptr;
+  _streamer = nullptr;
+  return true;
+}
+
+
   
 }

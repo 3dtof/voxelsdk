@@ -92,6 +92,8 @@ public:
   
   inline const String &id() const { return _id; }
   
+  inline const DevicePtr &getDevice() const { return _device; }
+  
   inline bool isRunning() const { return _running; }
   
   template <typename T>
@@ -116,6 +118,8 @@ public:
   virtual bool stop();
   
   virtual void wait();
+  
+  virtual bool reset();
   
   inline Ptr<RegisterProgrammer> getProgrammer() { return _programmer; }
   inline Ptr<Streamer> getStreamer() { return _streamer; }
