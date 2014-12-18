@@ -20,6 +20,8 @@
 
 #include <Ptr.h>
 
+#include <mutex>
+
 #define DIR_SEP "/"
 
 namespace Voxel
@@ -49,6 +51,10 @@ typedef Ptr<Thread> ThreadPtr;
 template <typename T>
 using Atomic = std::atomic<T>;
 
+typedef std::mutex Mutex;
+
+template <typename T>
+using Lock = std::lock_guard<T>;
 
 /// String functions
 String getHex(uint16_t value);

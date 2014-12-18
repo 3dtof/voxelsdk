@@ -101,6 +101,7 @@ public:
   bool set(const String &name, const T &value);
   
   inline const ParameterPtr getParam(const String &name) const;
+  inline const Map<String, ParameterPtr> &getParameters() const { return _parameters; }
   
   virtual bool setFrameRate(const FrameRate &r) = 0;
   virtual bool getFrameRate(FrameRate &r) const = 0;

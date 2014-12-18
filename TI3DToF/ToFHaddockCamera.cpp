@@ -29,6 +29,9 @@ public:
     if(!_depthCamera.get(MOD_M, modM) or !_depthCamera.get(MOD_N, modN) or !_depthCamera.get(SYS_CLK_FREQ, systemClockFrequency))
       return false;
     
+    if(modN == 0)
+      return false;
+    
     float v = systemClockFrequency*modM/modN;
     
     if(!validate(v))
@@ -53,6 +56,9 @@ public:
       return false;
     
     modN = 18;
+    
+    if(systemClockFrequency == 0)
+      return false;
     
     modM = value*18/systemClockFrequency;
     

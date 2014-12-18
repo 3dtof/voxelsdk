@@ -74,6 +74,10 @@ protected:
   void _setParameter(const Vector<String> &tokens);
   void _setParameterHelp();
   
+  void _capabilities(const Vector<String> &tokens);
+  void _capabilitiesHelp();
+  void _showParameterInfo(const ParameterPtr &param);
+  
 public:
   CLIManager(CameraSystem &sys);
   

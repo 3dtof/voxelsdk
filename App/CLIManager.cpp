@@ -29,6 +29,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"setr",    Command(_H(&CLIManager::_setRegisterHelp),  _C(&CLIManager::_setRegister),  0)},
     {"get",     Command(_H(&CLIManager::_getParameterHelp), _C(&CLIManager::_getParameter), 0)},
     {"set",     Command(_H(&CLIManager::_setParameterHelp), _C(&CLIManager::_setParameter), 0)},
+    {"cap",     Command(_H(&CLIManager::_capabilitiesHelp), _C(&CLIManager::_capabilities), 0)},
     {"help",    Command(_H(&CLIManager::_helpHelp),         _C(&CLIManager::_help),         0)},
     {"exit",    Command(_H(&CLIManager::_exitHelp),         _C(&CLIManager::_exit),         0)},
   });
@@ -195,6 +196,8 @@ void CLIManager::_stopHelp()          { std::cout << "stop\t\t\t Stop streaming 
 void CLIManager::_getRegisterHelp()   { std::cout << "getr <reg>\t\t Get register value at <reg>. Use '0x' prefix for hexadecimal" << std::endl; }
 void CLIManager::_setRegisterHelp()   { std::cout << "setr <reg> = <value>\t Set register <reg> to <value>. Use '0x' prefix for hexadecimal" << std::endl; }
 void CLIManager::_getParameterHelp()  { std::cout << "get <param>\t\t Get parameter value given by name <param>" << std::endl; }
+void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]\t Get capabilities of the current depth camera. Optionally a parameter name can be given to list only thatparameter details given by name <param>.\n"
+                                                  << "\t\t\t A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
 void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>\t Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
 
 
@@ -396,7 +399,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value << std::endl;
+    std::cout << tokens[1] << " = " << value  << " " << intParam->unit() << std::endl;
     
     return;
   }
@@ -409,7 +412,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value << std::endl;
+    std::cout << tokens[1] << " = " << value << " " << uintParam->unit() << std::endl;
     
     return;
   }
@@ -422,7 +425,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value << std::endl;
+    std::cout << tokens[1] << " = " << value << " " << floatParam->unit() << std::endl;
     
     return;
   }
@@ -513,7 +516,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " " << intParam->unit() << " ..." << std::endl;
     
     if(!intParam->set(value))
     {
@@ -533,7 +536,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " " << uintParam->unit() << " ..." << std::endl;
     
     if(!uintParam->set(value))
     {
@@ -553,7 +556,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " " << floatParam->unit() << " ..." << std::endl;
     
     if(!floatParam->set(value))
     {
@@ -665,6 +668,172 @@ void CLIManager::_setRegister(const Vector<String> &tokens)
   }
   else
     std::cout << "Successfully set register @0x" << std::hex << address << std::endl;
+}
+
+void CLIManager::_capabilities(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(ERROR) << "Please connect to a depth camera first" << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    const Map<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
+    for(auto &p: parameters)
+    {
+      _showParameterInfo(p.second);
+    }
+  }
+  else if(tokens.size() == 2)
+  {
+    _showParameterInfo(_currentDepthCamera->getParam(tokens[1]));
+  }
+  else if(tokens[2] == "*") // wildcard match?
+  {
+    const Map<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
+    for(auto &p: parameters)
+    {
+      const String &n = p.second->name();
+      
+      if(n.size() < tokens[1].size()) // parameter name smaller than search name?
+        continue;
+      
+      if(n.compare(0, tokens[1].size(), tokens[1]) == 0) // matches first part in the name?
+        _showParameterInfo(p.second);
+    }
+  }
+}
+
+void CLIManager::_showParameterInfo(const ParameterPtr &param)
+{
+  if(!param)
+  {
+    logger(ERROR) << "Null parameter given for display" << std::endl;
+    return;
+  }
+  
+  std::cout << std::endl;
+  
+  BoolParameter *boolParam = dynamic_cast<BoolParameter *>(param.get());
+  IntegerParameter *intParam = dynamic_cast<IntegerParameter *>(param.get());
+  UnsignedIntegerParameter *uintParam = dynamic_cast<UnsignedIntegerParameter *>(param.get());
+  FloatParameter *floatParam = dynamic_cast<FloatParameter *>(param.get());
+  EnumParameter *enumParam = dynamic_cast<EnumParameter *>(param.get());
+  
+  String n = param->name() + ((param->ioType() == Parameter::IO_READ_ONLY)?" [R]":" [RW]");
+  std::cout << n;
+  
+  for(auto i = 0; i < 4 - n.size()/8; i++)
+    std::cout << "\t";
+  
+  bool descShown = true;
+  
+  if(param->displayName().size())
+    std::cout << "(" << param->displayName() << "). " << param->description() << std::endl;
+  else if(param->description().size())
+    std::cout << param->description() << std::endl;
+  else
+    descShown = false;
+  
+  
+  if(param->address())
+  {
+    if(descShown)
+      std::cout << "\t\t\t\t";
+    std::cout << "Register: 0x" << std::hex << param->address() << "[" << (uint)param->msb() << ":" << (uint)param->lsb() << "]" << std::endl;
+  }
+  
+  if(boolParam) // FIXME: Handle strobe type later
+  {
+    bool value;
+    if(boolParam->get(value))
+      std::cout << "\t\t\t\tCurrent value: " << (value?"true":"false") << std::endl;
+    if(boolParam->valueMeaning().size())
+    {
+      std::cout << "\t\t\t\tPossible values:" << std::endl;
+      
+      for(auto i = 0; i < boolParam->valueMeaning().size(); i++)
+      {
+        std::cout << "\t\t\t\t" << ((i == 0)?"false":"true");
+        
+        if(boolParam->valueMeaning()[i].size())
+          std::cout << " -> " << boolParam->valueMeaning()[i];
+        
+        if(boolParam->valueDescription().size() > i and boolParam->valueDescription()[i].size())
+        {
+          std::cout << " (" << boolParam->valueDescription()[i] << ")";
+        }
+        
+        std::cout << std::endl;
+      }
+    }
+    
+    return;
+  }
+  
+  if(intParam)
+  {
+    int value;
+    if(intParam->get(value))
+      std::cout << "\t\t\t\tCurrent value: " << std::dec << value << " " << intParam->unit() << std::endl;
+    
+    std::cout << "\t\t\t\tLimits: [" << std::dec << intParam->lowerLimit() << " " << intParam->unit() << ", " << intParam->upperLimit() << " " << intParam->unit() << "]" << std::endl;
+    
+    return;
+  }
+  
+  if(uintParam)
+  {
+    uint value;
+    if(uintParam->get(value))
+      std::cout << "\t\t\t\tCurrent value: " << std::dec << value << " " << uintParam->unit() << std::endl;
+    
+    std::cout << "\t\t\t\tLimits: [" << std::dec << uintParam->lowerLimit() << " " << uintParam->unit() << ", " << uintParam->upperLimit() << " " << uintParam->unit() << "]" << std::endl;
+    
+    return;
+  }
+  
+  if(floatParam)
+  {
+    float value;
+    if(floatParam->get(value))
+      std::cout << "\t\t\t\tCurrent value: " << std::dec << value << " " << floatParam->unit() << std::endl;
+    
+    std::cout << "\t\t\t\tLimits: [" << std::dec << floatParam->lowerLimit() << " " << floatParam->unit() << ", " << floatParam->upperLimit() << " " << floatParam->unit() << "]" << std::endl;
+    
+    return;
+  }
+  
+  if(enumParam)
+  {
+    int value;
+    if(enumParam->get(value))
+      std::cout << "\t\t\t\tCurrent value: " << std::dec << value << std::endl;
+    if(enumParam->allowedValues().size())
+    {
+      std::cout << "\t\t\t\tPossible values:" << std::endl;
+      
+      for(auto i = 0; i < enumParam->allowedValues().size(); i++)
+      {
+        std::cout << "\t\t\t\t" << std::dec << enumParam->allowedValues()[i];
+        
+        if(enumParam->valueMeaning().size() > i and enumParam->valueMeaning()[i].size())
+          std::cout << " -> " << enumParam->valueMeaning()[i];
+        
+        if(enumParam->valueDescription().size() > i and enumParam->valueDescription()[i].size())
+        {
+          std::cout << " (" << enumParam->valueDescription()[i] << ")";
+        }
+        
+        std::cout << std::endl;
+      }
+    }
+    
+    return;
+  }
+  
 }
 
 

@@ -138,7 +138,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
     units = s;
   
   if((s = property->Attribute("desc")))
-    units = s;
+    description = s;
   
   if(!(value = _goTo(property, { "valueList", "value" }, false))) // No value list present? => not enum
   {

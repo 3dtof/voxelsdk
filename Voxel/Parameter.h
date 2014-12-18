@@ -64,6 +64,8 @@ public:
   inline uint32_t mask() const { return _mask; }
   inline uint8_t lsb() const { return _lsb; }
   
+  inline IOType ioType() const { return _ioType; }
+  
   inline void setName(const String &n) { _name = n; }
   inline void setAddress(uint32_t a) { _address = a; }
   
