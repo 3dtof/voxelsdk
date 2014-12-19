@@ -26,6 +26,7 @@ void PCLViewer::_renderLoop()
     //_viewer->createInteractor();
     _viewer->addCoordinateSystem(1.0);
     _viewer->initCameraParameters();
+    _viewer->setShowFPS(false);
     _viewer->resetCameraViewpoint();
     _viewer->setCameraPosition(15, 15, 20, 0, 0, 5, 0, 0, 1);
   }
