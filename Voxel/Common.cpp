@@ -40,6 +40,7 @@ void split(const String &str, const char delimiter, Vector<String> &split)
 
 int getFiles(const String &dir, const String &matchString, Vector<String> &files)
 {
+  files.clear();
   DIR *dp;
   struct dirent *dirp;
   

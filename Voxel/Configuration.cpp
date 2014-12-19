@@ -36,7 +36,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     split(p1, ':', splits);
     
     paths.reserve(paths.size() + splits.size());
-    paths.insert(paths.end(), splits.begin(), splits.end());
+    paths.insert(paths.begin(), splits.begin(), splits.end()); // Insert at the beginning to override standard path
   }
   
   if(logger.getDefaultLogLevel() >= DEBUG) 
