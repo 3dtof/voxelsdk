@@ -146,8 +146,15 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
   
   auto scaleMax = sqrt(w*w/4.0f + h*h/4.0f);
   
-  if(!_getFieldOfView(thetaMax))
+  if(!getFieldOfView(thetaMax) or thetaMax == 0)
+  {
+    logger(ERROR) << "DepthCamera: Could not get the field of view angle for " << id() << std::endl;
     return false;
+  }
+  
+  float focalLength;
+  
+  focalLength = scaleMax/tan(thetaMax);
   
   auto r = 0.0f;
   
@@ -164,7 +171,7 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
       if(x1 < 0)
         phi = M_PI + phi; // atan() principal range [-PI/2, PI/2]. outside that add PI
       
-      theta = sqrt(x1*x1 + y1*y1)/scaleMax*thetaMax;
+      theta = atan(sqrt(x1*x1 + y1*y1)/focalLength);
       
       r = depthFrame->depth[index];
       p.i = depthFrame->amplitude[index];

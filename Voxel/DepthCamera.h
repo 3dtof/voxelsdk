@@ -70,8 +70,6 @@ protected:
   virtual bool _convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame) = 0;
   virtual bool _convertToPointCloudFrame(const DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame);
   
-  virtual bool _getFieldOfView(float &fovHalfAngle) const = 0;
-  
   virtual void _captureLoop(); // the main capture loop
   
   void _captureThreadWrapper(); // this is non-virtual and simply calls _captureLoop
@@ -110,6 +108,8 @@ public:
   
   virtual bool setFrameSize(const FrameSize &s) = 0;
   virtual bool getFrameSize(FrameSize &s) const = 0;
+  
+  virtual bool getFieldOfView(float &fovHalfAngle) const = 0;
   
   virtual bool registerCallback(FrameCallBackType type, CallbackType f);
   virtual bool clearCallback();

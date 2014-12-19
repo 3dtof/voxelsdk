@@ -490,7 +490,7 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
       {
         index = i*s.width + j;
         t->_phase[index] = data[index] & 0x0FFF;
-        t->_amplitude[index] = (data[index] & 0xF000) >> 12;
+        t->_amplitude[index] = (data[index] & 0xF000) >> 4; // Amplitude information is MS 4-bits
         
         t->_ambient[index] = 0;
         t->_flags[index] = 0;
