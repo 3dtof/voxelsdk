@@ -65,7 +65,25 @@ bool ToFCamera::_convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr 
   if(toFRawFramePtr->phaseWordWidth() == 1)
     scaleAndCopy(depthFrame->depth.data(), toFRawFramePtr->phase(), depthFrame->depth.size(), depthScalingFactor);
   else if(toFRawFramePtr->phaseWordWidth() == 2)
+  {
+    // Histogram printing code in comment block. Uncomment to see the histogram per frame (8 bins)
+//     uint hist[8];
+//     
+//     for(auto i = 0; i < 8; i++)
+//       hist[i] = 0;
+//     
+//     uint16_t *p = (uint16_t *)toFRawFramePtr->phase();
+//     
+//     for(auto i = 0; i < depthFrame->depth.size(); i++)
+//       hist[p[i] % 8]++;
+//     
+//     logger(INFO) << "Hist: " << depthFrame->depth.size() << " -> [ ";
+//     for(auto i = 0; i < 8; i++)
+//       logger << hist[i] << " ";
+//     logger << "]" << std::endl;
+    
     scaleAndCopy(depthFrame->depth.data(), (uint16_t *)toFRawFramePtr->phase(), depthFrame->depth.size(), depthScalingFactor);
+  }
   else if(toFRawFramePtr->phaseWordWidth() == 4)
     scaleAndCopy(depthFrame->depth.data(), (uint32_t *)toFRawFramePtr->phase(), depthFrame->depth.size(), depthScalingFactor);
   else
