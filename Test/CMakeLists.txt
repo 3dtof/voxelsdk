@@ -15,5 +15,20 @@ target_link_libraries(CameraSystemTest voxel ti3dtof)
 
 add_executable(DMLParseTest DMLParseTest.cpp)
 target_link_libraries(DMLParseTest voxel ti3dtof)
+
+install(TARGETS
+  DeviceTest 
+  DownloaderTest 
+  Voxel14RegisterTest 
+  UVCStreamerTest
+  CameraSystemTest
+  DMLParseTest
+  RUNTIME
+  DESTINATION bin
+  COMPONENT test
+)
                        
-                       
+set(CPACK_COMPONENTS_ALL test)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library test programs.")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= 0.1), libti3dtof (>= 0.1)")
+create_cpack_config(libvoxel-test 0.1)

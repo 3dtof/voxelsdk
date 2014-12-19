@@ -26,5 +26,45 @@ target_link_libraries(voxel
 install(TARGETS voxel
   LIBRARY
   DESTINATION lib
-  COMPONENT libraries
+  COMPONENT lib
 )
+
+install(FILES 
+  CameraSystem.h
+  Common.h
+  Configuration.h
+  DepthCamera.h
+  DepthCameraLibrary.h
+  DepthCameraFactory.h
+  Device.h
+  Downloader.h
+  Filter.h
+  Frame.h
+  FrameBuffer.h
+  Logger.h
+  Parameter.h
+  ParameterDMLParser.h
+  Point.h
+  Ptr.h
+  RegisterProgrammer.h
+  Streamer.h
+  Time.h
+  TinyXML2.h
+  USBSystem.h
+  UVC.h
+  UVCStreamer.h
+  UVCXU.h
+  VideoMode.h
+  DESTINATION include/voxel
+  COMPONENT lib-dev
+)
+
+set(CPACK_COMPONENTS_ALL lib)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main Voxel library.")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb-1.0-0, libudev1")
+create_cpack_config(libvoxel 0.1)
+
+set(CPACK_COMPONENTS_ALL lib-dev)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= 0.1), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
+create_cpack_config(libvoxel-dev 0.1)
