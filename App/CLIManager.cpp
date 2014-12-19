@@ -424,7 +424,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value  << " " << intParam->unit() << std::endl;
+    std::cout << tokens[1] << " = " << std::dec << value  << " " << intParam->unit() << std::endl;
     
     return;
   }
@@ -437,7 +437,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value << " " << uintParam->unit() << std::endl;
+    std::cout << tokens[1] << " = " << std::dec << value << " " << uintParam->unit() << std::endl;
     
     return;
   }
@@ -450,7 +450,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value << " " << floatParam->unit() << std::endl;
+    std::cout << tokens[1] << " = " << std::dec << value << " " << floatParam->unit() << std::endl;
     
     return;
   }
@@ -463,7 +463,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
       logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
-    std::cout << tokens[1] << " = " << value;
+    std::cout << tokens[1] << " = "  << std::dec << value;
     
     const Vector<String> &meaning = enumParam->valueMeaning();
     
@@ -541,7 +541,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " " << intParam->unit() << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << std::dec << value << " " << intParam->unit() << " ..." << std::endl;
     
     if(!intParam->set(value))
     {
@@ -561,7 +561,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " " << uintParam->unit() << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << std::dec << value << " " << uintParam->unit() << " ..." << std::endl;
     
     if(!uintParam->set(value))
     {
@@ -578,10 +578,9 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     float value;
     
     std::istringstream s(tokens[3]);
-    s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " " << floatParam->unit() << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << std::dec << value << " " << floatParam->unit() << " ..." << std::endl;
     
     if(!floatParam->set(value))
     {
@@ -601,7 +600,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     s.unsetf(std::ios_base::basefield);
     s >> value;
     
-    std::cout << "Setting parameter '" << tokens[1] << "' = " << value << " ..." << std::endl;
+    std::cout << "Setting parameter '" << tokens[1] << "' = " << std::dec << value << " ..." << std::endl;
     
     if(!enumParam->set(value))
     {
