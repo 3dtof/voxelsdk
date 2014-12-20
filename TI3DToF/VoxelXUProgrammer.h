@@ -23,6 +23,8 @@ protected:
   UVCXUPtr _xu;
   DevicePtr _device;
   
+  mutable Mutex _mutex;
+  
   const int _XU_ID = 3;
   
   uint8_t _majorVersion, _minorVersion;
@@ -44,6 +46,7 @@ public:
   virtual bool readRegister(uint32_t address, uint32_t &value) const;
   virtual bool writeRegister(uint32_t address, uint32_t value);
   
+  // getValue() and setValue() are internally called readRegister() and writeRegister() which are thread-safe. So, no mutex locking in getValue() and setValue()
   virtual bool getValue(const Parameter &param, uint32_t &value) const;
   virtual bool setValue(const Parameter &param, uint32_t value);
   

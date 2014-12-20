@@ -17,16 +17,16 @@ namespace TI
 /// Custom parameters
 class VCOFrequency: public FloatParameter
 {
-  DepthCamera &_depthCamera;
+  ToFHaddockCamera &_depthCamera;
 public:
-  VCOFrequency(DepthCamera &depthCamera, RegisterProgrammer &programmer):
+  VCOFrequency(ToFHaddockCamera &depthCamera, RegisterProgrammer &programmer):
   FloatParameter(programmer, VCO_FREQ, "MHz", 0, 0, 0, 1, 600, 1300, 864, "VCO frequency", 
                  "Frequency of the VCO used for generating modulation frequencies", IOType::IO_READ_WRITE, {MOD_M, MOD_N}), _depthCamera(depthCamera) {}
                  
   virtual bool get(float &value, bool refresh = true) const
   {
     uint modM, modN, systemClockFrequency;
-    if(!_depthCamera.get(MOD_M, modM) or !_depthCamera.get(MOD_N, modN) or !_depthCamera.get(SYS_CLK_FREQ, systemClockFrequency))
+    if(!_depthCamera._get(MOD_M, modM) or !_depthCamera._get(MOD_N, modN) or !_depthCamera._get(SYS_CLK_FREQ, systemClockFrequency))
       return false;
     
     if(modN == 0)
@@ -46,13 +46,13 @@ public:
     if(!validate(value))
       return false;
     
-    if(!_depthCamera.set(MOD_PLL_UPDATE, true))
+    if(!_depthCamera._set(MOD_PLL_UPDATE, true))
       return false;
     
-    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera.set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
     
     uint modM, modN, systemClockFrequency;
-    if(!_depthCamera.get(SYS_CLK_FREQ, systemClockFrequency))
+    if(!_depthCamera._get(SYS_CLK_FREQ, systemClockFrequency))
       return false;
     
     modN = 18;
@@ -60,9 +60,9 @@ public:
     if(systemClockFrequency == 0)
       return false;
     
-    modM = value*18/systemClockFrequency;
+    modM = value*modN/systemClockFrequency;
     
-    if(!_depthCamera.set(MOD_M, modM) or !_depthCamera.set(MOD_N, modN))
+    if(!_depthCamera._set(MOD_M, modM) or !_depthCamera._set(MOD_N, modN))
       return false;
     
     _value = modM*systemClockFrequency/modN;
@@ -75,10 +75,10 @@ public:
 
 class ModulationFrequencyParameter: public FloatParameter
 {
-  DepthCamera &_depthCamera;
+  ToFHaddockCamera &_depthCamera;
   String _psName;
 public:
-  ModulationFrequencyParameter(DepthCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &psName):
+  ModulationFrequencyParameter(ToFHaddockCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &psName):
   FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 6.25, 433.333, 18, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {psName}), _psName(psName), _depthCamera(depthCamera) {}
                  
@@ -88,7 +88,7 @@ public:
     
     uint modulationPS;
     
-    if(!_depthCamera.get(VCO_FREQ, vcoFrequency) or !_depthCamera.get(_psName, modulationPS))
+    if(!_depthCamera._get(VCO_FREQ, vcoFrequency) or !_depthCamera._get(_psName, modulationPS))
       return false;
     
     float v = vcoFrequency/3/modulationPS;
@@ -117,12 +117,12 @@ public:
     if(!v.set(modulationPS*3*value))
       return false;
     
-    if(!_depthCamera.set(MOD_PLL_UPDATE, true))
+    if(!_depthCamera._set(MOD_PLL_UPDATE, true))
       return false;
     
-    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera.set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
     
-    if(!_depthCamera.set(_psName, modulationPS))
+    if(!_depthCamera._set(_psName, modulationPS))
       return false;
     
     float val;
@@ -136,9 +136,9 @@ public:
 
 class IntegrationTimeParameter: public FloatParameter
 {
-  DepthCamera &_depthCamera;
+  ToFHaddockCamera &_depthCamera;
 public:
-  IntegrationTimeParameter(DepthCamera &depthCamera, RegisterProgrammer &programmer):
+  IntegrationTimeParameter(ToFHaddockCamera &depthCamera, RegisterProgrammer &programmer):
   FloatParameter(programmer, INTG_TIME, "%", 0, 0, 0, 1, 0, 100, 0, "Integration time", 
                 "Integration time as percentage of total cycle time", Parameter::IO_READ_WRITE, {INTG_DUTY_CYCLE}), _depthCamera(depthCamera) {}
                 
@@ -148,8 +148,8 @@ public:
     
     bool integrationDutyCycleSetFailed;
     
-    if(!_depthCamera.get(INTG_DUTY_CYCLE, integrationDutyCycle) or 
-      !_depthCamera.get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
+    if(!_depthCamera._get(INTG_DUTY_CYCLE, integrationDutyCycle) or 
+      !_depthCamera._get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
       or integrationDutyCycleSetFailed)
       return false;
     
@@ -172,12 +172,12 @@ public:
     
     if(integrationDutyCycle > 63) integrationDutyCycle = 63;
     
-    if(!_depthCamera.set(INTG_DUTY_CYCLE, integrationDutyCycle))
+    if(!_depthCamera._set(INTG_DUTY_CYCLE, integrationDutyCycle))
       return false;
     
     bool integrationDutyCycleSetFailed;
     
-    if(!_depthCamera.get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
+    if(!_depthCamera._get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
       or integrationDutyCycleSetFailed)
       return false;
     
@@ -238,16 +238,16 @@ bool ToFHaddockCamera::_init()
   return true;
 }
 
-bool ToFHaddockCamera::getFrameRate(FrameRate &r) const
+bool ToFHaddockCamera::_getFrameRate(FrameRate &r) const
 {
   bool pixCountSetFailed;
   
   uint quadCount, subFrameCount, pixCount, sysClkFrequency;
   
-  if(!get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
+  if(!_get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
   
-  if(!get(PIX_CNT_MAX, pixCount) || !get(QUAD_CNT_MAX, quadCount) || !get(SUBFRAME_CNT_MAX, subFrameCount) || !get(SYS_CLK_FREQ, sysClkFrequency))
+  if(!_get(PIX_CNT_MAX, pixCount) || !_get(QUAD_CNT_MAX, quadCount) || !_get(SUBFRAME_CNT_MAX, subFrameCount) || !_get(SYS_CLK_FREQ, sysClkFrequency))
     return false;
   
   uint numerator = sysClkFrequency*1000000,
@@ -260,26 +260,26 @@ bool ToFHaddockCamera::getFrameRate(FrameRate &r) const
   return true;
 }
 
-bool ToFHaddockCamera::setFrameRate(const FrameRate &r)
+bool ToFHaddockCamera::_setFrameRate(const FrameRate &r)
 {
   bool pixCountSetFailed;
   
   uint quadCount, subFrameCount, sysClkFrequency, pixCount;
   
-  if(!get(QUAD_CNT_MAX, quadCount) || !get(SUBFRAME_CNT_MAX, subFrameCount) || !get(SYS_CLK_FREQ, sysClkFrequency))
+  if(!_get(QUAD_CNT_MAX, quadCount) || !_get(SUBFRAME_CNT_MAX, subFrameCount) || !_get(SYS_CLK_FREQ, sysClkFrequency))
     return false;
   
   pixCount = (uint)(((long)r.denominator*sysClkFrequency*1000000)/((long)quadCount*subFrameCount*r.numerator));
   
   logger(DEBUG) << "ToFHaddockCamera: Setting " << PIX_CNT_MAX << " = " << pixCount << std::endl;
   
-  if(!set(PIX_CNT_MAX, pixCount) || !get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
+  if(!_set(PIX_CNT_MAX, pixCount) || !_get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
   
   return true;
 }
 
-bool ToFHaddockCamera::getFrameSize(Voxel::FrameSize &s) const
+bool ToFHaddockCamera::_getFrameSize(Voxel::FrameSize &s) const
 {
   s.width = 320;
   s.height = 240;
@@ -287,7 +287,7 @@ bool ToFHaddockCamera::getFrameSize(Voxel::FrameSize &s) const
 }
 
 
-bool ToFHaddockCamera::setFrameSize(const FrameSize &s)
+bool ToFHaddockCamera::_setFrameSize(const FrameSize &s)
 {
   return true; // dummy to be coded later
 }

@@ -75,6 +75,24 @@ protected:
   
   bool _running; // is capture running?
   
+  mutable Mutex _accessMutex; // This is locked by getters and setters which are public
+  
+  // These protected getters and setters are not thread-safe. These are to be directly called only when nested calls are to be done from getter/setter to another. 
+  // Otherwise use the public functions
+  template <typename T>
+  bool _get(const String &name, T &value, bool refresh = true) const;
+  
+  template <typename T>
+  bool _set(const String &name, const T &value);
+  
+  virtual bool _setFrameRate(const FrameRate &r) = 0;
+  virtual bool _getFrameRate(FrameRate &r) const = 0;
+  
+  virtual bool _setFrameSize(const FrameSize &s) = 0;
+  virtual bool _getFrameSize(FrameSize &s) const = 0;
+  
+  virtual bool _getFieldOfView(float &fovHalfAngle) const = 0;
+  
 public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")"),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS) {}
@@ -99,16 +117,17 @@ public:
   template <typename T>
   bool set(const String &name, const T &value);
   
+  // WARNING: Do not use get() and set() on ParameterPtr as it is not thread-safe. Instead use get() and set() on DepthCamera
   inline const ParameterPtr getParam(const String &name) const;
   inline const Map<String, ParameterPtr> &getParameters() const { return _parameters; }
   
-  virtual bool setFrameRate(const FrameRate &r) = 0;
-  virtual bool getFrameRate(FrameRate &r) const = 0;
+  inline bool setFrameRate(const FrameRate &r);
+  inline bool getFrameRate(FrameRate &r) const;
   
-  virtual bool setFrameSize(const FrameSize &s) = 0;
-  virtual bool getFrameSize(FrameSize &s) const = 0;
+  inline bool setFrameSize(const FrameSize &s);
+  inline bool getFrameSize(FrameSize &s) const;
   
-  virtual bool getFieldOfView(float &fovHalfAngle) const = 0;
+  inline bool getFieldOfView(float &fovHalfAngle) const;
   
   virtual bool registerCallback(FrameCallBackType type, CallbackType f);
   virtual bool clearCallback();
@@ -120,14 +139,58 @@ public:
   
   virtual bool reset();
   
-  inline Ptr<RegisterProgrammer> getProgrammer() { return _programmer; }
-  inline Ptr<Streamer> getStreamer() { return _streamer; }
+  inline Ptr<RegisterProgrammer> getProgrammer() { return _programmer; } // RegisterProgrammer is usually thread-safe to use outside directly
+  inline Ptr<Streamer> getStreamer() { return _streamer; } // Streamer may not be thread-safe
   
   virtual ~DepthCamera();
 };
 
 template <typename T>
 bool DepthCamera::get(const String &name, T &value, bool refresh) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _get(name, value, refresh);
+}
+
+template <typename T>
+bool DepthCamera::set(const String &name, const T &value)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _set(name, value);
+}
+
+bool DepthCamera::getFieldOfView(float &fovHalfAngle) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getFieldOfView(fovHalfAngle);
+}
+
+bool DepthCamera::getFrameRate(FrameRate &r) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getFrameRate(r);
+}
+
+bool DepthCamera::setFrameRate(const FrameRate &r)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _setFrameRate(r);
+}
+
+bool DepthCamera::getFrameSize(FrameSize &s) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getFrameSize(s);
+}
+
+bool DepthCamera::setFrameSize(const FrameSize &s)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _setFrameSize(s);
+}
+
+template <typename T>
+bool DepthCamera::_get(const String &name, T &value, bool refresh) const
 {
   auto p = _parameters.find(name);
   
@@ -157,7 +220,7 @@ bool DepthCamera::get(const String &name, T &value, bool refresh) const
 }
 
 template <typename T>
-bool DepthCamera::set(const String &name, const T &value)
+bool DepthCamera::_set(const String &name, const T &value)
 {
   auto p = _parameters.find(name);
   

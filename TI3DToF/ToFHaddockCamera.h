@@ -64,16 +64,20 @@ protected:
   virtual bool _getAmplitudeNormalizingFactor(float &factor);
   virtual bool _getDepthScalingFactor(float &factor);
   
+  virtual bool _setFrameRate(const FrameRate &r);
+  virtual bool _getFrameRate(FrameRate &r) const;
+  
+  virtual bool _getFrameSize(FrameSize &s) const;
+  virtual bool _setFrameSize(const FrameSize &s);
+  
 public:
   ToFHaddockCamera(const String &name, DevicePtr device);
   
-  virtual bool setFrameRate(const FrameRate &r);
-  virtual bool getFrameRate(FrameRate &r) const;
-  
-  virtual bool getFrameSize(FrameSize &s) const;
-  virtual bool setFrameSize(const FrameSize &s);
-  
   virtual ~ToFHaddockCamera() {}
+  
+  friend class VCOFrequency;
+  friend class ModulationFrequencyParameter;
+  friend class IntegrationTimeParameter;
 };
 
 }

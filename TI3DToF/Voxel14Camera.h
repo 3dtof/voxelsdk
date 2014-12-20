@@ -30,7 +30,7 @@ protected:
   
   bool _init();
   
-  virtual bool getFieldOfView(float &fovHalfAngle) const;
+  virtual bool _getFieldOfView(float &fovHalfAngle) const;
   
   virtual bool _initStartParams();
   

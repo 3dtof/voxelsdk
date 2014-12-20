@@ -21,6 +21,7 @@ class RegisterProgrammer
 public:
   virtual bool isInitialized() const = 0;
   
+  // NOTE: Make these thread-safe when implementing
   virtual bool setValue(const Parameter &param, uint32_t value) = 0;
   virtual bool getValue(const Parameter &param, uint32_t &value) const = 0;
   

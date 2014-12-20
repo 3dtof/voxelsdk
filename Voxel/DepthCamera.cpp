@@ -244,6 +244,7 @@ bool DepthCamera::start()
   
   _running = true;
   
+  wait();
   //_captureThreadWrapper();
   _captureThread = ThreadPtr(new Thread(&DepthCamera::_captureThreadWrapper, this));
   

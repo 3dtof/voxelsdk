@@ -48,6 +48,8 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
 {
   //LogLevelChanger _(DEBUG);
   
+  Lock<Mutex> _(_mutex);
+  
   if(!isInitialized())
   {
     logger(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
@@ -101,7 +103,7 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
 bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
 {
   //LogLevelChanger _(DEBUG);
-  
+  Lock<Mutex> _(_mutex);
   if(!isInitialized())
   {
     logger(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
