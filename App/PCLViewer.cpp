@@ -97,6 +97,7 @@ void PCLViewer::removeDepthCamera()
   {
     stop();
   }
+  
   _depthCamera = nullptr;
 }
 
@@ -147,7 +148,14 @@ bool PCLViewer::viewerStopped()
 void PCLViewer::stop()
 {
   _stopLoop = true;
+  
+  if(_renderThread.joinable()) _renderThread.join();
+  
+  if(_viewer) _viewer->removePointCloud(CLOUD_NAME);
+  
   _grabber = nullptr;
+  
+  
 }
 
 }

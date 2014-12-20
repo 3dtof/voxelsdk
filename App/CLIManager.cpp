@@ -253,6 +253,7 @@ void CLIManager::_help(const Vector<String> &tokens)
 void CLIManager::_exit(const Vector<String> &tokens)
 {
   _keepRunning = false;
+  _disconnect(tokens);
 }
 
 void CLIManager::_list(const Vector<String> &tokens)

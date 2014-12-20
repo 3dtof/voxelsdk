@@ -56,7 +56,6 @@ protected:
   
   uint32_t _callBackTypesRegistered = 0;
   
-  Atomic<bool> _threadActive;
   ThreadPtr _captureThread;
   
   // Callback the registered function for 'type' if present and decide whether continue processing or not
@@ -114,10 +113,10 @@ public:
   virtual bool registerCallback(FrameCallBackType type, CallbackType f);
   virtual bool clearCallback();
   
-  virtual bool start();
-  virtual bool stop();
+  bool start();
+  bool stop();
   
-  virtual void wait();
+  void wait();
   
   virtual bool reset();
   

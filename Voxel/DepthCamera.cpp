@@ -65,47 +65,86 @@ bool DepthCamera::_callbackAndContinue(uint32_t &callBackTypesToBeCalled, DepthC
 
 void DepthCamera::_captureLoop()
 {
+  uint consecutiveCaptureFails = 0;
+  
   while(_running)
   {
     uint32_t callBackTypesToBeCalled = _callBackTypesRegistered;
     
+    if(consecutiveCaptureFails > 20)
+    {
+      logger(ERROR) << "DepthCamera: 20 consecutive failures in capture of frame. Stopping stream for " << id() << std::endl;
+      _running = false;
+      continue;
+    }
+    
     if(_callBackTypesRegistered == 0 or _callBackTypesRegistered == CALLBACK_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
     {
       auto f = _rawFrameBuffers.get();
-      if(_captureRawUnprocessedFrame(*f) and _callback)
+      
+      if(!_captureRawUnprocessedFrame(*f))
+      {
+        consecutiveCaptureFails++;
+        continue;
+      }
+      
+      if(_callback[CALLBACK_RAW_FRAME_UNPROCESSED])
         _callback[CALLBACK_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**f), CALLBACK_RAW_FRAME_UNPROCESSED);
+      consecutiveCaptureFails = 0;
     }
     else
     {
       RawFramePtr f1;
       if(!_captureRawUnprocessedFrame(f1))
+      {
+        consecutiveCaptureFails++;
         continue;
+      }
       
       if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_RAW_FRAME_UNPROCESSED, *f1))
+      {
+        consecutiveCaptureFails = 0;
         continue;
+      }
       
       auto f = _rawFrameBuffers.get();
       
       if(!_processRawFrame(f1, *f))
+      {
+        consecutiveCaptureFails++;
         continue;
+      }
       
       if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_RAW_FRAME_PROCESSED, **f))
+      {
+        consecutiveCaptureFails = 0;
         continue;
+      }
       
       auto d = _depthFrameBuffers.get();
       
       if(!_convertToDepthFrame(*f, *d))
+      {
+        consecutiveCaptureFails++;
         continue;
+      }
       
       if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_DEPTH_FRAME, **d))
+      {
+        consecutiveCaptureFails = 0;
         continue;
+      }
       
       auto p = _pointCloudBuffers.get();
       
       if(!_convertToPointCloudFrame(*d, *p))
+      {
+        consecutiveCaptureFails++;
         continue;
+      }
       
       _callbackAndContinue(callBackTypesToBeCalled, CALLBACK_XYZI_POINT_CLOUD_FRAME, **p);
+      consecutiveCaptureFails = 0;
     }
   }
   
@@ -189,9 +228,7 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
 
 void DepthCamera::_captureThreadWrapper()
 {
-  _threadActive = true;
   _captureLoop();
-  _threadActive = false;
 }
 
 bool DepthCamera::start()
@@ -216,17 +253,20 @@ bool DepthCamera::start()
 bool DepthCamera::stop()
 {
   _running = false;
+  wait();
   return true;
 }
 
 void DepthCamera::wait()
 {
-  if(_threadActive)
+  if(_captureThread and  _captureThread->get_id() != std::this_thread::get_id() and _captureThread->joinable())
     _captureThread->join();
 }
 
 DepthCamera::~DepthCamera()
 {
+  stop();
+  
   _rawFrameBuffers.clear();
   _depthFrameBuffers.clear();
   _pointCloudBuffers.clear();
