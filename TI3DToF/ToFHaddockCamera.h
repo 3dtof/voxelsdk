@@ -25,6 +25,9 @@
 
 #define ILLUM_EN_POL "illum_en_pol"
 
+#define BIN_ROW_COUNT "bin_row_count"
+#define BIN_COLUMN_COUNT "bin_col_count"
+
 #define DEBUG_EN "debug_en"
 
 #define PIXEL_DATA_SIZE "pixel_data_size"

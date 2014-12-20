@@ -281,9 +281,14 @@ bool ToFHaddockCamera::_setFrameRate(const FrameRate &r)
 
 bool ToFHaddockCamera::_getFrameSize(Voxel::FrameSize &s) const
 {
-  s.width = 320;
-  s.height = 240;
-  return true; // dummy to be coded later
+  uint binRowCount, binColumnCount;
+  
+  if(!_get(BIN_ROW_COUNT, binRowCount) || !_get(BIN_COLUMN_COUNT, binColumnCount))
+    return false;
+  
+  s.width = binColumnCount;
+  s.height = binRowCount;
+  return true;
 }
 
 
