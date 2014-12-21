@@ -10,10 +10,10 @@
 #include "USBSystem.h"
 
 #include <string.h>
-#include <linux/uvcvideo.h>
-#include <linux/usb/video.h>
 
 #ifdef LINUX
+#include <linux/uvcvideo.h>
+#include <linux/usb/video.h>
 #include "UVCPrivateLinux.h"
 #elif defined(WINDOWS)
 #include "UVCPrivateWindows.h"

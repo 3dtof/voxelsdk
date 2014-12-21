@@ -102,7 +102,7 @@ bool USBDownloader::download(const String &file)
 {
   if(_device->interface() != Device::USB)
   {
-    logger(ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
+    logger(LOG_ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
     return false;
   }
   
@@ -110,7 +110,7 @@ bool USBDownloader::download(const String &file)
   
   if(!_locateFile(fil))
   {
-    logger(ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
+    logger(LOG_ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
     return false;
   }
   
@@ -118,11 +118,11 @@ bool USBDownloader::download(const String &file)
   
   if(!f.good())
   {
-    logger(ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
+    logger(LOG_ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
     return false;
   }
   
-  long unsigned int size = f.tellg();
+  std::streamoff size = f.tellg();
   
   f.seekg(std::ios::beg);
   
@@ -131,15 +131,15 @@ bool USBDownloader::download(const String &file)
   
   USBSystem sys;
   
-  int rc;
-  
   if(!sys.isInitialized())
   {
-    logger(ERROR) << "USBDownloader: USBSystem init failed." << endl;
+    logger(LOG_ERROR) << "USBDownloader: USBSystem init failed." << endl;
     return false;
   }
   
 #ifdef LINUX
+  int rc;
+
   libusb_device *device = sys.getUSBSystemPrivate().getDeviceHandle(d);
   
   libusb_device_handle *handle;
@@ -176,7 +176,7 @@ bool USBDownloader::download(const String &file)
     logger(ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
     return false;
   }
-#elif WINDOWS
+#elif defined(WINDOWS)
 #endif
   
   return true;

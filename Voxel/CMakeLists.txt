@@ -18,7 +18,7 @@ add_library(voxel SHARED
   UVC.cpp
   UVCXU.cpp
   Logger.cpp
-  Time.cpp
+  Timer.cpp
   Streamer.cpp
   UVCStreamer.cpp
   CameraSystem.cpp
@@ -59,7 +59,7 @@ install(FILES
   Ptr.h
   RegisterProgrammer.h
   Streamer.h
-  Time.h
+  Timer.h
   TinyXML2.h
   USBSystem.h
   UVC.h

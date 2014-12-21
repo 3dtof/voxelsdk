@@ -14,7 +14,7 @@
 #ifdef LINUX
 #include "UVCPrivateLinux.h"
 #elif defined(WINDOWS)
-#include "USBPrivateWindows.h"
+#include "UVCPrivateWindows.h"
 #endif
 
 

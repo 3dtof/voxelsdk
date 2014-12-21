@@ -10,9 +10,6 @@
 #include "Common.h"
 #include "Device.h"
 
-#include <libusb.h>
-
-
 namespace Voxel
 {
   

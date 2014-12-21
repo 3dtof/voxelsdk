@@ -21,12 +21,12 @@ UVCPrivate::~UVCPrivate()
 
 bool UVCPrivate::read(uint8_t *buffer, std::size_t size)
 {
-
+  return false;
 }
 
 bool UVCPrivate::isInitialized()
 {
-
+  return false;
 }
 
   

@@ -12,20 +12,22 @@
 
 namespace Voxel
 {
-  
+
+class DepthCameraLibraryPrivate;
+
 class DepthCameraLibrary
 {
 protected:
   String _libName;
-  
-  void *_handle = 0;
+
+  Ptr<DepthCameraLibraryPrivate> _libraryPrivate;
   
 public:
-  DepthCameraLibrary(String libName) { _libName = libName; }
-  
+  DepthCameraLibrary(const String &libName);
+
   bool load();
   
-  inline bool isLoaded() { return _handle; }
+  inline bool isLoaded();
   
   DepthCameraFactoryPtr  getDepthCameraFactory();
   

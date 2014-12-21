@@ -7,12 +7,13 @@
 #include "UVCStreamer.h"
 #include "Logger.h"
 
-#include <linux/videodev2.h>
+
 #include <errno.h>
 #include <memory.h>
 #include <assert.h>
 
 #ifdef LINUX
+#include <linux/videodev2.h>
 #include "UVCPrivateLinux.h"
 #elif defined(WINDOWS)
 #include "UVCPrivateWindows.h"
@@ -175,7 +176,7 @@ bool UVCStreamer::_initForCapture()
   
   if(!getCurrentVideoMode(currentVideoMode))
   {
-    logger(ERROR) << "Could not get the current video mode" << std::endl;
+    logger(LOG_ERROR) << "Could not get the current video mode" << std::endl;
     return _initialized = false;
   }
   
@@ -374,10 +375,10 @@ bool UVCStreamer::_stop()
 
 bool UVCStreamer::_capture(RawDataFramePtr &p)
 {
-  bool timedOut;
   TimeStampType waitTime = 2000;//ms
   
 #ifdef LINUX
+  bool timedOut;
   if(!isInitialized() || !_uvc->getUVCPrivate().isReadReady(waitTime, timedOut))
   {
     if(timedOut)
@@ -467,8 +468,8 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     return true;
   }
 #elif defined(WINDOWS)
+  return false;
 #endif
-  
 }
 
 bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)

@@ -90,7 +90,7 @@ protected:
   
   virtual T _fromRawValue(uint32_t value) const
   {
-    return (T)value;
+    return (T)(value?true:false);
   }
   
 public:
@@ -103,7 +103,7 @@ public:
   
   virtual bool set(const T &value)
   {
-    if(_ioType == IO_READ_ONLY or !validate(value))
+    if(_ioType == IO_READ_ONLY || !validate(value))
     {
       return false;
     }
@@ -268,7 +268,7 @@ public:
   
   virtual bool validate(const T &value) const
   {
-    return !(value < _lowerLimit or value > _upperLimit); 
+    return !(value < _lowerLimit || value > _upperLimit); 
   }
   
   virtual ~RangeParameterTemplate() {}
@@ -314,7 +314,7 @@ protected:
   virtual float _fromRawValue(uint32_t value) const
   {
     float v;
-    v = value/(1 << (msb() - lsb() + 1)); // normalized value
+    v = (float)value/(1 << (msb() - lsb() + 1)); // normalized value
     
     if(v > 1.0f) v = 1.0f;
     if(v < 0.0f) v = 0.0f;

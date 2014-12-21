@@ -10,18 +10,19 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
-#include <string>
+
+#include "Common.h"
 
 namespace Voxel
 {
   
 enum LogLevel
 {
-  CRITICAL,
-  ERROR, 
-  WARNING, 
-  INFO, 
-  DEBUG
+  LOG_CRITICAL,
+  LOG_ERROR, 
+  LOG_WARNING, 
+  LOG_INFO, 
+  LOG_DEBUG
 };
   
 class Logger
@@ -32,16 +33,11 @@ protected:
   LogLevel _logLevel, // Allow log statements equal to or below _logLevel
   _currentLogLevel; // This holds log level for current statements
   
-  const std::string _logLevelNames[5] = {
-    "CRITICAL",
-    "ERROR",
-    "WARNING",
-    "INFO",
-    "DEBUG"
-  };
+  static const String _logLevelNames[5];
   
 public:
-  Logger(LogLevel loglevel = ERROR): _logLevel(loglevel), _currentLogLevel(loglevel) {}
+  Logger(LogLevel loglevel = LOG_ERROR): _logLevel(loglevel), _currentLogLevel(loglevel)
+  {}
   
   inline Logger &operator()(LogLevel loglevel)
   {

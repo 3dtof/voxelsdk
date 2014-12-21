@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pid == 0 || dumpFileName.size() == 0)
   {
-    logger(ERROR) << "Required argument missing." << endl;
+    logger(LOG_ERROR) << "Required argument missing." << endl;
     help();
     return -1;
   }
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    logger(ERROR) << "Failed to open '" << dumpFileName << "'" << endl;
+    logger(LOG_ERROR) << "Failed to open '" << dumpFileName << "'" << endl;
     return -1;
   }
   
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   
   if(!streamer.isInitialized())
   {
-    logger(ERROR) << "UVCStreamer not initialized" << endl;
+    logger(LOG_ERROR) << "UVCStreamer not initialized" << endl;
     return -1;
   }
   
@@ -141,14 +141,14 @@ int main(int argc, char *argv[])
   if(streamer.getCurrentVideoMode(c))
     std::cout << "\nCurrent video mode: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
   else
-    logger(ERROR) << "UVCStreamerTest: Could not get current video mode" << endl;
+    logger(LOG_ERROR) << "UVCStreamerTest: Could not get current video mode" << endl;
   
   c.frameSize.width = 320;
   c.frameSize.height = 240;
   
   if(!streamer.setVideoMode(c))
   {
-    logger(ERROR) << "Could not set the video mode to 320x240" << std::endl;
+    logger(LOG_ERROR) << "Could not set the video mode to 320x240" << std::endl;
     return -1;
   }
   else
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
   
   if(!streamer.start())
   {
-    logger(ERROR) << "UVCStreamer not ready for capture" << endl;
+    logger(LOG_ERROR) << "UVCStreamer not ready for capture" << endl;
     return -1;
   }
   
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
   
   if(!streamer.stop())
   {
-    logger(ERROR) << "UVCStreamer could not be stopped" << endl;
+    logger(LOG_ERROR) << "UVCStreamer could not be stopped" << endl;
     return -1;
   }
   

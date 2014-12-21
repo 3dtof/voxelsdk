@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pids.size() == 0 || pids[0] == 0 || dumpFileName.size() == 0)
   {
-    logger(ERROR) << "Required argument missing." << std::endl;
+    logger(LOG_ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    logger(ERROR) << "Failed to open '" << dumpFileName << "'" << std::endl;
+    logger(LOG_ERROR) << "Failed to open '" << dumpFileName << "'" << std::endl;
     return -1;
   }
   
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   
   if(!toConnect)
   {
-    logger(ERROR) << "No valid device found for the specified VID:PID:serialnumber" << std::endl;
+    logger(LOG_ERROR) << "No valid device found for the specified VID:PID:serialnumber" << std::endl;
     return -1;
   }
     
@@ -159,13 +159,13 @@ int main(int argc, char *argv[])
   
   if(!depthCamera)
   {
-    logger(ERROR) << "Could not load depth camera for device " << toConnect->id() << std::endl;
+    logger(LOG_ERROR) << "Could not load depth camera for device " << toConnect->id() << std::endl;
     return -1;
   }
 
   if(!depthCamera->isInitialized())
   {
-    logger(ERROR) << "Depth camera not initialized for device " << toConnect->id() << std::endl;
+    logger(LOG_ERROR) << "Depth camera not initialized for device " << toConnect->id() << std::endl;
     return -1;
   }
   
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
     depthCamera->wait();
   }
   else
-    logger(ERROR) << "Could not start the depth camera " << depthCamera->id() << std::endl;
+    logger(LOG_ERROR) << "Could not start the depth camera " << depthCamera->id() << std::endl;
 
   return 0;
 }

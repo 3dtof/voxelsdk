@@ -32,7 +32,7 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
       if(f)
         (*_rawImageSignal)(*f, type);
       else
-        logger(ERROR) << "PCLGrabber: Callback type claims a raw frame, but obtained frame not raw?" << std::endl;
+        logger(LOG_ERROR) << "PCLGrabber: Callback type claims a raw frame, but obtained frame not raw?" << std::endl;
     }
   }
   else if(type == DepthCamera::CALLBACK_DEPTH_FRAME)
@@ -44,7 +44,7 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
       if(f)
         (*_depthImageSignal)(*f);
       else
-        logger(ERROR) << "PCLGrabber: Callback type claims a depth frame, but obtained frame not a depth frame?" << std::endl;
+        logger(LOG_ERROR) << "PCLGrabber: Callback type claims a depth frame, but obtained frame not a depth frame?" << std::endl;
     }
   }
   else if(type == DepthCamera::DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME)
@@ -84,11 +84,11 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
         (*_pointCloudSignal)(make_shared_ptr(*pointCloud));
       }
       else
-        logger(ERROR) << "PCLGrabber: Callback type claims a point cloud frame, but obtained frame is not?" << std::endl;
+        logger(LOG_ERROR) << "PCLGrabber: Callback type claims a point cloud frame, but obtained frame is not?" << std::endl;
     }
   }
   else
-    logger(ERROR) << "PCLGrabber: Do not know how to handle callback frame type = " << type << std::endl;
+    logger(LOG_ERROR) << "PCLGrabber: Do not know how to handle callback frame type = " << type << std::endl;
 }
 
   

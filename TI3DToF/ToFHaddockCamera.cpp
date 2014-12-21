@@ -200,7 +200,7 @@ bool ToFHaddockCamera::_init()
   
   if(!c.getConfFile(name)) // true => name is now a proper path
   {
-    logger(ERROR) << "ToFHaddockCamera: Failed to locate/read DML file '" << name << "'" << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Failed to locate/read DML file '" << name << "'" << std::endl;
     return false;
   }
   
@@ -210,7 +210,7 @@ bool ToFHaddockCamera::_init()
   
   if(!p.getParameters(params))
   {
-    logger(ERROR) << "ToFHaddockCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
     return false;
   }
   
@@ -361,20 +361,20 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
   
   if(!rawDataFrame)
   {
-    logger(ERROR) << "ToFHaddockCamera: Input data frame is not of raw data type." << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Input data frame is not of raw data type." << std::endl;
     return false;
   }
   
   if(!getFrameSize(s))
   {
-    logger(ERROR) << "ToFHaddockCamera: Could not get the current frame size. Cannot convert raw data to ToF data" << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not get the current frame size. Cannot convert raw data to ToF data" << std::endl;
     return false;
   }
   
   int bytesPerPixel, dataArrangeMode;
   if(!get(PIXEL_DATA_SIZE, bytesPerPixel) or !get(OP_DATA_ARRANGE_MODE, dataArrangeMode))
   {
-    logger(ERROR) << "ToFHaddockCamera: Failed to read " << PIXEL_DATA_SIZE << " or " << OP_DATA_ARRANGE_MODE << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Failed to read " << PIXEL_DATA_SIZE << " or " << OP_DATA_ARRANGE_MODE << std::endl;
     return false;
   }
   
@@ -404,13 +404,13 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
   {
     if(rawDataFrame->data.size() < s.height*s.width*4)
     {
-      logger(ERROR) << "ToFHaddockCamera: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << s.height*s.width*4 << std::endl;
+      logger(LOG_ERROR) << "ToFHaddockCamera: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << s.height*s.width*4 << std::endl;
       return false;
     }
     
     if(dataArrangeMode != 2 && dataArrangeMode != 0)
     {
-      logger(ERROR) << "ToFHaddockCamera: Invalid op_data_arrange_mode = " << dataArrangeMode << " for pixel_data_size = " << bytesPerPixel << std::endl;
+      logger(LOG_ERROR) << "ToFHaddockCamera: Invalid op_data_arrange_mode = " << dataArrangeMode << " for pixel_data_size = " << bytesPerPixel << std::endl;
       return false;
     }
     
@@ -470,13 +470,13 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
   {
     if(dataArrangeMode != 0)
     {
-      logger(ERROR) << "ToFHaddockCamera: " << OP_DATA_ARRANGE_MODE << " is expected to be zero, but got = " << dataArrangeMode << " for " << PIXEL_DATA_SIZE << " = " << bytesPerPixel << std::endl;
+      logger(LOG_ERROR) << "ToFHaddockCamera: " << OP_DATA_ARRANGE_MODE << " is expected to be zero, but got = " << dataArrangeMode << " for " << PIXEL_DATA_SIZE << " = " << bytesPerPixel << std::endl;
       return false;
     }
     
     if(rawDataFrame->data.size() < s.height*s.width*2)
     {
-      logger(ERROR) << "ToFHaddockCamera: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << s.height*s.width*2 << std::endl;
+      logger(LOG_ERROR) << "ToFHaddockCamera: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << s.height*s.width*2 << std::endl;
       return false;
     }
     
@@ -504,14 +504,14 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
   }
   else
   {
-    logger(ERROR) << "ToFHaddockCamera: Don't know to handle " << PIXEL_DATA_SIZE << " = " << bytesPerPixel << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Don't know to handle " << PIXEL_DATA_SIZE << " = " << bytesPerPixel << std::endl;
     return false;
   }
   
   bool histogramEnabled;
   if(!get(HISTOGRAM_EN, histogramEnabled))
   {
-    logger(ERROR) << "ToFHaddockCamera: Failed to find whether histogram is enabled or not" << std::endl;
+    logger(LOG_ERROR) << "ToFHaddockCamera: Failed to find whether histogram is enabled or not" << std::endl;
     return false;
   }
   
@@ -520,7 +520,7 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
   
   if(rawDataFrame->data.size() < s.height*s.width*bytesPerPixel + 96)
   {
-    logger(ERROR) << "ToFHaddockCamera: Histogram is enabled but raw data has less than 96 bytes at the end. Raw data size = " << rawDataFrame->data.size() 
+    logger(LOG_ERROR) << "ToFHaddockCamera: Histogram is enabled but raw data has less than 96 bytes at the end. Raw data size = " << rawDataFrame->data.size() 
       << ", bytes in frame = " << s.height*s.width*bytesPerPixel << std::endl;
     return false;
   }

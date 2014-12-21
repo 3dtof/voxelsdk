@@ -9,7 +9,6 @@
 
 #include "Device.h"
 
-#include <libusb.h>
 #include <fstream>
 
 namespace Voxel

@@ -15,14 +15,14 @@ bool USBSystemPrivate::isInitialized()
 }
 
   
-String getDeviceNode(const USBDevice &usbd)
+String USBSystemPrivate::getDeviceNode(const USBDevice &usbd)
 {
-
+  return String("");
 }
 
 Vector<DevicePtr> USBSystemPrivate::getDevices()
 {
-
+  return Vector<DevicePtr>();
 }
 
   

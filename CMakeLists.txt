@@ -6,12 +6,12 @@ project (TIVoxel)
 
 MESSAGE(${CMAKE_SYSTEM_NAME})
 
-add_definitions(-msse2 -pthread -fopenmp -std=c++11)
 
 set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(LINUX 1)
+  add_definitions(-msse2 -pthread -fopenmp -std=c++11)
   ADD_DEFINITIONS(-DLINUX)  
 
   set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)

@@ -99,8 +99,8 @@ public:
   
   virtual bool isInitialized() const
   {
-    return _programmer and _programmer->isInitialized() and 
-           _streamer and _streamer->isInitialized();
+    return _programmer && _programmer->isInitialized() && 
+           _streamer && _streamer->isInitialized();
   }
   
   inline const String &name() const { return _name; }
@@ -206,7 +206,7 @@ bool DepthCamera::_get(const String &name, T &value, bool refresh) const
     
     if(!param->get(value, refresh))
     {
-      logger(ERROR) << "DepthCamera:Could not get value for parameter " << _id << "." << name << std::endl;
+      logger(LOG_ERROR) << "DepthCamera:Could not get value for parameter " << _id << "." << name << std::endl;
       return false;
     }
     
@@ -214,7 +214,7 @@ bool DepthCamera::_get(const String &name, T &value, bool refresh) const
   }
   else
   {
-    logger(ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
     return false;
   }
 }
@@ -230,13 +230,13 @@ bool DepthCamera::_set(const String &name, const T &value)
     
     if(param == 0)
     {
-      logger(ERROR) << "DepthCamera: Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(LOG_ERROR) << "DepthCamera: Invalid value type '" << typeid(value).name() << "' used to set parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
     }
     
     if(!param->set(value))
     {
-      logger(ERROR) << "DepthCamera: Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
+      logger(LOG_ERROR) << "DepthCamera: Could not set value " << value << " for parameter " << this->name() << "(" << _device->id() << ")." << name << std::endl;
       return false;
     }
     
@@ -244,7 +244,7 @@ bool DepthCamera::_set(const String &name, const T &value)
   }
   else
   {
-    logger(ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
     return false;
   }
 }
@@ -257,7 +257,7 @@ const ParameterPtr DepthCamera::getParam(const String &name) const
     return p->second;
   else
   {
-    logger(ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
     return 0;
   }
 }

@@ -47,9 +47,9 @@ void DepthCameraFactory::_addSupportedDevices(const Vector<DevicePtr> &devices)
 
 typedef Ptr<DepthCameraFactory> DepthCameraFactoryPtr;
 
-extern "C" DepthCameraFactoryPtr getDepthCameraFactory();
+extern "C" void getDepthCameraFactory(DepthCameraFactoryPtr &depthCameraFactory);
 
-typedef DepthCameraFactoryPtr (*GetDepthCameraFactory)(); // Function type
+typedef void (*GetDepthCameraFactory)(DepthCameraFactoryPtr depthCameraFactory); // Function type
   
 }
 

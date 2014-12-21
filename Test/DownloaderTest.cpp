@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  logger.setDefaultLogLevel(ERROR);
+  logger.setDefaultLogLevel(LOG_ERROR);
   
   uint16_t vid = 0, pid = 0;
   String serialNumber;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pid == 0 || firmwareFileName.size() == 0)
   {
-    logger(ERROR) << "Required argument missing." << endl;
+    logger(LOG_ERROR) << "Required argument missing." << endl;
     help();
     return -1;
   }

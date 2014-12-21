@@ -21,26 +21,7 @@ protected:
     String environmentVariable;
   };
   
-  Map<String, _Path> _pathTypes = {
-    { "firmware", 
-      {
-        "/lib/firmware/voxel",
-        "VOXEL_FW_PATH"
-      }
-    },
-    { "lib", 
-      {
-        "/usr/lib/voxel",
-        "VOXEL_LIB_PATH"
-      }
-    },
-    { "conf", 
-      {
-        "/etc/voxel",
-        "VOXEL_CONF_PATH"
-      }
-    }
-  };
+  static const Map<String, _Path> _pathTypes;
   
   bool _getPaths(const String &type, Vector<String> &paths);
   

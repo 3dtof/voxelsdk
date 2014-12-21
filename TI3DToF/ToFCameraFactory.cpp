@@ -39,9 +39,9 @@ DepthCameraPtr ToFCameraFactory::getDepthCamera(DevicePtr device)
   return 0;
 }
 
-extern "C" DepthCameraFactoryPtr getDepthCameraFactory()
+extern "C" void getDepthCameraFactory(DepthCameraFactoryPtr &ptr)
 {
-  return DepthCameraFactoryPtr(new ToFCameraFactory("ti3dtof"));
+  ptr = DepthCameraFactoryPtr(new ToFCameraFactory("ti3dtof"));
 }
   
   

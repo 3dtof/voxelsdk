@@ -4,6 +4,12 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
+#ifdef WINDOWS
+#define _USE_MATH_DEFINES
+#include <math.h>
+#endif
+
+
 #include "DepthCamera.h"
 #include "Logger.h"
 
@@ -22,7 +28,7 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
     }
     else
     {
-      logger(ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
+      logger(LOG_ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
       return false;
     }
   }
@@ -32,7 +38,8 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
 bool DepthCamera::clearCallback()
 {
   for(auto i = 0; i < CALLBACK_TYPE_COUNT; i++)
-    _callback[i] = 0;
+    _callback[i] = nullptr;
+  return true;
 }
 
 bool DepthCamera::registerCallback(FrameCallBackType type, CallbackType f)
@@ -40,19 +47,19 @@ bool DepthCamera::registerCallback(FrameCallBackType type, CallbackType f)
   if(type < CALLBACK_TYPE_COUNT)
   {
     if(_callback[type])
-      logger(WARNING) << "DepthCamera: " << id() << " already has a callback for this type = " << type << ". Overwriting it now." << std::endl;
+      logger(LOG_WARNING) << "DepthCamera: " << id() << " already has a callback for this type = " << type << ". Overwriting it now." << std::endl;
     
     _callBackTypesRegistered |= (1 << type);
     _callback[type] = f;
     return true;
   }
-  logger(ERROR) << "DepthCamera: Invalid callback type = " << type << " attempted for depth camera " << id() << std::endl;
+  logger(LOG_ERROR) << "DepthCamera: Invalid callback type = " << type << " attempted for depth camera " << id() << std::endl;
   return false;
 }
 
 bool DepthCamera::_callbackAndContinue(uint32_t &callBackTypesToBeCalled, DepthCamera::FrameCallBackType type, const Frame &frame)
 {
-  if((callBackTypesToBeCalled | type) and _callback[type])
+  if((callBackTypesToBeCalled | type) && _callback[type])
   {
     _callback[type](*this, frame, type);
   }
@@ -73,12 +80,12 @@ void DepthCamera::_captureLoop()
     
     if(consecutiveCaptureFails > 20)
     {
-      logger(ERROR) << "DepthCamera: 20 consecutive failures in capture of frame. Stopping stream for " << id() << std::endl;
+      logger(LOG_ERROR) << "DepthCamera: 20 consecutive failures in capture of frame. Stopping stream for " << id() << std::endl;
       _running = false;
       continue;
     }
     
-    if(_callBackTypesRegistered == 0 or _callBackTypesRegistered == CALLBACK_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
+    if(_callBackTypesRegistered == 0 && _callBackTypesRegistered == CALLBACK_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
     {
       auto f = _rawFrameBuffers.get();
       
@@ -158,7 +165,7 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
 {
   if(!depthFrame)
   {
-    logger(ERROR) << "DepthCamera: Blank depth frame." << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Blank depth frame." << std::endl;
     return false;
   }
   
@@ -185,9 +192,9 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
   
   auto scaleMax = sqrt(w*w/4.0f + h*h/4.0f);
   
-  if(!getFieldOfView(thetaMax) or thetaMax == 0)
+  if(!getFieldOfView(thetaMax) || thetaMax == 0)
   {
-    logger(ERROR) << "DepthCamera: Could not get the field of view angle for " << id() << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Could not get the field of view angle for " << id() << std::endl;
     return false;
   }
   
@@ -235,7 +242,7 @@ bool DepthCamera::start()
 {
   if(!_callback)
   {
-    logger(ERROR) << "DepthCamera: Please register a callback to " << _id << " before starting capture" << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Please register a callback to " << _id << " before starting capture" << std::endl;
     return false;
   }
   
@@ -260,7 +267,7 @@ bool DepthCamera::stop()
 
 void DepthCamera::wait()
 {
-  if(_captureThread and  _captureThread->get_id() != std::this_thread::get_id() and _captureThread->joinable())
+  if(_captureThread &&  _captureThread->get_id() != std::this_thread::get_id() && _captureThread->joinable())
     _captureThread->join();
 }
 
@@ -282,7 +289,7 @@ bool DepthCamera::reset()
   
   if(!_programmer->reset())
   {
-    logger(ERROR) << "DepthCamera: Failed to reset device " << id() << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Failed to reset device " << id() << std::endl;
     return false;
   }
   _programmer = nullptr;

@@ -10,9 +10,37 @@
 #include <stdlib.h>
 #include <fstream>
 
+#ifdef LINUX
+#define DIR_SEP "/"
+#elif defined(WINDOWS)
+#define DIR_SEP "\\"
+#endif
+
+
 namespace Voxel
 {
-  
+
+const Map<String, Configuration::_Path> Configuration::_pathTypes = {
+  { "firmware",
+    {
+      "/lib/firmware/voxel",
+      "VOXEL_FW_PATH"
+    }
+  },
+  { "lib",
+    {
+      "/usr/lib/voxel",
+      "VOXEL_LIB_PATH"
+    }
+  },
+  { "conf",
+    {
+      "/etc/voxel",
+      "VOXEL_CONF_PATH"
+    }
+  }
+};
+
 bool Configuration::_getPaths(const String &type, Vector<String> &paths)
 {
   auto t = _pathTypes.find(type);
@@ -20,7 +48,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   if(t == _pathTypes.end())
     return false;
   
-  _Path &pt = t->second;
+  const _Path &pt = t->second;
   
   paths.clear();
   paths.push_back(pt.standardPath);
@@ -39,15 +67,15 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     paths.insert(paths.begin(), splits.begin(), splits.end()); // Insert at the beginning to override standard path
   }
   
-  if(logger.getDefaultLogLevel() >= DEBUG) 
+  if(logger.getDefaultLogLevel() >= LOG_DEBUG) 
   {
     for(auto i = 0; i < paths.size(); i++)
     {
-      logger(DEBUG) << paths[i];
+      logger(LOG_DEBUG) << paths[i];
       if(i < paths.size() - 1)
-        logger(DEBUG) << ":";
+        logger(LOG_DEBUG) << ":";
     }
-    logger(DEBUG) << endl;
+    logger(LOG_DEBUG) << endl;
   }
   
   return true;

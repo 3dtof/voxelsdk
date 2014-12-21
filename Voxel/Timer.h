@@ -7,20 +7,19 @@
 #ifndef VOXEL_TIME_H
 #define VOXEL_TIME_H
 
-#include <time.h>
 #include "Common.h"
 
 namespace Voxel
 {
   
-class Time
+class Timer
 {
   TimeStampType _realTimeStart = 0, _monoticStart = 0;
   
   bool _initialized = false;
   
 public:
-  Time()
+  Timer()
   {
     init();
   }

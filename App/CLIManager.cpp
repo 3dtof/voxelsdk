@@ -104,7 +104,7 @@ void CLIManager::_commandLoop()
       
       if(tokens.size() == 0)
       {
-        logger(ERROR) << "Seems like a parse error. Please re-enter your command" << std::endl;
+        logger(LOG_ERROR) << "Seems like a parse error. Please re-enter your command" << std::endl;
         continue;
       }
       
@@ -112,13 +112,13 @@ void CLIManager::_commandLoop()
       
       if(c == _commands.end())
       {
-        logger(ERROR) << "Unknown command '" << tokens[0] << "'" << std::endl;
+        logger(LOG_ERROR) << "Unknown command '" << tokens[0] << "'" << std::endl;
         continue;
       }
       
       if(!c->second.process)
       {
-        logger(ERROR) << "Don't know how to execute command '" << tokens[0] << "'" << std::endl;
+        logger(LOG_ERROR) << "Don't know how to execute command '" << tokens[0] << "'" << std::endl;
         continue;
       }
       
@@ -230,13 +230,13 @@ void CLIManager::_help(const Vector<String> &tokens)
     
     if(c == _commands.end())
     {
-      logger(ERROR) << "Unknown command '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Unknown command '" << tokens[1] << "'" << std::endl;
       return;
     }
     
     if(!c->second.help)
     {
-      logger(ERROR) << "No help available about command '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "No help available about command '" << tokens[1] << "'" << std::endl;
       return;
     }
     
@@ -262,7 +262,7 @@ void CLIManager::_list(const Vector<String> &tokens)
   
   if(!devices.size())
   {
-    logger(ERROR) << "Could not find any valid devices." << std::endl;
+    logger(LOG_ERROR) << "Could not find any valid devices." << std::endl;
     return;
   }
   
@@ -276,7 +276,7 @@ void CLIManager::_connect(const Vector<String> &tokens)
 {
   if(tokens.size() < 2)
   {
-    logger(ERROR) << "Please specify a device ID" << std::endl;
+    logger(LOG_ERROR) << "Please specify a device ID" << std::endl;
     return;
   }
   
@@ -317,7 +317,7 @@ void CLIManager::_connect(const Vector<String> &tokens)
     }
   }
   
-  logger(ERROR) << "Could not find a valid device with specified ID" << std::endl;
+  logger(LOG_ERROR) << "Could not find a valid device with specified ID" << std::endl;
 }
 
 void CLIManager::_current(const Vector< String > &tokens)
@@ -339,7 +339,7 @@ void CLIManager::_start(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "No device connected. Kindly 'connect' a device first" << std::endl;
+    logger(LOG_ERROR) << "No device connected. Kindly 'connect' a device first" << std::endl;
     return;
   }
   
@@ -373,13 +373,13 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "Please connect to a depth camera first" << std::endl;
+    logger(LOG_ERROR) << "Please connect to a depth camera first" << std::endl;
     return;
   }
   
   if(tokens.size() < 2)
   {
-    logger(ERROR) << "Please specific a parameter name" << std::endl;
+    logger(LOG_ERROR) << "Please specific a parameter name" << std::endl;
     return;
   }
   
@@ -387,7 +387,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
   
   if(!param)
   {
-    logger(ERROR) << "No valid parameter with name = '" << tokens[1] << "'" << std::endl;
+    logger(LOG_ERROR) << "No valid parameter with name = '" << tokens[1] << "'" << std::endl;
     return;
   }
   
@@ -402,7 +402,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     bool value;
     if(!boolParam->get(value))
     {
-      logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << tokens[1] << " = " << (value?"true":"false");
@@ -422,7 +422,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     int value;
     if(!intParam->get(value))
     {
-      logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << tokens[1] << " = " << std::dec << value  << " " << intParam->unit() << std::endl;
@@ -435,7 +435,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     uint value;
     if(!uintParam->get(value))
     {
-      logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << tokens[1] << " = " << std::dec << value << " " << uintParam->unit() << std::endl;
@@ -448,7 +448,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     float value;
     if(!floatParam->get(value))
     {
-      logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << tokens[1] << " = " << std::dec << value << " " << floatParam->unit() << std::endl;
@@ -461,7 +461,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     int value;
     if(!enumParam->get(value))
     {
-      logger(ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to get parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << tokens[1] << " = "  << std::dec << value;
@@ -475,20 +475,20 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     return;
   }
   
-  logger(ERROR) << "Unknown type of parameter '" << tokens[1] << "'. Don't know how to handle" << std::endl;
+  logger(LOG_ERROR) << "Unknown type of parameter '" << tokens[1] << "'. Don't know how to handle" << std::endl;
 }
 
 void CLIManager::_setParameter(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "Please connect to a depth camera first" << std::endl;
+    logger(LOG_ERROR) << "Please connect to a depth camera first" << std::endl;
     return;
   }
   
   if(tokens.size() < 4 or tokens[2] != "=")
   {
-    logger(ERROR) << "Please specific a parameter name and value to be set in the format given below." << std::endl;
+    logger(LOG_ERROR) << "Please specific a parameter name and value to be set in the format given below." << std::endl;
     _setParameterHelp();
     return;
   }
@@ -497,7 +497,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
   
   if(!param)
   {
-    logger(ERROR) << "No valid parameter with name = '" << tokens[1] << "'" << std::endl;
+    logger(LOG_ERROR) << "No valid parameter with name = '" << tokens[1] << "'" << std::endl;
     return;
   }
   
@@ -526,7 +526,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     
     if(!boolParam->set(value))
     {
-      logger(ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << "Successfully set parameter '" << tokens[1] << "'" << std::endl;
@@ -546,7 +546,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     
     if(!intParam->set(value))
     {
-      logger(ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << "Successfully set parameter '" << tokens[1] << "'" << std::endl;
@@ -566,7 +566,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     
     if(!uintParam->set(value))
     {
-      logger(ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << "Successfully set parameter '" << tokens[1] << "'" << std::endl;
@@ -585,7 +585,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     
     if(!floatParam->set(value))
     {
-      logger(ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << "Successfully set parameter '" << tokens[1] << "'" << std::endl;
@@ -605,7 +605,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     
     if(!enumParam->set(value))
     {
-      logger(ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
+      logger(LOG_ERROR) << "Failed to set parameter '" << tokens[1] << "'" << std::endl;
       return;
     }
     std::cout << "Successfully set parameter '" << tokens[1] << "'" << std::endl;
@@ -613,26 +613,26 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     return;
   }
   
-  logger(ERROR) << "Unknown type of parameter '" << tokens[1] << "'. Don't know how to handle" << std::endl;
+  logger(LOG_ERROR) << "Unknown type of parameter '" << tokens[1] << "'. Don't know how to handle" << std::endl;
 }
 
 void CLIManager::_getRegister(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "Please connect to a depth camera first" << std::endl;
+    logger(LOG_ERROR) << "Please connect to a depth camera first" << std::endl;
     return;
   }
   
   if(!_currentDepthCamera->getProgrammer())
   {
-    logger(ERROR) << "Current depth camera " << _currentDepthCamera-> id() << " does not have a register programmer." << std::endl;
+    logger(LOG_ERROR) << "Current depth camera " << _currentDepthCamera-> id() << " does not have a register programmer." << std::endl;
     return;
   }
   
   if(tokens.size() < 2)
   {
-    logger(ERROR) << "Please specify a register address to read from" << std::endl;
+    logger(LOG_ERROR) << "Please specify a register address to read from" << std::endl;
     return;
   }
   
@@ -644,7 +644,7 @@ void CLIManager::_getRegister(const Vector<String> &tokens)
   
   if(!_currentDepthCamera->getProgrammer()->readRegister(address, value))
   {
-    logger(ERROR) << "Could not read register @0x" << std::hex << address << std::endl;
+    logger(LOG_ERROR) << "Could not read register @0x" << std::hex << address << std::endl;
   }
   else
     std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
@@ -654,19 +654,19 @@ void CLIManager::_setRegister(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "Please connect to a depth camera first" << std::endl;
+    logger(LOG_ERROR) << "Please connect to a depth camera first" << std::endl;
     return;
   }
   
   if(!_currentDepthCamera->getProgrammer())
   {
-    logger(ERROR) << "Current depth camera " << _currentDepthCamera-> id() << " does not have a register programmer." << std::endl;
+    logger(LOG_ERROR) << "Current depth camera " << _currentDepthCamera-> id() << " does not have a register programmer." << std::endl;
     return;
   }
   
   if(tokens.size() < 4 or tokens[2] != "=")
   {
-    logger(ERROR) << "Please specify a register address to write to and value to set in the following format" << std::endl;
+    logger(LOG_ERROR) << "Please specify a register address to write to and value to set in the following format" << std::endl;
     _setRegisterHelp();
     return;
   }
@@ -689,7 +689,7 @@ void CLIManager::_setRegister(const Vector<String> &tokens)
   
   if(!_currentDepthCamera->getProgrammer()->writeRegister(address, value))
   {
-    logger(ERROR) << "Could not write to register @0x" << std::hex << address << std::endl;
+    logger(LOG_ERROR) << "Could not write to register @0x" << std::hex << address << std::endl;
   }
   else
     std::cout << "Successfully set register @0x" << std::hex << address << std::endl;
@@ -699,7 +699,7 @@ void CLIManager::_capabilities(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "Please connect to a depth camera first" << std::endl;
+    logger(LOG_ERROR) << "Please connect to a depth camera first" << std::endl;
     return;
   }
   
@@ -735,7 +735,7 @@ void CLIManager::_showParameterInfo(const ParameterPtr &param)
 {
   if(!param)
   {
-    logger(ERROR) << "Null parameter given for display" << std::endl;
+    logger(LOG_ERROR) << "Null parameter given for display" << std::endl;
     return;
   }
   
@@ -968,7 +968,7 @@ void CLIManager::_disconnect(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "No depth camera is current connected" << std::endl;
+    logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
     return;
   }
   
@@ -982,7 +982,7 @@ void CLIManager::_reset(const Vector< String > &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(ERROR) << "No depth camera is current connected" << std::endl;
+    logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
     return;
   }
   

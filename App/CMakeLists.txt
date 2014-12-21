@@ -1,4 +1,4 @@
-find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
+#find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
 
 add_definitions(${PCL_DEFINITIONS})
 

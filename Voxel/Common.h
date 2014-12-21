@@ -22,8 +22,6 @@
 
 #include <mutex>
 
-#define DIR_SEP "/"
-
 namespace Voxel
 {
 
@@ -44,6 +42,10 @@ typedef int IndexType;
 typedef std::size_t SizeType;
 typedef uint8_t ByteType;
 typedef uint64_t TimeStampType;
+
+#ifdef WINDOWS
+typedef uint32_t uint;
+#endif
 
 typedef std::thread Thread;
 typedef Ptr<Thread> ThreadPtr;

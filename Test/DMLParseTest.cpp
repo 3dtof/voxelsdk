@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   
   if(xmlFile.size() == 0)
   {
-    logger(ERROR) << "Required argument missing." << endl;
+    logger(LOG_ERROR) << "Required argument missing." << endl;
     help();
     return -1;
   }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    logger(ERROR) << "Failed to open '" << xmlFile << "'" << endl;
+    logger(LOG_ERROR) << "Failed to open '" << xmlFile << "'" << endl;
     return -1;
   }
   

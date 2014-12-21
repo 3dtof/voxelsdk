@@ -10,7 +10,7 @@
 #include "Device.h"
 #include "Frame.h"
 #include "VideoMode.h"
-#include "Time.h"
+#include "Timer.h"
 
 namespace Voxel
 {
@@ -20,7 +20,7 @@ class Streamer
 protected:
   DevicePtr _device;
   
-  Time _time;
+  Timer _time;
   
   int _currentID = -1;
   TimeStampType _currentTimeStamp = 0;

@@ -24,7 +24,7 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
 {
   if(device->interface() != Device::USB)
   {
-    logger(ERROR) << "VoxelXUProgrammer: Invalid device." << std::endl;
+    logger(LOG_ERROR) << "VoxelXUProgrammer: Invalid device." << std::endl;
     return;
   }
   
@@ -52,7 +52,7 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
   
   if(!isInitialized())
   {
-    logger(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
+    logger(LOG_ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
     return false;
   }
   
@@ -63,7 +63,7 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
   
   if(!_xu->setControl(CONTROL_SET_READ_REGISTER, arraySize(addr), addr))
   {
-    logger(ERROR) << "VoxelXUProgrammer: Could not set read register address 0x" << std::hex << address << std::endl;
+    logger(LOG_ERROR) << "VoxelXUProgrammer: Could not set read register address 0x" << std::hex << address << std::endl;
     return false;
   }
   
@@ -74,7 +74,7 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
     
     if(!_xu->getControl(CONTROL_READ_REGISTER_1, arraySize(data), data))
     {
-      logger(ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
+      logger(LOG_ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
       return false;
     }
     
@@ -88,7 +88,7 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
     data[2] = 0x0;
     if(!_xu->getControl(CONTROL_READ_REGISTER_3, arraySize(data), data))
     {
-      logger(ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
+      logger(LOG_ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
       return false;
     }
     
@@ -106,7 +106,7 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
   Lock<Mutex> _(_mutex);
   if(!isInitialized())
   {
-    logger(ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
+    logger(LOG_ERROR) << "VoxelXUProgrammer: Not initialized." << std::endl;
     return false;
   }
   
@@ -124,7 +124,7 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
     
     if(!_xu->setControl(CONTROL_WRITE_REGISTER_1, arraySize(data), data))
     {
-      logger(ERROR) << "VoxelXUProgrammer: Could not write register for address 0x" << std::hex << address << std::endl;
+      logger(LOG_ERROR) << "VoxelXUProgrammer: Could not write register for address 0x" << std::hex << address << std::endl;
       return false;
     }
   }
@@ -138,7 +138,7 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
     data[4] = (value >> 16) & 0xFF;
     if(!_xu->setControl(CONTROL_WRITE_REGISTER_3, arraySize(data), data))
     {
-      logger(ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
+      logger(LOG_ERROR) << "VoxelXUProgrammer: Could not read register for address 0x" << std::hex << address << std::endl;
       return false;
     }
   }
@@ -185,7 +185,7 @@ bool VoxelXUProgrammer::reset()
   uint8_t data[1];
   if(!_xu->setControl(CONTROL_REBOOT_FW_MODE, arraySize(data), data))
   {
-    logger(ERROR) << "VoxelXUProgrammer: Could not reset the device." << std::endl;
+    logger(LOG_ERROR) << "VoxelXUProgrammer: Could not reset the device." << std::endl;
     return false;
   }
   return true;

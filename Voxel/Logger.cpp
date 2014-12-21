@@ -9,7 +9,9 @@
 namespace Voxel
 {
   
-Logger logger(WARNING);
+const String Logger::_logLevelNames[5] = { "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG" };
+  
+Logger logger(LOG_WARNING);
 
 Logger &endl(Logger &l)
 {
