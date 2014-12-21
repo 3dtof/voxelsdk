@@ -21,8 +21,8 @@ add_custom_command(TARGET ti3dtof PRE_BUILD
                    
                    
 install(TARGETS ti3dtof
-  LIBRARY
-  DESTINATION lib/voxel
+  LIBRARY DESTINATION lib/voxel
+  ARCHIVE DESTINATION lib/voxel
   COMPONENT ti3dtof
 )
 
@@ -54,13 +54,17 @@ install(FILES
   COMPONENT ti3dtof-dev
 )
 
-set(CPACK_COMPONENTS_ALL ti3dtof)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Support libraries for Texas Instruments's ToF depth camera")
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm;")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= 0.1)")
-create_cpack_config(libti3dtof 0.1)
+IF(LINUX)
+  set(CPACK_COMPONENTS_ALL ti3dtof)
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Support libraries for Texas Instruments's ToF depth camera")
+  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm;")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= 0.1)")
+  create_cpack_config(libti3dtof 0.1)
 
-set(CPACK_COMPONENTS_ALL ti3dtof-dev)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Header files for ToF depth camera from Texas Instruments.")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= 0.1)")
-create_cpack_config(libti3dtof-dev 0.1)
+  set(CPACK_COMPONENTS_ALL ti3dtof-dev)
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Header files for ToF depth camera from Texas Instruments.")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= 0.1)")
+  create_cpack_config(libti3dtof-dev 0.1)
+ELSEIF(WINDOWS)
+  # Added NSIS related options here
+ENDIF()

@@ -15,44 +15,27 @@
 
 namespace Voxel
 {
-
+  
+class USBSystemPrivate;
+  
 // This facilitates getting device handle corresponding a particular vid:pid:serial
 class USBSystem
 {
-  libusb_context *_context = 0;
+protected:
+  Ptr<USBSystemPrivate> _usbPrivate;
+  
 public:
-  USBSystem()
-  {
-    int ret = libusb_init(&_context);
-    
-    if(ret != LIBUSB_SUCCESS)
-    {
-      std::cerr << "Initialization of USB library failed" << std::endl;
-      _context = 0;
-      return;
-    }
-  }
+  USBSystem();
   
   Vector<DevicePtr> getDevices();
   
-  libusb_context *getContext()
-  {
-    return _context;
-  }
+  bool isInitialized();
   
-  libusb_device *getDeviceHandle(const USBDevice &usbd);
+  inline USBSystemPrivate &getUSBSystemPrivate() { return *_usbPrivate; }
   
-  // Return /dev/videoX string corresponding to device
   String getDeviceNode(const USBDevice &usbd);
   
-  virtual ~USBSystem()
-  {
-    if(_context)
-    {
-      libusb_exit(_context);
-      _context = 0;
-    }
-  }
+  virtual ~USBSystem() {}
 };
 
 }

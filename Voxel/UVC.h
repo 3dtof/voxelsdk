@@ -11,41 +11,33 @@
 
 namespace Voxel
 {
-  
+
 class UVCRawData
 {
 public:
   Ptr<ByteType> data;
-  size_t size;
+  std::size_t size;
 };
 
+  
+class UVCPrivate;
+  
 class UVC
 {
 protected:
-  int _fd = -1;
-  String _deviceNode;
   DevicePtr _usb;
   
-  Vector<UVCRawData> _mappedRawData;
+  Ptr<UVCPrivate> _uvcPrivate;
   
-  bool _munmap(UVCRawData &data);
-
 public:
   UVC(DevicePtr usb);
   
-  inline bool isInitialized() { return _fd >= 0; }
+  bool isInitialized();
   
-  int xioctl(int request, void *arg);
+  inline UVCPrivate &getUVCPrivate() { return *_uvcPrivate; }
   
-  bool read(uint8_t *buffer, size_t size);
-  
-  bool mmap(uint32_t offset, UVCRawData &data);
-  
-  bool clearMMap();
-  
-  // timeout in milli-seconds
-  bool isReadReady(TimeStampType timeout, bool &timedOut);
-  
+  bool read(uint8_t *buffer, std::size_t size);
+
   virtual ~UVC();
 };
 

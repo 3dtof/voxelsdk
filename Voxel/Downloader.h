@@ -32,10 +32,6 @@ public:
 
 class USBDownloader: public Downloader
 {
-protected:
-  bool _configureForDownload(libusb_device_handle *device);
-  bool _download(libusb_device_handle *device, std::ifstream &file, unsigned long filesize);
-  
 public:
   USBDownloader(DevicePtr device): Downloader(device) {}
   

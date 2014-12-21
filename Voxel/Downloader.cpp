@@ -11,6 +11,12 @@
 
 #include <stdlib.h>
 
+#ifdef LINUX
+#include "USBSystemPrivateLinux.h"
+#elif defined(WINDOWS)
+#include "USBSystemPrivateWindows.h"
+#endif
+
 namespace Voxel
 {
   
@@ -20,88 +26,8 @@ bool Downloader::_locateFile(String &file)
   return c.getFirmwareFile(file);
 }
 
-
-bool USBDownloader::download(const String &file)
-{
-  if(_device->interface() != Device::USB)
-  {
-    logger(ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
-    return false;
-  }
-  
-  String fil = file;
-  
-  if(!_locateFile(fil))
-  {
-    logger(ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
-    return false;
-  }
-  
-  std::ifstream f(fil, std::ios::binary | std::ios::ate);
-  
-  if(!f.good())
-  {
-    logger(ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
-    return false;
-  }
-  
-  long unsigned int size = f.tellg();
-  
-  f.seekg(std::ios::beg);
-  
-  USBDevice &d = (USBDevice &)*_device;
-  
-  USBSystem sys;
-  
-  int rc;
-  
-  if(!sys.getContext())
-  {
-    logger(ERROR) << "USBDownloader: USBSystem init failed." << endl;
-    return false;
-  }
-  
-  libusb_device *device = sys.getDeviceHandle(d);
-  
-  libusb_device_handle *handle;
-  
-  if(device)
-  {
-    if((rc = libusb_open(device, &handle)) == LIBUSB_SUCCESS)
-    {
-      if((rc = libusb_claim_interface(handle, 0)) != LIBUSB_SUCCESS)
-      {
-        logger(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
-        libusb_close(handle);
-        libusb_unref_device(device);
-        return false;
-      }
-      
-      bool ret = _configureForDownload(handle) && _download(handle, f, size);
-      
-      libusb_release_interface(handle, 0);
-      libusb_close(handle);
-      libusb_unref_device(device);
-      
-      return ret;
-    }
-    else
-    {
-      logger(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
-      libusb_unref_device(device);
-      return false;
-    }
-  }
-  else
-  {
-    logger(ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
-    return false;
-  }
-  
-  return true;
-}
-
-bool USBDownloader::_configureForDownload(libusb_device_handle* device)
+#ifdef LINUX
+bool _configureForDownload(libusb_device_handle* device)
 {
   uint8_t buffer[4];
   int status;
@@ -127,7 +53,7 @@ bool USBDownloader::_configureForDownload(libusb_device_handle* device)
   return true;
 }
 
-bool USBDownloader::_download(libusb_device_handle *device, std::ifstream &file, long unsigned int filesize)
+bool _download(libusb_device_handle *device, std::ifstream &file, long unsigned int filesize)
 {
   unsigned char endpointOut = 0x06;
   unsigned char buffer[4096];
@@ -170,6 +96,90 @@ bool USBDownloader::_download(libusb_device_handle *device, std::ifstream &file,
   
   return true;
 }
+#endif
 
+bool USBDownloader::download(const String &file)
+{
+  if(_device->interface() != Device::USB)
+  {
+    logger(ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
+    return false;
+  }
+  
+  String fil = file;
+  
+  if(!_locateFile(fil))
+  {
+    logger(ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
+    return false;
+  }
+  
+  std::ifstream f(fil, std::ios::binary | std::ios::ate);
+  
+  if(!f.good())
+  {
+    logger(ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
+    return false;
+  }
+  
+  long unsigned int size = f.tellg();
+  
+  f.seekg(std::ios::beg);
+  
+  
+  USBDevice &d = (USBDevice &)*_device;
+  
+  USBSystem sys;
+  
+  int rc;
+  
+  if(!sys.isInitialized())
+  {
+    logger(ERROR) << "USBDownloader: USBSystem init failed." << endl;
+    return false;
+  }
+  
+#ifdef LINUX
+  libusb_device *device = sys.getUSBSystemPrivate().getDeviceHandle(d);
+  
+  libusb_device_handle *handle;
+  
+  if(device)
+  {
+    if((rc = libusb_open(device, &handle)) == LIBUSB_SUCCESS)
+    {
+      if((rc = libusb_claim_interface(handle, 0)) != LIBUSB_SUCCESS)
+      {
+        logger(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
+        libusb_close(handle);
+        libusb_unref_device(device);
+        return false;
+      }
+      
+      bool ret = _configureForDownload(handle) && _download(handle, f, size);
+      
+      libusb_release_interface(handle, 0);
+      libusb_close(handle);
+      libusb_unref_device(device);
+      
+      return ret;
+    }
+    else
+    {
+      logger(ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
+      libusb_unref_device(device);
+      return false;
+    }
+  }
+  else
+  {
+    logger(ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
+    return false;
+  }
+#elif WINDOWS
+#endif
+  
+  return true;
+}
   
 }

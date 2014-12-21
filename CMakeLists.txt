@@ -10,7 +10,10 @@ add_definitions(-msse2 -pthread -fopenmp -std=c++11)
 
 set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux") # in the binary package DEB, add dependency for libusb-1.0
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  SET(LINUX 1)
+  ADD_DEFINITIONS(-DLINUX)  
+
   set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
   set(COMMON_INCLUDE
     ${COMMON_INCLUDE}
@@ -23,6 +26,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux") # in the binary package DEB, add dependen
   
   file(WRITE "${CMAKE_BINARY_DIR}/make_deb.sh" "for i in CPackConfig-*.cmake; do cpack -G DEB --config $i; done\n")
   
+ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  SET(WINDOWS 1)
+  ADD_DEFINITIONS(-DWINDOWS)
 endif()
 
 include_directories(
@@ -31,14 +37,17 @@ include_directories(
   ${COMMON_INCLUDE}
 )
 
-#### Packaging related information
-function(create_cpack_config name version)
-  set(CPACK_PACKAGE_VERSION "${version}")
-  set(CPACK_PACKAGE_NAME "${name}")
-  set(CPACK_PACKAGE_FILE_NAME "${name}-${version}-${ARCH}")
-  set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackConfig-${name}.cmake")
-  include(CPack)
-endfunction(create_cpack_config)
+IF(LINUX)
+  #### Packaging related information
+  function(create_cpack_config name version)
+    set(CPACK_PACKAGE_VERSION "${version}")
+    set(CPACK_PACKAGE_NAME "${name}")
+    set(CPACK_PACKAGE_FILE_NAME "${name}-${version}-${ARCH}")
+    set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackConfig-${name}.cmake")
+    include(CPack)
+  endfunction(create_cpack_config)
+ENDIF()
+  
 
 set(CPACK_PACKAGE_NAME ti-voxel)
 set(CPACK_PACKAGE_VERSION 0.1)
@@ -55,4 +64,7 @@ add_subdirectory(Test)
 add_subdirectory(TI3DToF)
 add_subdirectory(App)
 
-#include(CPack)
+IF(WINDOWS)
+  # TODO Add NSIS related settings here
+  include(CPack)
+ENDIF()

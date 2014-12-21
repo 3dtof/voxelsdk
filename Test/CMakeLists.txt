@@ -27,8 +27,12 @@ install(TARGETS
   DESTINATION bin
   COMPONENT test
 )
-                       
-set(CPACK_COMPONENTS_ALL test)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library test programs.")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= 0.1), libti3dtof (>= 0.1)")
-create_cpack_config(libvoxel-test 0.1)
+             
+IF(LINUX)
+  set(CPACK_COMPONENTS_ALL test)
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library test programs.")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= 0.1), libti3dtof (>= 0.1)")
+  create_cpack_config(libvoxel-test 0.1)
+ELSEIF(WINDOWS)
+  # Added NSIS related options here
+ENDIF()

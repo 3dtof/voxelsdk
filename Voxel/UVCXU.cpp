@@ -13,6 +13,12 @@
 #include <linux/uvcvideo.h>
 #include <linux/usb/video.h>
 
+#ifdef LINUX
+#include "UVCPrivateLinux.h"
+#elif defined(WINDOWS)
+#include "UVCPrivateWindows.h"
+#endif
+
 namespace Voxel
 {
   
@@ -24,7 +30,8 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
 {
   if(!isInitialized())
     return false;
-  
+
+#ifdef LINUX  
   struct uvc_xu_control_query uvc;
   
   memset(&uvc, 0, sizeof(uvc));
@@ -37,11 +44,13 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
   uvc.size = size;
   uvc.data = value;
   
-  if (xioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
+  if (getUVCPrivate().xioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
   {
-    logger(ERROR) << "UVCXU: " << _deviceNode << " UVCIOC_CTRL_QUERY failed.\n";
+    logger(ERROR) << "UVCXU: " << _usb->id() << " UVCIOC_CTRL_QUERY failed.\n";
     return false;
   }
+#elif defined(WINDOWS)
+#endif
   return true;  
 }
 
@@ -49,7 +58,8 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
 {
   if(!isInitialized())
     return false;
-  
+ 
+#ifdef LINUX
   struct uvc_xu_control_query uvc;
   
   memset(&uvc, 0, sizeof(uvc));
@@ -62,11 +72,14 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
   uvc.size = size;
   uvc.data = value;
   
-  if (xioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
+  if (getUVCPrivate().xioctl(UVCIOC_CTRL_QUERY, &uvc) == -1) 
   {
-    logger(ERROR) << "UVCXU: " << _deviceNode << " UVCIOC_CTRL_QUERY failed.\n";
+    logger(ERROR) << "UVCXU: " << _usb->id() << " UVCIOC_CTRL_QUERY failed.\n";
     return false;
   }
+#elif defined(WINDOWS)
+#endif
+  
   return true;
 }
   
