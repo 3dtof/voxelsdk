@@ -12,7 +12,7 @@
 namespace Voxel
 {
   
-class UVCPrivate
+class VOXEL_NO_EXPORT UVCPrivate
 {
 public:
   UVCPrivate(DevicePtr usb);

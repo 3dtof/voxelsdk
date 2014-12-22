@@ -12,7 +12,7 @@
 namespace Voxel
 {
   
-class Timer
+class VOXEL_EXPORT Timer
 {
   TimeStampType _realTimeStart = 0, _monoticStart = 0;
   

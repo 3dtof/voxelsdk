@@ -9,6 +9,8 @@
 
 #include <memory>
 
+#include "VoxelExports.h"
+
 namespace Voxel
 {
 
@@ -27,7 +29,7 @@ void deleter(T *data)
  * 2. DO NOT USE THIS CLASS FOR array data, that is, allocated with new[]
  */
 template <typename T>
-class Ptr: public std::shared_ptr<T>
+class VOXEL_EXPORT Ptr: public std::shared_ptr<T>
 {
 public:
   Ptr(T *data): std::shared_ptr<T>(data, deleter<T>) {}

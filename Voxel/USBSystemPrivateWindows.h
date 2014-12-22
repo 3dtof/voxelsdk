@@ -12,7 +12,7 @@
 namespace Voxel
 {
   
-class USBSystemPrivate
+class VOXEL_NO_EXPORT USBSystemPrivate
 {
 public:
   USBSystemPrivate() {}

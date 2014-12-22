@@ -14,9 +14,9 @@
 namespace Voxel
 {
   
-class Parameter;
+class VOXEL_EXPORT Parameter;
   
-class RegisterProgrammer
+class VOXEL_EXPORT RegisterProgrammer
 {
 public:
   virtual bool isInitialized() const = 0;

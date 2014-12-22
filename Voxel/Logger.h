@@ -25,7 +25,7 @@ enum LogLevel
   LOG_DEBUG
 };
   
-class Logger
+class VOXEL_EXPORT Logger
 {
 protected:
   std::ostream &_out = std::cerr;
@@ -92,11 +92,11 @@ public:
   }
 };
 
-extern Logger logger;
+extern Logger VOXEL_EXPORT logger;
 
-Logger &endl(Logger &l);
+VOXEL_EXPORT Logger & endl(Logger &l);
 
-class LogLevelChanger
+class VOXEL_EXPORT LogLevelChanger
 {
   LogLevel _currentLogLevel;
   LogLevel _desiredLogLevel;

@@ -22,7 +22,7 @@
 namespace Voxel
 {
   
-class DepthCamera
+class VOXEL_EXPORT DepthCamera
 {
 public:
   enum FrameCallBackType

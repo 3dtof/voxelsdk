@@ -14,7 +14,7 @@
 namespace Voxel
 {
 
-class ParameterDMLParser
+class VOXEL_EXPORT ParameterDMLParser
 {
 protected:
   TinyXML2::XMLDocument _doc;

@@ -13,10 +13,10 @@
 namespace Voxel
 {
   
-class USBSystemPrivate;
+class VOXEL_NO_EXPORT USBSystemPrivate;
   
 // This facilitates getting device handle corresponding a particular vid:pid:serial
-class USBSystem
+class VOXEL_EXPORT USBSystem
 {
 protected:
   Ptr<USBSystemPrivate> _usbPrivate;

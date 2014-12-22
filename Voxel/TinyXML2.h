@@ -45,6 +45,8 @@ distribution.
 #   include <cstdarg>
 #endif
 
+#include "VoxelExports.h"
+
 /*
    TODO: intern strings instead of allocation.
 */
@@ -460,7 +462,7 @@ private:
 
 	@sa XMLNode::Accept()
 */
-class TINYXML2_LIB XMLVisitor
+class VOXEL_EXPORT XMLVisitor
 {
 public:
     virtual ~XMLVisitor() {}
@@ -631,7 +633,7 @@ public:
 
 	@endverbatim
 */
-class TINYXML2_LIB XMLNode
+class VOXEL_EXPORT XMLNode
 {
     friend class XMLDocument;
     friend class XMLElement;
@@ -909,7 +911,7 @@ private:
 	you generally want to leave it alone, but you can change the output mode with
 	SetCData() and query it with CData().
 */
-class TINYXML2_LIB XMLText : public XMLNode
+class VOXEL_EXPORT XMLText : public XMLNode
 {
     friend class XMLBase;
     friend class XMLDocument;
@@ -948,7 +950,7 @@ private:
 
 
 /** An XML Comment. */
-class TINYXML2_LIB XMLComment : public XMLNode
+class VOXEL_EXPORT XMLComment : public XMLNode
 {
     friend class XMLDocument;
 public:
@@ -986,7 +988,7 @@ private:
 	The text of the declaration isn't interpreted. It is parsed
 	and written as a string.
 */
-class TINYXML2_LIB XMLDeclaration : public XMLNode
+class VOXEL_EXPORT XMLDeclaration : public XMLNode
 {
     friend class XMLDocument;
 public:
@@ -1018,7 +1020,7 @@ protected:
 
 	DTD tags get thrown into XMLUnknowns.
 */
-class TINYXML2_LIB XMLUnknown : public XMLNode
+class VOXEL_EXPORT XMLUnknown : public XMLNode
 {
     friend class XMLDocument;
 public:
@@ -1050,7 +1052,7 @@ protected:
 	@note The attributes are not XMLNodes. You may only query the
 	Next() attribute in a list.
 */
-class TINYXML2_LIB XMLAttribute
+class VOXEL_EXPORT XMLAttribute
 {
     friend class XMLElement;
 public:
@@ -1149,7 +1151,7 @@ private:
 	and can contain other elements, text, comments, and unknowns.
 	Elements also contain an arbitrary number of attributes.
 */
-class TINYXML2_LIB XMLElement : public XMLNode
+class VOXEL_EXPORT XMLElement : public XMLNode
 {
     friend class XMLBase;
     friend class XMLDocument;
@@ -1524,7 +1526,7 @@ enum Whitespace {
 	All Nodes are connected and allocated to a Document.
 	If the Document is deleted, all its Nodes are also deleted.
 */
-class TINYXML2_LIB XMLDocument : public XMLNode
+class VOXEL_EXPORT XMLDocument : public XMLNode
 {
     friend class XMLElement;
 public:
@@ -1788,7 +1790,7 @@ private:
 
 	See also XMLConstHandle, which is the same as XMLHandle, but operates on const objects.
 */
-class TINYXML2_LIB XMLHandle
+class VOXEL_EXPORT XMLHandle
 {
 public:
     /// Create a handle from any node (at any depth of the tree.) This can be a null pointer.
@@ -1872,7 +1874,7 @@ private:
 	A variant of the XMLHandle class for working with const XMLNodes and Documents. It is the
 	same in all regards, except for the 'const' qualifiers. See XMLHandle for API.
 */
-class TINYXML2_LIB XMLConstHandle
+class VOXEL_EXPORT XMLConstHandle
 {
 public:
     XMLConstHandle( const XMLNode* node )											{
@@ -1979,7 +1981,7 @@ private:
 	printer.CloseElement();
 	@endverbatim
 */
-class TINYXML2_LIB XMLPrinter : public XMLVisitor
+class VOXEL_EXPORT XMLPrinter : public XMLVisitor
 {
 public:
     /** Construct the printer. If the FILE* is specified,

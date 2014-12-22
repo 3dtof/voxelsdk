@@ -21,7 +21,7 @@ namespace Voxel
   
 class ParameterDMLParser;
 
-class Parameter
+class VOXEL_EXPORT Parameter
 {
 public:
   enum IOType
@@ -78,7 +78,7 @@ typedef Ptr<Parameter> ParameterPtr;
 
 // NOTE: _value is not initialized and need to be manually done from outside via set() or get(true)
 template <typename T>
-class ParameterTemplate: public Parameter
+class VOXEL_EXPORT ParameterTemplate: public Parameter
 {
 protected:
   T _value;
@@ -154,7 +154,7 @@ public:
 };
 
 template <typename T>
-class EnumParameterTemplate: public ParameterTemplate<T>
+class VOXEL_EXPORT EnumParameterTemplate: public ParameterTemplate<T>
 {
 protected:
   Vector<String> _valueMeaning;
@@ -174,7 +174,7 @@ public:
   virtual ~EnumParameterTemplate() {}
 };
 
-class BoolParameter: public EnumParameterTemplate<bool>
+class VOXEL_EXPORT BoolParameter : public EnumParameterTemplate<bool>
 {
 public:
   BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t lsb, 
@@ -192,7 +192,7 @@ public:
   virtual ~BoolParameter() {}
 };
 
-class StrobeBoolParameter: public BoolParameter
+class VOXEL_EXPORT StrobeBoolParameter : public BoolParameter
 {
 public:
   StrobeBoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t lsb, 
@@ -210,7 +210,7 @@ public:
   virtual ~StrobeBoolParameter() {}
 };
 
-class EnumParameter: public EnumParameterTemplate<int>
+class VOXEL_EXPORT EnumParameter : public EnumParameterTemplate<int>
 {
 protected:
   Vector<int> _allowedValues;
@@ -245,7 +245,7 @@ public:
 
 
 template<typename T>
-class RangeParameterTemplate: public ParameterTemplate<T>
+class VOXEL_EXPORT RangeParameterTemplate : public ParameterTemplate<T>
 {
 protected:
   T _lowerLimit, _upperLimit;
@@ -274,7 +274,7 @@ public:
   virtual ~RangeParameterTemplate() {}
 };
 
-class IntegerParameter: public RangeParameterTemplate<int>
+class VOXEL_EXPORT IntegerParameter : public RangeParameterTemplate<int>
 {
 protected:
   virtual uint32_t _toRawValue(int value) const
@@ -308,7 +308,7 @@ public:
 
 typedef RangeParameterTemplate<uint> UnsignedIntegerParameter;
 
-class FloatParameter: public RangeParameterTemplate<float>
+class VOXEL_EXPORT FloatParameter : public RangeParameterTemplate<float>
 {
 protected:
   virtual float _fromRawValue(uint32_t value) const

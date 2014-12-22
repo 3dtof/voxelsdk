@@ -12,7 +12,7 @@
 namespace Voxel
 {
 
-class UVCXU: public UVC
+class VOXEL_EXPORT UVCXU : public UVC
 {
 protected:
   int _xuID;

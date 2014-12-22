@@ -15,7 +15,7 @@
 namespace Voxel
 {
 
-class Streamer
+class VOXEL_EXPORT Streamer
 {
 protected:
   DevicePtr _device;

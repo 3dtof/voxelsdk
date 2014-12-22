@@ -29,6 +29,10 @@ add_library(voxel SHARED
   Configuration.cpp
   ${OS_CPP_FILES}
 )
+
+generate_export_header(voxel
+  EXPORT_FILE_NAME "VoxelExports.h"
+)
   
 target_link_libraries(voxel
   ${COMMON_LIBS}
@@ -66,6 +70,7 @@ install(FILES
   UVCStreamer.h
   UVCXU.h
   VideoMode.h
+  ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
   COMPONENT lib-dev
 )

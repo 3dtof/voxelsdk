@@ -13,9 +13,9 @@
 namespace Voxel
 {
 
-class DepthCameraLibraryPrivate;
+class VOXEL_NO_EXPORT DepthCameraLibraryPrivate;
 
-class DepthCameraLibrary
+class VOXEL_EXPORT DepthCameraLibrary
 {
 protected:
   String _libName;

@@ -14,7 +14,7 @@
 namespace Voxel
 {
   
-class DepthCameraFactory
+class VOXEL_EXPORT DepthCameraFactory
 {
 protected:
   Vector<DevicePtr> _supportedDevices;

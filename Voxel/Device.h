@@ -13,7 +13,7 @@
 namespace Voxel
 {
   
-class Device
+class VOXEL_EXPORT Device
 {
 public:
   enum Interface {
@@ -47,7 +47,7 @@ public:
 
 typedef Ptr<Device> DevicePtr;
 
-class USBDevice: public Device
+class VOXEL_EXPORT USBDevice : public Device
 {
   uint16_t _vendorID, _productID; 
 public:
@@ -60,7 +60,7 @@ public:
   virtual ~USBDevice() {}
 };
 
-class DeviceScanner
+class VOXEL_EXPORT DeviceScanner
 {
 protected:
   virtual Vector<DevicePtr> _scan() = 0;
@@ -70,7 +70,7 @@ public:
   virtual ~DeviceScanner() {}
 };
 
-class USBDeviceScanner: public DeviceScanner
+class VOXEL_EXPORT USBDeviceScanner : public DeviceScanner
 {
 protected:
   virtual Vector<DevicePtr> _scan();

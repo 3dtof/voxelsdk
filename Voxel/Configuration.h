@@ -12,7 +12,7 @@
 namespace Voxel
 {
 
-class Configuration
+class VOXEL_EXPORT Configuration
 {
 protected:
   struct _Path

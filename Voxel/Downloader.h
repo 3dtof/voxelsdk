@@ -14,7 +14,7 @@
 namespace Voxel
 {
 
-class Downloader
+class VOXEL_EXPORT Downloader
 {
 protected:
   DevicePtr _device;
@@ -29,7 +29,7 @@ public:
   virtual ~Downloader() {}
 };
 
-class USBDownloader: public Downloader
+class VOXEL_EXPORT USBDownloader: public Downloader
 {
 public:
   USBDownloader(DevicePtr device): Downloader(device) {}

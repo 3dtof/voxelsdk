@@ -22,6 +22,8 @@
 
 #include <mutex>
 
+#include "VoxelExports.h"
+
 namespace Voxel
 {
 
@@ -59,8 +61,8 @@ template <typename T>
 using Lock = std::lock_guard<T>;
 
 /// String functions
-String getHex(uint16_t value);
-void split(const String &str, const char delimiter, Vector<String> &split);
+String VOXEL_EXPORT getHex(uint16_t value);
+void VOXEL_EXPORT split(const String &str, const char delimiter, Vector<String> &split);
 
 /// Array handling template
 template<typename T, int sz>
@@ -70,9 +72,9 @@ int arraySize(T(&)[sz])
 }
 
 /// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
-int getFiles(const String &dir, const String &matchString, Vector<String> &files);
+int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<String> &files);
 
-uint gcd(uint n, uint m);
+uint VOXEL_EXPORT gcd(uint n, uint m);
 
 }
 

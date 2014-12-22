@@ -12,7 +12,7 @@
 namespace Voxel
 {
 
-class UVCRawData
+class VOXEL_EXPORT UVCRawData
 {
 public:
   Ptr<ByteType> data;
@@ -20,9 +20,9 @@ public:
 };
 
   
-class UVCPrivate;
+class VOXEL_NO_EXPORT UVCPrivate;
   
-class UVC
+class VOXEL_EXPORT UVC
 {
 protected:
   DevicePtr _usb;
@@ -42,4 +42,4 @@ public:
 };
 
 }
-#endif // UVCXU_H
+#endif // UVC_H

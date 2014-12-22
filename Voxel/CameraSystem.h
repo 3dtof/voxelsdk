@@ -12,7 +12,7 @@
 namespace Voxel
 {
 
-class CameraSystem
+class VOXEL_EXPORT CameraSystem
 {
 protected:
   Vector<DepthCameraLibraryPtr> _libraries;
