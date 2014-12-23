@@ -100,7 +100,7 @@ bool _download(libusb_device_handle *device, std::ifstream &file, long unsigned 
 
 bool USBDownloader::download(const String &file)
 {
-  if(_device->interface() != Device::USB)
+  if(_device->interfaceID() != Device::USB)
   {
     logger(LOG_ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
     return false;

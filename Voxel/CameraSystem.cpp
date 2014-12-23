@@ -131,7 +131,7 @@ Vector<DevicePtr> CameraSystem::scan()
   
   for(auto &device: devices)
   {
-    Device d(device->interface(), device->deviceID(), ""); // get device ID without serial number
+    Device d(device->interfaceID(), device->deviceID(), ""); // get device ID without serial number
     
     auto f = _factories.find(d.id());
     if(f != _factories.end())
@@ -151,7 +151,7 @@ DepthCameraPtr CameraSystem::connect(const DevicePtr &device)
     return c->second;
   }
   
-  Device d(device->interface(), device->deviceID(), ""); // get device ID without serial number
+  Device d(device->interfaceID(), device->deviceID(), ""); // get device ID without serial number
   
   auto f = _factories.find(d.id());
   

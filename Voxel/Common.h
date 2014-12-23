@@ -71,6 +71,14 @@ int arraySize(T(&)[sz])
   return sz;
 }
 
+// Allocate in bytes and irrespective of size required by 'T'. This is useful if 'T' is has data structures which could have extendable elements. 
+// E.g.: Windows USB device handling structures in usbioctl.h
+template <typename T>
+Ptr<T> byteAlloc(unsigned long sizeInBytes)
+{
+  return Ptr<T>((T *)new uint8_t[sizeInBytes], [](T *d) { delete[]((uint8_t *)d);  });
+}
+
 /// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
 int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<String> &files);
 

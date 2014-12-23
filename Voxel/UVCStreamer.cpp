@@ -32,7 +32,7 @@ UVCStreamer::UVCStreamer(Voxel::DevicePtr device): Streamer(device)
 
 bool UVCStreamer::_uvcInit()
 {
-  if(_device->interface() != Device::USB)
+  if(_device->interfaceID() != Device::USB)
     return false;
   
   _uvc = Ptr<UVC>(new UVC(_device));

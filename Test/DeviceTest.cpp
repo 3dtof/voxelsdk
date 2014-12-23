@@ -21,10 +21,10 @@ int main()
   for(auto i = 0; i < devices.size(); i++)
   {
     String devNode;
-    if(devices[i]->interface() == Device::USB)
+    if(devices[i]->interfaceID() == Device::USB)
       devNode = usbsys.getDeviceNode((USBDevice &)*devices[i]);
     
-    std::cout << devices[i]->id();
+    std::cout << devices[i]->id() << " -- " << devices[i]->description();
     
     if(devNode.size() > 0)
     {
