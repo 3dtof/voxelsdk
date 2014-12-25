@@ -108,7 +108,7 @@ bool USBSystemPrivate::_getDeviceProperty(HANDLE devHandle, DWORD prop, Ptr<T> &
   return DeviceIoControl(devHandle, prop, &*result, nBytes, &*result, nBytes, &nBytes, NULL);
 }
 
-bool USBSystemPrivate::_iterateOverHub(LPGUID guid, Function<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process)
+bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process)
 {
   HDEVINFO devClassInfo = SetupDiGetClassDevs(guid, NULL, NULL, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
 
@@ -131,12 +131,14 @@ bool USBSystemPrivate::_iterateOverHub(LPGUID guid, Function<void(HDEVINFO devCl
     if (!SetupDiEnumDeviceInterfaces(devClassInfo, 0, guid, index, &deviceInfo.devInterfaceData))
     {
       logger(LOG_ERROR) << "USBSystem: Failed to enumerate device interfaces for index = " << index << ". Error = " << getDeviceError() << std::endl;
+      SetupDiDestroyDeviceInfoList(devClassInfo);
       return false;
     }
 
     if (!SetupDiGetDeviceInterfaceDetail(devClassInfo, &deviceInfo.devInterfaceData, NULL, 0, &requiredLength, NULL) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     {
       logger(LOG_ERROR) << "USBSystem: Failed to get size for interface details for index = " << index << ". Error = " << getDeviceError() << std::endl;
+      SetupDiDestroyDeviceInfoList(devClassInfo);
       return false;
     }
 
@@ -147,11 +149,13 @@ bool USBSystemPrivate::_iterateOverHub(LPGUID guid, Function<void(HDEVINFO devCl
     if (!SetupDiGetDeviceInterfaceDetail(devClassInfo, &deviceInfo.devInterfaceData, &*deviceInfo.devInterfaceDetailData, requiredLength, &requiredLength, NULL))
     {
       logger(LOG_ERROR) << "USBSystem: Failed to get interface details for index = " << index << ". Error = " << getDeviceError() << std::endl;
+      SetupDiDestroyDeviceInfoList(devClassInfo);
       return false;
     }
 
     process(devClassInfo, deviceInfo, index);
   }
+  SetupDiDestroyDeviceInfoList(devClassInfo);
   return true;
 }
 
@@ -228,9 +232,11 @@ void USBSystemPrivate::_enumerateHub(const String &hubName, Function<void(HANDLE
 
       String product, manufacturer, serialNumber, description;
 
-      if (!_getStringDescriptor(hHubDevice, index, connectionInfo->DeviceDescriptor.iProduct, product) ||
-        !_getStringDescriptor(hHubDevice, index, connectionInfo->DeviceDescriptor.iManufacturer, manufacturer) ||
-        !_getStringDescriptor(hHubDevice, index, connectionInfo->DeviceDescriptor.iSerialNumber, serialNumber))
+      bool ret1 = _getStringDescriptor(hHubDevice, index, connectionInfo->DeviceDescriptor.iProduct, product);
+      bool ret2 = _getStringDescriptor(hHubDevice, index, connectionInfo->DeviceDescriptor.iManufacturer, manufacturer);
+      bool ret3 = _getStringDescriptor(hHubDevice, index, connectionInfo->DeviceDescriptor.iSerialNumber, serialNumber);
+
+      if (!(ret1 && ret2 && ret3))
       {
         logger(LOG_WARNING) << "USBSystem: Could not get request string descriptors for connection index = " << index << " connected to USB hub device = '" << deviceName << "'" << std::endl;
       }
@@ -316,7 +322,7 @@ bool USBSystemPrivate::_getStringDescriptor(HANDLE devHandle, ULONG index, UCHAR
 
 bool USBSystemPrivate::_iterateOverAllDevices(LPGUID guid, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
 {
-  return _iterateOverHub(guid, [this, &process](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
+  return _iterateSetupAPI(guid, [this, &process](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
     HANDLE hHCDev = CreateFile(devInfo.devInterfaceDetailData->DevicePath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 
     if (hHCDev != INVALID_HANDLE_VALUE)
@@ -352,7 +358,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice &usbd)
 {
   Map<String, DeviceInfo> deviceMap; // driver key name -> DeviceInfo map
 
-  bool ret = _iterateOverHub((LPGUID)&GUID_CLASS_USB_DEVICE, [this, &deviceMap](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
+  bool ret = _iterateSetupAPI((LPGUID)&GUID_CLASS_USB_DEVICE, [this, &deviceMap](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
     String driverKeyName;
     if (!_getDeviceProperty(devClassInfo, devInfo, SPDRP_DRIVER, driverKeyName))
     {

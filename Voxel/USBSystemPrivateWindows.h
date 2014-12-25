@@ -19,6 +19,8 @@ typedef unsigned long DWORD;
 typedef unsigned long ULONG;
 typedef unsigned char UCHAR;
 
+std::string getDeviceError();
+
 // Code here is mostly borrowed from
 // template code of Visual C++ application - http://code.msdn.microsoft.com/USBView-sample-application-e3241039
 class VOXEL_NO_EXPORT USBSystemPrivate
@@ -28,7 +30,7 @@ class VOXEL_NO_EXPORT USBSystemPrivate
   template <typename T>
   bool _getDeviceProperty(HANDLE devHandle, DWORD prop, Ptr<T> &result, Function<void(T &t)> init = nullptr);
 
-  bool _iterateOverHub(LPGUID guid, Function<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process);
+  bool _iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process);
 
   bool _iterateOverAllDevices(LPGUID guid, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process);
 

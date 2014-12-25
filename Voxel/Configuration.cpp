@@ -12,8 +12,10 @@
 
 #ifdef LINUX
 #define DIR_SEP "/"
+#define PATH_SEP ':'
 #elif defined(WINDOWS)
 #define DIR_SEP "\\"
+#define PATH_SEP ';'
 #endif
 
 
@@ -23,19 +25,31 @@ namespace Voxel
 const Map<String, Configuration::_Path> Configuration::_pathTypes = {
   { "firmware",
     {
+#ifdef LINUX
       "/lib/firmware/voxel",
+#elif defined(WINDOWS)
+      "C:\\Program Files\\VoxelCommon\\fw",
+#endif
       "VOXEL_FW_PATH"
     }
   },
   { "lib",
     {
-      "/usr/lib/voxel",
+#ifdef LINUX
+      "/usr/lib/voxel", 
+#elif defined(WINDOWS)
+      "C:\\Program Files\\VoxelCommon\\lib",
+#endif
       "VOXEL_LIB_PATH"
     }
   },
   { "conf",
     {
+#ifdef LINUX
       "/etc/voxel",
+#elif defined(WINDOWS)
+      "C:\\Program Files\\VoxelCommon\\conf",
+#endif
       "VOXEL_CONF_PATH"
     }
   }
@@ -61,7 +75,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     
     Vector<String> splits;
     
-    split(p1, ':', splits);
+    split(p1, PATH_SEP, splits);
     
     paths.reserve(paths.size() + splits.size());
     paths.insert(paths.begin(), splits.begin(), splits.end()); // Insert at the beginning to override standard path
@@ -73,7 +87,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     {
       logger(LOG_DEBUG) << paths[i];
       if(i < paths.size() - 1)
-        logger(LOG_DEBUG) << ":";
+        logger(LOG_DEBUG) << PATH_SEP;
     }
     logger(LOG_DEBUG) << endl;
   }

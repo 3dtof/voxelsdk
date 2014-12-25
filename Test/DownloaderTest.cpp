@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   
   if(d.download(firmwareFileName))
   {
-    logger(INFO) << "Download successful!" << endl;
+    logger(LOG_INFO) << "Download successful!" << endl;
     return 0;
   }
   else
