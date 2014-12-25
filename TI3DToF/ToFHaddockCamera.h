@@ -9,6 +9,8 @@
 
 #include <ToFCamera.h>
 
+#include "TI3DToFExports.h"
+
 #define PIX_CNT_MAX_SET_FAILED "pix_cnt_max_set_failed"
 #define PIX_CNT_MAX "pix_cnt_max"
 #define QUAD_CNT_MAX "quad_cnt_max"
@@ -47,7 +49,7 @@
 #define MOD_N "mod_n"
 #define MOD_PLL_UPDATE "mod_pll_update"
 
-#define SPEED_OF_LIGHT 3E8
+#define SPEED_OF_LIGHT 3E8f
 
 namespace Voxel
 {
@@ -55,7 +57,7 @@ namespace Voxel
 namespace TI
 {
 
-class ToFHaddockCamera: public ToFCamera
+class TI3DTOF_EXPORT ToFHaddockCamera: public ToFCamera
 {
 protected:
   bool _init();

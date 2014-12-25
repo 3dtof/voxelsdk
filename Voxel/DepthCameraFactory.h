@@ -49,8 +49,11 @@ typedef Ptr<DepthCameraFactory> DepthCameraFactoryPtr;
 
 extern "C" void getDepthCameraFactory(DepthCameraFactoryPtr &depthCameraFactory);
 
-typedef void (*GetDepthCameraFactory)(DepthCameraFactoryPtr depthCameraFactory); // Function type
-  
+extern "C" int getABIVersion();
+
+typedef void (*GetDepthCameraFactory)(DepthCameraFactoryPtr &depthCameraFactory); // Function type to return DepthCameraFactory
+
+typedef int(*GetABIVersion)(); // Function type to return ABI version
 }
 
 #endif // DEPTHCAMERA_FACTORY_H

@@ -10,7 +10,11 @@
 
 #include <fstream>
 
+#ifdef LINUX
 #define LIB_MATCH_STRING ".so"
+#elif defined(WINDOWS)
+#define LIB_MATCH_STRING ".dll"
+#endif
 
 namespace Voxel
 {
@@ -58,6 +62,12 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
           continue;
         }
         
+        if (p->getABIVersion() != VOXEL_ABI_VERISON)
+        {
+          logger(LOG_WARNING) << "CameraSystem: Ignoring Voxel library " << file << " with ABI version = " << p->getABIVersion() << ". Expected ABI version = " << VOXEL_ABI_VERISON << std::endl;
+          continue;
+        }
+
         DepthCameraFactoryPtr factory = p->getDepthCameraFactory();
         
         if(!factory || !addDepthCameraFactory(factory))

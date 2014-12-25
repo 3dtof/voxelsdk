@@ -10,7 +10,8 @@
 #include <UVCStreamer.h>
 
 #include <Parameter.h>
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 namespace Voxel
 {
   
@@ -122,8 +123,8 @@ bool Voxel14Camera::_init()
 bool Voxel14Camera::_initStartParams()
 {
   return 
-  set(ILLUM_VOLTAGE, 1500U) and 
-  set(MIX_VOLTAGE, 1500U) and
+  set(ILLUM_VOLTAGE, 1500U) && 
+  set(MIX_VOLTAGE, 1500U) &&
   Voxel::TI::ToFHaddockCamera::_initStartParams();
 }
 

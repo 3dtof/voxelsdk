@@ -90,6 +90,7 @@ bool _configureForDownload(USBHandle device)
       logger(LOG_ERROR) << "USBDownloader: Control transfer issue." << std::endl;
       return false;
     }
+    return true;
   }
   else if (device.device)
   {

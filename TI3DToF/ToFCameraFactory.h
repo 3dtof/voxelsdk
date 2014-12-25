@@ -9,13 +9,15 @@
 
 #include <DepthCameraFactory.h>
 
+#include "TI3DToFExports.h"
+
 namespace Voxel
 {
   
 namespace TI
 {
 
-class ToFCameraFactory: public DepthCameraFactory
+class TI3DTOF_EXPORT ToFCameraFactory: public DepthCameraFactory
 {
 public:
   ToFCameraFactory(const String &name);

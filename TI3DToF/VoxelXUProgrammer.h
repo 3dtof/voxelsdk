@@ -11,13 +11,15 @@
 #include "Device.h"
 #include "UVCXU.h"
 
+#include "TI3DToFExports.h"
+
 namespace Voxel
 {
   
 namespace TI
 {
 
-class VoxelXUProgrammer: public RegisterProgrammer
+class TI3DTOF_EXPORT VoxelXUProgrammer: public RegisterProgrammer
 {
 protected:
   UVCXUPtr _xu;

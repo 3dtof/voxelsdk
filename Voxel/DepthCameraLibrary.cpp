@@ -87,7 +87,7 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
   char symbol[] = "getDepthCameraFactory";
 
 #ifdef LINUX
-  GetDepthCameraFactory g = (GetDepthCameraFactory)dlsym(_handle, symbol);
+  GetDepthCameraFactory g = (GetDepthCameraFactory)dlsym(_libraryPrivate->handle, symbol);
 #elif defined(WINDOWS)
   GetDepthCameraFactory g = (GetDepthCameraFactory)GetProcAddress(_libraryPrivate->handle, symbol);
 #endif
@@ -103,6 +103,29 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
   (*g)(p);
 
   return p;
+}
+
+int DepthCameraLibrary::getABIVersion()
+{
+  if (!isLoaded())
+    return -1;
+
+  char symbol[] = "getABIVersion";
+
+#ifdef LINUX
+  GetABIVersion g = (GetABIVersion)dlsym(_libraryPrivate->handle, symbol);
+#elif defined(WINDOWS)
+  GetABIVersion g = (GetABIVersion)GetProcAddress(_libraryPrivate->handle, symbol);
+#endif
+
+  String error;
+  if ((error = dynamicLoadError()).size())
+  {
+    logger(LOG_ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
+    return 0;
+  }
+
+  return (*g)();
 }
 
 DepthCameraLibrary::~DepthCameraLibrary()

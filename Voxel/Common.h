@@ -24,6 +24,8 @@
 
 #include "VoxelExports.h"
 
+#define VOXEL_ABI_VERISON 1
+
 namespace Voxel
 {
 

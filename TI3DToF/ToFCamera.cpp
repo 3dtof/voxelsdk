@@ -58,7 +58,7 @@ bool ToFCamera::_convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr 
   
   float amplitudeNormalizingFactor, depthScalingFactor;
   
-  if(!_getAmplitudeNormalizingFactor(amplitudeNormalizingFactor) or !_getDepthScalingFactor(depthScalingFactor))
+  if(!_getAmplitudeNormalizingFactor(amplitudeNormalizingFactor) || !_getDepthScalingFactor(depthScalingFactor))
     return false;
   
   // NOTE: Add more sizes as necessary
@@ -129,7 +129,7 @@ bool ToFCamera::_start()
   if(!_streamer->getCurrentVideoMode(m))// || !setFrameRate(m.frameRate))
     return false;
   
-  logger(INFO) << "Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
+  logger(LOG_INFO) << "Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
   
   if(!_initStartParams()) // Initialize parameters to starts streaming
     return false;

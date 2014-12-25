@@ -13,10 +13,11 @@
 
 #include <sstream>
 
+
 namespace Voxel
 {
 
-class Frame
+class VOXEL_EXPORT Frame
 {
 public:
   TimeStampType timestamp = 0; // Unix timestamp in micro-seconds
@@ -32,7 +33,7 @@ public:
   virtual ~Frame() {}
 };
 
-class DepthFrame: public Frame
+class VOXEL_EXPORT DepthFrame: public Frame
 {
 public:
   Vector<float> depth; // depth frame row-wise. Unit: meters
@@ -44,7 +45,7 @@ public:
 
 typedef Ptr<DepthFrame> DepthFramePtr;
 
-class RawFrame: public Frame
+class VOXEL_EXPORT RawFrame : public Frame
 {
 public:
   virtual ~RawFrame() {}
@@ -52,7 +53,7 @@ public:
 
 typedef Ptr<RawFrame> RawFramePtr;
 
-class ToFRawFrame: public RawFrame
+class VOXEL_EXPORT ToFRawFrame : public RawFrame
 {
 public:
   virtual const uint8_t *phase() const = 0;
@@ -78,7 +79,7 @@ public:
 typedef Ptr<ToFRawFrame> ToFRawFramePtr;
 
 template <typename PhaseByteType, typename AmbientByteType>
-class ToFRawFrameTemplate: public ToFRawFrame
+class ToFRawFrameTemplate : public ToFRawFrame
 {
 public:
   typedef PhaseByteType AmplitudeByteType;
@@ -144,7 +145,7 @@ public:
   virtual ~ToFRawFrameTemplate() {}
 };
 
-class RawDataFrame: public RawFrame
+class VOXEL_EXPORT RawDataFrame : public RawFrame
 {
 public:
   Vector<ByteType> data;
@@ -155,7 +156,7 @@ public:
 typedef Ptr<RawDataFrame> RawDataFramePtr;
 
 
-class PointCloudFrame: public Frame
+class VOXEL_EXPORT PointCloudFrame : public Frame
 {
 public:
   virtual SizeType size() = 0;
@@ -167,7 +168,7 @@ public:
 typedef Ptr<PointCloudFrame> PointCloudFramePtr;
 
 template <typename PointType>
-class PointCloudFrameTemplate: public PointCloudFrame
+class PointCloudFrameTemplate : public PointCloudFrame
 {
 public:
   Vector<PointType> points;

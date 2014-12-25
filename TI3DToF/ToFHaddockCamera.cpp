@@ -26,7 +26,7 @@ public:
   virtual bool get(float &value, bool refresh = true) const
   {
     uint modM, modN, systemClockFrequency;
-    if(!_depthCamera._get(MOD_M, modM) or !_depthCamera._get(MOD_N, modN) or !_depthCamera._get(SYS_CLK_FREQ, systemClockFrequency))
+    if(!_depthCamera._get(MOD_M, modM) || !_depthCamera._get(MOD_N, modN) || !_depthCamera._get(SYS_CLK_FREQ, systemClockFrequency))
       return false;
     
     if(modN == 0)
@@ -62,7 +62,7 @@ public:
     
     modM = value*modN/systemClockFrequency;
     
-    if(!_depthCamera._set(MOD_M, modM) or !_depthCamera._set(MOD_N, modN))
+    if(!_depthCamera._set(MOD_M, modM) || !_depthCamera._set(MOD_N, modN))
       return false;
     
     _value = modM*systemClockFrequency/modN;
@@ -79,7 +79,7 @@ class ModulationFrequencyParameter: public FloatParameter
   String _psName;
 public:
   ModulationFrequencyParameter(ToFHaddockCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &psName):
-  FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 6.25, 433.333, 18, "Modulation frequency", "Frequency used for modulation of illumination", 
+  FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 6.25f, 433.333f, 18, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {psName}), _psName(psName), _depthCamera(depthCamera) {}
                  
   virtual bool get(float &value, bool refresh = true) const
@@ -88,7 +88,7 @@ public:
     
     uint modulationPS;
     
-    if(!_depthCamera._get(VCO_FREQ, vcoFrequency) or !_depthCamera._get(_psName, modulationPS))
+    if(!_depthCamera._get(VCO_FREQ, vcoFrequency) || !_depthCamera._get(_psName, modulationPS))
       return false;
     
     float v = vcoFrequency/3/modulationPS;
@@ -148,9 +148,9 @@ public:
     
     bool integrationDutyCycleSetFailed;
     
-    if(!_depthCamera._get(INTG_DUTY_CYCLE, integrationDutyCycle) or 
+    if(!_depthCamera._get(INTG_DUTY_CYCLE, integrationDutyCycle) || 
       !_depthCamera._get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
-      or integrationDutyCycleSetFailed)
+      || integrationDutyCycleSetFailed)
       return false;
     
     
@@ -178,7 +178,7 @@ public:
     bool integrationDutyCycleSetFailed;
     
     if(!_depthCamera._get(INTG_DUTY_CYCLE_SET_FAILED, integrationDutyCycleSetFailed)
-      or integrationDutyCycleSetFailed)
+      || integrationDutyCycleSetFailed)
       return false;
     
     return true;
@@ -271,7 +271,7 @@ bool ToFHaddockCamera::_setFrameRate(const FrameRate &r)
   
   pixCount = (uint)(((long)r.denominator*sysClkFrequency*1000000)/((long)quadCount*subFrameCount*r.numerator));
   
-  logger(DEBUG) << "ToFHaddockCamera: Setting " << PIX_CNT_MAX << " = " << pixCount << std::endl;
+  logger(LOG_DEBUG) << "ToFHaddockCamera: Setting " << PIX_CNT_MAX << " = " << pixCount << std::endl;
   
   if(!_set(PIX_CNT_MAX, pixCount) || !_get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
@@ -300,13 +300,13 @@ bool ToFHaddockCamera::_setFrameSize(const FrameSize &s)
 
 bool ToFHaddockCamera::_initStartParams()
 {
-  return set(TG_EN, true) and 
-         set(BLK_SIZE, 1024U) and
-         set(BLK_HEADER_EN, true) and
-         set(OP_CS_POL, true) and
-         set(FB_READY_EN, true) and
-         set(CONFIDENCE_THRESHOLD, 1U) and
-         set(ILLUM_EN_POL, false);// and
+  return set(TG_EN, true) && 
+         set(BLK_SIZE, 1024U) &&
+         set(BLK_HEADER_EN, true) &&
+         set(OP_CS_POL, true) &&
+         set(FB_READY_EN, true) &&
+         set(CONFIDENCE_THRESHOLD, 1U) &&
+         set(ILLUM_EN_POL, false);// &&
          //set(INTG_TIME, 40.0f);
 }
 
@@ -338,7 +338,7 @@ bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
     
     float freq = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
     
-    factor = SPEED_OF_LIGHT/1E6/(2*(1 << 12)*freq);
+    factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 12)*freq);
     
     return true;
   }
@@ -347,7 +347,7 @@ bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
     if(!get(MOD_FREQ1, modulationFrequency1))
       return false;
     
-    factor = SPEED_OF_LIGHT/1E6/2/modulationFrequency1/(1 << 12);
+    factor = SPEED_OF_LIGHT/1E6f/2/modulationFrequency1/(1 << 12);
     return true;
   }
 }
@@ -372,7 +372,7 @@ bool ToFHaddockCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFra
   }
   
   int bytesPerPixel, dataArrangeMode;
-  if(!get(PIXEL_DATA_SIZE, bytesPerPixel) or !get(OP_DATA_ARRANGE_MODE, dataArrangeMode))
+  if(!get(PIXEL_DATA_SIZE, bytesPerPixel) || !get(OP_DATA_ARRANGE_MODE, dataArrangeMode))
   {
     logger(LOG_ERROR) << "ToFHaddockCamera: Failed to read " << PIXEL_DATA_SIZE << " or " << OP_DATA_ARRANGE_MODE << std::endl;
     return false;

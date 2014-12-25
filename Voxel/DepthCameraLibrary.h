@@ -30,11 +30,14 @@ public:
   inline bool isLoaded();
   
   DepthCameraFactoryPtr  getDepthCameraFactory();
+
+  int getABIVersion(); // Get DepthCameraLibrary's ABI version
   
   virtual ~DepthCameraLibrary();
 };
 
 typedef Ptr<DepthCameraLibrary> DepthCameraLibraryPtr;
+
 
 }
 

@@ -22,7 +22,7 @@ bool VoxelXUProgrammer::isInitialized() const
   
 VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
 {
-  if(device->interface() != Device::USB)
+  if(device->interfaceID() != Device::USB)
   {
     logger(LOG_ERROR) << "VoxelXUProgrammer: Invalid device." << std::endl;
     return;
@@ -35,18 +35,18 @@ VoxelXUProgrammer::VoxelXUProgrammer(DevicePtr device)
   uint8_t data[4];
   if(!_xu->getControl(CONTROL_GET_VERSION, arraySize(data), data))
   {
-    logger(WARNING) << "VoxelXUProgrammer: Could not get XU version." << std::endl;
+    logger(LOG_WARNING) << "VoxelXUProgrammer: Could not get XU version." << std::endl;
     return;
   }
   _minorVersion = data[0];
   _majorVersion = data[1];
   
-  logger(INFO) << "VoxelXUProgrammer: XU controller version " << (int)_majorVersion << "." << (int)_minorVersion << std::endl;
+  logger(LOG_INFO) << "VoxelXUProgrammer: XU controller version " << (int)_majorVersion << "." << (int)_minorVersion << std::endl;
 }
 
 bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
 {
-  //LogLevelChanger _(DEBUG);
+  //LogLevelChanger _(LOG_DEBUG);
   
   Lock<Mutex> _(_mutex);
   
@@ -95,14 +95,14 @@ bool VoxelXUProgrammer::readRegister(uint32_t address, uint32_t &value) const
     value = data[0] + (data[1] << 8) + (data[2] << 16);
   }
   
-  logger(DEBUG) << "VoxelXUProgrammer: register read @0x" << std::hex << address << " = " << value << std::endl;
+  logger(LOG_DEBUG) << "VoxelXUProgrammer: register read @0x" << std::hex << address << " = " << value << std::endl;
   
   return true;
 }
 
 bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
 {
-  //LogLevelChanger _(DEBUG);
+  //LogLevelChanger _(LOG_DEBUG);
   Lock<Mutex> _(_mutex);
   if(!isInitialized())
   {
@@ -143,7 +143,7 @@ bool VoxelXUProgrammer::writeRegister(uint32_t address, uint32_t value)
     }
   }
   
-  logger(DEBUG) << "VoxelXUProgrammer: register write @0x" << std::hex << address << " = " << value << std::endl;
+  logger(LOG_DEBUG) << "VoxelXUProgrammer: register write @0x" << std::hex << address << " = " << value << std::endl;
   
   return true;
 }

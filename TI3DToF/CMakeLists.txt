@@ -6,6 +6,10 @@ add_library(ti3dtof SHARED
   ToFCameraFactory.cpp
 )
 
+generate_export_header(ti3dtof
+  EXPORT_FILE_NAME "TI3DToFExports.h"
+)
+
 target_link_libraries(ti3dtof
   voxel
 )
@@ -50,6 +54,7 @@ install(FILES
   ToFHaddockCamera.h
   Voxel14Camera.h
   VoxelXUProgrammer.h
+  ${CMAKE_CURRENT_BINARY_DIR}/TI3DToFExports.h
   DESTINATION include/voxel/ti3dtof
   COMPONENT ti3dtof-dev
 )

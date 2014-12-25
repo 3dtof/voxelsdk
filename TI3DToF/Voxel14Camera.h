@@ -10,6 +10,8 @@
 #include <ToFHaddockCamera.h>
 #include <Downloader.h>
 
+#include "TI3DToFExports.h"
+
 #define VOXEL_14_VENDOR_ID 0x0451
 #define VOXEL_14_PRODUCT_ID1 0x9102
 #define VOXEL_14_PRODUCT_ID2 0x9103
@@ -23,7 +25,7 @@ namespace Voxel
 namespace TI
 {
 
-class Voxel14Camera: public ToFHaddockCamera
+class TI3DTOF_EXPORT Voxel14Camera : public ToFHaddockCamera
 {
 protected:
   Ptr<Downloader> _downloader;

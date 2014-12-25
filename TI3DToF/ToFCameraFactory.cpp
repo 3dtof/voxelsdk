@@ -26,11 +26,11 @@ ToFCameraFactory::ToFCameraFactory(const String &name): DepthCameraFactory(name)
 
 DepthCameraPtr ToFCameraFactory::getDepthCamera(DevicePtr device)
 {
-  if(device->interface() == Device::USB)
+  if(device->interfaceID() == Device::USB)
   {
     USBDevice &d = (USBDevice &)*device;
     
-    if(d.vendorID() == VOXEL_14_VENDOR_ID and (d.productID() == VOXEL_14_PRODUCT_ID1  or d.productID() == VOXEL_14_PRODUCT_ID2))
+    if(d.vendorID() == VOXEL_14_VENDOR_ID && (d.productID() == VOXEL_14_PRODUCT_ID1  || d.productID() == VOXEL_14_PRODUCT_ID2))
     {
       return DepthCameraPtr(new Voxel14Camera(device));
     }
@@ -39,11 +39,15 @@ DepthCameraPtr ToFCameraFactory::getDepthCamera(DevicePtr device)
   return 0;
 }
 
-extern "C" void getDepthCameraFactory(DepthCameraFactoryPtr &ptr)
+extern "C" void TI3DTOF_EXPORT getDepthCameraFactory(DepthCameraFactoryPtr &ptr)
 {
   ptr = DepthCameraFactoryPtr(new ToFCameraFactory("ti3dtof"));
 }
-  
+ 
+extern "C" int TI3DTOF_EXPORT getABIVersion()
+{
+  return VOXEL_ABI_VERISON; // Return the Voxel ABI version which was used to compile this DepthCameraFactory
+}
   
 }
 }

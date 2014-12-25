@@ -9,13 +9,15 @@
 
 #include <DepthCamera.h>
 
+#include "TI3DToFExports.h"
+
 namespace Voxel
 {
   
 namespace TI
 {
 
-class ToFCamera: public DepthCamera
+class TI3DTOF_EXPORT ToFCamera : public DepthCamera
 {
 protected:
   RawDataFramePtr _rawDataFrame; // Used by _captureDepthFrame(). This is not exposed to DepthCamera
