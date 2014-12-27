@@ -319,7 +319,7 @@ bool USBDownloader::download(const String &file)
   if (!WinUsb_Initialize(handle, &usbHandle.winUSBHandle))
   {
     usbHandle.winUSBHandle = 0;
-    logger(LOG_ERROR) << "USBDownloader: Failed to get WinUSB handle for device '" << d.id() << "'. Error: " << getDeviceError() << ". Trying CyUSB..." << std::endl;
+    logger(LOG_WARNING) << "USBDownloader: Failed to get WinUSB handle for device '" << d.id() << "'. Message: " << getDeviceError() << "Trying CyUSB..." << std::endl;
     
     usbHandle.device = new CCyUSBDevice(handle);
 

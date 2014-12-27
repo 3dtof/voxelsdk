@@ -9,15 +9,22 @@
 
 #include <Device.h>
 
+#include <Windows.h>
+#include <strmif.h>
+
 namespace Voxel
 {
   
 class VOXEL_NO_EXPORT UVCPrivate
 {
+  Ptr<IBaseFilter> _captureFilter;
 public:
   UVCPrivate(DevicePtr usb);
   
-  bool isInitialized();
+  bool isInitialized() { return (bool)_captureFilter; }
+
+
+  IBaseFilter *getCaptureFilter() { return _captureFilter.get(); }
   
   bool read(uint8_t *buffer, std::size_t size);
   

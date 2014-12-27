@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  logger.setDefaultLogLevel(INFO);
+  logger.setDefaultLogLevel(LOG_INFO);
   
   uint16_t vid = 0, pid = 0;
   String serialNumber;
@@ -148,11 +148,15 @@ int main(int argc, char *argv[])
   if(write)
   {
     uint32_t value;
-    programmer.readRegister(address, value);
-    std::cout << "Register (before set) @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
-    p.set(data);
-    programmer.readRegister(address, value);
-    std::cout << "Register (after set) @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
+    if (programmer.readRegister(address, value))
+      std::cout << "Register (before set) @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
+    else
+      logger(LOG_ERROR) << "Failed to read register @" << std::hex << address << std::endl;
+      p.set(data);
+    if(programmer.readRegister(address, value))
+      std::cout << "Register (after set) @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
+    else
+      logger(LOG_ERROR) << "Failed to read register @" << std::hex << address << std::endl;
     //programmer.writeRegister(address, data);
   }
   else

@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   
   if(d.download(firmwareFileName))
   {
-    logger(LOG_INFO) << "Download successful!" << endl;
+    std::cout << "Download successful!" << std::endl;
     return 0;
   }
   else

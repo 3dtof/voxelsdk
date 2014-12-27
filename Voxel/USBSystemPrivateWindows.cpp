@@ -8,12 +8,7 @@
 
 #include "Logger.h"
 
-#define INITGUID
-#include <Windows.h>
-#include <SetupAPI.h>
-#include <usbiodef.h>
-#include <comdef.h>
-#include <usbioctl.h>
+#include <devguid.h>
 
 namespace Voxel
 {
@@ -110,7 +105,13 @@ bool USBSystemPrivate::_getDeviceProperty(HANDLE devHandle, DWORD prop, Ptr<T> &
 
 bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process)
 {
-  HDEVINFO devClassInfo = SetupDiGetClassDevs(guid, NULL, NULL, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
+  DWORD flags = DIGCF_PRESENT;
+  
+  if (guid) flags |= DIGCF_DEVICEINTERFACE;
+
+  if (!guid) flags |= DIGCF_ALLCLASSES;
+
+  HDEVINFO devClassInfo = SetupDiGetClassDevs(guid, NULL, NULL, flags); // | DIGCF_DEVICEINTERFACE
 
   if (devClassInfo == INVALID_HANDLE_VALUE)
   {
@@ -128,7 +129,8 @@ bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devC
   {
     deviceInfo.devInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-    if (!SetupDiEnumDeviceInterfaces(devClassInfo, 0, guid, index, &deviceInfo.devInterfaceData))
+    // FIXME: Currently this considers only the first interface of the device. Should we look for all the interfaces?
+    if (!SetupDiEnumDeviceInterfaces(devClassInfo, &deviceInfo.devInfo, guid, 0, &deviceInfo.devInterfaceData))
     {
       logger(LOG_ERROR) << "USBSystem: Failed to enumerate device interfaces for index = " << index << ". Error = " << getDeviceError() << std::endl;
       SetupDiDestroyDeviceInfoList(devClassInfo);
@@ -238,7 +240,7 @@ void USBSystemPrivate::_enumerateHub(const String &hubName, Function<void(HANDLE
 
       if (!(ret1 && ret2 && ret3))
       {
-        logger(LOG_WARNING) << "USBSystem: Could not get request string descriptors for connection index = " << index << " connected to USB hub device = '" << deviceName << "'" << std::endl;
+        logger(LOG_DEBUG) << "USBSystem: Could not get request string descriptors for connection index = " << index << " connected to USB hub device = '" << deviceName << "'" << std::endl;
       }
 
       if (manufacturer.size() && product.size())
@@ -302,7 +304,7 @@ bool USBSystemPrivate::_getStringDescriptor(HANDLE devHandle, ULONG index, UCHAR
   //
   if (!DeviceIoControl(devHandle, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION, &*request, nBytes, &*request, nBytes, &nBytesReturned, NULL))
   {
-    logger(LOG_WARNING) << "USBSystem: Could not get string descriptor = " << (uint)descriptorIndex << " for connection index = " << index << std::endl;
+    logger(LOG_DEBUG) << "USBSystem: Could not get string descriptor = " << (uint)descriptorIndex << " for connection index = " << index << std::endl;
     return false;
   }
 
@@ -310,7 +312,7 @@ bool USBSystemPrivate::_getStringDescriptor(HANDLE devHandle, ULONG index, UCHAR
     (stringDescriptor->bLength != nBytesReturned - sizeof(USB_DESCRIPTOR_REQUEST)) || 
     stringDescriptor->bLength % 2 != 0)
   {
-    logger(LOG_WARNING) << "USBSystem: Got invalid string descriptor = " << (uint)descriptorIndex << " for connection index = " << index << std::endl;
+    logger(LOG_DEBUG) << "USBSystem: Got invalid string descriptor = " << (uint)descriptorIndex << " for connection index = " << index << std::endl;
     return false;
   }
 
@@ -358,7 +360,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice &usbd)
 {
   Map<String, DeviceInfo> deviceMap; // driver key name -> DeviceInfo map
 
-  bool ret = _iterateSetupAPI((LPGUID)&GUID_CLASS_USB_DEVICE, [this, &deviceMap](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
+  bool ret = _iterateSetupAPI((LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, [this, &deviceMap](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
     String driverKeyName;
     if (!_getDeviceProperty(devClassInfo, devInfo, SPDRP_DRIVER, driverKeyName))
     {
@@ -411,5 +413,23 @@ String USBSystemPrivate::getDeviceNode(const USBDevice &usbd)
   return deviceNodePath;
 }
 
-  
+bool USBSystemPrivate::getDevInst(const String &devicePath, DWORD &devInst, LPGUID guid)
+{
+  bool devInstSet = false;
+  bool ret = _iterateSetupAPI(guid, [this, &devicePath, &devInst, &devInstSet](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
+    
+    _bstr_t b(devInfo.devInterfaceDetailData->DevicePath);
+
+    String devPath = b;
+
+    if (!devInstSet && devPath == devicePath)
+    {
+      devInst = devInfo.devInfo.DevInst;
+      devInstSet = true;
+    }
+  });
+
+  return devInstSet;
+}
+
 }

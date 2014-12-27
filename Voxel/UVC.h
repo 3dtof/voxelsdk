@@ -32,7 +32,7 @@ protected:
 public:
   UVC(DevicePtr usb);
   
-  bool isInitialized();
+  virtual bool isInitialized();
   
   inline UVCPrivate &getUVCPrivate() { return *_uvcPrivate; }
   

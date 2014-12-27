@@ -90,7 +90,7 @@ protected:
   
   virtual T _fromRawValue(uint32_t value) const
   {
-    return (T)(value?true:false);
+    return (T)(value);
   }
   
 public:
@@ -176,6 +176,15 @@ public:
 
 class VOXEL_EXPORT BoolParameter : public EnumParameterTemplate<bool>
 {
+  virtual bool _fromRawValue(uint32_t value) const
+  {
+    return (value?true:false);
+  }
+
+  virtual uint32_t _toRawValue(bool value) const
+  {
+    return (uint32_t)value?1:0;
+  }
 public:
   BoolParameter(RegisterProgrammer &programmer, const String &name,  uint32_t address, uint8_t registerLength, uint8_t lsb, 
                 const Vector<String> &valueDescription, const Vector<String> &valueMeaning, const bool &defaultValue,

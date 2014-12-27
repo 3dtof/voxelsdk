@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export VOXEL_FW_PATH="$PWD/TI3DToF"
-Test/DownloaderTest -v 0x0451 -p 0x9102 -f ../TI3DToF/OPT9220_0v27.fw
+Test/DownloaderTest -v 0x0451 -p 0x9102 -f OPT9220_0v27.fw
 sleep 2
 
 # Illumination settings

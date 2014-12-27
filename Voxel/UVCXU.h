@@ -16,8 +16,14 @@ class VOXEL_EXPORT UVCXU : public UVC
 {
 protected:
   int _xuID;
+
+  class VOXEL_NO_EXPORT UVCXUPrivate;
+  Ptr<UVCXUPrivate> _uvcXUPrivate;
+
 public:
   UVCXU(DevicePtr usb, int xuID);
+
+  bool isInitialized();
   
   virtual ~UVCXU();
   

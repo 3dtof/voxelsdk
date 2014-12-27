@@ -9,6 +9,13 @@
 
 #include <Device.h>
 
+#define INITGUID
+#include <Windows.h>
+#include <SetupAPI.h>
+#include <usbiodef.h>
+#include <comdef.h>
+#include <usbioctl.h>
+
 namespace Voxel
 {
 
@@ -46,6 +53,8 @@ public:
   Vector<DevicePtr> getDevices();
   
   String getDeviceNode(const USBDevice &usbd);
+
+  bool getDevInst(const String &devicePath, DWORD &devInst, LPGUID guid = (LPGUID)&GUID_CLASS_USB_DEVICE);
   
   virtual ~USBSystemPrivate() {}
 };

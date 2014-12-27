@@ -31,7 +31,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(WINDOWS 1)
   ADD_DEFINITIONS(-DWINDOWS /wd4251)
-  SET(COMMON_LIBS setupapi WinUsb ${CMAKE_SOURCE_DIR}/Voxel/CyAPI.lib)
+  SET(COMMON_LIBS setupapi WinUsb strmiids strmbase Cfgmgr32 ${CMAKE_SOURCE_DIR}/Voxel/CyAPI.lib)
 endif()
 
 include_directories(
