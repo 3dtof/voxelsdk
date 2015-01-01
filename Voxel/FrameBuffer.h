@@ -32,12 +32,10 @@ protected:
   
 public:
   FrameBuffer(BufferPtr &buffer, FrameBufferManager<BufferType> &manager): _buffer(buffer), _manager(manager), 
-    Ptr<BufferType>(nullptr, [this](BufferType *) { this->release(); }) // The deleter gets called when FrameBuffer<> goes out of scope. Deleter releases the held buffer
+    Ptr<BufferType>(nullptr, [&manager, &buffer](BufferType *) { manager.release(buffer); }) // The deleter gets called when FrameBuffer<> goes out of scope. Deleter releases the held buffer
     {}
   
   inline BufferPtr &operator *() { return _buffer; }
-  
-  inline void release();
   
   virtual ~FrameBuffer() {}
 };
@@ -97,13 +95,6 @@ public:
   
   virtual ~FrameBufferManager() { clear(); }
 };
-
-template <typename BufferType>
-inline void FrameBuffer<BufferType>::release()
-{
-  _manager.release(_buffer);
-}
-
 
 }
 

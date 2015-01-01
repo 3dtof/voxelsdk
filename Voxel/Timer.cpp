@@ -46,30 +46,20 @@ int clock_gettime(TimeStampType &time)
   static LARGE_INTEGER    offset;
   static double           frequencyToMicroseconds;
   static int              initialized = 0;
-  static BOOL             usePerformanceCounter = 0;
-
+  
   if (!initialized) {
     LARGE_INTEGER performanceFrequency;
     initialized = 1;
-    usePerformanceCounter = QueryPerformanceFrequency(&performanceFrequency);
-    if (usePerformanceCounter) {
-      QueryPerformanceCounter(&offset);
-      frequencyToMicroseconds = (double)performanceFrequency.QuadPart / 1000000.;
-    }
-    else {
-      offset = getFILETIMEoffset();
-      frequencyToMicroseconds = 10.;
-    }
-  }
-  if (usePerformanceCounter) QueryPerformanceCounter(&t);
-  else {
-    GetSystemTimeAsFileTime(&f);
-    t.QuadPart = f.dwHighDateTime;
-    t.QuadPart <<= 32;
-    t.QuadPart |= f.dwLowDateTime;
+    offset = getFILETIMEoffset();
+    frequencyToMicroseconds = 10.;
   }
 
+  GetSystemTimeAsFileTime(&f);
+  t.QuadPart = f.dwHighDateTime;
+  t.QuadPart <<= 32;
+  t.QuadPart |= f.dwLowDateTime;
   t.QuadPart -= offset.QuadPart;
+  
   time = (TimeStampType)t.QuadPart / frequencyToMicroseconds;
   return 0;
 }

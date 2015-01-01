@@ -21,6 +21,7 @@
 #include <Ptr.h>
 
 #include <mutex>
+#include <condition_variable>
 
 #include "VoxelExports.h"
 
@@ -60,7 +61,9 @@ using Atomic = std::atomic<T>;
 typedef std::mutex Mutex;
 
 template <typename T>
-using Lock = std::lock_guard<T>;
+using Lock = std::unique_lock<T>;
+
+typedef std::condition_variable ConditionVariable;
 
 /// String functions
 String VOXEL_EXPORT getHex(uint16_t value);

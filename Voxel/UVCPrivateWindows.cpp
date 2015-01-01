@@ -47,7 +47,7 @@ UVCPrivate::UVCPrivate(DevicePtr usb)
 
   void *p;
 
-  CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
   // Create the system device enumerator
   if ((hr = (CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC, IID_ICreateDevEnum, (void **)&p))) != S_OK)

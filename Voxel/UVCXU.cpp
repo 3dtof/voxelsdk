@@ -84,7 +84,7 @@ UVCXU::UVCXU(DevicePtr usb, int xuID): UVC(usb), _xuID(xuID), _uvcXUPrivate(Ptr<
     {
       if ((hr = ksTopologyInfo->CreateNodeInstance(i, IID_IKsControl, (void **)&p)) == S_OK)
       {
-        ExtensionProp.Property.Set = PROPSETID_FX2_XU;
+        ExtensionProp.Property.Set = PROPSETID_FX2_XU; // FIXME: This seems to be specific to Voxel-14. Need to handle this separately
         ExtensionProp.Property.Id = 0;
         ExtensionProp.Property.Flags = KSPROPERTY_TYPE_SETSUPPORT | KSPROPERTY_TYPE_TOPOLOGY;
         ExtensionProp.NodeId = i;
@@ -166,7 +166,7 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
 
   if (bytesReturned != size)
   {
-    logger(LOG_ERROR) << "UVCXU: " << _usb->id() << " KsProperty query returned only " << bytesReturned << ", but expected " << size << std::endl;
+    logger(LOG_ERROR) << "UVCXU: " << _usb->id() << " KsProperty query returned only " << bytesReturned << " bytes, but expected " << size << " bytes." << std::endl;
     return false;
   }
 #endif

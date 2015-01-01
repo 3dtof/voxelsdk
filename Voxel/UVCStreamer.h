@@ -18,25 +18,14 @@ namespace Voxel
 class VOXEL_EXPORT UVCStreamer : public Streamer
 {
 protected:
-  enum _CaptureMode
-  {
-    CAPTURE_READ_WRITE,
-    CAPTURE_MMAP,
-    CAPTURE_USER_POINTER,
-    CAPTURE_STREAMING // This is an intermediate which will be used to decide whether CAPTURE_MMAP or CAPTURE_USER_POINTER can be used
-  } _captureMode;
+  class UVCStreamerPrivate;
+  Ptr<UVCStreamerPrivate> _uvcStreamerPrivate;
 
-  Ptr<UVC> _uvc;
-  
-  bool _initialized = false;
-  
-  size_t _frameByteSize;
-  
-  Vector<UVCRawData> _rawDataBuffers;
+  Ptr<VideoMode> _currentVideoMode;
+  void _storeCurrentVideoMode(const VideoMode &videoMode);
   
   bool _uvcInit();
   bool _initForCapture();
-  inline void _updateFrameByteSize(uint32_t width, uint32_t height, uint32_t bytesPerLine, uint32_t frameSize);
   
   virtual bool _start();
   virtual bool _capture(RawDataFramePtr &p);
@@ -45,9 +34,7 @@ protected:
 public:
   UVCStreamer(DevicePtr device);
   
-  virtual bool isInitialized() { return _uvc && _initialized; }
-  
-  inline size_t getFrameByteSize() { return _frameByteSize; }
+  virtual bool isInitialized();
   
   virtual bool getSupportedVideoModes(Vector<VideoMode> &videoModes);
   
@@ -56,22 +43,6 @@ public:
   
   virtual ~UVCStreamer();
 };
-
-void UVCStreamer::_updateFrameByteSize ( uint32_t width, uint32_t height, uint32_t bytesPerLine, uint32_t frameSize )
-{
-  /* Buggy driver paranoia. */
-  size_t min = width * 2;
-  if(bytesPerLine < min)
-    bytesPerLine = min;
-  
-  min = bytesPerLine * height;
-  
-  if(frameSize < min)
-    _frameByteSize = min;
-  else
-    _frameByteSize = frameSize;
-}
-
 
 }
 

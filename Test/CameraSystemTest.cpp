@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  logger.setDefaultLogLevel(INFO);
+  logger.setDefaultLogLevel(LOG_INFO);
   
   uint16_t vid = 0;
   
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
   {
     std::cout << d->id() << std::endl;
     
-    if(d->interface() == Device::USB)
+    if(d->interfaceID() == Device::USB)
     {
       USBDevice &usb = (USBDevice &)*d;
       
@@ -175,31 +175,31 @@ int main(int argc, char *argv[])
   
   TimeStampType lastTimeStamp = 0;
   
-//   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
-//     const RawDataFrame *d = dynamic_cast<const RawDataFrame *>(&frame);
-//     
-//     if(!d)
-//     {
-//       std::cout << "Null frame captured? or not of type RawDataFrame" << std::endl;
-//       return;
-//     }
-//     
-//     std::cout << "Capture frame " << d->id << "@" << d->timestamp;
-//     
-//     if(lastTimeStamp != 0)
-//       std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
-//     
-//     std::cout << std::endl;
-//     
-//     lastTimeStamp = d->timestamp;
-//     
-//     f.write((char *)d->data.data(), d->data.size());
-//     
-//     count++;
-//     
-//     if(count >= 100)
-//       dc.stop();
-//   });
+   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+     const RawDataFrame *d = dynamic_cast<const RawDataFrame *>(&frame);
+     
+     if(!d)
+     {
+       std::cout << "Null frame captured? or not of type RawDataFrame" << std::endl;
+       return;
+     }
+     
+     std::cout << "Capture frame " << d->id << "@" << d->timestamp;
+     
+     if(lastTimeStamp != 0)
+       std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
+     
+     std::cout << std::endl;
+     
+     lastTimeStamp = d->timestamp;
+     
+     f.write((char *)d->data.data(), d->data.size());
+     
+     count++;
+     
+     if(count >= 100)
+       dc.stop();
+   });
   
 //   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_PROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
 //     const ToFRawFrame *d = dynamic_cast<const ToFRawFrame *>(&frame);
@@ -264,38 +264,38 @@ int main(int argc, char *argv[])
 //       dc.stop();
 //   });
   
-  depthCamera->registerCallback(DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
-    const XYZIPointCloudFrame *d = dynamic_cast<const XYZIPointCloudFrame *>(&frame);
-    
-    if(!d)
-    {
-      std::cout << "Null frame captured? or not of type XYZIPointCloudFrame" << std::endl;
-      return;
-    }
-    
-    std::cout << "Capture frame " << d->id << "@" << d->timestamp;
-    
-    if(lastTimeStamp != 0)
-      std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
-    
-    std::cout << std::endl;
-    
-    lastTimeStamp = d->timestamp;
-    
-    f.write((char *)d->points.data(), sizeof(IntensityPoint)*d->points.size());
-    
-    count++;
-    
-    if(count >= 100)
-      dc.stop();
-  });
+  //depthCamera->registerCallback(DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+  //  const XYZIPointCloudFrame *d = dynamic_cast<const XYZIPointCloudFrame *>(&frame);
+  //  
+  //  if(!d)
+  //  {
+  //    std::cout << "Null frame captured? or not of type XYZIPointCloudFrame" << std::endl;
+  //    return;
+  //  }
+  //  
+  //  std::cout << "Capture frame " << d->id << "@" << d->timestamp;
+  //  
+  //  if(lastTimeStamp != 0)
+  //    std::cout << " (" << 1E6/(d->timestamp - lastTimeStamp) << " fps)";
+  //  
+  //  std::cout << std::endl;
+  //  
+  //  lastTimeStamp = d->timestamp;
+  //  
+  //  f.write((char *)d->points.data(), sizeof(IntensityPoint)*d->points.size());
+  //  
+  //  count++;
+  //  
+  //  if(count >= 100)
+  //    dc.stop();
+  //});
   
   
   if(depthCamera->start())
   {
     FrameRate r;
     if(depthCamera->getFrameRate(r))
-      logger(INFO) << "Capturing at a frame rate of " << r.getFrameRate() << " fps" << std::endl;
+      logger(LOG_INFO) << "Capturing at a frame rate of " << r.getFrameRate() << " fps" << std::endl;
     depthCamera->wait();
   }
   else

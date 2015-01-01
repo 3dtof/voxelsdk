@@ -306,8 +306,9 @@ bool ToFHaddockCamera::_initStartParams()
          set(OP_CS_POL, true) &&
          set(FB_READY_EN, true) &&
          set(CONFIDENCE_THRESHOLD, 1U) &&
-         set(ILLUM_EN_POL, false);// &&
-         //set(INTG_TIME, 40.0f);
+         //set(DEBUG_EN, true) && // Uncomment this for sample data
+         set(ILLUM_EN_POL, false);
+         // && set(INTG_TIME, 40.0f);
 }
 
 // FIXME: Should amplitude_scale parameter be used for this?
