@@ -29,7 +29,7 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
     else
     {
       logger(LOG_ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << endl;
-      return false;
+      return _parameterInit = false;
     }
   }
   return true;

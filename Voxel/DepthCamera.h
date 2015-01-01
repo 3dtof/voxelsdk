@@ -46,6 +46,8 @@ protected:
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
   
+  bool _parameterInit;
+  
   FrameBufferManager<RawFrame> _rawFrameBuffers;
   FrameBufferManager<DepthFrame> _depthFrameBuffers;
   FrameBufferManager<PointCloudFrame> _pointCloudBuffers;
@@ -95,12 +97,13 @@ protected:
   
 public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")"),
-  _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS) {}
+  _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
+  _parameterInit(true) {}
   
   virtual bool isInitialized() const
   {
     return _programmer && _programmer->isInitialized() && 
-           _streamer && _streamer->isInitialized();
+           _streamer && _streamer->isInitialized() && _parameterInit;
   }
   
   inline const String &name() const { return _name; }

@@ -211,7 +211,7 @@ bool ToFHaddockCamera::_init()
   if(!p.getParameters(params))
   {
     logger(LOG_ERROR) << "ToFHaddockCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
-    return false;
+    return _parameterInit = false;
   }
   
   for(auto &p: params)
