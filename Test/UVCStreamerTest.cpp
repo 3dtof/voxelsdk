@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  logger.setDefaultLogLevel(INFO);
+  logger.setDefaultLogLevel(LOG_INFO);
   
   uint16_t vid = 0, pid = 0;
   String serialNumber;
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
   {
     if(!streamer.capture(p))
     {
-      logger(WARNING) << "UVCStreamer could not capture a frame" << endl;
+      logger(LOG_WARNING) << "UVCStreamer could not capture a frame" << endl;
       i--;
     }
     else

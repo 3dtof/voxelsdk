@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  logger.setDefaultLogLevel(DEBUG);
+  logger.setDefaultLogLevel(LOG_DEBUG);
   
   String xmlFile;
   

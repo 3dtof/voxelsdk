@@ -36,7 +36,7 @@ int UVCPrivate::xioctl(int request, void *arg)
   while(ret && tries-- && ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
   
   if (ret && (tries <= 0)) 
-    logger(ERROR) << "UVC: ioctl (" << request << ") retried " << FD_RETRY_LIMIT << " times - giving up: " << strerror(errno) << ")" << endl;
+    logger(LOG_ERROR) << "UVC: ioctl (" << request << ") retried " << FD_RETRY_LIMIT << " times - giving up: " << strerror(errno) << ")" << endl;
   
   return ret;
 }
@@ -73,7 +73,7 @@ bool UVCPrivate::read(uint8_t *buffer, std::size_t size)
           continue;
         else
         {
-          logger(ERROR) << "UVC: Hit maximum number (" << FD_RETRY_LIMIT << ") of retries to read data" << std::endl;
+          logger(LOG_ERROR) << "UVC: Hit maximum number (" << FD_RETRY_LIMIT << ") of retries to read data" << std::endl;
           return false;
         }
       }
@@ -119,7 +119,7 @@ UVCPrivate::UVCPrivate(DevicePtr usb): _usb(usb), _fd(-1)
 {
   USBSystem sys;
   
-  if(usb->interface() != Device::USB)
+  if(usb->interfaceID() != Device::USB)
     return;
   
   _deviceNode = sys.getDeviceNode((USBDevice &)*usb);
@@ -129,10 +129,10 @@ UVCPrivate::UVCPrivate(DevicePtr usb): _usb(usb), _fd(-1)
     _fd = open(_deviceNode.c_str(), O_RDWR | O_NONBLOCK);
     
     if(_fd == -1)
-      logger(ERROR) << "Could not open device node " << _deviceNode << ". Please check for permissions." << endl;
+      logger(LOG_ERROR) << "Could not open device node " << _deviceNode << ". Please check for permissions." << endl;
   }
   else
-    logger(ERROR) << "Could not located device node for " << _usb->id() << "." << endl;
+    logger(LOG_ERROR) << "Could not located device node for " << _usb->id() << "." << endl;
 }
 
 UVCPrivate::~UVCPrivate()

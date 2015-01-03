@@ -77,7 +77,7 @@ bool Timer::init()
   
   if(r1 == -1 || r2 == -1)
   {
-    logger(ERROR) << "Time: Failed to get current time." << std::endl;
+    logger(LOG_ERROR) << "Time: Failed to get current time." << std::endl;
     return _initialized = false;
   }
   

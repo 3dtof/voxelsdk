@@ -29,7 +29,7 @@ Vector<DevicePtr> USBSystemPrivate::getDevices()
   
   if(count <= 0)
   {
-    logger(ERROR) << "USBSystem: Failed to get list of USB devices" << endl;
+    logger(LOG_ERROR) << "USBSystem: Failed to get list of USB devices" << endl;
     return devices;
   }
   
@@ -45,7 +45,7 @@ Vector<DevicePtr> USBSystemPrivate::getDevices()
     rc = libusb_get_device_descriptor(device, &desc);
     
     if(rc != LIBUSB_SUCCESS)
-      logger(DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
+      logger(LOG_DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
     
     if ((rc = libusb_open(device, &deviceHandle)) == 0)
     {
@@ -64,7 +64,7 @@ Vector<DevicePtr> USBSystemPrivate::getDevices()
       libusb_close(deviceHandle);
     }
     else
-      logger(DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
+      logger(LOG_DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
   }
   
   libusb_free_device_list(list, 1);
@@ -91,7 +91,7 @@ libusb_device *USBSystemPrivate::getDeviceHandle(const USBDevice &usbd)
   
   if(count <= 0)
   {
-    logger(ERROR) << "USBSystem: Failed to get list of USB devices" << endl;
+    logger(LOG_ERROR) << "USBSystem: Failed to get list of USB devices" << endl;
     return selected;
   }
   
@@ -107,7 +107,7 @@ libusb_device *USBSystemPrivate::getDeviceHandle(const USBDevice &usbd)
     rc = libusb_get_device_descriptor(device, &desc);
     
     if(rc != LIBUSB_SUCCESS)
-      logger(DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
+      logger(LOG_DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
     
     if ((rc = libusb_open(device, &deviceHandle)) == 0)
     {
@@ -128,7 +128,7 @@ libusb_device *USBSystemPrivate::getDeviceHandle(const USBDevice &usbd)
     }
     else
     {
-      logger(DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
+      logger(LOG_DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
       libusb_unref_device(device);
     }
   }
@@ -147,7 +147,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
   
   if(!udevHandle)
   {
-    logger(ERROR) << "USBSystem: Init failed to get device node" << endl;
+    logger(LOG_ERROR) << "USBSystem: Init failed to get device node" << endl;
     return "";
   }
   
@@ -194,7 +194,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
     
     if(!pdev)
     {
-      logger(WARNING) << "USBSystem: Unable to find parent usb device." << endl;
+      logger(LOG_WARNING) << "USBSystem: Unable to find parent usb device." << endl;
       udev_device_unref(dev);
       continue;
     }

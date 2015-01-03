@@ -10,6 +10,8 @@
 #include <DepthCamera.h>
 #include <boost/shared_ptr.hpp>
 
+#include "VoxelPCLExports.h"
+
 /// Forward declaration of PCL related classes
 namespace pcl
 {
@@ -32,7 +34,7 @@ class Grabber;
 namespace Voxel
 {
 
-class PCLViewer
+class VOXELPCL_EXPORT PCLViewer
 {
 protected:
   DepthCameraPtr _depthCamera;

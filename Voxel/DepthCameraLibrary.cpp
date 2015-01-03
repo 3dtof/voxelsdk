@@ -26,7 +26,7 @@ public:
 #endif
 };
 
-std::string dynamicLoadError()
+String dynamicLoadError()
 {
 #ifdef WINDOWS
   DWORD error = GetLastError();
@@ -45,16 +45,20 @@ std::string dynamicLoadError()
     if (bufLen)
     {
       LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-      std::string result(lpMsgStr, lpMsgStr + bufLen);
+      String result(lpMsgStr, lpMsgStr + bufLen);
 
       LocalFree(lpMsgBuf);
 
       return result;
     }
   }
-  return std::string();
+  return String();
 #elif defined(LINUX)
-  return std::string(dlerror());
+  char *c;
+  if(c = dlerror())
+    return String(c);
+  else
+    return String();
 #endif
 }
 

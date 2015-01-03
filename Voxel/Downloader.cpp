@@ -120,9 +120,16 @@ bool _download(USBHandle device, std::ifstream &file, long unsigned int filesize
 {
   unsigned char endpointOut = 0x06;
   unsigned char buffer[4096];
-  unsigned long transferSize;
-  unsigned long bytesToRead = filesize;
-  unsigned long transferred = 0, t;
+  
+#ifdef LINUX
+  typedef int TransferSizeType;
+#elif defined(WINDOWS)
+  typedef unsigned long TransferSizeType;
+#endif
+  
+  TransferSizeType transferSize;
+  TransferSizeType bytesToRead = filesize;
+  TransferSizeType transferred = 0, t;
   int status;
   
   while (bytesToRead > 0) {
@@ -292,7 +299,7 @@ bool USBDownloader::download(const String &file)
   }
   else
   {
-    logger(ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
+    logger(LOG_ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
     return false;
   }
 #elif defined(WINDOWS)

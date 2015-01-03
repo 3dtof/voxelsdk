@@ -12,10 +12,12 @@
 #include <pcl/point_types.h>
 #include <DepthCamera.h>
 
+#include "VoxelPCLExports.h"
+
 namespace Voxel
 {
 
-class PCLGrabber: public pcl::Grabber
+class VOXELPCL_EXPORT PCLGrabber: public pcl::Grabber
 {
 public:
   typedef void (PointCloudCallBack) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &);

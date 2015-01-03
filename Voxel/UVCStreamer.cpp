@@ -474,14 +474,14 @@ bool UVCStreamer::getCurrentVideoMode(VideoMode &videoMode)
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
     return false;
   }
   
   videoMode.frameSize.width = fmt.fmt.pix.width;
   videoMode.frameSize.height = fmt.fmt.pix.height;
   
-  _uvcStreamPrivate->updateFrameByteSize(fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
+  _uvcStreamerPrivate->updateFrameByteSize(fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
   
   struct v4l2_streamparm parm;
   memset(&parm, 0, sizeof(parm));
@@ -490,7 +490,7 @@ bool UVCStreamer::getCurrentVideoMode(VideoMode &videoMode)
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_G_PARM, &parm) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
     return false;
   }
   
@@ -523,7 +523,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not get current frame format" << std::endl;
     return false;
   }
   
@@ -532,18 +532,18 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_S_FMT, &fmt) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
     return false;
   }
   
   /// Get once more to set frame size
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_G_FMT, &fmt) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not set current frame format" << std::endl;
     return false;
   }
   
-  _uvcStreamPrivate->updateFrameByteSize(fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
+  _uvcStreamerPrivate->updateFrameByteSize(fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
   
   struct v4l2_streamparm parm;
   memset(&parm, 0, sizeof(parm));
@@ -551,7 +551,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_G_PARM, &parm) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not get current capture parameters" << std::endl;
     return false;
   }
   
@@ -560,7 +560,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_S_PARM, &parm) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Could not set current capture parameters" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: Could not set current capture parameters" << std::endl;
     return false;
   }
 #elif defined(WINDOWS)
@@ -614,25 +614,25 @@ bool UVCStreamer::_initForCapture()
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QUERYCAP, &cap) == -1)
   {
-    logger(ERROR) << "UVCStreamer: " << _device->id() << " is not a V4L2 device" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " is not a V4L2 device" << std::endl;
     return _uvcStreamerPrivate->initialized = false;
   }
   
   if(!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
   {
-    logger(ERROR) << "UVCStreamer: " << _device->id() << " is no video capture device" << std::endl;
+    logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " is no video capture device" << std::endl;
     return _uvcStreamerPrivate->initialized = false;
   }
   
   if(cap.capabilities & V4L2_CAP_READWRITE)
   {
-    logger(INFO) << "UVCStreamer: " << _device->id() << " does not support read()/write() calls" << std::endl;
-    _uvcStreamerPrivate->captureMode = CAPTURE_READ_WRITE;
+    logger(LOG_INFO) << "UVCStreamer: " << _device->id() << " does not support read()/write() calls" << std::endl;
+    _uvcStreamerPrivate->captureMode = UVCStreamerPrivate::CAPTURE_READ_WRITE;
   }
   else if(cap.capabilities & V4L2_CAP_STREAMING)
   {
-    logger(INFO) << "UVCStreamer: " << _device->id() << " supports streaming modes" << std::endl;
-    _uvcStreamerPrivate->captureMode = CAPTURE_STREAMING;
+    logger(LOG_INFO) << "UVCStreamer: " << _device->id() << " supports streaming modes" << std::endl;
+    _uvcStreamerPrivate->captureMode = UVCStreamerPrivate::CAPTURE_STREAMING;
   }
 #endif
   
@@ -660,7 +660,7 @@ bool UVCStreamer::_start()
     return false;
   
 #ifdef LINUX
-  if(_uvcStreamerPrivate->captureMode == CAPTURE_STREAMING)
+  if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_STREAMING)
   {
     struct v4l2_requestbuffers req;
     
@@ -674,7 +674,7 @@ bool UVCStreamer::_start()
     {
       if(EINVAL == errno)
       {
-        logger(ERROR) << "UVCStreamer: " << _device->id() << " does not support mmap" << std::endl;
+        logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " does not support mmap" << std::endl;
         
         memset(&req, 0, sizeof(req));
         
@@ -686,18 +686,18 @@ bool UVCStreamer::_start()
         {
           if(EINVAL == errno)
           {
-            logger(ERROR) << "UVCStreamer: " << _device->id() << " does not support user pointer" << std::endl;
+            logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " does not support user pointer" << std::endl;
             return _uvcStreamerPrivate->initialized = false; // No usable capture mode available
           }
         }
         else
         {
-          logger(INFO) << "UVCStreamer: " << _device->id() << " supports user pointer" << std::endl;
-          _uvcStreamerPrivate->captureMode = CAPTURE_USER_POINTER;
+          logger(LOG_INFO) << "UVCStreamer: " << _device->id() << " supports user pointer" << std::endl;
+          _uvcStreamerPrivate->captureMode = UVCStreamerPrivate::CAPTURE_USER_POINTER;
           
           if(req.count < 2)
           {
-            logger(ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
+            logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
             return _uvcStreamerPrivate->initialized = false;
           }
           
@@ -706,18 +706,18 @@ bool UVCStreamer::_start()
       }
       else
       {
-        logger(ERROR) << "UVCStreamer: " << _device->id() << " VIDIC_REQBUFS failed" << std::endl;
+        logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " VIDIC_REQBUFS failed" << std::endl;
         return _uvcStreamerPrivate->initialized = false;
       }
     }
     else
     {
-      logger(INFO) << "UVCStreamer: " << _device->id() << " supports mmap" << std::endl;
-      _uvcStreamerPrivate->captureMode = CAPTURE_MMAP;
+      logger(LOG_INFO) << "UVCStreamer: " << _device->id() << " supports mmap" << std::endl;
+      _uvcStreamerPrivate->captureMode = UVCStreamerPrivate::CAPTURE_MMAP;
       
       if(req.count < 2)
       {
-        logger(ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
+        logger(LOG_ERROR) << "UVCStreamer: " << _device->id() << " insufficient buffers to capture" << std::endl;
         return _uvcStreamerPrivate->initialized = false;
       }
       
@@ -726,7 +726,7 @@ bool UVCStreamer::_start()
   }
   
   //// Initialize _uvcStreamerPrivate->rawDataBuffers
-  if(_uvcStreamerPrivate->captureMode == CAPTURE_MMAP)
+  if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_MMAP)
   {
     for(auto i = 0; i < _uvcStreamerPrivate->rawDataBuffers.size(); i++)
     {
@@ -740,7 +740,7 @@ bool UVCStreamer::_start()
       
       if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QUERYBUF, &buf) == -1)
       {
-        logger(ERROR) << "UVCStreamer: Could not prepare raw data buffer '" << i << "'" << endl;
+        logger(LOG_ERROR) << "UVCStreamer: Could not prepare raw data buffer '" << i << "'" << endl;
         return _uvcStreamerPrivate->initialized = false;
       }
       
@@ -748,12 +748,12 @@ bool UVCStreamer::_start()
       
       if(!_uvcStreamerPrivate->uvc->getUVCPrivate().mmap(buf.m.offset, _uvcStreamerPrivate->rawDataBuffers[i]))
       {
-        logger(ERROR) << "UVCStreamer: Failed to get raw memory mapped buffer '" << i << "'" << endl;
+        logger(LOG_ERROR) << "UVCStreamer: Failed to get raw memory mapped buffer '" << i << "'" << endl;
         return _uvcStreamerPrivate->initialized = false;
       }
     }
   }
-  else if(_uvcStreamerPrivate->captureMode == CAPTURE_USER_POINTER)
+  else if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_USER_POINTER)
   {
     for(auto i = 0; i < _uvcStreamerPrivate->rawDataBuffers.size(); i++)
     {
@@ -764,7 +764,7 @@ bool UVCStreamer::_start()
   }
   
   /// Enqueue _uvcStreamerPrivate->rawDataBuffers and start streaming
-  if(_uvcStreamerPrivate->captureMode == CAPTURE_MMAP || _uvcStreamerPrivate->captureMode == CAPTURE_USER_POINTER)
+  if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_MMAP || _uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_USER_POINTER)
   {
     for(auto i = 0; i < _uvcStreamerPrivate->rawDataBuffers.size(); i++)
     {
@@ -773,10 +773,10 @@ bool UVCStreamer::_start()
       memset(&buf, 0, sizeof(buf));
       
       buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-      buf.memory = (_uvcStreamerPrivate->captureMode == CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
+      buf.memory = (_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
       buf.index  = i;
       
-      if(_uvcStreamerPrivate->captureMode == CAPTURE_USER_POINTER)
+      if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_USER_POINTER)
       {
         buf.m.userptr = (unsigned long)&*_uvcStreamerPrivate->rawDataBuffers[i].data;
         buf.length = _uvcStreamerPrivate->rawDataBuffers[i].size;
@@ -784,7 +784,7 @@ bool UVCStreamer::_start()
       
       if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QBUF, &buf) == -1)
       {
-        logger(ERROR) << "UVCStreamer: Could not queue raw data buffer '" << i << "'" << endl;
+        logger(LOG_ERROR) << "UVCStreamer: Could not queue raw data buffer '" << i << "'" << endl;
         return _uvcStreamerPrivate->initialized = false;
       }
     }
@@ -793,7 +793,7 @@ bool UVCStreamer::_start()
     
     if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_STREAMON, &type) == -1)
     {
-      logger(ERROR) << "UVCStreamer: Failed to start capture stream" << endl;
+      logger(LOG_ERROR) << "UVCStreamer: Failed to start capture stream" << endl;
       return _uvcStreamerPrivate->initialized = false;
     }
   }
@@ -838,7 +838,7 @@ bool UVCStreamer::_stop()
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_STREAMOFF, &type) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Failed to stop capture stream" << endl;
+    logger(LOG_ERROR) << "UVCStreamer: Failed to stop capture stream" << endl;
     return _uvcStreamerPrivate->initialized = false;
   }
   
@@ -852,11 +852,11 @@ bool UVCStreamer::_stop()
   
   req.count = 0;
   req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  req.memory = (_uvcStreamerPrivate->captureMode == CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
+  req.memory = (_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_REQBUFS, &req) == -1)
   {
-    logger(ERROR) << "UVCStreamer: Failed to remove buffers" << endl;
+    logger(LOG_ERROR) << "UVCStreamer: Failed to remove buffers" << endl;
     return _uvcStreamerPrivate->initialized = false;
   }
   
@@ -881,18 +881,18 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
   if(!isInitialized() || !_uvcStreamerPrivate->uvc->getUVCPrivate().isReadReady(waitTime, timedOut))
   {
     if(timedOut)
-      logger(ERROR) << "No data available. Waited for " << waitTime << " ms" << endl;
+      logger(LOG_ERROR) << "No data available. Waited for " << waitTime << " ms" << endl;
     
     return false;
   }
   
-  if(_uvcStreamerPrivate->captureMode == CAPTURE_READ_WRITE)
+  if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_READ_WRITE)
   {
     if(!p || p->data.size() != _uvcStreamerPrivate->frameByteSize)
     {
       p = RawDataFramePtr(new RawDataFrame());
       p->data.resize(_uvcStreamerPrivate->frameByteSize);
-      logger(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
+      logger(LOG_DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
     }
     
     bool ret = _uvcStreamerPrivate->uvc->read(p->data.data(), _uvcStreamerPrivate->frameByteSize);
@@ -905,13 +905,13 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     }
     return false;
   }
-  else if(_uvcStreamerPrivate->captureMode == CAPTURE_MMAP || _uvcStreamerPrivate->captureMode == CAPTURE_USER_POINTER)
+  else if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_MMAP || _uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_USER_POINTER)
   {
     struct v4l2_buffer buf;
     memset(&buf, 0, sizeof(buf));
     
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    buf.memory = (_uvcStreamerPrivate->captureMode == CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
+    buf.memory = (_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_MMAP)?V4L2_MEMORY_MMAP:V4L2_MEMORY_USERPTR;
     
     if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_DQBUF, &buf) == -1)
     {
@@ -922,12 +922,12 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
           /* fall through */
           
         default:
-          logger(ERROR) << "UVCStreamer: Failed to dequeue a raw frame buffer" << endl;
+          logger(LOG_ERROR) << "UVCStreamer: Failed to dequeue a raw frame buffer" << endl;
           return false;
       }
     }
     
-    if(_uvcStreamerPrivate->captureMode == CAPTURE_USER_POINTER)
+    if(_uvcStreamerPrivate->captureMode == UVCStreamerPrivate::CAPTURE_USER_POINTER)
     {
       buf.index = _uvcStreamerPrivate->rawDataBuffers.size();
       for(auto i = 0; i < _uvcStreamerPrivate->rawDataBuffers.size(); i++)
@@ -942,7 +942,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(buf.bytesused < _uvcStreamerPrivate->frameByteSize)
     {
-      logger(ERROR) << "Incomplete frame data. Skipping it." << endl;
+      logger(LOG_ERROR) << "Incomplete frame data. Skipping it." << endl;
       return false;
     }
     
@@ -950,7 +950,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     {
       p = RawDataFramePtr(new RawDataFrame());
       p->data.resize(buf.bytesused);
-      logger(DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
+      logger(LOG_DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
     }
     
     p->timestamp = _time.convertToRealTime(buf.timestamp.tv_sec*1000000L + buf.timestamp.tv_usec);
@@ -958,7 +958,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QBUF, &buf) == -1)
     {
-      logger(ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
+      logger(LOG_ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
       return false;
     }
     
@@ -1010,7 +1010,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
     
     if(frameSizeEnum.type != V4L2_FRMSIZE_TYPE_DISCRETE)
     {
-      logger(WARNING) << "Frame types other than discrete, are not supported currently." << endl;
+      logger(LOG_WARNING) << "Frame types other than discrete, are not supported currently." << endl;
       continue;
     }
     
@@ -1037,7 +1037,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
       
       if(frameIntervalEnum.type != V4L2_FRMIVAL_TYPE_DISCRETE)
       {
-        logger(WARNING) << "Frame interval types other than discrete, are not supported currently." << endl;
+        logger(LOG_WARNING) << "Frame interval types other than discrete, are not supported currently." << endl;
         continue;
       }
       

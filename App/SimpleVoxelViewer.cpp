@@ -13,7 +13,7 @@
  
 int main ()
 {
-  Voxel::logger.setDefaultLogLevel(Voxel::INFO);
+  Voxel::logger.setDefaultLogLevel(Voxel::LOG_INFO);
   
   Voxel::CameraSystem sys;
   Voxel::DepthCameraPtr depthCamera;

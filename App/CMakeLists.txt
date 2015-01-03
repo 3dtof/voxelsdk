@@ -1,10 +1,14 @@
-#find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
+find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
 
 add_definitions(${PCL_DEFINITIONS})
 
 add_library(voxelpcl SHARED PCLGrabber.cpp PCLViewer.cpp)
 target_include_directories(voxelpcl PUBLIC ${PCL_INCLUDE_DIRS})
 target_link_libraries(voxelpcl voxel ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES})
+
+generate_export_header(voxelpcl
+  EXPORT_FILE_NAME "VoxelPCLExports.h"
+)
 
 add_executable(SimpleVoxelViewer SimpleVoxelViewer.cpp)
 target_link_libraries(SimpleVoxelViewer voxelpcl)
@@ -21,6 +25,7 @@ install(TARGETS voxelpcl
 install(FILES
   PCLGrabber.h
   PCLViewer.h
+  ${CMAKE_CURRENT_BINARY_DIR}/VoxelPCLExports.h
   DESTINATION include/voxel/pcl
   COMPONENT pcl-dev
 )
