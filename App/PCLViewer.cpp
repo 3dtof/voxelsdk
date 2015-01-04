@@ -5,8 +5,11 @@
  */
 
 #include "PCLViewer.h"
-#include <pcl/visualization/pcl_visualizer.h>
 #include "PCLGrabber.h"
+
+#define PCL_NO_PRECOMPILE
+#include <pcl/visualization/pcl_visualizer.h>
+#undef PCL_NO_PRECOMPILE
 
 namespace Voxel
 {
@@ -36,12 +39,12 @@ void PCLViewer::_renderLoop()
   
   bool firstTime = false;
   
-  while(!_stopLoop and !_viewer->wasStopped())
+  while(!_stopLoop && !_viewer->wasStopped())
   {
     {
       Lock<Mutex> _(_cloudUpdateMutex);
       
-      if(_cloud and _handler)
+      if(_cloud && _handler)
       {
         double psize = 1.0, opacity = 1.0, linesize =1.0;
         _viewer->getPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, linesize, CLOUD_NAME);
@@ -104,7 +107,7 @@ void PCLViewer::removeDepthCamera()
 
 void PCLViewer::_cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud)
 {
-  if(_viewer and !_viewer->wasStopped())
+  if(_viewer && !_viewer->wasStopped())
   {
     Lock<Mutex> _(_cloudUpdateMutex);
     _cloud = boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>>(cloud);
@@ -137,12 +140,12 @@ void PCLViewer::start()
 
 bool PCLViewer::isRunning()
 {
-  return _grabber and _grabber->isRunning() and !_stopLoop and !viewerStopped();
+  return _grabber && _grabber->isRunning() && !_stopLoop && !viewerStopped();
 }
 
 bool PCLViewer::viewerStopped()
 {
-  return !_viewer or _viewer->wasStopped();
+  return !_viewer || _viewer->wasStopped();
 }
 
 void PCLViewer::stop()

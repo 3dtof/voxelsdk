@@ -1,9 +1,14 @@
 find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
 
+IF(WINDOWS)
+#CMAKE_POLICY(SET CMP0028 OLD)
+FIND_PACKAGE(Qt5Widgets REQUIRED)
+ENDIF()
+
 add_definitions(${PCL_DEFINITIONS})
 
 add_library(voxelpcl SHARED PCLGrabber.cpp PCLViewer.cpp)
-target_include_directories(voxelpcl PUBLIC ${PCL_INCLUDE_DIRS})
+target_include_directories(voxelpcl PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})
 target_link_libraries(voxelpcl voxel ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES})
 
 generate_export_header(voxelpcl

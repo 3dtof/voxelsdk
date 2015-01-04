@@ -21,20 +21,20 @@ namespace Voxel
 CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
 {
   _commands = Map<String, Command>({
-    {"list",      Command(_H(&CLIManager::_listHelp),         _P(&CLIManager::_list),         0)},
-    {"status",    Command(_H(&CLIManager::_currentHelp),      _P(&CLIManager::_current),      0)},
+    {"list",      Command(_H(&CLIManager::_listHelp),         _P(&CLIManager::_list),         nullptr)},
+    {"status",    Command(_H(&CLIManager::_currentHelp),      _P(&CLIManager::_current),      nullptr)},
     {"connect",   Command(_H(&CLIManager::_connectHelp),      _P(&CLIManager::_connect),      _C(&CLIManager::_connectCompletion))},
-    {"start",     Command(_H(&CLIManager::_startHelp),        _P(&CLIManager::_start),        0)},
-    {"stop",      Command(_H(&CLIManager::_stopHelp),         _P(&CLIManager::_stop),         0)},
-    {"getr",      Command(_H(&CLIManager::_getRegisterHelp),  _P(&CLIManager::_getRegister),  0)},
-    {"setr",      Command(_H(&CLIManager::_setRegisterHelp),  _P(&CLIManager::_setRegister),  0)},
+    {"start",     Command(_H(&CLIManager::_startHelp),        _P(&CLIManager::_start),        nullptr)},
+    {"stop",      Command(_H(&CLIManager::_stopHelp),         _P(&CLIManager::_stop),         nullptr)},
+    {"getr",      Command(_H(&CLIManager::_getRegisterHelp),  _P(&CLIManager::_getRegister),  nullptr)},
+    {"setr",      Command(_H(&CLIManager::_setRegisterHelp),  _P(&CLIManager::_setRegister),  nullptr)},
     {"get",       Command(_H(&CLIManager::_getParameterHelp), _P(&CLIManager::_getParameter), _C(&CLIManager::_getParameterCompletion))},
     {"set",       Command(_H(&CLIManager::_setParameterHelp), _P(&CLIManager::_setParameter), _C(&CLIManager::_setParameterCompletion))},
     {"cap",       Command(_H(&CLIManager::_capabilitiesHelp), _P(&CLIManager::_capabilities), _C(&CLIManager::_capabilitiesCompletion))},
-    {"help",      Command(_H(&CLIManager::_helpHelp),         _P(&CLIManager::_help),         0)},
-    {"disconnect",Command(_H(&CLIManager::_disconnectHelp),   _P(&CLIManager::_disconnect),   0)},
-    {"reset",     Command(_H(&CLIManager::_resetHelp),        _P(&CLIManager::_reset),        0)},
-    {"exit",      Command(_H(&CLIManager::_exitHelp),         _P(&CLIManager::_exit),         0)},
+    {"help",      Command(_H(&CLIManager::_helpHelp),         _P(&CLIManager::_help),         nullptr)},
+    {"disconnect",Command(_H(&CLIManager::_disconnectHelp),   _P(&CLIManager::_disconnect),   nullptr)},
+    {"reset",     Command(_H(&CLIManager::_resetHelp),        _P(&CLIManager::_reset),        nullptr)},
+    {"exit",      Command(_H(&CLIManager::_exitHelp),         _P(&CLIManager::_exit),         nullptr)},
   });
   
   
@@ -91,7 +91,7 @@ void CLIManager::_commandLoop()
    *
    * The typed string is returned as a malloc() allocated string by
    * linenoise, so the user needs to free() it. */
-  while(_keepRunning and (line = linenoise(prompt.c_str())) != NULL) 
+  while(_keepRunning && (line = linenoise(prompt.c_str())) != NULL) 
   {
     /* Do something with the string. */
     if (line[0] != '\0') 
@@ -145,10 +145,10 @@ void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
   
   auto maxLength = strlen(command);
   
-  while(*c != '\0' and index < maxLength)
+  while(*c != '\0' && index < maxLength)
   {
     index++;
-    if(*c == ' ' or *c == '\t')
+    if(*c == ' ' || *c == '\t')
     {
       if(!inQuote)
       {
@@ -162,7 +162,7 @@ void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
       
       c++;
     }
-    else if(isalnum(*c) or *c == '_' or *c == '.')
+    else if(isalnum(*c) || *c == '_' || *c == '.')
     {
       c++;
     }
@@ -297,7 +297,7 @@ void CLIManager::_connect(const Vector<String> &tokens)
       }
       
       bool wasRunning = false;
-      if(_viewer and _viewer->isRunning())
+      if(_viewer && _viewer->isRunning())
       {
         _stop(tokens);
         wasRunning = true;
@@ -326,7 +326,7 @@ void CLIManager::_current(const Vector< String > &tokens)
   {
     std::cout << "Current device ID = " << _currentDepthCamera->id() << std::endl;
     
-    if(_viewer and _viewer->isRunning())
+    if(_viewer && _viewer->isRunning())
       std::cout << "It is currently streaming. Use 'stop' command to stop streaming" << std::endl;
     else
       std::cout << "It is currently not streaming. Use 'start' command to start streaming" << std::endl;
@@ -409,7 +409,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     
     const Vector<String> &meaning = boolParam->valueMeaning();
     
-    if(meaning.size() == 2 and meaning[value].size())
+    if(meaning.size() == 2 && meaning[value].size())
       std::cout << " (" << meaning[value] << ")";
       
     std::cout << std::endl;
@@ -468,7 +468,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     
     const Vector<String> &meaning = enumParam->valueMeaning();
     
-    if(meaning.size() > value and meaning[value].size())
+    if(meaning.size() > value && meaning[value].size())
       std::cout << " (" << meaning[value] << ")";
     
     std::cout << std::endl;
@@ -486,7 +486,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
     return;
   }
   
-  if(tokens.size() < 4 or tokens[2] != "=")
+  if(tokens.size() < 4 || tokens[2] != "=")
   {
     logger(LOG_ERROR) << "Please specific a parameter name and value to be set in the format given below." << std::endl;
     _setParameterHelp();
@@ -664,7 +664,7 @@ void CLIManager::_setRegister(const Vector<String> &tokens)
     return;
   }
   
-  if(tokens.size() < 4 or tokens[2] != "=")
+  if(tokens.size() < 4 || tokens[2] != "=")
   {
     logger(LOG_ERROR) << "Please specify a register address to write to and value to set in the following format" << std::endl;
     _setRegisterHelp();
@@ -786,7 +786,7 @@ void CLIManager::_showParameterInfo(const ParameterPtr &param)
         if(boolParam->valueMeaning()[i].size())
           std::cout << " -> " << boolParam->valueMeaning()[i];
         
-        if(boolParam->valueDescription().size() > i and boolParam->valueDescription()[i].size())
+        if(boolParam->valueDescription().size() > i &&boolParam->valueDescription()[i].size())
         {
           std::cout << " (" << boolParam->valueDescription()[i] << ")";
         }
@@ -844,10 +844,10 @@ void CLIManager::_showParameterInfo(const ParameterPtr &param)
       {
         std::cout << "\t\t\t\t" << std::dec << enumParam->allowedValues()[i];
         
-        if(enumParam->valueMeaning().size() > i and enumParam->valueMeaning()[i].size())
+        if(enumParam->valueMeaning().size() > i &&enumParam->valueMeaning()[i].size())
           std::cout << " -> " << enumParam->valueMeaning()[i];
         
-        if(enumParam->valueDescription().size() > i and enumParam->valueDescription()[i].size())
+        if(enumParam->valueDescription().size() > i &&enumParam->valueDescription()[i].size())
         {
           std::cout << " (" << enumParam->valueDescription()[i] << ")";
         }
@@ -872,7 +872,7 @@ void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
   
   uint length = strlen(buf);
   
-  if(tokens.size() > 1 or buf[length - 1] == ' ' or buf[length - 1] == '\t') // seems like one complete command has been given
+  if(tokens.size() > 1 || buf[length - 1] == ' ' || buf[length - 1] == '\t') // seems like one complete command has been given
   {
     auto c = _commands.find(tokens[0]);
     
@@ -886,7 +886,7 @@ void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
   {
     for(auto &c: _commands)
     {
-      if(c.first.size() >= tokens[0].size() and c.first.compare(0, tokens[0].size(), tokens[0]) == 0)
+      if(c.first.size() >= tokens[0].size() && c.first.compare(0, tokens[0].size(), tokens[0]) == 0)
         linenoiseAddCompletion(lc, c.first.c_str());
     }
   }
@@ -900,7 +900,7 @@ void CLIManager::_connectCompletion(const Vector<String> &tokens, linenoiseCompl
     
     for(auto &d: devices)
     {
-      if(d->id().size() >= tokens[1].size() and d->id().compare(0, tokens[1].size(), tokens[1]) == 0)
+      if(d->id().size() >= tokens[1].size() && d->id().compare(0, tokens[1].size(), tokens[1]) == 0)
         linenoiseAddCompletion(lc, (tokens[0] + " \"" + d->id() + "\"").c_str());
     }   
   }
@@ -925,7 +925,7 @@ void CLIManager::_paramCompletion(const Vector<String> &tokens, linenoiseComplet
   {
     for(auto &p: _currentDepthCamera->getParameters())
     {
-      if(p.first.size() >= tokens[1].size() and p.first.compare(0, tokens[1].size(), tokens[1]) == 0)
+      if(p.first.size() >= tokens[1].size() && p.first.compare(0, tokens[1].size(), tokens[1]) == 0)
       {
         linenoiseAddCompletion(lc, (tokens[0] + " " + p.first).c_str());
         count++;

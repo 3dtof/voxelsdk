@@ -23,7 +23,7 @@ PCLGrabber::PCLGrabber(DepthCamera &depthCamera): _depthCamera(depthCamera), _po
 
 void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCamera::FrameCallBackType type)
 {
-  if(type == DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED or type == DepthCamera::CALLBACK_RAW_FRAME_PROCESSED)
+  if(type == DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED || type == DepthCamera::CALLBACK_RAW_FRAME_PROCESSED)
   {
     if(_rawImageSignal->num_slots() > 0)
     {
@@ -47,7 +47,7 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
         logger(LOG_ERROR) << "PCLGrabber: Callback type claims a depth frame, but obtained frame not a depth frame?" << std::endl;
     }
   }
-  else if(type == DepthCamera::DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME)
+  else if(type == DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME)
   {
     if(_pointCloudSignal->num_slots() > 0)
     {
