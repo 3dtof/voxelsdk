@@ -34,6 +34,7 @@ install(TARGETS ti3dtof
   COMPONENT ti3dtof
 )
 
+IF(LINUX)
 install(FILES 
   OPT9220A.dml
   DESTINATION /etc/voxel/
@@ -51,6 +52,17 @@ install(FILES
   DESTINATION /etc/udev/rules.d/
   COMPONENT ti3dtof
 )
+ELSEIF(WINDOWS)
+INSTALL(FILES
+  OPT9220A.dml
+  DESTINATION lib/voxel
+  COMPONENT ti3dtof)
+
+INSTALL(FILES
+  OPT9220_0v27.fw
+  DESTINATION lib/voxel
+  COMPONENT ti3dtof)
+ENDIF()
 
 install(FILES
   ToFCamera.h
