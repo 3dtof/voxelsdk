@@ -38,6 +38,7 @@ void PCLViewer::_renderLoop()
     _viewer->resetStoppedFlag();
   
   bool firstTime = false;
+  int updateCount = 0;
   
   while(!_stopLoop && !_viewer->wasStopped())
   {
@@ -68,6 +69,7 @@ void PCLViewer::_renderLoop()
     _viewer->spinOnce(10);
     std::this_thread::sleep_for(std::chrono::microseconds(10000));
     
+    updateCount++;
     if(firstTime)
     {
       _viewer->setCameraPosition(15, 15, 20, 0, 0, 5, 0, 0, 1);
@@ -105,12 +107,13 @@ void PCLViewer::removeDepthCamera()
 }
 
 
-void PCLViewer::_cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud)
+void PCLViewer::_cloudRenderCallback(const pcl::PointCloud<pcl::PointXYZI> &cloud)
 {
   if(_viewer && !_viewer->wasStopped())
   {
     Lock<Mutex> _(_cloudUpdateMutex);
-    _cloud = boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>>(cloud);
+
+    _cloud = boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>>(new pcl::PointCloud<pcl::PointXYZI>(cloud));
     _handler = Ptr<pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>>(
       new pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>(_cloud, "intensity"));
   }
@@ -125,14 +128,18 @@ void PCLViewer::start()
   
   if(_renderThread.joinable())
     _renderThread.join();
-  
+
+#ifdef WINDOWS
+  _viewer = nullptr;
+#endif
+
   _stopLoop = false;
   
   _renderThread = std::thread(&PCLViewer::_renderLoop, this);
     
   _grabber = Ptr<pcl::Grabber>(new Voxel::PCLGrabber(*_depthCamera));
   
-  boost::function<void (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&)> f = boost::bind(&PCLViewer::_cloudRenderCallback, this, _1);
+  boost::function<void (const pcl::PointCloud<pcl::PointXYZI> &)> f = boost::bind(&PCLViewer::_cloudRenderCallback, this, _1);
   
   _grabber->registerCallback(f);
   _grabber->start();
@@ -154,7 +161,15 @@ void PCLViewer::stop()
   
   if(_renderThread.joinable()) _renderThread.join();
   
-  if(_viewer) _viewer->removePointCloud(CLOUD_NAME);
+  //if (_viewer)
+  //{
+  //  Lock<Mutex> _(_cloudUpdateMutex);
+  //  _viewer->removePointCloud(CLOUD_NAME);
+  //}
+
+#ifdef WINDOWS
+  _viewer = nullptr;
+#endif
   
   _grabber = nullptr;
   

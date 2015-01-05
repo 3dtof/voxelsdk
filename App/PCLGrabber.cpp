@@ -81,7 +81,7 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
           index++;
         }
         
-        (*_pointCloudSignal)(make_shared_ptr(*pointCloud));
+        (*_pointCloudSignal)(**pointCloud);
       }
       else
         logger(LOG_ERROR) << "PCLGrabber: Callback type claims a point cloud frame, but obtained frame is not?" << std::endl;

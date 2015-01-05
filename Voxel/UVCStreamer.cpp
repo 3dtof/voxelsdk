@@ -865,7 +865,7 @@ bool UVCStreamer::_stop()
 #elif defined(WINDOWS)
   _uvcStreamerPrivate->mediaControl->Stop();
   long evCode;
-  _uvcStreamerPrivate->mediaEventEx->WaitForCompletion(INFINITE, &evCode);
+  _uvcStreamerPrivate->mediaEventEx->WaitForCompletion(500, &evCode);
   _uvcStreamerPrivate->RemoveGraphFromRot(); // Remove graph for debugging via graphedit
 #endif
   

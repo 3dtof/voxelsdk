@@ -26,7 +26,7 @@ class PointCloudColorHandlerGenericField;
 template <typename T>
 class PointCloud;
 
-class PointXYZI;
+struct PointXYZI;
 
 class Grabber;
 }
@@ -50,7 +50,7 @@ protected:
   
   boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> _cloud;
   
-  void _cloudRenderCallback(const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>> &cloud);
+  void _cloudRenderCallback(const pcl::PointCloud<pcl::PointXYZI> &cloud);
   
   void _renderLoop();
   
