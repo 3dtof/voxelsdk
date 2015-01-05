@@ -35,12 +35,15 @@ generate_export_header(voxel
 )
   
 target_link_libraries(voxel
-  ${COMMON_LIBS}
+  LINK_PUBLIC ${COMMON_LIBS}
+  LINK_PRIVATE ${COMMON_LIBS_PRIVATE}
 )
   
 install(TARGETS voxel
+  EXPORT VoxelTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION lib
   COMPONENT lib
 )
 
@@ -79,12 +82,14 @@ IF(LINUX)
   set(CPACK_COMPONENTS_ALL lib)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb-1.0-0, libudev1")
-  create_cpack_config(libvoxel 0.1)
+  create_cpack_config(libvoxel ${VOXEL_VERSION})
 
   set(CPACK_COMPONENTS_ALL lib-dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= 0.1), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
-  create_cpack_config(libvoxel-dev 0.1)
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
+  create_cpack_config(libvoxel-dev ${VOXEL_VERSION})
 ELSEIF(WINDOWS)
   # Added NSIS related options here
 ENDIF()
+
+create_cmake_config(Voxel voxel lib-dev)

@@ -1,13 +1,21 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (TIVoxel)
 
+set(VOXEL_MAJOR_VERSION 0)
+set(VOXEL_MINOR_VERSION 1)
+set(VOXEL_PATCH_VERSION 0)
+set(VOXEL_VERSION
+  ${VOXEL_MAJOR_VERSION}.${VOXEL_MINOR_VERSION}.${VOXEL_PATCH_VERSION})
+
+### Do not export any symbol by default
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 include(GenerateExportHeader)
+
+
 set(CMAKE_INCLUDE_CURRENT_DIR 1)
 
 MESSAGE(${CMAKE_SYSTEM_NAME})
-
 
 set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
@@ -17,6 +25,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   ADD_DEFINITIONS(-DLINUX)  
 
   set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
+  SET(COMMON_LIBS_PRIVATE "")
   set(COMMON_INCLUDE
     ${COMMON_INCLUDE}
     /usr/include/libusb-1.0
@@ -31,7 +40,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(WINDOWS 1)
   ADD_DEFINITIONS(-DWINDOWS /wd4251)
-  SET(COMMON_LIBS setupapi WinUsb strmiids strmbase Cfgmgr32 ${CMAKE_SOURCE_DIR}/Voxel/CyAPI.lib)
+  SET(COMMON_LIBS setupapi WinUsb strmiids strmbase Cfgmgr32)
+  SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI.lib)
 endif()
 
 include_directories(
@@ -43,7 +53,6 @@ include_directories(
 )
 
 IF(LINUX)
-  #### Packaging related information
   function(create_cpack_config name version)
     set(CPACK_PACKAGE_VERSION "${version}")
     set(CPACK_PACKAGE_NAME "${name}")
@@ -51,18 +60,21 @@ IF(LINUX)
     set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackConfig-${name}.cmake")
     include(CPack)
   endfunction(create_cpack_config)
-ENDIF()
   
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCH})
+  set(CPACK_DEBIAN_PACKAGE_SECTION "Electronics")
+  set(CPACK_DEB_COMPONENT_INSTALL 1)
+ENDIF()
 
+INCLUDE(common.cmake)
+  
+#### Packaging related information -- common to both platforms
 set(CPACK_PACKAGE_NAME ti-voxel)
-set(CPACK_PACKAGE_VERSION 0.1)
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCH})
+set(CPACK_PACKAGE_VERSION ${VOXEL_VERSION})
 set(CPACK_PACKAGE_CONTACT "prasad.bhat@ti.com")
 set(CPACK_PACKAGE_VENDOR "Texas Instruments, Inc.")
-set(CPACK_DEBIAN_PACKAGE_SECTION "Electronics")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main Voxel library.")
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
-set(CPACK_DEB_COMPONENT_INSTALL 1)
 
 add_subdirectory(Voxel)
 add_subdirectory(Test)
