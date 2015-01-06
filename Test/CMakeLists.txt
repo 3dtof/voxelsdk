@@ -1,3 +1,5 @@
+SET(VOXEL_TEST_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
+
 add_executable(DeviceTest DeviceTest.cpp)
 target_link_libraries(DeviceTest voxel)
 
@@ -31,8 +33,9 @@ install(TARGETS
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL test)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library test programs.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= 0.1), libti3dtof (>= 0.1)")
-  create_cpack_config(libvoxel-test 0.1)
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libti3dtof (>= ${TI3DToF_VERSION})")
+  create_cpack_config(libvoxel-test ${VOXEL_TEST_VERSION})
 ELSEIF(WINDOWS)
-  # Added NSIS related options here
+  set(CPACK_COMPONENT_TEST_DESCRIPTION "Voxel Test Applications" PARENT_SCOPE)
+  set(CPACK_COMPONENT_TEST_DISPLAY_NAME "Voxel Test" PARENT_SCOPE)
 ENDIF()

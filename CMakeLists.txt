@@ -69,7 +69,7 @@ ENDIF()
 INCLUDE(common.cmake)
   
 #### Packaging related information -- common to both platforms
-set(CPACK_PACKAGE_NAME ti-voxel)
+set(CPACK_PACKAGE_NAME "Voxel SDK")
 set(CPACK_PACKAGE_VERSION ${VOXEL_VERSION})
 set(CPACK_PACKAGE_CONTACT "prasad.bhat@ti.com")
 set(CPACK_PACKAGE_VENDOR "Texas Instruments, Inc.")
@@ -82,6 +82,19 @@ add_subdirectory(TI3DToF)
 add_subdirectory(App)
 
 IF(WINDOWS)
-  # TODO Add NSIS related settings here
+  SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
+  SET(CPACK_NSIS_MODIFY_PATH ON)
+  SET(CPACK_PACKAGE_EXECUTABLES 
+    "VoxelCLI;Voxel CLI"
+    "SimpleVoxelViewer;Simple Voxel Viewer")
+  SET(CPACK_NSIS_MUI_FINISHPAGE_RUN "VoxelCLI.exe")
+  SET(CPACK_NSIS_MUI_FINISHPAGE_RUN_TEXT "Run Voxel CLI")
+  
+  IF(CMAKE_CL_64)
+    SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+  ELSE()
+    SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+  ENDIF()
+  
   include(CPack)
 ENDIF()

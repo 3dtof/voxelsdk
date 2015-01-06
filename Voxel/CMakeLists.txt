@@ -75,7 +75,7 @@ install(FILES
   VideoMode.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
-  COMPONENT lib-dev
+  COMPONENT lib_dev
 )
 
 IF(LINUX)
@@ -84,12 +84,19 @@ IF(LINUX)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb-1.0-0, libudev1")
   create_cpack_config(libvoxel ${VOXEL_VERSION})
 
-  set(CPACK_COMPONENTS_ALL lib-dev)
+  set(CPACK_COMPONENTS_ALL lib_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
   create_cpack_config(libvoxel-dev ${VOXEL_VERSION})
 ELSEIF(WINDOWS)
-  # Added NSIS related options here
+  set(CPACK_COMPONENT_LIB_DISPLAY_NAME "Libraries" PARENT_SCOPE)
+  set(CPACK_COMPONENT_LIB_DEV_DISPLAY_NAME "C++ Headers" PARENT_SCOPE)
+  set(CPACK_COMPONENT_LIB_DESCRIPTION "Core Voxel Libraries" PARENT_SCOPE)
+  set(CPACK_COMPONENT_LIB_DEV_DESCRIPTION "C++ headers for Core Voxel Libraries" PARENT_SCOPE)
+  
+  set(CPACK_COMPONENT_LIB_GROUP "VoxelSDK" PARENT_SCOPE)
+  set(CPACK_COMPONENT_LIB_DEV_GROUP "VoxelSDK" PARENT_SCOPE)
+  SET(CPACK_COMPONENT_GROUP_VOXELSDK_DESCRIPTION "Voxel SDK library and headers" PARENT_SCOPE)
 ENDIF()
 
-create_cmake_config(Voxel voxel lib-dev)
+create_cmake_config(Voxel voxel lib_dev)

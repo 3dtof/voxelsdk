@@ -1,7 +1,7 @@
 find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
 
-SET(VOXEL_PCL_VERSION ${VOXEL_VERSION})
-SET(VOXEL_APP_VERSION ${VOXEL_VERSION})
+SET(VOXEL_PCL_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
+SET(VOXEL_APP_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
 
 IF(WINDOWS)
 #CMAKE_POLICY(SET CMP0028 OLD)
@@ -37,10 +37,10 @@ install(FILES
   PCLViewer.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelPCLExports.h
   DESTINATION include/voxel/pcl
-  COMPONENT pcl-dev
+  COMPONENT pcl_dev
 )
 
-create_cmake_config(VoxelPCL voxelpcl pcl-dev)
+create_cmake_config(VoxelPCL voxelpcl pcl_dev)
 
 install(TARGETS SimpleVoxelViewer VoxelCLI
   RUNTIME DESTINATION bin
@@ -53,7 +53,7 @@ IF(LINUX)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libpcl-visualization-1.7, libpcl-io-1.7, libpcl-common-1.7")
   create_cpack_config(libvoxel-pcl ${VOXEL_PCL_VERSION})
 
-  set(CPACK_COMPONENTS_ALL pcl-dev)
+  set(CPACK_COMPONENTS_ALL pcl_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION}), libpcl-visualization-1.7-dev, libpcl-io-1.7-dev, libpcl-common-1.7-dev")
   create_cpack_config(libvoxel-pcl-dev ${VOXEL_PCL_VERSION})
@@ -63,5 +63,14 @@ IF(LINUX)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libvoxel-pcl (>= ${VOXEL_PCL_VERSION})")
   create_cpack_config(libvoxel-apps ${VOXEL_APP_VERSION})
 ELSEIF(WINDOWS)
-  #Add NSIS related options here
+  set(CPACK_COMPONENT_PCL_DISPLAY_NAME "Voxel-PCL SDK" PARENT_SCOPE)
+  set(CPACK_COMPONENT_PCL_DEV_DISPLAY_NAME "Voxel-PCL SDK C++ headers" PARENT_SCOPE)
+  set(CPACK_COMPONENT_APPS_DISPLAY_NAME "Voxel Applications" PARENT_SCOPE)
+  set(CPACK_COMPONENT_PCL_DESCRIPTION "Support libraries for PointCloud.org (PCL)" PARENT_SCOPE)
+  set(CPACK_COMPONENT_PCL_DEV_DESCRIPTION "C++ headers for PCL support libraries" PARENT_SCOPE)
+  set(CPACK_COMPONENT_APPS_DESCRIPTION "Voxel Applications" PARENT_SCOPE)
+  
+  set(CPACK_COMPONENT_PCL_GROUP "VoxelPCL" PARENT_SCOPE)
+  set(CPACK_COMPONENT_PCL_DEV_GROUP "VoxelPCL" PARENT_SCOPE)
+  SET(CPACK_COMPONENT_GROUP_VOXELPCL_DESCRIPTION "Voxel-PCL Integration SDK library and headers" PARENT_SCOPE)
 ENDIF()
