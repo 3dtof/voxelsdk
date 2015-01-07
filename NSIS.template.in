@@ -27,28 +27,6 @@
   ;Default installation folder
   InstallDir "@CPACK_NSIS_INSTALL_ROOT@\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
 
-
-;--------------------------------
-; HLP - Custom macros 
-
-  !define FileCopy `!insertmacro FileCopy`
-  !macro FileCopy FilePath TargetDir
-    CreateDirectory `${TargetDir}`
-    CopyFiles `${FilePath}` `${TargetDir}`
-  !macroend
-
-  !define FileRemove `!insertmacro FileRemove`
-  !macro FileRemove TargetDir FileName
-    Delete /REBOOTOK `${TargetDir}\${FileName}`
-    RMDir /REBOOTOK `${TargetDir}`
-  !macroend
-
-  !define MenuItemRemove '!insertmacro MenuItemRemove'
-  !macro MenuItemRemove ItemName
-    !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
-    Delete /REBOOTOK `$SMPROGRAMS\$MUI_TEMP\$ItemName`
-  !macroend
-
 ;--------------------------------
 ;General
 
@@ -562,6 +540,122 @@ FunctionEnd
 @CPACK_NSIS_COMPONENT_SECTIONS@
 
 ;--------------------------------
+; HLP - Custom includes
+  
+  !include "LogicLib.nsh"
+  !include "Sections.nsh"
+
+;--------------------------------
+; HLP - Custom variables
+  Var PCLDir
+  Var QTDir
+
+;--------------------------------
+; HLP - Custom macros 
+
+  !define FileCopy `!insertmacro FileCopy`
+  !macro FileCopy FilePath TargetDir
+    CreateDirectory `${TargetDir}`
+    CopyFiles `${FilePath}` `${TargetDir}`
+  !macroend
+
+  !define FileRemove `!insertmacro FileRemove`
+  !macro FileRemove TargetDir FileName
+    Delete /REBOOTOK `${TargetDir}\${FileName}`
+    RMDir /REBOOTOK `${TargetDir}`
+  !macroend
+
+  !define MenuItemRemove '!insertmacro MenuItemRemove'
+  !macro MenuItemRemove ItemName
+    !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
+    Delete /REBOOTOK `$SMPROGRAMS\$MUI_TEMP\$ItemName`
+  !macroend
+
+  ; This function must be defined after components, sections and section groups are defined
+  Function isPCLSelected
+    ${If} ${SectionIsSelected} ${pcl}
+      goto noispclselectedabort
+    ${EndIf}
+    abort
+    noispclselectedabort:
+  FunctionEnd
+
+  Function checkQTDir
+    IfFileExists $QTDir\*.* 0 qtdirabort
+    IfFileExists $QTDir\bin 0 qtbinabort
+    goto qtnoabort
+
+  qtdirabort:
+    messagebox mb_ok|mb_iconstop 'Select QT directory does not exist. Please select again!'
+    abort
+
+  qtbinabort:
+    messagebox mb_ok|mb_iconstop 'Selected QT directory does not seem to be valid. Please select again!'
+    abort
+
+  qtnoabort:
+  FunctionEnd
+
+  Function checkPCLDir
+    IfFileExists $PCLDir\*.* 0 pcldirabort
+    IfFileExists $PCLDir\cmake\PCLConfig.cmake 0 pclconfabort
+    IfFileExists $PCLDir\3rdParty\Boost\*.* 0 pclboostabort
+    IfFileExists $PCLDir\3rdParty\Eigen\*.* 0 pcleigenabort
+    IfFileExists $PCLDir\3rdParty\FLANN\*.* 0 pclflannabort
+    IfFileExists $PCLDir\3rdParty\Qhull\*.* 0 pclqhullabort
+    IfFileExists $PCLDir\3rdParty\VTK\*.* 0 pclvtkabort
+    goto pclnoabort
+
+  pcldirabort:
+    messagebox mb_ok|mb_iconstop 'Select PCL directory does not exist. Please select again!'
+    abort
+
+  pclconfabort:
+    messagebox mb_ok|mb_iconstop 'Selected PCL directory does not seem to be valid. Please select again!'
+    abort
+
+  pclboostabort:
+    messagebox mb_ok|mb_iconstop 'Selected PCL directory does not seem to be valid. Boost not found. Please select again!'
+    abort
+
+  pcleigenabort:
+    messagebox mb_ok|mb_iconstop 'Selected PCL directory does not seem to be valid. Eigen not found. Please select again!'
+    abort
+
+  pclflannabort:
+    messagebox mb_ok|mb_iconstop 'Selected PCL directory does not seem to be valid. Flann not found. Please select again!'
+    abort
+
+  pclqhullabort:
+    messagebox mb_ok|mb_iconstop 'Selected PCL directory does not seem to be valid. Qhull not found. Please select again!'
+    abort
+
+  pclvtkabort:
+    messagebox mb_ok|mb_iconstop 'Selected PCL directory does not seem to be valid. VTK not found. Please select again!'
+    abort
+
+  pclnoabort:
+  FunctionEnd
+
+  Function addPCLToPath
+
+    Push $PCLDir\bin
+    Call AddToPath
+
+    ; Currently it seems that Boost and other dependencies are not necessary to be in PATH, except VTK
+    Push $PCLDir\3rdParty\VTK\bin
+    Call AddToPath
+
+  FunctionEnd
+
+  Function addQTToPath
+
+    Push $QTDir\bin
+    Call AddToPath
+
+  FunctionEnd
+
+;--------------------------------
 ; Define some macro setting for the gui
 @CPACK_NSIS_INSTALLER_MUI_ICON_CODE@
 @CPACK_NSIS_INSTALLER_ICON_CODE@
@@ -584,6 +678,25 @@ FunctionEnd
   !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
 
   @CPACK_NSIS_PAGE_COMPONENTS@
+
+  #HLP -- Adding PCL selection
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE isPCLSelected
+  !define MUI_PAGE_CUSTOMFUNCTION_LEAVE checkPCLDir
+  !define MUI_PAGE_HEADER_TEXT "PCL Folder"
+  !define MUI_PAGE_HEADER_SUBTEXT "Please specify folder where PCL is installed"
+  !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "PCL Folder"
+  !define MUI_DIRECTORYPAGE_TEXT_TOP "The installer will look for PCL in the following folder. This requires PCL 1.7.2 or above. $\n E.g.: C:\Program Files\PCL 1.7.2.$\n$\n Click Browse and select another folder. Click Next to continue."
+  !define MUI_DIRECTORYPAGE_VARIABLE $PCLDir ; <= the other directory will be stored into that variable
+  !insertmacro MUI_PAGE_DIRECTORY
+
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE isPCLSelected
+  !define MUI_PAGE_CUSTOMFUNCTION_LEAVE checkQTDir
+  !define MUI_PAGE_HEADER_TEXT "Qt5 Folder"
+  !define MUI_PAGE_HEADER_SUBTEXT "Please specify folder where Qt5 is installed"
+  !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Qt5 Folder"
+  !define MUI_DIRECTORYPAGE_TEXT_TOP "The installer will look for Qt in the following folder. This requires Qt5. $\n E.g: C:\Qt\Qt5.4.0\5.4\msvc2013_win64.$\n$\n Click Browse and select another folder. Click Next to continue."
+  !define MUI_DIRECTORYPAGE_VARIABLE $QTDir ; <= the other directory will be stored into that variable
+  !insertmacro MUI_PAGE_DIRECTORY
 
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
@@ -754,10 +867,18 @@ Section "-Add to path"
   StrCmp $DO_NOT_ADD_TO_PATH "1" doNotAddToPath 0
   Push $INSTDIR\lib
   Call AddToPath
-  Push $INSTDIR\bin #HLP Add lib and bin
+
+  Push $INSTDIR\bin
   Call AddToPath
-  Push "C:\Program Files\VoxelCommon\lib" #HLP Add lib and bin and VoxelCommon\lib
+  
+  ;HLP Add lib and bin and VoxelCommon\lib
+  Push "C:\Program Files\VoxelCommon\lib"
   Call AddToPath
+
+  ;HLP
+  Call addPCLToPath
+  Call addQTToPath
+
   doNotAddToPath:
 SectionEnd
 
@@ -918,11 +1039,13 @@ Section "Uninstall"
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
     Call un.RemoveFromPath
 
-  Push $INSTDIR\lib #HLP - remove lib from path too
+  ; HLP - remove lib and VoxelCommon\lib
+  Push $INSTDIR\lib
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
     Call un.RemoveFromPath
-
-  Push "C:\Program Files\VoxelCommon\lib" #HLP - remove lib from path too
+  
+  
+  Push "C:\Program Files\VoxelCommon\lib"
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
     Call un.RemoveFromPath
   doNotRemoveFromPath:
