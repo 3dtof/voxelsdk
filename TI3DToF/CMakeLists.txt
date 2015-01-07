@@ -28,10 +28,9 @@ add_custom_command(TARGET ti3dtof PRE_BUILD
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets
-  LIBRARY DESTINATION lib/voxel
-  ARCHIVE DESTINATION lib/voxel
-  RUNTIME DESTINATION lib/voxel
-  COMPONENT ti3dtof_lib
+  LIBRARY DESTINATION lib/voxel COMPONENT ti3dtof_dev
+  ARCHIVE DESTINATION lib/voxel COMPONENT ti3dtof_dev
+  RUNTIME DESTINATION lib/voxel COMPONENT ti3dtof_lib
 )
 
 IF(LINUX)
@@ -103,7 +102,7 @@ ELSEIF(WINDOWS)
     "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\OPT9220_0v27.fw` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n")
   
   SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
-    "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n CreateShortCut `\\\$SMPROGRAMS\\\\\\\$STARTMENU_FOLDER\\\\Open CMD Prompt.lnk` `C:\\\\Windows\\\\System32\\\\cmd.exe`\n" PARENT_SCOPE)
+    "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n CreateShortCut `\\\$SMPROGRAMS\\\\\\\$STARTMENU_FOLDER\\\\CMD in Voxel Directory.lnk` `C:\\\\Windows\\\\System32\\\\cmd.exe`\n")
   
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
     "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `ti3dtof.lib`\n")
@@ -121,7 +120,7 @@ ELSEIF(WINDOWS)
     "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n RMDir /REBOOTOK `C:\\\\Program Files\\\\VoxelCommon`\n")
   
   SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
-    "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n \\\${MenuItemRemove} `Open CMD Prompt.lnk`\n" PARENT_SCOPE)
+    "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n \\\${MenuItemRemove} `CMD in Voxel Directory.lnk`\n" PARENT_SCOPE)
 
   set(CPACK_COMPONENT_TI3DTOF_LIB_DISPLAY_NAME "TI3DToF Voxel library" PARENT_SCOPE)
   set(CPACK_COMPONENT_TI3DTOF_DEV_DISPLAY_NAME "TI3DToF C++ headers" PARENT_SCOPE)
@@ -129,7 +128,21 @@ ELSEIF(WINDOWS)
   set(CPACK_COMPONENT_TI3DTOF_LIB_DESCRIPTION "TI 3D Depth Camera Support Libraries" PARENT_SCOPE)
   set(CPACK_COMPONENT_TI3DTOF_DEV_DESCRIPTION "C++ headers for TI 3D Depth Camera Support Libraries" PARENT_SCOPE)
   
+  set(CPACK_COMPONENT_TI3DTOF_LIB_DEPENDS lib PARENT_SCOPE)
+  set(CPACK_COMPONENT_TI3DTOF_DEV_DEPENDS lib_dev PARENT_SCOPE)
+  set(CPACK_COMPONENT_TI3DTOF_DEV_DEPENDS ti3dtof_lib PARENT_SCOPE)
+  
   set(CPACK_COMPONENT_TI3DTOF_LIB_GROUP "TI3DToF" PARENT_SCOPE)
   set(CPACK_COMPONENT_TI3DTOF_DEV_GROUP "TI3DToF" PARENT_SCOPE)
   SET(CPACK_COMPONENT_GROUP_TI3DTOF_DESCRIPTION "TI ToF camera related support libraries and C++ headers" PARENT_SCOPE)
+  
+  INSTALL(DIRECTORY Windows/VoxelA DESTINATION Prerequistes COMPONENT ti3dtof_lib)
+  
+  IF(CMAKE_CL_64)
+    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
+      "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\VoxelA\\\\dpinst64.exe\\\" /SW /PATH \\\"\\\$INSTDIR\\\\Prerequistes\\\\VoxelA\\\\x64\\\"'\n" PARENT_SCOPE)
+  ELSE()
+    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
+      "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\VoxelA\\\\dpinst32.exe\\\" /SW /PATH \\\"\\\$INSTDIR\\\\Prerequistes\\\\VoxelA\\\\x32\\\"'\n" PARENT_SCOPE)
+  ENDIF()
 ENDIF()

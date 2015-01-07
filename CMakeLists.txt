@@ -89,11 +89,20 @@ IF(WINDOWS)
     "SimpleVoxelViewer;Simple Voxel Viewer")
   SET(CPACK_NSIS_MUI_FINISHPAGE_RUN "VoxelCLI.exe")
   SET(CPACK_NSIS_MUI_FINISHPAGE_RUN_TEXT "Run Voxel CLI")
+  SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
   
   IF(CMAKE_CL_64)
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+    
+    install(PROGRAMS Windows/vcredist_x64.exe DESTINATION Prerequistes)
+    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
+      "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\vcredist_x64.exe\\\" /install'\n")
   ELSE()
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+    
+    install(PROGRAMS Windows/vcredist_x86.exe DESTINATION Prerequistes)
+    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
+      "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\vcredist_x86.exe\\\" /install'\n")
   ENDIF()
   
   include(CPack)
