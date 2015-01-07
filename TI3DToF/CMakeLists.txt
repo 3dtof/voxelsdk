@@ -1,4 +1,5 @@
-SET(TI3DToF_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
+set(TI3DToF_VERSION ${VOXEL_VERSION})
+set(TI3DToF_VERSION ${TI3DToF_VERSION} PARENT_SCOPE)
 
 add_library(ti3dtof SHARED
   VoxelXUProgrammer.cpp
@@ -28,8 +29,8 @@ add_custom_command(TARGET ti3dtof PRE_BUILD
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets
-  LIBRARY DESTINATION lib/voxel COMPONENT ti3dtof_dev
-  ARCHIVE DESTINATION lib/voxel COMPONENT ti3dtof_dev
+  LIBRARY DESTINATION lib/voxel COMPONENT ti3dtof_lib
+  ARCHIVE DESTINATION lib/voxel COMPONENT ti3dtof_lib
   RUNTIME DESTINATION lib/voxel COMPONENT ti3dtof_lib
 )
 
@@ -74,7 +75,7 @@ install(FILES
   COMPONENT ti3dtof_dev
 )
 
-create_cmake_config(TI3DToF ti3dtof ti3dtof_dev)
+create_cmake_config(TI3DToF "ti3dtof;voxel" ti3dtof_dev)
 
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL ti3dtof_lib)

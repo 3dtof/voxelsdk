@@ -1,7 +1,7 @@
 find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
 
-SET(VOXEL_PCL_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
-SET(VOXEL_APP_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
+SET(VOXEL_PCL_VERSION ${VOXEL_VERSION})
+SET(VOXEL_APP_VERSION ${VOXEL_VERSION})
 
 IF(WINDOWS)
 #CMAKE_POLICY(SET CMP0028 OLD)
@@ -26,8 +26,8 @@ target_link_libraries(VoxelCLI voxelpcl voxel)
 
 install(TARGETS voxelpcl
   EXPORT VoxelPCLTargets
-  LIBRARY DESTINATION lib COMPONENT pcl_dev
-  ARCHIVE DESTINATION lib COMPONENT pcl_dev
+  LIBRARY DESTINATION lib COMPONENT pcl
+  ARCHIVE DESTINATION lib COMPONENT pcl
   RUNTIME DESTINATION lib COMPONENT pcl
 )
 
@@ -39,7 +39,7 @@ install(FILES
   COMPONENT pcl_dev
 )
 
-create_cmake_config(VoxelPCL voxelpcl pcl_dev)
+create_cmake_config(VoxelPCL "voxelpcl;voxel" pcl_dev)
 
 install(TARGETS SimpleVoxelViewer VoxelCLI
   RUNTIME DESTINATION bin

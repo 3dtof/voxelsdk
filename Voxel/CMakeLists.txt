@@ -41,8 +41,8 @@ target_link_libraries(voxel
   
 install(TARGETS voxel
   EXPORT VoxelTargets
-  LIBRARY DESTINATION lib COMPONENT lib_dev
-  ARCHIVE DESTINATION lib COMPONENT lib_dev
+  LIBRARY DESTINATION lib COMPONENT lib
+  ARCHIVE DESTINATION lib COMPONENT lib
   RUNTIME DESTINATION lib COMPONENT lib
 )
 

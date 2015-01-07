@@ -4,8 +4,7 @@ project (TIVoxel)
 set(VOXEL_MAJOR_VERSION 0)
 set(VOXEL_MINOR_VERSION 1)
 set(VOXEL_PATCH_VERSION 0)
-set(VOXEL_VERSION
-  ${VOXEL_MAJOR_VERSION}.${VOXEL_MINOR_VERSION}.${VOXEL_PATCH_VERSION})
+set(VOXEL_VERSION ${VOXEL_MAJOR_VERSION}.${VOXEL_MINOR_VERSION}.${VOXEL_PATCH_VERSION})
 
 ### Do not export any symbol by default
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -53,10 +52,10 @@ include_directories(
 )
 
 IF(LINUX)
-  function(create_cpack_config name version)
-    set(CPACK_PACKAGE_VERSION "${version}")
+  function(create_cpack_config name ver)
+    set(CPACK_PACKAGE_VERSION "${ver}")
     set(CPACK_PACKAGE_NAME "${name}")
-    set(CPACK_PACKAGE_FILE_NAME "${name}-${version}-${ARCH}")
+    set(CPACK_PACKAGE_FILE_NAME "${name}-${ver}-${ARCH}")
     set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackConfig-${name}.cmake")
     include(CPack)
   endfunction(create_cpack_config)
@@ -77,8 +76,8 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main 
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 add_subdirectory(Voxel)
-add_subdirectory(Test)
 add_subdirectory(TI3DToF)
+add_subdirectory(Test)
 add_subdirectory(App)
 
 IF(WINDOWS)

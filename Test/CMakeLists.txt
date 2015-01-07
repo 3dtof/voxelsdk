@@ -1,4 +1,4 @@
-SET(VOXEL_TEST_VERSION ${VOXEL_VERSION} PARENT_SCOPE)
+SET(VOXEL_TEST_VERSION ${VOXEL_VERSION})
 
 add_executable(DeviceTest DeviceTest.cpp)
 target_link_libraries(DeviceTest voxel)
