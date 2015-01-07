@@ -39,6 +39,13 @@ DepthCameraPtr ToFCameraFactory::getDepthCamera(DevicePtr device)
   return 0;
 }
 
+bool ToFCameraFactory::getChannels(Device &device, Vector<int> &channels)
+{
+  channels.resize(1);
+  channels[0] = 0; // This supports only one channel for all supported devices
+  return true;
+}
+
 extern "C" void TI3DTOF_EXPORT getDepthCameraFactory(DepthCameraFactoryPtr &ptr)
 {
   ptr = DepthCameraFactoryPtr(new ToFCameraFactory("ti3dtof"));

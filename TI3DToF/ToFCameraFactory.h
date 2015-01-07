@@ -24,6 +24,8 @@ public:
   
   virtual DepthCameraPtr getDepthCamera(DevicePtr device);
   
+  virtual bool getChannels(Device &device, Vector<int> &channels);
+  
   virtual ~ToFCameraFactory() {}
 };
 

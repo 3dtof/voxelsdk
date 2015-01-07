@@ -28,20 +28,29 @@ protected:
   String _deviceID;
   String _serialNumber;
   String _description;
+  int _channelID; // Channel ID for multi-channel devices
 public:
-  Device(Interface interfaceid, const String &deviceid, const String &serialnumber, const String &description = ""): _interfaceID(interfaceid), 
-    _deviceID(deviceid), _serialNumber(serialnumber), _description(description)
+  Device(Interface interfaceid, const String &deviceid, const String &serialnumber, int channelID = -1, const String &description = ""): _interfaceID(interfaceid), 
+    _deviceID(deviceid), _serialNumber(serialnumber), _description(description), _channelID(channelID)
   { 
     std::ostringstream s;
     s << _interfaceID << "::" <<  _deviceID << "::" << _serialNumber;
+    
+    if(_channelID >= 0)
+      s << "::" << _channelID;
+    
     _id = s.str();
   }
+  
+  // Need to implement in all derived classes
+  virtual Vector<Ptr<Device>> getDevices(const Vector<int> &channels) const { return Vector<Ptr<Device>>(); }
   
   inline const String &id() const { return _id; }
   
   inline Interface interfaceID() const { return _interfaceID; }
   inline const String &deviceID() const { return _deviceID; }
   inline const String &serialNumber() const { return _serialNumber; }
+  inline const int channelID() const { return _channelID; }
   inline const String &description() const { return _description; }
   virtual ~Device() {}
 };
@@ -52,8 +61,10 @@ class VOXEL_EXPORT USBDevice : public Device
 {
   uint16_t _vendorID, _productID; 
 public:
-  USBDevice(uint16_t vendorid, uint16_t productid, const String &serialnumber, const String &description = ""): 
-    Device(Device::USB, getHex(vendorid) + ":" + getHex(productid), serialnumber, description), _vendorID(vendorid), _productID(productid) {}
+  USBDevice(uint16_t vendorid, uint16_t productid, const String &serialnumber, int channelID = -1, const String &description = ""): 
+    Device(Device::USB, getHex(vendorid) + ":" + getHex(productid), serialnumber, channelID, description), _vendorID(vendorid), _productID(productid) {}
+  
+  virtual Vector<DevicePtr> getDevices(const Vector<int> &channels) const;
   
   inline uint16_t vendorID() const { return _vendorID; }
   inline uint16_t productID() const { return _productID; }

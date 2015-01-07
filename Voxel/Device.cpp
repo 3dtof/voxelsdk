@@ -23,4 +23,15 @@ Vector<DevicePtr> USBDeviceScanner::_scan()
   return sys.getDevices();
 }
 
+Vector<DevicePtr> USBDevice::getDevices(const Vector<int> &channels) const
+{
+  Vector<DevicePtr> devices;
+  for(auto i = 0; i < channels.size(); i++)
+  {
+    devices.push_back(DevicePtr(new USBDevice(vendorID(), productID(), serialNumber(), channels[i], description())));
+  }
+  return devices;
+}
+
+
 }

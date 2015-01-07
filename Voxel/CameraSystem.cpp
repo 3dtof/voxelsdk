@@ -139,13 +139,29 @@ Vector<DevicePtr> CameraSystem::scan()
   
   Vector<DevicePtr> toReturn;
   
+  Vector<int> channels;
+  
   for(auto &device: devices)
   {
     Device d(device->interfaceID(), device->deviceID(), ""); // get device ID without serial number
     
     auto f = _factories.find(d.id());
     if(f != _factories.end())
-      toReturn.push_back(device);
+    {
+      if(!f->second->getChannels(d, channels) || channels.size() == 0)
+      {
+        logger(LOG_WARNING) << "CameraSystem: Could not get channels for device '" << device->id() << "'" << std::endl;
+        continue;
+      }
+      
+      if(channels.size() == 1)
+        toReturn.push_back(device);
+      else
+      {
+        const Vector<DevicePtr> &ds = device->getDevices(channels);
+        toReturn.insert(toReturn.end(), ds.begin(), ds.end());
+      }
+    }
   }
   
   return toReturn;

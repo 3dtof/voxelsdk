@@ -30,6 +30,9 @@ public:
   
   inline const Vector<DevicePtr> &getSupportedDevices() const { return _supportedDevices; }
   
+  // Get the list of channels supported by this device
+  virtual bool getChannels(Device &device, Vector<int> &channels) = 0;
+  
   // Instantiate a depth camera for the specified device
   virtual DepthCameraPtr getDepthCamera(DevicePtr device) = 0;
   

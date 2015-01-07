@@ -40,6 +40,7 @@ public:
     return _context;
   }
   
+  /// This does not look at the channel to determine which channel to use
   libusb_device *getDeviceHandle(const USBDevice &usbd);
   
   Vector<DevicePtr> getDevices();

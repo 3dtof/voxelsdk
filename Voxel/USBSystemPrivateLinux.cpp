@@ -177,7 +177,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
       * and create a udev_device object (dev) representing it
       */
     path = udev_list_entry_get_name(devListEntry);
-    struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path), *pdev;
+    struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path), *pdev, *pdev2;
     
     /* usb_device_get_devnode() returns the path to the device node
       * itself in /dev. 
@@ -199,6 +199,18 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
       continue;
     }
     
+    if(usbd.channelID() >= 0) // Valid channel ID?
+    {
+      pdev2 = udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_interface");
+      
+      if(!pdev2)
+      {
+        logger(LOG_WARNING) << "USBSystem: Unable to find parent usb interface." << endl;
+        udev_device_unref(dev);
+        continue;
+      }
+    }
+    
     /* From here, we can call get_sysattr_value() for each file
       *      in the device's /sys entry. The strings passed into these
       *      functions (idProduct, idVendor, serial, etc.) correspond
@@ -208,17 +220,22 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
       *      udev_device_get_sysattr_value() are UTF-8 encoded. */
     
     uint16_t vendorID, productID;
+    uint8_t channelID;
     String serial;
     char *endptr;
     
     vendorID = strtol(udev_device_get_sysattr_value(pdev, "idVendor"), &endptr, 16);
     productID = strtol(udev_device_get_sysattr_value(pdev, "idProduct"), &endptr, 16);
     
+    if(usbd.channelID() >= 0)
+      channelID = strtol(udev_device_get_sysattr_value(pdev2, "bInterfaceNumber"), &endptr, 16);
+    
     const char *s = udev_device_get_sysattr_value(pdev, "serial");
     if(s) serial = s;
     
     if(usbd.vendorID() == vendorID && usbd.productID() == productID &&
-      (usbd.serialNumber().size() == 0 || serial == usbd.serialNumber()))
+      (usbd.serialNumber().size() == 0 || serial == usbd.serialNumber()) &&
+      (usbd.channelID() < 0 || channelID == usbd.channelID()))
       devNode = v4l2Device;
     
     udev_device_unref(dev);
