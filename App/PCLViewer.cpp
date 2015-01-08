@@ -56,6 +56,12 @@ void PCLViewer::_renderLoop()
         {
           _viewer->addPointCloud(_cloud, *_handler, CLOUD_NAME);
           _viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, CLOUD_NAME);
+          
+          // Get the cloud mapper and set it not scale intensity to false color range dynamically
+          auto cloudActorMap = _viewer->getCloudActorMap();
+          auto actor = cloudActorMap->find(CLOUD_NAME);
+          vtkPolyDataMapper *polyDataMapper = reinterpret_cast<vtkPolyDataMapper*>(actor->second.actor->GetMapper());
+          polyDataMapper->UseLookupTableScalarRangeOn();
         }
         else
         {
