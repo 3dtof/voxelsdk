@@ -162,7 +162,7 @@ void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
       
       c++;
     }
-    else if(isalnum(*c) || *c == '_' || *c == '.')
+    else if(isalnum(*c) || *c == '_' || *c == '.' || *c == '-')
     {
       c++;
     }
