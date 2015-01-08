@@ -62,6 +62,8 @@ public:
   void setDepthCamera(Voxel::DepthCameraPtr depthCamera);
   void removeDepthCamera();
   
+  inline Ptr<pcl::Grabber> getGrabber() { return _grabber; }
+  
   void start();
   bool isRunning();
   void stop();

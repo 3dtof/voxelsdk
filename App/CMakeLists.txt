@@ -22,7 +22,8 @@ add_executable(SimpleVoxelViewer SimpleVoxelViewer.cpp)
 target_link_libraries(SimpleVoxelViewer voxelpcl)
 
 add_executable(VoxelCLI VoxelCLI.cpp CLIManager.cpp LineNoise.cpp)
-target_link_libraries(VoxelCLI voxelpcl voxel)
+target_include_directories(VoxelCLI PUBLIC ${BOOST_INCLUDE_DIRS})
+target_link_libraries(VoxelCLI voxelpcl voxel ${BOOST_LIBRARIES})
 
 install(TARGETS voxelpcl
   EXPORT VoxelPCLTargets

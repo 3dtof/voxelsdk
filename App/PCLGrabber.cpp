@@ -12,6 +12,7 @@ namespace Voxel
 PCLGrabber::PCLGrabber(DepthCamera &depthCamera): _depthCamera(depthCamera), _pointCloudBuffer(2)
 {
   _pointCloudSignal = createSignal<PointCloudCallBack>();
+  _pointCloudFrameSignal = createSignal<PointCloudFrameCallBack>();
   _depthImageSignal = createSignal<DepthImageCallBack>();
   _rawImageSignal = createSignal<RawImageCallBack>();
   
@@ -49,6 +50,16 @@ void PCLGrabber::_callback(DepthCamera &depthCamera, const Frame &frame, DepthCa
   }
   else if(type == DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME)
   {
+    if(_pointCloudFrameSignal->num_slots() > 0)
+    {
+      const PointCloudFrame *f = dynamic_cast<const PointCloudFrame *>(&frame);
+      
+      if(f)
+      {
+        (*_pointCloudFrameSignal)(*f);
+      }
+    }
+    
     if(_pointCloudSignal->num_slots() > 0)
     {
       const XYZIPointCloudFrame *f = dynamic_cast<const XYZIPointCloudFrame *>(&frame);

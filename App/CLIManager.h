@@ -9,6 +9,9 @@
 
 #include <CameraSystem.h>
 #include "PCLViewer.h"
+#include <fstream>
+
+#include <boost/signals2/connection.hpp>
 
 namespace Voxel
 {
@@ -88,6 +91,17 @@ protected:
   void _capabilitiesCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   
   void _paramCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  
+  TimeStampType _lastTimeStamp;
+  std::ofstream _saveFile;
+  String _saveFileName;
+  int _count, _currentCount;
+  
+  boost::signals2::connection _saveCallbackConnection;
+  
+  void _save(const Vector<String> &tokens);
+  void _saveHelp();
+  void _saveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   
   void _reset(const Vector<String> &tokens);
   void _resetHelp();
