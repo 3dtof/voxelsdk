@@ -89,6 +89,22 @@ bool Voxel14Camera::_init()
   
   if(d.productID() == VOXEL_14_PRODUCT_ID1)
   {
+    Vector<DevicePtr> devices = DeviceScanner::scan();
+    
+    uint repeatCount = 0;
+    for(auto &d1: devices)
+    {
+      if(d1->interfaceID() != Device::USB)
+        continue;
+      
+      USBDevice &usbd = (USBDevice &)*d1;
+      
+      if(usbd.vendorID() == VOXEL_14_VENDOR_ID && usbd.productID() == VOXEL_14_PRODUCT_ID2 && 
+        (d.serialNumber().size() == 0 || d.serialNumber() == usbd.serialNumber()))
+        repeatCount++;
+    }
+    
+    
     _downloader = Ptr<Downloader>(new USBDownloader(_device));
     if(!_downloader->download("OPT9220_0v27.fw")) // TODO: This needs to come from a configuration
     {
@@ -98,7 +114,10 @@ bool Voxel14Camera::_init()
     else 
       std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // wait for device to get ready after loading firmware
       
-    controlDevice = DevicePtr(new USBDevice(VOXEL_14_VENDOR_ID, VOXEL_14_PRODUCT_ID2, _device->serialNumber()));
+    controlDevice = DevicePtr(new USBDevice(VOXEL_14_VENDOR_ID, VOXEL_14_PRODUCT_ID2, _device->serialNumber(), 
+                                            _device->channelID(), _device->description(), _device->serialIndex(), repeatCount > 0));
+    _device = controlDevice;
+    _makeID();
   }
   else
     controlDevice = _device;

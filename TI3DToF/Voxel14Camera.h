@@ -12,9 +12,9 @@
 
 #include "TI3DToFExports.h"
 
-#define VOXEL_14_VENDOR_ID 0x0451
-#define VOXEL_14_PRODUCT_ID1 0x9102
-#define VOXEL_14_PRODUCT_ID2 0x9103
+#define VOXEL_14_VENDOR_ID 0x0451U
+#define VOXEL_14_PRODUCT_ID1 0x9102U
+#define VOXEL_14_PRODUCT_ID2 0x9103U
 
 #define ILLUM_VOLTAGE "illum_volt" // Illumination voltage
 #define MIX_VOLTAGE "mix_volt" // Mixing voltage

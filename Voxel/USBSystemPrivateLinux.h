@@ -8,7 +8,7 @@
 #define VOXEL_USBSYSTEMPRIVATELINUX_H
 
 #include <libusb.h>
-
+#include <libudev.h>
 #include "Common.h"
 #include "Device.h"
 
@@ -19,6 +19,8 @@ class USBSystemPrivate
 {
 protected:
   libusb_context *_context = 0;
+  
+  bool _iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)> process);
   
 public:
   USBSystemPrivate()
@@ -47,6 +49,8 @@ public:
   
   // Return /dev/videoX string corresponding to device
   String getDeviceNode(const USBDevice &usbd);
+  
+  bool getBusDevNumbers(const USBDevice &usbd, uint8_t &busNumber, uint8_t &devNumber);
   
   virtual ~USBSystemPrivate()
   {

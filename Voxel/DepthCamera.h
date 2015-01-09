@@ -95,10 +95,15 @@ protected:
   
   virtual bool _getFieldOfView(float &fovHalfAngle) const = 0;
   
+  inline void _makeID() { _id = _name + "(" + _device->id() + ")"; }
+  
 public:
-  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name), _id(name + "(" + device->id() + ")"),
+  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
-  _parameterInit(true) {}
+  _parameterInit(true) 
+  {
+    _makeID();
+  }
   
   virtual bool isInitialized() const
   {

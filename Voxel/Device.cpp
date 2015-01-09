@@ -28,7 +28,7 @@ Vector<DevicePtr> USBDevice::getDevices(const Vector<int> &channels) const
   Vector<DevicePtr> devices;
   for(auto i = 0; i < channels.size(); i++)
   {
-    devices.push_back(DevicePtr(new USBDevice(vendorID(), productID(), serialNumber(), channels[i], description())));
+    devices.push_back(DevicePtr(new USBDevice(vendorID(), productID(), serialNumber(), channels[i], description(), serialIndex(), _showSerialIndex)));
   }
   return devices;
 }

@@ -184,7 +184,7 @@ DepthCameraPtr CameraSystem::connect(const DevicePtr &device)
   if(f != _factories.end())
   {
     DepthCameraPtr p = f->second->getDepthCamera(device);
-    _depthCameras[device->id()] = p;
+    _depthCameras[p->getDevice()->id()] = p;
     return p;
   }
   else

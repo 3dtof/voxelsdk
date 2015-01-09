@@ -14,129 +14,136 @@ namespace Voxel
 {
 Vector<DevicePtr> USBSystemPrivate::getDevices()
 {
-  libusb_device **list = 0;
-  int rc = 0;
-  int count = 0;
-  
   Vector<DevicePtr> devices;
+  devices.reserve(10);
   
-  if(!_context)
+  _iterateUDevUSB([&devices](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)
   {
-    return devices; // libusb is not initialized
-  }
-  
-  count = libusb_get_device_list(_context, &list);
-  
-  if(count <= 0)
-  {
-    logger(LOG_ERROR) << "USBSystem: Failed to get list of USB devices" << endl;
-    return devices;
-  }
-  
-  devices.reserve(count);
-  
-  unsigned char buf[64];
-  
-  for (auto i = 0; i < count; i++) {
-    libusb_device *device = list[i];
-    libusb_device_descriptor desc = {0};
-    libusb_device_handle *deviceHandle;
-    
-    rc = libusb_get_device_descriptor(device, &desc);
-    
-    if(rc != LIBUSB_SUCCESS)
-      logger(LOG_DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
-    
-    if ((rc = libusb_open(device, &deviceHandle)) == 0)
-    {
-      int bytes = libusb_get_string_descriptor_ascii(deviceHandle, desc.iSerialNumber, buf, sizeof(buf));
-      
-      if(bytes > 0)
-      {
-        devices.push_back(DevicePtr(new USBDevice(desc.idVendor, desc.idProduct, String((char *)buf, bytes))));
-      }
-      else
-      {
-        devices.push_back(DevicePtr(new USBDevice(desc.idVendor, desc.idProduct, "")));
-        //std::cerr << "Device " << getHex(desc.idVendor) << ":" << getHex(desc.idProduct) << "  has no serial number" << endl;
-      }
-      
-      libusb_close(deviceHandle);
-    }
-    else
-      logger(LOG_DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
-  }
-  
-  libusb_free_device_list(list, 1);
+    devices.push_back(DevicePtr(new USBDevice(vendorID, productID, serial, -1, "", serialIndex)));
+  });
   
   return devices;
 }
 
 libusb_device *USBSystemPrivate::getDeviceHandle(const USBDevice &usbd)
 {
-  libusb_device *selected = 0;
-  
-  libusb_device **list = 0;
-  int rc = 0;
-  int count = 0;
-  
-  Vector<DevicePtr> devices;
+  uint8_t busNumber, devNumber;
   
   if(!_context)
+    return nullptr; // libusb is not initialized
+  
+  if(!getBusDevNumbers(usbd, busNumber, devNumber))
   {
-    return selected; // libusb is not initialized
+    logger(LOG_ERROR) << "USBSystem: Failed to get bus and device numbers for device '" << usbd.id() << "'" << std::endl;
+    return nullptr;
   }
   
-  count = libusb_get_device_list(_context, &list);
+  libusb_device *selected = 0;
   
-  if(count <= 0)
+  libusb_device** libusb_list;
+  
+  int count = libusb_get_device_list(_context, &libusb_list); 
+  
+  for (auto i = 0; i < count; i++)
   {
-    logger(LOG_ERROR) << "USBSystem: Failed to get list of USB devices" << endl;
-    return selected;
-  }
-  
-  unsigned char buf[64];
-  
-  String serialNumber;
-  
-  for (auto i = 0; i < count; i++) {
-    libusb_device *device = list[i];
-    libusb_device_descriptor desc = {0};
-    libusb_device_handle *deviceHandle;
-    
-    rc = libusb_get_device_descriptor(device, &desc);
-    
-    if(rc != LIBUSB_SUCCESS)
-      logger(LOG_DEBUG) << "USBSystem: Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
-    
-    if ((rc = libusb_open(device, &deviceHandle)) == 0)
-    {
-      int bytes = libusb_get_string_descriptor_ascii(deviceHandle, desc.iSerialNumber, buf, sizeof(buf));
-      
-      if(bytes > 0)
-        serialNumber = String((char *)buf, bytes);
-      else
-        serialNumber = "";
-      
-      libusb_close(deviceHandle);
-      
-      if(!selected && usbd.productID() == desc.idProduct && usbd.vendorID() == desc.idVendor 
-        && (usbd.serialNumber().size() == 0 || usbd.serialNumber() == serialNumber))
-        selected = device;
-      else
-        libusb_unref_device(device);
-    }
+    if ((busNumber == libusb_get_bus_number(libusb_list[i])) && (devNumber == libusb_get_device_address(libusb_list[i])))
+      selected = libusb_list[i];
     else
-    {
-      logger(LOG_DEBUG) << "USBSystem: Could not open device. Ignoring device " << i << ". " << libusb_strerror((libusb_error)rc) << endl;
-      libusb_unref_device(device);
-    }
+      libusb_unref_device(libusb_list[i]);
   }
   
-  libusb_free_device_list(list, 0);
+  libusb_free_device_list(libusb_list, 0);
   
   return selected;
 }
+
+bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)> process)
+{
+  udev *udevHandle = udev_new();
+  
+  String devNode;
+  
+  if(!udevHandle)
+  {
+    logger(LOG_ERROR) << "USBSystem: UDev Init failed" << endl;
+    return false;
+  }
+  
+  struct udev_enumerate *enumerate;
+  struct udev_list_entry *devices;
+  struct udev_list_entry *devListEntry;
+  
+  /* Create a list of the devices in the 'v4l2' subsystem. */
+  enumerate = udev_enumerate_new(udevHandle);
+  udev_enumerate_add_match_subsystem(enumerate, "usb");
+  udev_enumerate_add_match_property(enumerate, "DEVTYPE", "usb_device");
+  udev_enumerate_scan_devices(enumerate);
+  devices = udev_enumerate_get_list_entry(enumerate);
+  
+  /*
+   * For each item enumerated, print out its information.
+   * udev_list_entry_foreach is a macro which expands to
+   * a loop. The loop will be executed for each member in
+   * devices, setting dev_list_entry to a list entry
+   * which contains the device's path in /sys.
+   */
+  udev_list_entry_foreach(devListEntry, devices)
+  {
+    const char *path;
+    
+    /*
+     * Get the filename of the /sys entry for the device
+     * and create a udev_device object (dev) representing it
+     */
+    path = udev_list_entry_get_name(devListEntry);
+    struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path);
+    
+    uint16_t vendorID, productID;
+    String serial, serialIndex;
+    char *endptr;
+    
+    vendorID = strtol(udev_device_get_sysattr_value(dev, "idVendor"), &endptr, 16);
+    productID = strtol(udev_device_get_sysattr_value(dev, "idProduct"), &endptr, 16);
+    
+    serialIndex += udev_device_get_sysattr_value(dev, "busnum");
+    serialIndex += ":";
+    serialIndex += udev_device_get_sysattr_value(dev, "devpath");
+    
+    const char *s = udev_device_get_sysattr_value(dev, "serial");
+    if(s) serial = s;
+    
+    process(dev, vendorID, productID, serial, serialIndex);
+    
+    udev_device_unref(dev);
+  }
+  /* Free the enumerator object */
+  udev_enumerate_unref(enumerate);
+  udev_unref(udevHandle);
+  
+  return true;
+}
+
+bool USBSystemPrivate::getBusDevNumbers(const USBDevice &usbd, uint8_t &busNumber, uint8_t &devNumber)
+{
+  busNumber = devNumber = 0;
+  bool gotDevice = false;
+  
+  _iterateUDevUSB([&gotDevice, &busNumber, &devNumber, &usbd](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)
+  {
+    char *endptr;
+    if(!gotDevice && usbd.vendorID() == vendorID && usbd.productID() == productID &&
+        (usbd.serialNumber().size() == 0 || serial == usbd.serialNumber()) &&
+        (usbd.serialIndex().size() == 0 || serialIndex == usbd.serialIndex()))
+      {
+        busNumber = strtol(udev_device_get_sysattr_value(dev, "busnum"), &endptr, 10);
+        devNumber = strtol(udev_device_get_sysattr_value(dev, "devnum"), &endptr, 10);
+        gotDevice = true;
+      }
+  });
+  
+  return gotDevice;
+}
+
 
 // Mainly borrowed from v4l2_devices.c of guvcview
 String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
@@ -221,7 +228,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
     
     uint16_t vendorID, productID;
     uint8_t channelID;
-    String serial;
+    String serial, serialIndex;
     char *endptr;
     
     vendorID = strtol(udev_device_get_sysattr_value(pdev, "idVendor"), &endptr, 16);
@@ -230,12 +237,20 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
     if(usbd.channelID() >= 0)
       channelID = strtol(udev_device_get_sysattr_value(pdev2, "bInterfaceNumber"), &endptr, 16);
     
+    if(usbd.serialIndex().size())
+    {
+      serialIndex += udev_device_get_sysattr_value(pdev, "busnum");
+      serialIndex += ":";
+      serialIndex += udev_device_get_sysattr_value(pdev, "devpath");
+    }
+    
     const char *s = udev_device_get_sysattr_value(pdev, "serial");
     if(s) serial = s;
     
     if(usbd.vendorID() == vendorID && usbd.productID() == productID &&
       (usbd.serialNumber().size() == 0 || serial == usbd.serialNumber()) &&
-      (usbd.channelID() < 0 || channelID == usbd.channelID()))
+      (usbd.channelID() < 0 || channelID == usbd.channelID()) &&
+      (usbd.serialIndex().size() == 0 || serialIndex == usbd.serialIndex()))
       devNode = v4l2Device;
     
     udev_device_unref(dev);

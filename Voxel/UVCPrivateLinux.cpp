@@ -126,6 +126,8 @@ UVCPrivate::UVCPrivate(DevicePtr usb): _usb(usb), _fd(-1)
   
   if(_deviceNode.size() > 0)
   {
+    logger(LOG_INFO) << "UVC: Connecting to UVC device '" << _deviceNode << "'" << std::endl;
+    
     _fd = open(_deviceNode.c_str(), O_RDWR | O_NONBLOCK);
     
     if(_fd == -1)
