@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <functional>
 #include <list>
+#include <set>
 #include <atomic>
 
 #include <thread>
@@ -35,6 +36,9 @@ using Vector = std::vector<T>;
 
 template <typename T>
 using List = std::list<T>;
+
+template <typename T>
+using Set = std::set<T>;
 
 template <typename K, typename V>
 using Map = std::unordered_map<K, V>;

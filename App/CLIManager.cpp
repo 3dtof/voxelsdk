@@ -42,7 +42,8 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
   });
   
   _specialParameters = Map<String, Command>({
-    {"roi",      Command(_H(&CLIManager::_roiCapabilities),         _P(&CLIManager::_roi),         nullptr)},
+    {"roi",       Command(_H(&CLIManager::_roiCapabilities),         _P(&CLIManager::_roi),         nullptr)},
+    {"video_mode",Command(_H(&CLIManager::_videoModeCapabilities),   _P(&CLIManager::_videoMode),   nullptr)},
   });
   
   // Scan and connect to the first device available
@@ -1370,6 +1371,122 @@ void CLIManager::_roi(const Vector<String> &tokens)
   }
 }
 
+void CLIManager::_videoModeCapabilities()
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera currently connected." << std::endl;
+    return;
+  }
+  
+  std::cout << "video_mode [RW]\t\t\t";
+  
+  breakLines("To set, use 'set video_mode = widthXheight@fps'.", std::cout, 60, "\t\t\t\t");
+  
+  VideoMode m;
+  
+  if(_currentDepthCamera->getFrameSize(m.frameSize) && _currentDepthCamera->getFrameRate(m.frameRate))
+  {
+    std::cout << "Current video mode:" << std::dec << m.frameSize.width << "X" << m.frameSize.height << "@" << m.getFrameRate() << "\n\t\t\t\t";
+  }
+  
+  Vector<SupportedVideoMode> videoModes;
+  Set<uint> pixelCounts;
+  
+  std::cout << "Supported Video Modes: (FPS given below is maximum allowed value) \n\t\t\t\t";
+  
+  if(_currentDepthCamera->getSupportedVideoModes(videoModes))
+  {
+    for(auto &v: videoModes)
+    {
+      std::cout << std::dec << v.frameSize.width << "X" << v.frameSize.height << "@" << v.getFrameRate() << "fps for " << (uint)v.bytesPerPixel*8 << "bpp" 
+                << "\n\t\t\t\t";
+                
+      pixelCounts.insert(v.frameSize.width*v.frameSize.height);
+    }
+    
+    if(pixelCounts.size())
+      std::cout << "Supported pixel counts: \n";
+    for(auto &p: pixelCounts)
+    {
+      std::cout << "\t\t\t\t" << p << "\n";
+    }
+  }
+}
+
+void CLIManager::_videoMode(const Vector<String> &tokens)
+{
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify roi parameter" << std::endl;
+    return;
+  }
+  
+  // get roi
+  if(tokens[0] == "get")
+  {
+    VideoMode m;
+    
+    if(!_currentDepthCamera->getFrameSize(m.frameSize) || !_currentDepthCamera->getFrameRate(m.frameRate))
+    {
+      logger(LOG_ERROR) << "Could not get current video mode" << std::endl;
+    }
+    else
+      std::cout << "video_mode = " << std::dec << m.frameSize.width << "X" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
+  }
+  else if(tokens[0] == "set")
+  {
+    if(tokens.size() < 6 || tokens[2] != "=")
+    {
+      logger(LOG_ERROR) << "Invalid syntax used for setting video_mode" << std::endl;
+      _videoModeCapabilities();
+      return;
+    }
+    
+    VideoMode m;
+    
+    char *endptr;
+    
+    Vector<String> splits;
+    
+    split(tokens[3], 'X', splits);
+    
+    if(splits.size() == 1)
+      split(tokens[3], 'x', splits);
+    
+    if(splits.size() != 2)
+    {
+      logger(LOG_ERROR) << "Please specify frame size as widthXheight" << std::endl;
+      _videoModeCapabilities();
+      return;
+    }
+    
+    m.frameSize.width = strtol(splits[0].c_str(), &endptr, 10);
+    m.frameSize.height = strtol(splits[1].c_str(), &endptr, 10);
+    
+    float frameRate = strtof(tokens[5].c_str(), &endptr);
+    
+    m.frameRate.numerator = frameRate*10000;
+    m.frameRate.denominator = 10000;
+    
+    uint g = gcd(m.frameRate.numerator, m.frameRate.denominator);
+    m.frameRate.numerator = m.frameRate.numerator/g;
+    m.frameRate.denominator = m.frameRate.denominator/g;
+    
+    std::cout << "Setting video_mode = " << std::dec << m.frameSize.width << "X" << m.frameSize.height << "@" << m.getFrameRate() << "fps ..." << std::endl;
+    
+    if(!_currentDepthCamera->setFrameSize(m.frameSize) || !_currentDepthCamera->setFrameRate(m.frameRate))
+    {
+      logger(LOG_ERROR) << "Could not set video_mode" << std::endl;
+    }
+    else
+      std::cout << "Successfully set video_mode" << std::endl;
+  }
+  else
+  {
+    logger(LOG_ERROR) << "Unknown command '" << tokens[0] << "' used for video_mode" << std::endl;
+  }
+}
 
 void CLIManager::_reset(const Vector< String > &tokens)
 {

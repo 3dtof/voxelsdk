@@ -33,6 +33,8 @@ String getHex(uint16_t value)
 
 void split(const String &str, const char delimiter, Vector<String> &split)
 {
+  split.clear();
+  
   std::size_t pos = str.find(delimiter, 0);
   std::size_t previous = 0;
   

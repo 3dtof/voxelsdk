@@ -97,6 +97,8 @@ protected:
   // All special parameter related functions
   void _roiCapabilities(); // Use to show capabilities
   void _roi(const Vector<String> &tokens); // Both for get and set
+  void _videoModeCapabilities(); // Use to show capabilities
+  void _videoMode(const Vector<String> &tokens); // Both for get and set
   
   TimeStampType _lastTimeStamp;
   std::ofstream _saveFile;
