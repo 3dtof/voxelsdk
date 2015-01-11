@@ -41,7 +41,7 @@ class VOXEL_NO_EXPORT USBSystemPrivate
 
   bool _iterateOverAllDevices(LPGUID guid, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process);
 
-  void _enumerateHub(const String &hubName, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process);
+  void _enumerateHub(int busIndex, const String &hubIndex, const String &hubName, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process);
 
   bool _getStringDescriptor(HANDLE devHandle, ULONG index, UCHAR descriptorIndex, String &descriptor);
 

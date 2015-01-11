@@ -116,6 +116,25 @@ UVCPrivate::UVCPrivate(DevicePtr usb)
 
     if (parentDevInst == devInst) // Check whether our USBDevice's DevInst matches with IMoniker's parent's DevInst matches
     {
+      if (usb->channelID() >= 0)
+      {
+        auto x = devPath.find("&mi_");
+
+        if (x != String::npos)
+        {
+          char *endptr;
+          int channel = strtol(devPath.c_str() + x + 4, &endptr, 10);
+
+          if (channel != usb->channelID())
+            continue;
+        }
+        else
+        {
+          logger(LOG_ERROR) << "UVC: Could not find channel ID of current device '" << devPath << "'" << std::endl;
+          continue;
+        }
+      }
+
       if ((hr = moniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&p)) != S_OK)
       {
         logger(LOG_ERROR) << "UVC: Could not get the IBaseFilter for the current video input device" << std::endl;

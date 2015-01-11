@@ -161,7 +161,7 @@ bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devC
   return true;
 }
 
-void USBSystemPrivate::_enumerateHub(const String &hubName, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
+void USBSystemPrivate::_enumerateHub(int busIndex, const String &hubIndex, const String &hubName, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
 {
   String deviceName = "\\\\.\\" + hubName;
 
@@ -204,6 +204,8 @@ void USBSystemPrivate::_enumerateHub(const String &hubName, Function<void(HANDLE
     if (connectionInfo->ConnectionStatus != DeviceConnected)
       continue;
 
+    String portIndex = (hubIndex.size() ? (hubIndex + "." + std::to_string(index)) : std::to_string(index));
+
     if (connectionInfo->DeviceIsHub)
     {
       Ptr<USB_NODE_CONNECTION_NAME> usbNodeName;
@@ -217,7 +219,7 @@ void USBSystemPrivate::_enumerateHub(const String &hubName, Function<void(HANDLE
       _bstr_t b(usbNodeName->NodeName);
       String nodeName = b;
 
-      _enumerateHub(nodeName, process);
+      _enumerateHub(busIndex, portIndex, nodeName, process);
     }
     else
     {
@@ -251,7 +253,7 @@ void USBSystemPrivate::_enumerateHub(const String &hubName, Function<void(HANDLE
         description = product;
       
       if (process)
-        process(hHubDevice, index, driverKeyName, DevicePtr(new USBDevice(connectionInfo->DeviceDescriptor.idVendor, connectionInfo->DeviceDescriptor.idProduct, serialNumber, description)));
+        process(hHubDevice, index, driverKeyName, DevicePtr(new USBDevice(connectionInfo->DeviceDescriptor.idVendor, connectionInfo->DeviceDescriptor.idProduct, serialNumber, -1, description, std::to_string(busIndex) + ":" + portIndex)));
     }
   }
 
@@ -337,7 +339,7 @@ bool USBSystemPrivate::_iterateOverAllDevices(LPGUID guid, Function<void(HANDLE 
       
       String hubName = b;
 
-      _enumerateHub(hubName, process);
+      _enumerateHub(hubIndex + 1, "", hubName, process);
     }
 
     CloseHandle(hHCDev);
