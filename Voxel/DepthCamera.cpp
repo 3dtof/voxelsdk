@@ -181,6 +181,26 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
   f->timestamp = depthFrame->timestamp;
   f->points.resize(depthFrame->size.width*depthFrame->size.height);
   
+  if(!_pointCloudTransform->depthToPointCloud(depthFrame->depth, *pointCloudFrame))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Could not convert depth frame to point cloud frame" << std::endl;
+    return false;
+  }
+  
+  // Setting amplitude as intensity
+  auto index = 0;
+  
+  auto w = depthFrame->size.width;
+  auto h = depthFrame->size.height;
+  
+  for(auto y = 0; y < h; y++)
+    for(auto x = 0; x < w; x++, index++)
+    {
+      IntensityPoint &p = f->points[index];
+      p.i = depthFrame->amplitude[index];
+    }
+  
+  /*
   auto index = 0;
   
   auto x1 = 0, y1 = 0;
@@ -228,7 +248,7 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
       
       //logger(INFO) << "Point = " << p.i << "@(" << p.x << ", " << p.y << ", " << p.z << ")" << std::endl;
     }
-    
+    */
   return true;
 }
 

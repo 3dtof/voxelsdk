@@ -7,6 +7,11 @@
 #ifndef VOXEL_POINT_H
 #define VOXEL_POINT_H
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+#include "Common.h"
+
 namespace Voxel
 {
 
@@ -14,18 +19,131 @@ class Point
 {
 public:
   float x, y, z; // in meters
+  
+  Point(): x(0), y(0), z(0) {}
+  Point(float x, float y): x(x), y(y), z(0) {}
+  Point(float x, float y, float z): x(x), y(y), z(z) {}
+  
+  inline float angle(const Point &other) const;
+  inline float norm() const;
+  
+  inline float dot(const Point &other) const;
+  inline Point cross(const Point &other) const;
+  
+  virtual Point &operator =(const Point &other)
+  {
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    return *this;
+  }
+  
+  inline Point &operator -();
+  inline Point operator +(const Point &other) const;
+  inline Point operator *(const Point &other) const;
+  inline Point operator *(const float &other) const;
+  
+  virtual ~Point() {}
 };
+
+float Point::dot(const Point &other) const
+{
+  return (x*other.x + y*other.y + z*other.z);
+}
+
+Point Point::cross(const Point &other) const
+{
+  Point p;
+  p.x = y*other.z - z*other.y;
+  p.y = z*other.x - x*other.z;
+  p.z = x*other.y - y*other.x;
+  
+  return p;
+}
+
+
+float Point::angle(const Point &other) const
+{
+  float n1 = norm(), n2 = other.norm();
+  
+  if(floatEquals(n1, 0) || floatEquals(n2, 0))
+    return 0;
+  
+  return acos(dot(other)/n1/n2);
+}
+
+float Point::norm() const
+{
+  return sqrt(x*x + y*y + z*z);
+}
+
+inline Point &Point::operator -()
+{
+  x = -x;
+  y = -y;
+  z = -z;
+  return *this;
+}
+
+Point Point::operator*(const Point &other) const
+{
+  return Point(x*other.x, y*other.y, z*other.z);
+}
+
+Point Point::operator*(const float &other) const
+{
+  return Point(x*other, y*other, z*other);
+}
+
+Point Point::operator +(const Point &other) const
+{
+  return Point(x + other.x, y + other.y, z + other.z);
+}
+
+
 
 class IntensityPoint: public Point
 {
 public:
   float i; // normalized 0-1
+  
+  virtual Point &operator =(const Point &other)
+  {
+    Point::operator=(other);
+    
+    const IntensityPoint *p = dynamic_cast<const IntensityPoint *>(&other);
+    
+    if(p)
+      i = p->i;
+    
+    return *this;
+  }
+  
+  virtual ~IntensityPoint() {}
 };
 
 class RGBPoint: public Point
 {
 public:
   float r, g, b; // normalized 0-1
+  
+  virtual Point &operator =(const Point &other)
+  {
+    Point::operator=(other);
+    
+    const RGBPoint *p = dynamic_cast<const RGBPoint *>(&other);
+    
+    if(p)
+    {
+      r = p->r;
+      g = p->g;
+      b = p->b;
+    }
+    
+    return *this;
+  }
+  
+  virtual ~RGBPoint() {}
 };
 
 class Orientation // in radial co-ordinates

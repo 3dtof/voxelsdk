@@ -94,6 +94,16 @@ int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<S
 
 uint VOXEL_EXPORT gcd(uint n, uint m);
 
+#define FLOAT_EPSILON 1E-5f
+
+inline bool floatEquals(float lhs, float rhs)
+{
+  if((lhs - rhs > FLOAT_EPSILON) || (rhs - lhs > FLOAT_EPSILON))
+    return false;
+  else
+    return true;
+}
+
 }
 
 #endif //VOXEL_COMMON_H

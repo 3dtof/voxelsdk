@@ -16,6 +16,8 @@
 #include <RegisterProgrammer.h>
 #include <Streamer.h>
 
+#include <PointCloudTransform.h>
+
 
 #define MAX_FRAME_BUFFERS 2
 
@@ -45,12 +47,14 @@ protected:
   
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
+  Ptr<PointCloudTransform> _pointCloudTransform;
   
   bool _parameterInit;
   
   FrameBufferManager<RawFrame> _rawFrameBuffers;
   FrameBufferManager<DepthFrame> _depthFrameBuffers;
   FrameBufferManager<PointCloudFrame> _pointCloudBuffers;
+  
   
   bool _addParameters(const Vector<ParameterPtr> &params);
   

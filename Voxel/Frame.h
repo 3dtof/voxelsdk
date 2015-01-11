@@ -178,7 +178,7 @@ public:
     return points.size();
   }
   
-  virtual Point* operator[] (IndexType index)
+  virtual Point *operator[] (IndexType index)
   {
     if(index < points.size() && index >= 0)
       return &points[index];

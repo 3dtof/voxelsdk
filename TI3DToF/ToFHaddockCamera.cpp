@@ -475,15 +475,36 @@ bool ToFHaddockCamera::_setROI(const RegionOfInterest &roi)
 
 bool ToFHaddockCamera::_initStartParams()
 {
-  return set(TG_EN, true) && 
-         set(BLK_SIZE, 1024U) &&
-         set(BLK_HEADER_EN, true) &&
-         set(OP_CS_POL, true) &&
-         set(FB_READY_EN, true) &&
-         set(CONFIDENCE_THRESHOLD, 1U) &&
-         //set(DEBUG_EN, true) && // Uncomment this for sample data
-         set(ILLUM_EN_POL, false);
-         // && set(INTG_TIME, 40.0f);
+  RegionOfInterest roi;
+  FrameSize s;
+  
+  if(!set(TG_EN, true) || 
+     !set(BLK_SIZE, 1024U) ||
+     !set(BLK_HEADER_EN, true) ||
+     !set(OP_CS_POL, true) ||
+     !set(FB_READY_EN, true) ||
+     !set(CONFIDENCE_THRESHOLD, 1U) ||
+     //!set(DEBUG_EN, true) || // Uncomment this for sample data
+     !set(ILLUM_EN_POL, false) ||
+     !getROI(roi) ||
+     !getFrameSize(s))
+    // || set(INTG_TIME, 40.0f);
+    return false;
+      
+  _pointCloudTransform = Ptr<PointCloudTransform>(new PointCloudTransform(
+    roi.x, roi.y, s.width, s.height,
+    228.7322,     // fx
+    228.8095,     // fy
+    164.4521,     // cx
+    117.2365,     // cy
+    -0.1583968,   // k1
+    0.06113919,   // k2
+    0.09898978,   // k3
+    0.001591975,  // p1
+    -0.0001962754 // p2
+  ));
+  
+  return true;
 }
 
 // FIXME: Should amplitude_scale parameter be used for this?

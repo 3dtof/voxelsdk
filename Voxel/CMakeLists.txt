@@ -27,6 +27,7 @@ add_library(voxel SHARED
   TinyXML2.cpp # for parsing DML files
   ParameterDMLParser.cpp
   Configuration.cpp
+  PointCloudTransform.cpp
   ${OS_CPP_FILES}
 )
 
