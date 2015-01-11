@@ -41,6 +41,9 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"exit",      Command(_H(&CLIManager::_exitHelp),         _P(&CLIManager::_exit),         nullptr)},
   });
   
+  _specialParameters = Map<String, Command>({
+    {"roi",      Command(_H(&CLIManager::_roiCapabilities),         _P(&CLIManager::_roi),         nullptr)},
+  });
   
   // Scan and connect to the first device available
   Vector<DevicePtr> devices = sys.scan();
@@ -393,6 +396,15 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     return;
   }
   
+  auto sp = _specialParameters.find(tokens[1]);
+  
+  // Is a special parameter?
+  if(sp != _specialParameters.end() && sp->second.process)
+  {
+    sp->second.process(tokens);
+    return;
+  }
+  
   ParameterPtr param = _currentDepthCamera->getParam(tokens[1]);
   
   if(!param)
@@ -498,8 +510,17 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
   
   if(tokens.size() < 4 || tokens[2] != "=")
   {
-    logger(LOG_ERROR) << "Please specific a parameter name and value to be set in the format given below." << std::endl;
+    logger(LOG_ERROR) << "Please specify a parameter name and value to be set in the format given below." << std::endl;
     _setParameterHelp();
+    return;
+  }
+  
+  auto sp = _specialParameters.find(tokens[1]);
+  
+  // Is a special parameter?
+  if(sp != _specialParameters.end() && sp->second.process)
+  {
+    sp->second.process(tokens);
     return;
   }
   
@@ -715,6 +736,13 @@ void CLIManager::_capabilities(const Vector<String> &tokens)
   
   if(tokens.size() < 2)
   {
+    // Show special parameters first
+    for(auto &sp: _specialParameters)
+    {
+      if(sp.second.help)
+        sp.second.help();
+    }
+    
     const Map<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
     for(auto &p: parameters)
     {
@@ -723,10 +751,29 @@ void CLIManager::_capabilities(const Vector<String> &tokens)
   }
   else if(tokens.size() == 2)
   {
+    auto sp = _specialParameters.find(tokens[1]);
+    
+    // Is a special parameter?
+    if(sp != _specialParameters.end() && sp->second.help)
+    {
+      sp->second.help();
+      return;
+    }
+    
     _showParameterInfo(_currentDepthCamera->getParam(tokens[1]));
   }
   else if(tokens[2] == "*") // wildcard match?
   {
+    for(auto &sp: _specialParameters)
+    {
+      const String &n = sp.first;
+      if(n.size() < tokens[1].size()) // parameter name smaller than search name?
+        continue;
+      
+      if(n.compare(0, tokens[1].size(), tokens[1]) == 0) // matches first part in the name?
+        sp.second.help();
+    }
+    
     const Map<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
     for(auto &p: parameters)
     {
@@ -933,6 +980,15 @@ void CLIManager::_paramCompletion(const Vector<String> &tokens, linenoiseComplet
   uint count = 0;
   if(tokens.size() == 2)
   {
+    for(auto &sp: _specialParameters)
+    {
+      if(sp.first.size() >= tokens[1].size() && sp.first.compare(0, tokens[1].size(), tokens[1]) == 0)
+      {
+        linenoiseAddCompletion(lc, (tokens[0] + " " + sp.first).c_str());
+        count++;
+      }
+    }
+    
     for(auto &p: _currentDepthCamera->getParameters())
     {
       if(p.first.size() >= tokens[1].size() && p.first.compare(0, tokens[1].size(), tokens[1]) == 0)
@@ -947,6 +1003,12 @@ void CLIManager::_paramCompletion(const Vector<String> &tokens, linenoiseComplet
   }
   else if(tokens.size() == 1)
   {
+    for(auto &sp: _specialParameters)
+    {
+      linenoiseAddCompletion(lc, (tokens[0] + " " + sp.first).c_str());
+      count++;
+    }
+    
     for(auto &p: _currentDepthCamera->getParameters())
     {
       linenoiseAddCompletion(lc, (tokens[0] + " " + p.first).c_str());
@@ -1230,6 +1292,84 @@ void CLIManager::_disconnect(const Vector<String> &tokens)
   _sys.disconnect(_currentDepthCamera);
   _currentDepthCamera = nullptr;
 }
+
+void CLIManager::_roiCapabilities()
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera currently connected." << std::endl;
+    return;
+  }
+  
+  std::cout << "roi [RW]\t\t\t";
+  
+  breakLines("To set, use 'set roi = x,y,width,height'.", std::cout, 60, "\t\t\t\t");
+  
+  String message;
+  if(_currentDepthCamera->allowedROI(message))
+    breakLines(message, std::cout, 60, "\t\t\t\t");
+  
+  RegionOfInterest roi;
+  
+  if(_currentDepthCamera->getROI(roi))
+  {
+    std::cout << "Current value: [" << std::dec << roi.x << "," << roi.y << "," << roi.width << "," << roi.height << "]" << std::endl;
+  }
+}
+
+void CLIManager::_roi(const Vector<String> &tokens)
+{
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify roi parameter" << std::endl;
+    return;
+  }
+  
+  // get roi
+  if(tokens[0] == "get")
+  {
+    RegionOfInterest roi;
+    
+    if(_currentDepthCamera->getROI(roi))
+    {
+      std::cout << "ROI = [" << std::dec << roi.x << "," << roi.y << "," << roi.width << "," << roi.height << "]" << std::endl;
+    }
+    else
+    {
+      logger(LOG_ERROR) << "Could not get ROI" << std::endl;
+    }
+  }
+  else if(tokens[0] == "set")
+  {
+    if(tokens.size() < 10 || tokens[2] != "=")
+    {
+      logger(LOG_ERROR) << "Invalid syntax used for setting ROI" << std::endl;
+      _roiCapabilities();
+      return;
+    }
+    
+    RegionOfInterest roi;
+    
+    char *endptr;
+    
+    roi.x = strtol(tokens[3].c_str(), &endptr, 10);
+    roi.y = strtol(tokens[5].c_str(), &endptr, 10);
+    roi.width = strtol(tokens[7].c_str(), &endptr, 10);
+    roi.height = strtol(tokens[9].c_str(), &endptr, 10);
+    
+    if(!_currentDepthCamera->setROI(roi))
+    {
+      logger(LOG_ERROR) << "Could not set ROI" << std::endl;
+    }
+    else
+      std::cout << "Successfully set ROI" << std::endl;
+  }
+  else
+  {
+    logger(LOG_ERROR) << "Unknown command '" << tokens[0] << "' used for ROI" << std::endl;
+  }
+}
+
 
 void CLIManager::_reset(const Vector< String > &tokens)
 {

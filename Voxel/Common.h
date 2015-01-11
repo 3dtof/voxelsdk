@@ -68,6 +68,7 @@ typedef std::condition_variable ConditionVariable;
 /// String functions
 String VOXEL_EXPORT getHex(uint16_t value);
 void VOXEL_EXPORT split(const String &str, const char delimiter, Vector<String> &split);
+void VOXEL_EXPORT breakLines(const String &str, std::ostream &out, const uint maxPerLine, const String &newlinePrefix);
 
 /// Array handling template
 template<typename T, int sz>

@@ -47,6 +47,30 @@ void split(const String &str, const char delimiter, Vector<String> &split)
   split.push_back(str.substr(previous, pos));
 }
 
+void breakLines(const String &str, std::ostream &out, const uint maxPerLine, const String &newlinePrefix)
+{
+  String s = str;
+  
+  int breakPos;
+  
+  while(s.size())
+  {
+    if(s.size() <= maxPerLine)
+    {
+      out << s << "\n" << newlinePrefix;
+      break;
+    }
+      
+    breakPos = s.rfind(' ', maxPerLine);
+    
+    if(breakPos == String::npos)
+      breakPos = maxPerLine;
+    
+    out << s.substr(0, breakPos + 1) << "\n" << newlinePrefix;
+    s = s.substr(breakPos + 1);
+  }
+}
+
 
 int getFiles(const String &dir, const String &matchString, Vector<String> &files)
 {

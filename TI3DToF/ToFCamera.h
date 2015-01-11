@@ -32,6 +32,8 @@ protected:
   virtual bool _getAmplitudeNormalizingFactor(float &factor) = 0;
   virtual bool _getDepthScalingFactor(float &factor) = 0;
   
+  bool _init();
+  
 public:
   ToFCamera(const String &name, DevicePtr device): DepthCamera(name, device) {}
   

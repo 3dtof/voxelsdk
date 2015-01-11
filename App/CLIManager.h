@@ -39,6 +39,8 @@ protected:
   
   Map<String, Command> _commands;
   
+  Map<String, Command> _specialParameters; // such as frame_size, frame_rate, roi, etc.
+  
   bool _keepRunning = true;
   
   void _getTokens(const char *command, Vector<String> &tokens);
@@ -91,6 +93,10 @@ protected:
   void _capabilitiesCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   
   void _paramCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  
+  // All special parameter related functions
+  void _roiCapabilities(); // Use to show capabilities
+  void _roi(const Vector<String> &tokens); // Both for get and set
   
   TimeStampType _lastTimeStamp;
   std::ofstream _saveFile;

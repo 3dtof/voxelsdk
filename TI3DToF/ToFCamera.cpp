@@ -12,6 +12,20 @@ namespace Voxel
 namespace TI
 {
   
+bool ToFCamera::_init()
+{
+  VideoMode m;
+  
+  if(!getMaximumVideoMode(m) || !setFrameSize(m.frameSize) || !setFrameRate(m.frameRate))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not set maximum video mode" << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
+  
 bool ToFCamera::_captureRawUnprocessedFrame(RawFramePtr &rawFrame)
 {
   if(!isInitialized() || !_streamer->isRunning())
@@ -114,20 +128,18 @@ bool ToFCamera::_start()
   if(!isInitialized())
     return false;
   
-  // Set parameters here
   VideoMode m;
   
-  m.frameSize.width = 640;
-  m.frameSize.height = 240;
-  
-  m.frameRate.numerator = 25;
-  m.frameRate.denominator = 1;
-    
-  if(!_streamer->setVideoMode(m) || !setFrameRate(m.frameRate))
+  if(!getFrameSize(m.frameSize))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not get current frame size" << std::endl;
     return false;
-  
-  if(!_streamer->getCurrentVideoMode(m))// || !setFrameRate(m.frameRate))
-    return false;
+  }
+
+  if(!getFrameRate(m.frameRate))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not get current frame rate" << std::endl;
+  }
   
   logger(LOG_INFO) << "Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
   

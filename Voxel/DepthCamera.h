@@ -31,7 +31,7 @@ public:
     CALLBACK_RAW_FRAME_PROCESSED = 1,
     CALLBACK_DEPTH_FRAME = 2,
     CALLBACK_XYZI_POINT_CLOUD_FRAME = 3,
-    CALLBACK_TYPE_COUNT = 4
+    CALLBACK_TYPE_COUNT = 4 // This is just used for number of callback types
   };
   
   typedef Function<void (DepthCamera &camera, const Frame &frame, FrameCallBackType callBackType)> CallbackType;
@@ -92,6 +92,13 @@ protected:
   
   virtual bool _setFrameSize(const FrameSize &s) = 0;
   virtual bool _getFrameSize(FrameSize &s) const = 0;
+  virtual bool _getMaximumFrameSize(FrameSize &s) const = 0;
+  virtual bool _getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const = 0;
+  virtual bool _getMaximumVideoMode(VideoMode &videoMode) const = 0;
+  
+  virtual bool _getROI(RegionOfInterest &roi) = 0;
+  virtual bool _setROI(const RegionOfInterest &roi) = 0;
+  virtual bool _allowedROI(String &message) = 0;
   
   virtual bool _getFieldOfView(float &fovHalfAngle) const = 0;
   
@@ -100,7 +107,7 @@ protected:
 public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
-  _parameterInit(true) 
+  _parameterInit(true), _running(false)
   {
     _makeID();
   }
@@ -125,7 +132,7 @@ public:
   template <typename T>
   bool set(const String &name, const T &value);
   
-  // WARNING: Do not use get() and set() on ParameterPtr as it is not thread-safe. Instead use get() and set() on DepthCamera
+  // WARNING: Avoid using get() and set() on ParameterPtr, obtained via getParam() or getParameters(). It is not thread-safe. Instead use get() and set() on DepthCamera
   inline const ParameterPtr getParam(const String &name) const;
   inline const Map<String, ParameterPtr> &getParameters() const { return _parameters; }
   
@@ -134,6 +141,13 @@ public:
   
   inline bool setFrameSize(const FrameSize &s);
   inline bool getFrameSize(FrameSize &s) const;
+  inline bool getMaximumFrameSize(FrameSize &s) const;
+  inline bool getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const;
+  inline bool getMaximumVideoMode(VideoMode &videoMode) const;
+  
+  inline bool getROI(RegionOfInterest &roi);
+  inline bool setROI(const RegionOfInterest &roi);
+  inline bool allowedROI(String &message);
   
   inline bool getFieldOfView(float &fovHalfAngle) const;
   
@@ -195,6 +209,43 @@ bool DepthCamera::setFrameSize(const FrameSize &s)
 {
   Lock<Mutex> _(_accessMutex);
   return _setFrameSize(s);
+}
+
+bool DepthCamera::getMaximumFrameSize(FrameSize &s) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getMaximumFrameSize(s);
+}
+
+bool DepthCamera::getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getSupportedVideoModes(supportedVideoModes);
+}
+
+bool DepthCamera::getMaximumVideoMode(VideoMode &videoMode) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getMaximumVideoMode(videoMode);
+}
+
+
+bool DepthCamera::allowedROI(String &message)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _allowedROI(message);
+}
+
+bool DepthCamera::getROI(RegionOfInterest &roi)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getROI(roi);
+}
+
+bool DepthCamera::setROI(const RegionOfInterest &roi)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _setROI(roi);
 }
 
 template <typename T>

@@ -27,8 +27,15 @@
 
 #define ILLUM_EN_POL "illum_en_pol"
 
+#define BIN_ROWS_TO_MERGE "rows_to_merge"
+#define BIN_COLS_TO_MERGE "cols_to_merge"
 #define BIN_ROW_COUNT "bin_row_count"
 #define BIN_COLUMN_COUNT "bin_col_count"
+
+#define ROW_START "row_addr1_start"
+#define ROW_END "row_addr1_end"
+#define COL_START "col_addr1_start"
+#define COL_END "col_addr1_end"
 
 #define DEBUG_EN "debug_en"
 
@@ -73,7 +80,16 @@ protected:
   virtual bool _getFrameRate(FrameRate &r) const;
   
   virtual bool _getFrameSize(FrameSize &s) const;
+  virtual bool _getMaximumFrameSize(FrameSize &s) const;
   virtual bool _setFrameSize(const FrameSize &s);
+  virtual bool _setFrameSize(const FrameSize &s, bool resetROI);
+  virtual bool _setStreamerFrameSize(const FrameSize &s) = 0;
+  
+  virtual bool _setBinning(uint rowsToMerge, uint columnsToMerge, VideoMode &videoMode);
+  
+  virtual bool _allowedROI(String &message);
+  virtual bool _getROI(RegionOfInterest &roi);
+  virtual bool _setROI(const RegionOfInterest &roi);
   
 public:
   ToFHaddockCamera(const String &name, DevicePtr device);

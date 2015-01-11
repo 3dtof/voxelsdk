@@ -18,6 +18,12 @@ public:
   size_t width, height;
 };
 
+class RegionOfInterest: public FrameSize
+{
+public:
+  size_t x, y;
+};
+
 class FrameRate
 {
 public:
@@ -33,6 +39,21 @@ public:
   FrameRate frameRate;
   
   inline float getFrameRate() const { return frameRate.getFrameRate(); }
+};
+
+class SupportedVideoMode: public VideoMode
+{
+public:
+  uint8_t bytesPerPixel;
+  
+  SupportedVideoMode(size_t width, size_t height, size_t rateNumerator, size_t rateDenominator, uint8_t bytesPerPixel)
+  {
+    frameSize.width = width;
+    frameSize.height = height;
+    frameRate.numerator = rateNumerator;
+    frameRate.denominator = rateDenominator;
+    this->bytesPerPixel = bytesPerPixel;
+  }
 };
   
 }

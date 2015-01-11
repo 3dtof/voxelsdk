@@ -128,13 +128,17 @@ bool Voxel14Camera::_init()
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
+  if(!_addParameters({
+    ParameterPtr(new MixVoltageParameter(*_programmer)),
+    ParameterPtr(new IlluminationVoltageParameter(*_programmer)),
+    }))
+  {
+    return false;
+  }
+  
   if(!ToFHaddockCamera::_init())
     return false;
   
-  _addParameters({
-    ParameterPtr(new MixVoltageParameter(*_programmer)),
-    ParameterPtr(new IlluminationVoltageParameter(*_programmer)),
-  });
   
   return true;
 }
@@ -154,6 +158,79 @@ bool Voxel14Camera::_getFieldOfView(float &fovHalfAngle) const
   fovHalfAngle = (87/2.0f)*(M_PI/180.0f);
   return true;
 }
+
+bool Voxel14Camera::_setStreamerFrameSize(const FrameSize &s)
+{
+  UVCStreamer *streamer = dynamic_cast<UVCStreamer *>(&*_streamer);
+  
+  if(!streamer)
+  {
+    logger(LOG_ERROR) << "Voxel14Camera: Streamer is not of type UVC" << std::endl;
+    return false;
+  }
+  
+  VideoMode m;
+  m.frameSize = s;
+  
+  int bytesPerPixel;
+  
+  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  {
+    logger(LOG_ERROR) << "Voxel14Camera: Could not get current bytes per pixel" << std::endl;
+    return false;
+  }
+  
+  if(bytesPerPixel == 4)
+    m.frameSize.width *= 2;
+  
+  if(!_getFrameRate(m.frameRate))
+  {
+    logger(LOG_ERROR) << "Voxel14Camera: Could not get current frame rate" << std::endl;
+    return false;
+  }
+  
+  if(!streamer->setVideoMode(m))
+  {
+    logger(LOG_ERROR) << "Voxel14Camera: Could not set video mode for UVC" << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
+bool Voxel14Camera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+{
+  supportedVideoModes = Vector<SupportedVideoMode> {
+    SupportedVideoMode(320,240,25,1,4),
+    SupportedVideoMode(160,240,50,1,4),
+    SupportedVideoMode(160,120,100,1,4),
+    SupportedVideoMode(80,120,200,1,4),
+    SupportedVideoMode(80,60,400,1,4),
+    SupportedVideoMode(320,240,50,1,2),
+    SupportedVideoMode(320,120,100,1,2),
+    SupportedVideoMode(160,120,200,1,2),
+    SupportedVideoMode(160,60,400,1,2),
+    SupportedVideoMode(80,60,400,1,2),
+  };
+  return true;
+}
+
+bool Voxel14Camera::_getMaximumVideoMode(VideoMode &videoMode) const
+{
+  int bytesPerPixel;
+  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  {
+    logger(LOG_ERROR) << "Voxel14Camera: Could not get current bytes per pixel" << std::endl;
+    return false;
+  }
+  
+  videoMode.frameSize.width = 320;
+  videoMode.frameSize.height = 240;
+  videoMode.frameRate.denominator = 1;
+  videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
+  return true;
+}
+
 
   
 }

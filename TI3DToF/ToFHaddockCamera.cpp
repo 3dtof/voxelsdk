@@ -234,6 +234,10 @@ bool ToFHaddockCamera::_init()
   }))
     return false;
   
+  if(!ToFCamera::_init())
+  {
+    return false;
+  }
   
   return true;
 }
@@ -291,11 +295,182 @@ bool ToFHaddockCamera::_getFrameSize(Voxel::FrameSize &s) const
   return true;
 }
 
+bool ToFHaddockCamera::_getMaximumFrameSize(FrameSize &s) const
+{
+  s.width = 320;
+  s.height = 240;
+  return true;
+}
 
 bool ToFHaddockCamera::_setFrameSize(const FrameSize &s)
 {
-  return true; // dummy to be coded later
+  return _setFrameSize(s, true);
 }
+
+bool ToFHaddockCamera::_setFrameSize(const FrameSize &s, bool resetROI)
+{
+  if(isRunning())
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Cannot set frame size while the camera is streaming" << std::endl;
+    return false;
+  }
+  
+  RegionOfInterest roi;
+  if(resetROI)
+  {
+    FrameSize maxFrameSize;
+    
+    if(!_getMaximumFrameSize(maxFrameSize))
+    {
+      logger(LOG_ERROR) << "ToFHaddockCamera: Could not get maximum frame size. Need that to reset ROI" << std::endl;
+      return false;
+    }
+    
+    roi.x = roi.y = 0;
+    roi.width = maxFrameSize.width;
+    roi.height = maxFrameSize.height;
+    
+    if(!_setROI(roi))
+    {
+      logger(LOG_ERROR) << "ToFHaddockCamera: Could not reset ROI" << std::endl;
+      return false;
+    }
+  }
+  else if(!_getROI(roi))
+  {
+    logger(LOG_ERROR) << "Could not get current ROI, to set frame size" << std::endl;
+    return false;
+  }
+  
+  FrameSize toSet;
+  
+  toSet.width = (s.width <= roi.width)?s.width:roi.width;
+  toSet.height = (s.height <= roi.height)?s.height:roi.height;
+  
+  Vector<SupportedVideoMode> supportedVideoModes;
+  
+  int bytesPerPixel;
+  
+  if(!_getSupportedVideoModes(supportedVideoModes) || !_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  {
+    logger(LOG_ERROR) << "Could not get supported video modes or current bytes per pixel, to get nearest valid frame size" << std::endl;
+    return false;
+  }
+  
+  int maxScore = 0;
+  IndexType index = -1;
+  int area = toSet.height*toSet.width;
+  
+  for(IndexType i = 0; i < supportedVideoModes.size(); i++)
+  {
+    auto &a = supportedVideoModes[i];
+    
+    int scoreA = a.frameSize.width*a.frameSize.height;
+    scoreA = (bytesPerPixel != a.bytesPerPixel || scoreA > area || a.frameSize.width > toSet.width || a.frameSize.height > toSet.height)?0:scoreA;
+    
+    if(scoreA > maxScore)
+    {
+      maxScore = scoreA;
+      index = i;
+    }
+  }
+  
+  if(index < 0)
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: No supported frame size exists close to the desired frame size. Could not set frame size." << std::endl;
+    return false;
+  }
+  
+  uint rowsToMerge = roi.height/supportedVideoModes[index].frameSize.height, 
+  columnsToMerge = roi.width/supportedVideoModes[index].frameSize.width;
+  
+  if(!_setBinning(rowsToMerge, columnsToMerge, supportedVideoModes[index]))
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not set binning for required frame size" << std::endl;
+    return false;
+  }
+  
+  if(!_setStreamerFrameSize(supportedVideoModes[index].frameSize))
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not get streamer's frame size" << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
+bool ToFHaddockCamera::_setBinning(uint rowsToMerge, uint columnsToMerge, VideoMode &videoMode)
+{
+  if(!_set(BIN_ROWS_TO_MERGE, rowsToMerge) || !_set(BIN_COLS_TO_MERGE, columnsToMerge) ||
+    !_set(BIN_ROW_COUNT, (uint)videoMode.frameSize.height) || !_set(BIN_COLUMN_COUNT, (uint)videoMode.frameSize.width))
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not set binning related parameters" << std::endl;
+    return false;
+  }
+  return true;
+}
+
+
+
+bool ToFHaddockCamera::_allowedROI(String &message)
+{
+  message  = "Column start and end must be multiples of 16, both between 0 to 319. ";
+  message += "Row start and end must be between 0 to 239.";
+  return true;
+}
+
+bool ToFHaddockCamera::_getROI(RegionOfInterest &roi)
+{
+  uint rowStart, rowEnd, colStart, colEnd;
+  
+  if(!_get(ROW_START, rowStart) || !_get(ROW_END, rowEnd) || !_get(COL_START, colStart) || !_get(COL_END, colEnd))
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not get necessary parameters for ROI." << std::endl;
+    return false;
+  }
+  
+  colStart = colStart*2;
+  colEnd = (colEnd + 1)*2 - 1;
+  
+  roi.x = colStart;
+  roi.y = rowStart;
+  roi.width = colEnd - colStart + 1;
+  roi.height = rowEnd - rowStart + 1;
+  return true;
+}
+
+bool ToFHaddockCamera::_setROI(const RegionOfInterest &roi)
+{
+  if(isRunning())
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Cannot set frame size while the camera is streaming" << std::endl;
+    return false;
+  }
+  
+  uint rowStart, rowEnd, colStart, colEnd;
+  
+  colStart = (roi.x/16)*8;
+  colEnd = ((colStart + roi.width)/16)*8 - 1;
+  
+  rowStart = roi.y;
+  rowEnd = rowStart + roi.height - 1;
+  
+  if(!_set(ROW_START, rowStart) || !_set(ROW_END, rowEnd) || !_set(COL_START, colStart) || !_set(COL_END, colEnd))
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not get necessary parameters for ROI." << std::endl;
+    return false;
+  }
+  
+  FrameSize s;
+  if(!_getFrameSize(s) || !_setFrameSize(s, false)) // Get and set frame size to closest possible
+  {
+    logger(LOG_ERROR) << "ToFHaddockCamera: Could not update frame size to closest valid frame size" << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
 
 
 bool ToFHaddockCamera::_initStartParams()

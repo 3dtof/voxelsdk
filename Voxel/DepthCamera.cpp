@@ -78,9 +78,9 @@ void DepthCamera::_captureLoop()
   {
     uint32_t callBackTypesToBeCalled = _callBackTypesRegistered;
     
-    if(consecutiveCaptureFails > 2000)
+    if(consecutiveCaptureFails > 100)
     {
-      logger(LOG_ERROR) << "DepthCamera: 2000 consecutive failures in capture of frame. Stopping stream for " << id() << std::endl;
+      logger(LOG_ERROR) << "DepthCamera: 100 consecutive failures in capture of frame. Stopping stream for " << id() << std::endl;
       _running = false;
       continue;
     }
