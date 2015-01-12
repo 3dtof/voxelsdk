@@ -565,7 +565,7 @@ FunctionEnd
     RMDir /REBOOTOK `${TargetDir}`
   !macroend
 
-  !define MenuItemRemove '!insertmacro MenuItemRemove'
+  !define MenuItemRemove `!insertmacro MenuItemRemove`
   !macro MenuItemRemove ItemName
     !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
     Delete /REBOOTOK `$SMPROGRAMS\$MUI_TEMP\$ItemName`

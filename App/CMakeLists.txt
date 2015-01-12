@@ -68,7 +68,22 @@ ELSEIF(WINDOWS)
     DESTINATION bin
     COMPONENT apps
   )
-
+  
+  set(CPACK_NSIS_CREATE_ICONS_EXTRA 
+    "\\\${If}  \\\${SectionIsSelected} \\\${apps}\n
+        CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Voxel CLI.lnk' '\$INSTDIR\\\\bin\\\\VoxelCLIStart.cmd'\n
+        CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Simple Voxel Viewer.lnk' '\$INSTDIR\\\\bin\\\\SimpleVoxelViewer.exe'\n
+        CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\CMD in Voxel Directory.lnk' 'C:\\\\Windows\\\\System32\\\\cmd.exe'\n
+     \\\${EndIf}\n"
+    PARENT_SCOPE)
+  
+  SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS 
+      "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n
+       !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP\n
+       Delete '\$SMPROGRAMS\\\\$MUI_TEMP\\\\Voxel CLI.lnk'\n
+       Delete '\$SMPROGRAMS\\\\$MUI_TEMP\\\\Simple Voxel Viewer.lnk'\n
+       Delete '\$SMPROGRAMS\\\\$MUI_TEMP\\\\CMD in Voxel Directory.lnk'\n" 
+      PARENT_SCOPE)
 
   set(CPACK_COMPONENT_PCL_DISPLAY_NAME "Voxel-PCL SDK" PARENT_SCOPE)
   set(CPACK_COMPONENT_PCL_DEV_DISPLAY_NAME "Voxel-PCL SDK C++ headers" PARENT_SCOPE)

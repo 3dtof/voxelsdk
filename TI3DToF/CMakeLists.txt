@@ -102,9 +102,6 @@ ELSEIF(WINDOWS)
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
     "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\OPT9220_0v27.fw` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n")
   
-  SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
-    "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n CreateShortCut `\\\$SMPROGRAMS\\\\\\\$STARTMENU_FOLDER\\\\CMD in Voxel Directory.lnk` `C:\\\\Windows\\\\System32\\\\cmd.exe`\n")
-  
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
     "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `ti3dtof.lib`\n")
   
