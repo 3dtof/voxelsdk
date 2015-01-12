@@ -73,6 +73,7 @@ install(FILES
   UVCStreamer.h
   UVCXU.h
   VideoMode.h
+  PointCloudTransform.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
   COMPONENT lib_dev

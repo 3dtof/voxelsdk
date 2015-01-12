@@ -52,7 +52,7 @@ typedef std::size_t SizeType;
 typedef uint8_t ByteType;
 typedef uint64_t TimeStampType;
 
-#ifdef WINDOWS
+#ifdef _WIN32
 typedef uint32_t uint;
 #endif
 
