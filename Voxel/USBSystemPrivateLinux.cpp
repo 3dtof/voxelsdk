@@ -17,9 +17,9 @@ Vector<DevicePtr> USBSystemPrivate::getDevices()
   Vector<DevicePtr> devices;
   devices.reserve(10);
   
-  _iterateUDevUSB([&devices](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)
+  _iterateUDevUSB([&devices](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)
   {
-    devices.push_back(DevicePtr(new USBDevice(vendorID, productID, serial, -1, "", serialIndex)));
+    devices.push_back(DevicePtr(new USBDevice(vendorID, productID, serial, -1, description, serialIndex)));
   });
   
   return devices;
@@ -57,7 +57,7 @@ libusb_device *USBSystemPrivate::getDeviceHandle(const USBDevice &usbd)
   return selected;
 }
 
-bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)> process)
+bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)> process)
 {
   udev *udevHandle = udev_new();
   
@@ -99,7 +99,7 @@ bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, ui
     struct udev_device *dev = udev_device_new_from_syspath(udevHandle, path);
     
     uint16_t vendorID, productID;
-    String serial, serialIndex;
+    String serial, serialIndex, description, productDesc;
     char *endptr;
     
     vendorID = strtol(udev_device_get_sysattr_value(dev, "idVendor"), &endptr, 16);
@@ -109,10 +109,23 @@ bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, ui
     serialIndex += ":";
     serialIndex += udev_device_get_sysattr_value(dev, "devpath");
     
+    if(udev_device_get_sysattr_value(dev, "manufacturer"))
+      description = udev_device_get_sysattr_value(dev, "manufacturer");
+    
+    if(udev_device_get_sysattr_value(dev, "product"))
+      productDesc = udev_device_get_sysattr_value(dev, "product");
+    
+    if(productDesc.size())
+    {
+      if(description.size())
+        description += " - ";
+      description += productDesc;
+    }
+    
     const char *s = udev_device_get_sysattr_value(dev, "serial");
     if(s) serial = s;
     
-    process(dev, vendorID, productID, serial, serialIndex);
+    process(dev, vendorID, productID, serial, serialIndex, description);
     
     udev_device_unref(dev);
   }
@@ -128,7 +141,8 @@ bool USBSystemPrivate::getBusDevNumbers(const USBDevice &usbd, uint8_t &busNumbe
   busNumber = devNumber = 0;
   bool gotDevice = false;
   
-  _iterateUDevUSB([&gotDevice, &busNumber, &devNumber, &usbd](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)
+  _iterateUDevUSB([&gotDevice, &busNumber, &devNumber, &usbd](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex,
+    const String &description)
   {
     char *endptr;
     if(!gotDevice && usbd.vendorID() == vendorID && usbd.productID() == productID &&

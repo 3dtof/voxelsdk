@@ -20,7 +20,7 @@ class USBSystemPrivate
 protected:
   libusb_context *_context = 0;
   
-  bool _iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex)> process);
+  bool _iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)> process);
   
 public:
   USBSystemPrivate()

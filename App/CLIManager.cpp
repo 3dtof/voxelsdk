@@ -282,7 +282,12 @@ void CLIManager::_list(const Vector<String> &tokens)
   
   for(auto &d: devices)
   {
-    std::cout << d->id() << std::endl;
+    std::cout << d->id();
+    
+    if(d->description().size())
+      std::cout << " -- " << d->description();
+    
+    std::cout << std::endl;
   }
 }
 
