@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
   
   TimeStampType lastTimeStamp = 0;
   
-   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+   depthCamera->registerCallback(DepthCamera::FRAME_RAW_FRAME_UNPROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameType c) {
      const RawDataFrame *d = dynamic_cast<const RawDataFrame *>(&frame);
      
      if(!d)
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
        dc.stop();
    });
   
-//   depthCamera->registerCallback(DepthCamera::CALLBACK_RAW_FRAME_PROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+//   depthCamera->registerCallback(DepthCamera::FRAME_RAW_FRAME_PROCESSED, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameType c) {
 //     const ToFRawFrame *d = dynamic_cast<const ToFRawFrame *>(&frame);
 //     
 //     if(!d)
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 //       dc.stop();
 //   });
   
-//   depthCamera->registerCallback(DepthCamera::CALLBACK_DEPTH_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+//   depthCamera->registerCallback(DepthCamera::FRAME_DEPTH_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameType c) {
 //     const DepthFrame *d = dynamic_cast<const DepthFrame *>(&frame);
 //     
 //     if(!d)
@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 //       dc.stop();
 //   });
   
-  //depthCamera->registerCallback(DepthCamera::CALLBACK_XYZI_POINT_CLOUD_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameCallBackType c) {
+  //depthCamera->registerCallback(DepthCamera::FRAME_XYZI_POINT_CLOUD_FRAME, [&](DepthCamera &dc, const Frame &frame, DepthCamera::FrameType c) {
   //  const XYZIPointCloudFrame *d = dynamic_cast<const XYZIPointCloudFrame *>(&frame);
   //  
   //  if(!d)

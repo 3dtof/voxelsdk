@@ -18,6 +18,8 @@
 
 #include <PointCloudTransform.h>
 
+#include <Filter/FrameFilterSet.h>
+
 
 #define MAX_FRAME_BUFFERS 2
 
@@ -27,16 +29,16 @@ namespace Voxel
 class VOXEL_EXPORT DepthCamera
 {
 public:
-  enum FrameCallBackType
+  enum FrameType
   {
-    CALLBACK_RAW_FRAME_UNPROCESSED = 0,
-    CALLBACK_RAW_FRAME_PROCESSED = 1,
-    CALLBACK_DEPTH_FRAME = 2,
-    CALLBACK_XYZI_POINT_CLOUD_FRAME = 3,
-    CALLBACK_TYPE_COUNT = 4 // This is just used for number of callback types
+    FRAME_RAW_FRAME_UNPROCESSED = 0,
+    FRAME_RAW_FRAME_PROCESSED = 1,
+    FRAME_DEPTH_FRAME = 2,
+    FRAME_XYZI_POINT_CLOUD_FRAME = 3,
+    FRAME_TYPE_COUNT = 4 // This is just used for number of callback types
   };
   
-  typedef Function<void (DepthCamera &camera, const Frame &frame, FrameCallBackType callBackType)> CallbackType;
+  typedef Function<void (DepthCamera &camera, const Frame &frame, FrameType callBackType)> CallbackType;
   
 protected:
   DevicePtr _device;
@@ -55,17 +57,20 @@ protected:
   FrameBufferManager<DepthFrame> _depthFrameBuffers;
   FrameBufferManager<PointCloudFrame> _pointCloudBuffers;
   
+  FrameFilterSet<RawFrame> _unprocessedFrameFilters, _processedFrameFilters;
+  
+  FrameFilterSet<DepthFrame> _depthFrameFilters;
   
   bool _addParameters(const Vector<ParameterPtr> &params);
   
-  CallbackType _callback[CALLBACK_TYPE_COUNT];
+  CallbackType _callback[FRAME_TYPE_COUNT];
   
   uint32_t _callBackTypesRegistered = 0;
   
   ThreadPtr _captureThread;
   
   // Callback the registered function for 'type' if present and decide whether continue processing or not
-  virtual bool _callbackAndContinue(uint32_t &callBackTypesToBeCalled, FrameCallBackType type, const Frame &frame);
+  virtual bool _callbackAndContinue(uint32_t &callBackTypesToBeCalled, FrameType type, const Frame &frame);
   
   virtual bool _start() = 0;
   virtual bool _stop() = 0;
@@ -111,7 +116,9 @@ protected:
 public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
-  _parameterInit(true), _running(false)
+  _parameterInit(true), _running(false),
+  _unprocessedFrameFilters(_rawFrameBuffers), _processedFrameFilters(_rawFrameBuffers),
+  _depthFrameFilters(_depthFrameBuffers)
   {
     _makeID();
   }
@@ -155,8 +162,12 @@ public:
   
   inline bool getFieldOfView(float &fovHalfAngle) const;
   
-  virtual bool registerCallback(FrameCallBackType type, CallbackType f);
+  virtual bool registerCallback(FrameType type, CallbackType f);
   virtual bool clearCallback();
+  
+  virtual int addFilter(FrameFilterPtr p, FrameType frameType);
+  virtual bool removeFilter(int filterID, FrameType frameType);
+  virtual bool removeAllFilters(FrameType frameType);
   
   bool start();
   bool stop();

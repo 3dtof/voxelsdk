@@ -33,6 +33,8 @@ public:
   virtual ~Frame() {}
 };
 
+typedef Ptr<Frame> FramePtr;
+
 class VOXEL_EXPORT DepthFrame: public Frame
 {
 public:

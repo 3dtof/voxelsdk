@@ -1080,8 +1080,8 @@ void CLIManager::_save(const Vector<String> &tokens)
   
   if(tokens[1] == "raw")
   {
-    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameCallBackType type) -> void {
-      if(type != DepthCamera::CALLBACK_RAW_FRAME_UNPROCESSED)
+    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameType type) -> void {
+      if(type != DepthCamera::FRAME_RAW_FRAME_UNPROCESSED)
         return;
       
       const RawDataFrame *d = dynamic_cast<const RawDataFrame *>(&frame);
@@ -1118,8 +1118,8 @@ void CLIManager::_save(const Vector<String> &tokens)
   } 
   else if(tokens[1] == "raw_processed")
   {
-    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameCallBackType type) {
-      if(type != DepthCamera::CALLBACK_RAW_FRAME_PROCESSED)
+    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameType type) {
+      if(type != DepthCamera::FRAME_RAW_FRAME_PROCESSED)
         return;
       
       const ToFRawFrame *d = dynamic_cast<const ToFRawFrame *>(&frame);

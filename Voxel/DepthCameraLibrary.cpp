@@ -75,7 +75,7 @@ bool DepthCameraLibrary::load()
 
   if(!_libraryPrivate->handle) 
   {
-    logger(LOG_ERROR) << "DepthCameraFactory: Failed to load " << _libName << ". Error: " << dynamicLoadError() << endl;
+    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load " << _libName << ". Error: " << dynamicLoadError() << endl;
     return false;
   }
   return true;
@@ -99,7 +99,7 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
   String error;
   if ((error = dynamicLoadError()).size())  
   {
-    logger(LOG_ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
+    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
     return 0;
   }
   
@@ -108,6 +108,33 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
 
   return p;
 }
+
+FilterFactoryPtr DepthCameraLibrary::getFilterFactory()
+{
+  if(!isLoaded())
+    return 0;
+  
+  char symbol[] = "getFilterFactory";
+  
+  #ifdef LINUX
+  GetFilterFactory g = (GetFilterFactory)dlsym(_libraryPrivate->handle, symbol);
+  #elif defined(WINDOWS)
+  GetFilterFactory g = (GetFilterFactory)GetProcAddress(_libraryPrivate->handle, symbol);
+  #endif
+  
+  String error;
+  if ((error = dynamicLoadError()).size())  
+  {
+    logger(LOG_WARNING) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
+    return 0;
+  }
+  
+  FilterFactoryPtr p;
+  (*g)(p);
+  
+  return p;
+}
+
 
 int DepthCameraLibrary::getABIVersion()
 {

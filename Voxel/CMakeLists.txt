@@ -56,7 +56,6 @@ install(FILES
   DepthCameraFactory.h
   Device.h
   Downloader.h
-  Filter.h
   Frame.h
   FrameBuffer.h
   Logger.h
@@ -76,6 +75,17 @@ install(FILES
   PointCloudTransform.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
+  COMPONENT lib_dev
+)
+
+install(FILES
+  Filter/Filter.h
+  Filter/IIRFilter.h
+  Filter/MedianFilter.h
+  Filter/TemporalMedianFilter.h
+  Filter/BilateralFilter.h
+  Filter/SmoothFilter.h
+  DESTINATION include/voxel/Filter
   COMPONENT lib_dev
 )
 

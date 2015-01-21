@@ -37,14 +37,14 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
 
 bool DepthCamera::clearCallback()
 {
-  for(auto i = 0; i < CALLBACK_TYPE_COUNT; i++)
+  for(auto i = 0; i < FRAME_TYPE_COUNT; i++)
     _callback[i] = nullptr;
   return true;
 }
 
-bool DepthCamera::registerCallback(FrameCallBackType type, CallbackType f)
+bool DepthCamera::registerCallback(FrameType type, CallbackType f)
 {
-  if(type < CALLBACK_TYPE_COUNT)
+  if(type < FRAME_TYPE_COUNT)
   {
     if(_callback[type])
       logger(LOG_WARNING) << "DepthCamera: " << id() << " already has a callback for this type = " << type << ". Overwriting it now." << std::endl;
@@ -57,14 +57,14 @@ bool DepthCamera::registerCallback(FrameCallBackType type, CallbackType f)
   return false;
 }
 
-bool DepthCamera::_callbackAndContinue(uint32_t &callBackTypesToBeCalled, DepthCamera::FrameCallBackType type, const Frame &frame)
+bool DepthCamera::_callbackAndContinue(uint32_t &callBackTypesToBeCalled, DepthCamera::FrameType type, const Frame &frame)
 {
-  if((callBackTypesToBeCalled | type) && _callback[type])
+  if((callBackTypesToBeCalled | (1 << type)) && _callback[type])
   {
     _callback[type](*this, frame, type);
   }
   
-  callBackTypesToBeCalled &= ~type;
+  callBackTypesToBeCalled &= ~(1 << type);
   
   return callBackTypesToBeCalled != 0;
 }
@@ -85,7 +85,7 @@ void DepthCamera::_captureLoop()
       continue;
     }
     
-    if(_callBackTypesRegistered == 0 && _callBackTypesRegistered == CALLBACK_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
+    if(_callBackTypesRegistered == 0 || _callBackTypesRegistered == FRAME_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
     {
       auto f = _rawFrameBuffers.get();
       
@@ -95,20 +95,42 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      if(_callback[CALLBACK_RAW_FRAME_UNPROCESSED])
-        _callback[CALLBACK_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**f), CALLBACK_RAW_FRAME_UNPROCESSED);
+      if(_callback[FRAME_RAW_FRAME_UNPROCESSED])
+      {
+        FrameFilterSet<RawFrame>::FrameSequence _frameBuffers;
+        _frameBuffers.push_front(f);
+        
+        if(!_unprocessedFrameFilters.applyFilter(_frameBuffers))
+        {
+          logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on raw unprocessed frame" << std::endl;
+          consecutiveCaptureFails++;
+          continue;
+        }
+        
+        _callback[FRAME_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**_frameBuffers.begin()), FRAME_RAW_FRAME_UNPROCESSED);
+      }
       consecutiveCaptureFails = 0;
     }
     else
     {
-      RawFramePtr f1;
-      if(!_captureRawUnprocessedFrame(f1))
+      auto f1 = _rawFrameBuffers.get();
+      if(!_captureRawUnprocessedFrame(*f1))
       {
         consecutiveCaptureFails++;
         continue;
       }
       
-      if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_RAW_FRAME_UNPROCESSED, *f1))
+      FrameFilterSet<RawFrame>::FrameSequence _unprocessedFrameBuffers;
+      _unprocessedFrameBuffers.push_front(f1);
+      
+      if(!_unprocessedFrameFilters.applyFilter(_unprocessedFrameBuffers))
+      {
+        logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on raw unprocessed frame" << std::endl;
+        consecutiveCaptureFails++;
+        continue;
+      }
+      
+      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_RAW_FRAME_UNPROCESSED, ***_unprocessedFrameBuffers.begin()))
       {
         consecutiveCaptureFails = 0;
         continue;
@@ -116,13 +138,23 @@ void DepthCamera::_captureLoop()
       
       auto f = _rawFrameBuffers.get();
       
-      if(!_processRawFrame(f1, *f))
+      if(!_processRawFrame(*f1, *f))
       {
         consecutiveCaptureFails++;
         continue;
       }
       
-      if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_RAW_FRAME_PROCESSED, **f))
+      FrameFilterSet<RawFrame>::FrameSequence _processedFrameBuffers;
+      _processedFrameBuffers.push_front(f);
+      
+      if(!_processedFrameFilters.applyFilter(_processedFrameBuffers))
+      {
+        logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on raw processed frame" << std::endl;
+        consecutiveCaptureFails++;
+        continue;
+      }
+      
+      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_RAW_FRAME_PROCESSED, ***_processedFrameBuffers.begin()))
       {
         consecutiveCaptureFails = 0;
         continue;
@@ -136,7 +168,17 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      if(!_callbackAndContinue(callBackTypesToBeCalled, CALLBACK_DEPTH_FRAME, **d))
+      FrameFilterSet<DepthFrame>::FrameSequence _depthFrameBuffers;
+      _depthFrameBuffers.push_front(d);
+      
+      if(!_depthFrameFilters.applyFilter(_depthFrameBuffers))
+      {
+        logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on depth frame" << std::endl;
+        consecutiveCaptureFails++;
+        continue;
+      }
+      
+      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_DEPTH_FRAME, ***_depthFrameBuffers.begin()))
       {
         consecutiveCaptureFails = 0;
         continue;
@@ -150,7 +192,7 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      _callbackAndContinue(callBackTypesToBeCalled, CALLBACK_XYZI_POINT_CLOUD_FRAME, **p);
+      _callbackAndContinue(callBackTypesToBeCalled, FRAME_XYZI_POINT_CLOUD_FRAME, **p);
       consecutiveCaptureFails = 0;
     }
   }
@@ -315,6 +357,51 @@ bool DepthCamera::reset()
   _programmer = nullptr;
   _streamer = nullptr;
   return true;
+}
+
+int DepthCamera::addFilter(FrameFilterPtr p, FrameType frameType)
+{
+  if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
+    return _unprocessedFrameFilters.addFilter(p);
+  else if(frameType == FRAME_RAW_FRAME_PROCESSED)
+    return _processedFrameFilters.addFilter(p);
+  else if(frameType == FRAME_DEPTH_FRAME)
+    return _depthFrameFilters.addFilter(p);
+  else
+  {
+    logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
+    return -1;
+  }
+}
+
+bool DepthCamera::removeAllFilters(FrameType frameType)
+{
+  if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
+    return _unprocessedFrameFilters.removeAllFilters();
+  else if(frameType == FRAME_RAW_FRAME_PROCESSED)
+    return _processedFrameFilters.removeAllFilters();
+  else if(frameType == FRAME_DEPTH_FRAME)
+    return _depthFrameFilters.removeAllFilters();
+  else
+  {
+    logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
+    return false;
+  }
+}
+
+bool DepthCamera::removeFilter(int filterID, FrameType frameType)
+{
+  if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
+    return _unprocessedFrameFilters.removeFilter(filterID);
+  else if(frameType == FRAME_RAW_FRAME_PROCESSED)
+    return _processedFrameFilters.removeFilter(filterID);
+  else if(frameType == FRAME_DEPTH_FRAME)
+    return _depthFrameFilters.removeFilter(filterID);
+  else
+  {
+    logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
+    return false;
+  }
 }
 
 
