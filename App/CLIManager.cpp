@@ -24,21 +24,25 @@ namespace Voxel
 CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
 {
   _commands = Map<String, Command>({
-    {"list",      Command(_H(&CLIManager::_listHelp),         _P(&CLIManager::_list),         nullptr)},
-    {"status",    Command(_H(&CLIManager::_currentHelp),      _P(&CLIManager::_current),      nullptr)},
-    {"connect",   Command(_H(&CLIManager::_connectHelp),      _P(&CLIManager::_connect),      _C(&CLIManager::_connectCompletion))},
-    {"start",     Command(_H(&CLIManager::_startHelp),        _P(&CLIManager::_start),        nullptr)},
-    {"stop",      Command(_H(&CLIManager::_stopHelp),         _P(&CLIManager::_stop),         nullptr)},
-    {"getr",      Command(_H(&CLIManager::_getRegisterHelp),  _P(&CLIManager::_getRegister),  nullptr)},
-    {"setr",      Command(_H(&CLIManager::_setRegisterHelp),  _P(&CLIManager::_setRegister),  nullptr)},
-    {"get",       Command(_H(&CLIManager::_getParameterHelp), _P(&CLIManager::_getParameter), _C(&CLIManager::_getParameterCompletion))},
-    {"set",       Command(_H(&CLIManager::_setParameterHelp), _P(&CLIManager::_setParameter), _C(&CLIManager::_setParameterCompletion))},
-    {"save",      Command(_H(&CLIManager::_saveHelp),         _P(&CLIManager::_save),         _C(&CLIManager::_saveCompletion))},
-    {"cap",       Command(_H(&CLIManager::_capabilitiesHelp), _P(&CLIManager::_capabilities), _C(&CLIManager::_capabilitiesCompletion))},
-    {"help",      Command(_H(&CLIManager::_helpHelp),         _P(&CLIManager::_help),         nullptr)},
-    {"disconnect",Command(_H(&CLIManager::_disconnectHelp),   _P(&CLIManager::_disconnect),   nullptr)},
-    {"reset",     Command(_H(&CLIManager::_resetHelp),        _P(&CLIManager::_reset),        nullptr)},
-    {"exit",      Command(_H(&CLIManager::_exitHelp),         _P(&CLIManager::_exit),         nullptr)},
+    {"list",           Command(_H(&CLIManager::_listHelp),          _P(&CLIManager::_list),          nullptr)},
+    {"status",         Command(_H(&CLIManager::_currentHelp),       _P(&CLIManager::_current),       nullptr)},
+    {"connect",        Command(_H(&CLIManager::_connectHelp),       _P(&CLIManager::_connect),       _C(&CLIManager::_connectCompletion))},
+    {"start",          Command(_H(&CLIManager::_startHelp),         _P(&CLIManager::_start),         nullptr)},
+    {"stop",           Command(_H(&CLIManager::_stopHelp),          _P(&CLIManager::_stop),          nullptr)},
+    {"getr",           Command(_H(&CLIManager::_getRegisterHelp),   _P(&CLIManager::_getRegister),   nullptr)},
+    {"setr",           Command(_H(&CLIManager::_setRegisterHelp),   _P(&CLIManager::_setRegister),   nullptr)},
+    {"get",            Command(_H(&CLIManager::_getParameterHelp),  _P(&CLIManager::_getParameter),  _C(&CLIManager::_getParameterCompletion))},
+    {"set",            Command(_H(&CLIManager::_setParameterHelp),  _P(&CLIManager::_setParameter),  _C(&CLIManager::_setParameterCompletion))},
+    {"save",           Command(_H(&CLIManager::_saveHelp),          _P(&CLIManager::_save),          _C(&CLIManager::_saveCompletion))},
+    {"cap",            Command(_H(&CLIManager::_capabilitiesHelp),  _P(&CLIManager::_capabilities),  _C(&CLIManager::_capabilitiesCompletion))},
+    {"help",           Command(_H(&CLIManager::_helpHelp),          _P(&CLIManager::_help),          nullptr)},
+    {"disconnect",     Command(_H(&CLIManager::_disconnectHelp),    _P(&CLIManager::_disconnect),    nullptr)},
+    {"reset",          Command(_H(&CLIManager::_resetHelp),         _P(&CLIManager::_reset),         nullptr)},
+    {"exit",           Command(_H(&CLIManager::_exitHelp),          _P(&CLIManager::_exit),          nullptr)},
+    {"filters",        Command(_H(&CLIManager::_filtersHelp),       _P(&CLIManager::_filters),       nullptr)},
+    {"addfilter",      Command(_H(&CLIManager::_addFilterHelp),     _P(&CLIManager::_addFilter),     _C(&CLIManager::_addFilterCompletion))},
+    {"removefilter",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
+    {"setfilterparam", Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
   });
   
   _specialParameters = Map<String, Command>({
@@ -226,6 +230,15 @@ void CLIManager::_getParameterHelp()  { std::cout << "get <param>\t\t  Get param
 void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]\t  Get capabilities of the current depth camera.\n"
                                                   << "\t\t\t  Optionally a parameter name can be given to list only that parameter details given by name <param>.\n"
                                                   << "\t\t\t  A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
+void CLIManager::_filtersHelp()       { std::cout << "filters\t\t\t  List available filters and currently in use filters" << std::endl; }
+void CLIManager::_addFilterHelp()     { std::cout << "addfilter <frametype> <name> <pos>\t  Add filter <name> for <frametype> at <pos>.\n"
+                                                  << "\t\t\t Set <pos> = -1 to add the end.\n"
+                                                  << "\t\t\t <frametype> can be raw/raw_processed/depth."<< std::endl; }
+void CLIManager::_removeFilterHelp()  { std::cout << "removefilter <frametype> <pos>\t  Remove filter with id <filterid> for <frametype>.\n"
+                                                  << "\t\t\t <frametype> can be raw/raw_processed/depth."<< std::endl; }
+void CLIManager::_setFilterParamHelp(){ std::cout << "setfilterparam <frametype> <filterid> <param> = <value>  Set parameter <param> to <value> for filter\n"
+                                                  << "\t\t\t with id <filterid> present for frame type <frametype>.\n"
+                                                  << "\t\t\t <frametype> can be raw/raw_processed/depth" << std::endl; }
 void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>\t  Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
 void CLIManager::_saveHelp()          { std::cout << "save type count filename  Save current 'count' number of frames.\n"
                                                   <<  "\t\t\t  'type' = raw/raw_processed/depth/pointcloud" << std::endl; }
@@ -339,7 +352,7 @@ void CLIManager::_connect(const Vector<String> &tokens)
   logger(LOG_ERROR) << "Could not find a valid device with specified ID" << std::endl;
 }
 
-void CLIManager::_current(const Vector< String > &tokens)
+void CLIManager::_current(const Vector<String> &tokens)
 {
   if(_currentDepthCamera)
   {
@@ -1493,7 +1506,7 @@ void CLIManager::_videoMode(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_reset(const Vector< String > &tokens)
+void CLIManager::_reset(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -1506,6 +1519,340 @@ void CLIManager::_reset(const Vector< String > &tokens)
   _viewer->removeDepthCamera();
   _sys.disconnect(_currentDepthCamera, true);
   _currentDepthCamera = nullptr;
+}
+
+template <typename T>
+void CLIManager::_showFilterSet(const FilterSet<T> &filterSet)
+{
+  for(auto i = filterSet.begin(); i != filterSet.end(); i++)
+  {
+    const FilterPtr &p = *i;
+    std::cout << i.index << ": " << p->name();
+    
+    auto &param = p->parameters();
+    
+    if(param.size())
+    {
+      for(auto &pr: param)
+      {
+        std::cout << ", " << pr.first << " = ";
+        
+        BoolFilterParameter *boolParam = dynamic_cast<BoolFilterParameter *>(pr.second.get());
+        EnumFilterParameter *enumParam = dynamic_cast<EnumFilterParameter *>(pr.second.get());
+        SignedFilterParameter *signedParam = dynamic_cast<SignedFilterParameter *>(pr.second.get());
+        UnsignedFilterParameter *unsignedParam = dynamic_cast<UnsignedFilterParameter *>(pr.second.get());
+        FloatFilterParameter *floatParam = dynamic_cast<FloatFilterParameter *>(pr.second.get());
+        
+        if(boolParam)
+        {
+          bool v;
+          boolParam->get(v);
+          std::cout << (v?"true":"false");
+          
+          const String &m = boolParam->valueMeaning()[v];
+          
+          if(m.size())
+            std::cout << " (" << m << ")";
+        }
+        
+        if(enumParam)
+        {
+          int v;
+          enumParam->get(v);
+          
+          std::cout << v;
+          
+          const String &m = boolParam->valueMeaning()[v];
+          
+          if(m.size())
+            std::cout << " (" << m << ")";
+        }
+        
+        if(signedParam)
+        {
+          int v;
+          signedParam->get(v);
+          
+          std::cout << v;
+        }
+        
+        if(unsignedParam)
+        {
+          uint v;
+          unsignedParam->get(v);
+          
+          std::cout << v;
+        }
+        
+        if(floatParam)
+        {
+          float v;
+          floatParam->get(v);
+          
+          std::cout << v;
+        }
+      }
+    }
+    std::cout << std::endl;
+  }
+}
+
+
+void CLIManager::_filters(const Vector<String> &tokens)
+{
+  const auto &m = _sys.getSupportedFilters();
+  
+  if(m.size())
+  {
+    std::cout << "Supported Filters:" << std::endl;
+    
+    for(auto &f: m)
+      std::cout << f << std::endl;
+  }
+  
+  if(!_currentDepthCamera)
+    return;
+  
+  auto &u = _currentDepthCamera->getUnprocessedRawFilterSet();
+  
+  if(u.size())
+  {
+    std::cout << "\nFilters for unprocessed raw frame:" << std::endl;
+    
+    _showFilterSet(u);
+  }
+  
+  auto &u1 = _currentDepthCamera->getProcessedRawFilterSet();
+  
+  if(u1.size())
+  {
+    std::cout << "\nFilters for processed raw frame:" << std::endl;
+    
+    _showFilterSet(u1);
+  }
+  
+  auto &u2 = _currentDepthCamera->getDepthFilterSet();
+  
+  if(u2.size())
+  {
+    std::cout << "\nFilters for depth frame:" << std::endl;
+    
+    _showFilterSet(u2);
+  }
+}
+
+void CLIManager::_addFilter2(const String &name, int position, DepthCamera::FrameType type)
+{
+  FilterPtr p = _sys.createFilter(name, type);
+  
+  if(!p)
+  {
+    logger(LOG_ERROR) << "Could not get filter with name '" << name << "'" << std::endl;
+    return;
+  }
+  
+  int id = _currentDepthCamera->addFilter(p, type, position);
+  
+  if(id < 0)
+  {
+    logger(LOG_ERROR) << "Could not add filter with name '" << name << "'" << std::endl;
+    return;
+  }
+  
+  std::cout << "Successfully added filter '" << name << "'. ID = " << id << std::endl;
+}
+
+
+void CLIManager::_addFilter(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 4)
+  {
+    logger(LOG_ERROR) << "Missing parameters" << std::endl;
+    _addFilterHelp();
+    return;
+  }
+  
+  if(tokens[1] == "raw")
+    _addFilter2(tokens[2], atoi(tokens[3].c_str()), DepthCamera::FRAME_RAW_FRAME_UNPROCESSED);
+  else if(tokens[1] == "raw_processed")
+    _addFilter2(tokens[2], atoi(tokens[3].c_str()), DepthCamera::FRAME_RAW_FRAME_PROCESSED);
+  else if(tokens[1] == "depth")
+    _addFilter2(tokens[2], atoi(tokens[3].c_str()), DepthCamera::FRAME_DEPTH_FRAME);
+  else
+  {
+    logger(LOG_ERROR) << "Frame type '" << tokens[1] << "' is not supported" << std::endl;
+    return;
+  }
+}
+
+void CLIManager::_addFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+
+}
+
+void CLIManager::_removeFilter2(int filterID, DepthCamera::FrameType type)
+{
+  if(!_currentDepthCamera->removeFilter(filterID, type))
+  {
+    logger(LOG_ERROR) << "Failed to remove filter with ID '" << filterID << "'" << std::endl;
+    return;
+  }
+  
+  std::cout << "Successfully removed filter" << std::endl;
+}
+
+
+void CLIManager::_removeFilter(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 3)
+  {
+    logger(LOG_ERROR) << "Missing parameters" << std::endl;
+    _removeFilterHelp();
+    return;
+  }
+  
+  if(tokens[1] == "raw")
+    _removeFilter2(atoi(tokens[2].c_str()), DepthCamera::FRAME_RAW_FRAME_UNPROCESSED);
+  else if(tokens[1] == "raw_processed")
+    _removeFilter2(atoi(tokens[2].c_str()), DepthCamera::FRAME_RAW_FRAME_PROCESSED);
+  else if(tokens[1] == "depth")
+    _removeFilter2(atoi(tokens[2].c_str()), DepthCamera::FRAME_DEPTH_FRAME);
+  else
+  {
+    logger(LOG_ERROR) << "Frame type '" << tokens[1] << "' is not supported" << std::endl;
+    return;
+  }
+}
+
+void CLIManager::_removeFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+
+}
+
+void CLIManager::_setFilterParam2(int filterID, DepthCamera::FrameType type, const String &paramName, const String &paramValue)
+{
+  FilterPtr p = _currentDepthCamera->getFilter(filterID, type);
+  
+  if(!p)
+  {
+    logger(LOG_ERROR) << "No valid filter found for ID '" << filterID << "'" << std::endl;
+    return;
+  }
+  
+  auto param = p->getParam(paramName);
+  
+  if(!param)
+  {
+    logger(LOG_ERROR) << "No valid parameter '" << paramName << "' found for filter ID '" << filterID << "'" << std::endl;
+    return;
+  }
+  
+  BoolFilterParameter *boolParam = dynamic_cast<BoolFilterParameter *>(param.get());
+  EnumFilterParameter *enumParam = dynamic_cast<EnumFilterParameter *>(param.get());
+  SignedFilterParameter *signedParam = dynamic_cast<SignedFilterParameter *>(param.get());
+  UnsignedFilterParameter *unsignedParam = dynamic_cast<UnsignedFilterParameter *>(param.get());
+  FloatFilterParameter *floatParam = dynamic_cast<FloatFilterParameter *>(param.get());
+  
+  if(boolParam)
+  {
+    bool v;
+    
+    if(paramValue == "true" || paramValue == "1")
+      v = true;
+    else
+      v = false;
+    
+    if(!p->set(paramName, v))
+      logger(LOG_ERROR) << "Failed to set parameter '" << paramName << "' for filter with ID '" << filterID << "'" << std::endl;
+    else
+      std::cout << "Set " << paramName << " = " << paramValue << " successfully for filter with ID '" << filterID << "'" << std::endl;
+  }
+  
+  if(enumParam)
+  {
+    int v = atoi(paramValue.c_str());
+    
+    if(!p->set(paramName, v))
+      logger(LOG_ERROR) << "Failed to set parameter '" << paramName << "' for filter with ID '" << filterID << "'" << std::endl;
+    else
+      std::cout << "Set " << paramName << " = " << paramValue << " successfully for filter with ID '" << filterID << "'" << std::endl;
+  }
+  
+  if(signedParam)
+  {
+    int v = atoi(paramValue.c_str());
+    
+    if(!p->set(paramName, v))
+      logger(LOG_ERROR) << "Failed to set parameter '" << paramName << "' for filter with ID '" << filterID << "'" << std::endl;
+    else
+      std::cout << "Set " << paramName << " = " << paramValue << " successfully for filter with ID '" << filterID << "'" << std::endl;
+  }
+  
+  if(unsignedParam)
+  {
+    uint v = atoi(paramValue.c_str());
+    
+    if(!p->set(paramName, v))
+      logger(LOG_ERROR) << "Failed to set parameter '" << paramName << "' for filter with ID '" << filterID << "'" << std::endl;
+    else
+      std::cout << "Set " << paramName << " = " << paramValue << " successfully for filter with ID '" << filterID << "'" << std::endl;
+  }
+  
+  if(floatParam)
+  {
+    float v = atof(paramValue.c_str());
+    
+    if(!p->set(paramName, v))
+      logger(LOG_ERROR) << "Failed to set parameter '" << paramName << "' for filter with ID '" << filterID << "'" << std::endl;
+    else
+      std::cout << "Set " << paramName << " = " << paramValue << " successfully for filter with ID '" << filterID << "'" << std::endl;
+  }
+}
+
+
+void CLIManager::_setFilterParam(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 6)
+  {
+    logger(LOG_ERROR) << "Missing parameters" << std::endl;
+    _setFilterParamHelp();
+    return;
+  }
+  
+  if(tokens[1] == "raw")
+    _setFilterParam2(atoi(tokens[2].c_str()), DepthCamera::FRAME_RAW_FRAME_UNPROCESSED, tokens[3], tokens[5]);
+  else if(tokens[1] == "raw_processed")
+    _setFilterParam2(atoi(tokens[2].c_str()), DepthCamera::FRAME_RAW_FRAME_PROCESSED, tokens[3], tokens[5]);
+  else if(tokens[1] == "depth")
+    _setFilterParam2(atoi(tokens[2].c_str()), DepthCamera::FRAME_DEPTH_FRAME, tokens[3], tokens[5]);
+  else
+  {
+    logger(LOG_ERROR) << "Frame type '" << tokens[1] << "' is not supported" << std::endl;
+    return;
+  }
+}
+
+void CLIManager::_setFilterParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+
 }
 
 

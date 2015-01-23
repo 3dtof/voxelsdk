@@ -117,6 +117,28 @@ protected:
   void _disconnect(const Vector<String> &tokens);
   void _disconnectHelp();
   
+  
+  template <typename T>
+  void _showFilterSet(const FilterSet<T> &filterSet);
+  
+  void _filters(const Vector<String> &tokens);
+  void _filtersHelp();
+  
+  void _addFilter2(const String &name, int position, DepthCamera::FrameType type);
+  void _addFilter(const Vector<String> &tokens);
+  void _addFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _addFilterHelp();
+  
+  void _removeFilter2(int filterID, DepthCamera::FrameType type);
+  void _removeFilter(const Vector<String> &tokens);
+  void _removeFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _removeFilterHelp();
+  
+  void _setFilterParam2(int filterID, DepthCamera::FrameType type, const String &paramName, const String &paramValue);
+  void _setFilterParam(const Vector<String> &tokens);
+  void _setFilterParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _setFilterParamHelp();
+  
 public:
   CLIManager(CameraSystem &sys);
   

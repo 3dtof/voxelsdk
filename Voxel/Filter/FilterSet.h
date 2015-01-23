@@ -20,6 +20,8 @@ protected:
   int _filterCounter;
   Map<int, FilterPtr> _filters;
   
+  mutable Mutex _accessMutex;
+  
   FrameBufferManager<FrameType> &_frameBufferManager;
   
 public:  
@@ -37,9 +39,11 @@ public:
   
   // position = -1 => at the end, otherwise at zero-indexed 'position'
   int addFilter(FilterPtr p, int position = -1);
-  
+  FilterPtr getFilter(int index) const;
   bool removeFilter(int index);
   bool removeAllFilters();
+  
+  inline SizeType size() const { return _indices.size(); }
   
   // Populate one entry in 'seq' before calling this function. That entry will be used
   // as input to the first filter and then onwards till the last filter. Each filter will
@@ -50,27 +54,40 @@ public:
   {
   public:
     int i;
-    FilterSet &s;
+    const FilterSet &s;
+    int index;
     
-    Iterator(FilterSet &s, int i = 0): s(s), i(i) {}
+    Iterator(const FilterSet &s, int i = 0): s(s), i(i) 
+    {
+      if(i < s._indices.size())
+        index = s._indices[i];
+    }
     
     inline Iterator &operator++(int) 
     {
       i++;
+      
+      if(i < s._indices.size())
+        index = s._indices[i];
+      
       return *this;
     }
     
     inline Iterator &operator++() 
     {
       i++;
+      
+      if(i < s._indices.size())
+        index = s._indices[i];
+      
       return *this;
     }
     
-    inline FilterPtr operator *()
+    inline const FilterPtr operator *()
     {
       if(i < s._indices.size())
       {
-        return s._filters[s._indices[i]];
+        return s._filters.at(index);
       }
       else
         return nullptr;
@@ -87,12 +104,12 @@ public:
     }
   };
   
-  Iterator begin()
+  Iterator begin() const
   {
     return Iterator(*this, 0); 
   }
   
-  Iterator end()
+  Iterator end() const
   {
     return Iterator(*this, _indices.size());
   }
@@ -101,6 +118,8 @@ public:
 template <typename FrameType>
 int FilterSet<FrameType>::addFilter(FilterPtr p, int position)
 {
+  Lock<Mutex> _(_accessMutex);
+  
   _filters[_filterCounter] = p;
   
   if(position == -1 || position >= _indices.size())
@@ -118,8 +137,24 @@ int FilterSet<FrameType>::addFilter(FilterPtr p, int position)
 }
 
 template <typename FrameType>
+FilterPtr FilterSet<FrameType>::getFilter(int index) const
+{
+  Lock<Mutex> _(_accessMutex);
+  
+  auto x = _filters.find(index);
+  
+  if(x != _filters.end())
+    return x->second;
+  else
+    return nullptr;
+}
+
+
+template <typename FrameType>
 bool FilterSet<FrameType>::removeFilter(int index)
 {
+  Lock<Mutex> _(_accessMutex);
+  
   auto x = _filters.find(index);
   
   if(x != _filters.end())
@@ -128,7 +163,7 @@ bool FilterSet<FrameType>::removeFilter(int index)
     {
       if(_indices[i] == index)
       {
-        //_indices.erase(i);
+        _indices.erase(_indices.begin() + i);
         break;
       }
     }
@@ -144,6 +179,8 @@ bool FilterSet<FrameType>::removeFilter(int index)
 template <typename FrameType>
 bool FilterSet<FrameType>::removeAllFilters()
 {
+  Lock<Mutex> _(_accessMutex);
+  
   _frameBufferManager.setMinimumBufferCount(_frameBufferManager.getMinimumBufferCount() - _filters.size());
   _filters.clear();
   _indices.clear();
@@ -154,6 +191,8 @@ bool FilterSet<FrameType>::removeAllFilters()
 template <typename FrameType>
 bool FilterSet<FrameType>::applyFilter(FrameSequence &seq)
 {
+  Lock<Mutex> _(_accessMutex);
+  
   if(seq.size() < 1)
   {
     logger(LOG_ERROR) << "Require atleast one frame in the sequence, to apply filters" << std::endl;

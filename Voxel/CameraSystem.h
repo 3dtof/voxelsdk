@@ -34,6 +34,8 @@ public:
   
   Vector<DevicePtr> scan();
   
+  Vector<String> getSupportedFilters();
+  
   DepthCameraPtr connect(const DevicePtr &device);
   
   FilterPtr createFilter(const String &name, DepthCamera::FrameType type);

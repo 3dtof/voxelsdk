@@ -12,7 +12,7 @@ namespace Voxel
 IIRFilter::IIRFilter(float gain): Filter("IIRFilter"), _gain(gain)
 {
   _addParameters({
-    FilterParameterPtr(new FloatFilterParameter("gain", "Gain", "IIR gain coefficient", gain, "", 0.1f, 0.99f))
+    FilterParameterPtr(new FloatFilterParameter("gain", "Gain", "IIR gain coefficient", gain, "", 0.0f, 1.0f))
   });
 }
 
@@ -46,7 +46,7 @@ bool IIRFilter::_filter(const T *in, T *out)
   cur = (T *)_current.data();
   
   for(auto i = 0; i < s; i++) 
-    out[i] = _current[i] = _current[i]*(1.0 - _gain) + in[i]*_gain;
+    out[i] = cur[i] = cur[i]*(1.0 - _gain) + in[i]*_gain;
   
   return true;
 }
@@ -84,7 +84,7 @@ bool IIRFilter::filter(const FramePtr &in, FramePtr &out)
       return false;
     }
     
-    logger(LOG_INFO) << "IIRFilter: Applying filter with gain = " << _gain << " to ToFRawFrame id = " << tofFrame->id << std::endl;
+    //logger(LOG_INFO) << "IIRFilter: Applying filter with gain = " << _gain << " to ToFRawFrame id = " << tofFrame->id << std::endl;
     
     uint s = _size.width*_size.height;
     memcpy(o->ambient(), tofFrame->ambient(), s*tofFrame->ambientWordWidth());

@@ -165,8 +165,13 @@ public:
   
   // position = -1 => at the end, otherwise at zero-indexed 'position'
   virtual int addFilter(FilterPtr p, FrameType frameType, int position = -1);
+  virtual FilterPtr getFilter(int filterID, FrameType frameType) const;
   virtual bool removeFilter(int filterID, FrameType frameType);
   virtual bool removeAllFilters(FrameType frameType);
+  
+  inline const FilterSet<RawFrame> &getUnprocessedRawFilterSet() { return _unprocessedFilters; }
+  inline const FilterSet<RawFrame> &getProcessedRawFilterSet() { return _processedFilters; }
+  inline const FilterSet<DepthFrame> &getDepthFilterSet() { return _depthFilters; }
   
   bool start();
   bool stop();

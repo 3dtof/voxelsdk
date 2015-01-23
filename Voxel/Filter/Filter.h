@@ -67,6 +67,7 @@ public:
   virtual bool filter(const FramePtr &in, FramePtr &out) = 0;
   virtual void reset() = 0;
   
+  inline FilterParameterPtr getParam(const String &name) const;
   
   template <typename T>
   bool get(const String &name, T &value);
@@ -76,6 +77,17 @@ public:
   
   virtual ~Filter() {}
 };
+
+FilterParameterPtr Filter::getParam(const String &name) const
+{
+  auto p = _parameters.find(name);
+  
+  if(p != _parameters.end())
+    return p->second;
+  else
+    return nullptr;
+}
+
 
 template <typename T>
 bool Filter::get(const String &name, T &value)

@@ -138,7 +138,7 @@ void DepthCamera::_captureLoop()
       
       auto f = _rawFrameBuffers.get();
       
-      if(!_processRawFrame(*f1, *f))
+      if(!_processRawFrame(**_unprocessedFrameBuffers.begin(), *f))
       {
         consecutiveCaptureFails++;
         continue;
@@ -162,7 +162,7 @@ void DepthCamera::_captureLoop()
       
       auto d = _depthFrameBuffers.get();
       
-      if(!_convertToDepthFrame(*f, *d))
+      if(!_convertToDepthFrame(**_processedFrameBuffers.begin(), *d))
       {
         consecutiveCaptureFails++;
         continue;
@@ -186,7 +186,7 @@ void DepthCamera::_captureLoop()
       
       auto p = _pointCloudBuffers.get();
       
-      if(!_convertToPointCloudFrame(*d, *p))
+      if(!_convertToPointCloudFrame(**_depthFrameBuffers.begin(), *p))
       {
         consecutiveCaptureFails++;
         continue;
@@ -361,7 +361,6 @@ bool DepthCamera::reset()
 
 int DepthCamera::addFilter(FilterPtr p, FrameType frameType, int position)
 {
-  Lock<Mutex> _(_accessMutex);
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
     return _unprocessedFilters.addFilter(p, position);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
@@ -377,7 +376,6 @@ int DepthCamera::addFilter(FilterPtr p, FrameType frameType, int position)
 
 bool DepthCamera::removeAllFilters(FrameType frameType)
 {
-  Lock<Mutex> _(_accessMutex);
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
     return _unprocessedFilters.removeAllFilters();
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
@@ -391,9 +389,24 @@ bool DepthCamera::removeAllFilters(FrameType frameType)
   }
 }
 
+FilterPtr DepthCamera::getFilter(int filterID, DepthCamera::FrameType frameType) const
+{
+  if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
+    return _unprocessedFilters.getFilter(filterID);
+  else if(frameType == FRAME_RAW_FRAME_PROCESSED)
+    return _processedFilters.getFilter(filterID);
+  else if(frameType == FRAME_DEPTH_FRAME)
+    return _depthFilters.getFilter(filterID);
+  else
+  {
+    logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
+    return nullptr;
+  }
+}
+
+
 bool DepthCamera::removeFilter(int filterID, FrameType frameType)
 {
-  Lock<Mutex> _(_accessMutex);
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
     return _unprocessedFilters.removeFilter(filterID);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)

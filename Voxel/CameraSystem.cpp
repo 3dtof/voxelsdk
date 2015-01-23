@@ -160,8 +160,19 @@ bool CameraSystem::addFilterFactory(FilterFactoryPtr filterFactory)
     
     _filterFactories[d.first] = filterFactory;
   }
+  return true;
 }
 
+Vector<String> CameraSystem::getSupportedFilters()
+{
+  Vector<String> f;
+  f.reserve(_filterFactories.size());
+  
+  for(auto &x: _filterFactories)
+    f.push_back(x.first);
+  
+  return f;
+}
 
 
 Vector<DevicePtr> CameraSystem::scan()
