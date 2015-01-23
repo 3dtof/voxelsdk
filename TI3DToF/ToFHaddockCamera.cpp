@@ -402,7 +402,8 @@ bool ToFHaddockCamera::_setFrameSize(const FrameSize &s, bool resetROI)
 bool ToFHaddockCamera::_setBinning(uint rowsToMerge, uint columnsToMerge, VideoMode &videoMode)
 {
   if(!_set(BIN_ROWS_TO_MERGE, rowsToMerge) || !_set(BIN_COLS_TO_MERGE, columnsToMerge) ||
-    !_set(BIN_ROW_COUNT, (uint)videoMode.frameSize.height) || !_set(BIN_COLUMN_COUNT, (uint)videoMode.frameSize.width))
+    !_set(BIN_ROW_COUNT, (uint)videoMode.frameSize.height) || !_set(BIN_COLUMN_COUNT, (uint)videoMode.frameSize.width)
+     || !_set(BINNING_EN, true))
   {
     logger(LOG_ERROR) << "ToFHaddockCamera: Could not set binning related parameters" << std::endl;
     return false;

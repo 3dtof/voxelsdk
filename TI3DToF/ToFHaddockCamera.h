@@ -31,6 +31,7 @@
 #define BIN_COLS_TO_MERGE "cols_to_merge"
 #define BIN_ROW_COUNT "bin_row_count"
 #define BIN_COLUMN_COUNT "bin_col_count"
+#define BINNING_EN "binning_en"
 
 #define ROW_START "row_addr1_start"
 #define ROW_END "row_addr1_end"
