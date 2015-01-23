@@ -28,6 +28,8 @@ add_library(voxel SHARED
   ParameterDMLParser.cpp
   Configuration.cpp
   PointCloudTransform.cpp
+  Filter/Filter.cpp
+  Filter/IIRFilter.cpp
   ${OS_CPP_FILES}
 )
 
@@ -80,6 +82,8 @@ install(FILES
 
 install(FILES
   Filter/Filter.h
+  Filter/FilterParameter.h
+  Filter/FilterFactory.h
   Filter/IIRFilter.h
   Filter/MedianFilter.h
   Filter/TemporalMedianFilter.h

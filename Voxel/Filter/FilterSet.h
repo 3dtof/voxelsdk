@@ -13,12 +13,12 @@ namespace Voxel
 {
 
 template <typename FrameType>
-class FrameFilterSet
+class FilterSet
 {
 protected:
   Vector<int> _indices;
   int _filterCounter;
-  Map<int, FrameFilterPtr> _filters;
+  Map<int, FilterPtr> _filters;
   
   FrameBufferManager<FrameType> &_frameBufferManager;
   
@@ -33,11 +33,9 @@ public:
     }
   };
   
+  FilterSet(FrameBufferManager<FrameType> &m): _frameBufferManager(m), _filterCounter(0) { _indices.reserve(10); }
   
-  
-  FrameFilterSet(FrameBufferManager<FrameType> &m): _frameBufferManager(m), _filterCounter(0) { _indices.reserve(10); }
-  
-  int addFilter(FrameFilterPtr p);
+  int addFilter(FilterPtr p);
   
   bool removeFilter(int index);
   bool removeAllFilters();
@@ -51,9 +49,9 @@ public:
   {
   public:
     int i;
-    FrameFilterSet &s;
+    FilterSet &s;
     
-    Iterator(FrameFilterSet &s, int i = 0): s(s), i(i) {}
+    Iterator(FilterSet &s, int i = 0): s(s), i(i) {}
     
     inline Iterator &operator++(int) 
     {
@@ -67,7 +65,7 @@ public:
       return *this;
     }
     
-    inline FrameFilterPtr operator *()
+    inline FilterPtr operator *()
     {
       if(i < s._indices.size())
       {
@@ -79,7 +77,7 @@ public:
     
     inline bool operator !=(const Iterator &other) const
     {
-      return this->operator==(other);
+      return !operator==(other);
     }
     
     inline bool operator ==(const Iterator &other) const
@@ -95,15 +93,17 @@ public:
   
   Iterator end()
   {
-    return Iterator(*this, _indices.size()?_indices.size():1);
+    return Iterator(*this, _indices.size());
   }
 };
 
 template <typename FrameType>
-int FrameFilterSet<FrameType>::addFilter(FrameFilterPtr p)
+int FilterSet<FrameType>::addFilter(FilterPtr p)
 {
   _filters[_filterCounter] = p;
   _indices.push_back(_filterCounter);
+  
+  _frameBufferManager.setMinimumBufferCount(_frameBufferManager.getMinimumBufferCount() + 1);
   
   int i = _filterCounter;
   
@@ -113,7 +113,7 @@ int FrameFilterSet<FrameType>::addFilter(FrameFilterPtr p)
 }
 
 template <typename FrameType>
-bool FrameFilterSet<FrameType>::removeFilter(int index)
+bool FilterSet<FrameType>::removeFilter(int index)
 {
   auto x = _filters.find(index);
   
@@ -128,6 +128,7 @@ bool FrameFilterSet<FrameType>::removeFilter(int index)
       }
     }
     _filters.erase(x);
+    _frameBufferManager.setMinimumBufferCount(_frameBufferManager.getMinimumBufferCount() - 1);
     
     return true;
   }
@@ -136,15 +137,17 @@ bool FrameFilterSet<FrameType>::removeFilter(int index)
 }
 
 template <typename FrameType>
-bool FrameFilterSet<FrameType>::removeAllFilters()
+bool FilterSet<FrameType>::removeAllFilters()
 {
+  _frameBufferManager.setMinimumBufferCount(_frameBufferManager.getMinimumBufferCount() - _filters.size());
   _filters.clear();
   _indices.clear();
+  
   return true;
 }
 
 template <typename FrameType>
-bool FrameFilterSet<FrameType>::applyFilter(FrameSequence &seq)
+bool FilterSet<FrameType>::applyFilter(FrameSequence &seq)
 {
   if(seq.size() < 1)
   {
@@ -158,7 +161,7 @@ bool FrameFilterSet<FrameType>::applyFilter(FrameSequence &seq)
     
     FramePtr p = std::dynamic_pointer_cast<Frame>(*g);
     
-    if(!f->filter(std::dynamic_pointer_cast<Frame>(*seq.begin()), p))
+    if(!f->filter(std::dynamic_pointer_cast<Frame>(**seq.begin()), p))
     {
       logger(LOG_ERROR) << "FilterSet: Could not apply filter '" << f->name() << "'" << std::endl;
       return false;

@@ -97,10 +97,10 @@ void DepthCamera::_captureLoop()
       
       if(_callback[FRAME_RAW_FRAME_UNPROCESSED])
       {
-        FrameFilterSet<RawFrame>::FrameSequence _frameBuffers;
+        FilterSet<RawFrame>::FrameSequence _frameBuffers;
         _frameBuffers.push_front(f);
         
-        if(!_unprocessedFrameFilters.applyFilter(_frameBuffers))
+        if(!_unprocessedFilters.applyFilter(_frameBuffers))
         {
           logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on raw unprocessed frame" << std::endl;
           consecutiveCaptureFails++;
@@ -120,10 +120,10 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      FrameFilterSet<RawFrame>::FrameSequence _unprocessedFrameBuffers;
+      FilterSet<RawFrame>::FrameSequence _unprocessedFrameBuffers;
       _unprocessedFrameBuffers.push_front(f1);
       
-      if(!_unprocessedFrameFilters.applyFilter(_unprocessedFrameBuffers))
+      if(!_unprocessedFilters.applyFilter(_unprocessedFrameBuffers))
       {
         logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on raw unprocessed frame" << std::endl;
         consecutiveCaptureFails++;
@@ -144,10 +144,10 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      FrameFilterSet<RawFrame>::FrameSequence _processedFrameBuffers;
+      FilterSet<RawFrame>::FrameSequence _processedFrameBuffers;
       _processedFrameBuffers.push_front(f);
       
-      if(!_processedFrameFilters.applyFilter(_processedFrameBuffers))
+      if(!_processedFilters.applyFilter(_processedFrameBuffers))
       {
         logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on raw processed frame" << std::endl;
         consecutiveCaptureFails++;
@@ -168,10 +168,10 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      FrameFilterSet<DepthFrame>::FrameSequence _depthFrameBuffers;
+      FilterSet<DepthFrame>::FrameSequence _depthFrameBuffers;
       _depthFrameBuffers.push_front(d);
       
-      if(!_depthFrameFilters.applyFilter(_depthFrameBuffers))
+      if(!_depthFilters.applyFilter(_depthFrameBuffers))
       {
         logger(LOG_ERROR) << "DepthCamera: Failed to apply filters on depth frame" << std::endl;
         consecutiveCaptureFails++;
@@ -359,14 +359,14 @@ bool DepthCamera::reset()
   return true;
 }
 
-int DepthCamera::addFilter(FrameFilterPtr p, FrameType frameType)
+int DepthCamera::addFilter(FilterPtr p, FrameType frameType)
 {
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
-    return _unprocessedFrameFilters.addFilter(p);
+    return _unprocessedFilters.addFilter(p);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
-    return _processedFrameFilters.addFilter(p);
+    return _processedFilters.addFilter(p);
   else if(frameType == FRAME_DEPTH_FRAME)
-    return _depthFrameFilters.addFilter(p);
+    return _depthFilters.addFilter(p);
   else
   {
     logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
@@ -377,11 +377,11 @@ int DepthCamera::addFilter(FrameFilterPtr p, FrameType frameType)
 bool DepthCamera::removeAllFilters(FrameType frameType)
 {
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
-    return _unprocessedFrameFilters.removeAllFilters();
+    return _unprocessedFilters.removeAllFilters();
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
-    return _processedFrameFilters.removeAllFilters();
+    return _processedFilters.removeAllFilters();
   else if(frameType == FRAME_DEPTH_FRAME)
-    return _depthFrameFilters.removeAllFilters();
+    return _depthFilters.removeAllFilters();
   else
   {
     logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
@@ -392,11 +392,11 @@ bool DepthCamera::removeAllFilters(FrameType frameType)
 bool DepthCamera::removeFilter(int filterID, FrameType frameType)
 {
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
-    return _unprocessedFrameFilters.removeFilter(filterID);
+    return _unprocessedFilters.removeFilter(filterID);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
-    return _processedFrameFilters.removeFilter(filterID);
+    return _processedFilters.removeFilter(filterID);
   else if(frameType == FRAME_DEPTH_FRAME)
-    return _depthFrameFilters.removeFilter(filterID);
+    return _depthFilters.removeFilter(filterID);
   else
   {
     logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;

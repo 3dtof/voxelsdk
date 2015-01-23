@@ -26,16 +26,21 @@ typedef Ptr<DepthCamera> DepthCameraPtr;
   
 class VOXEL_EXPORT Filter
 {
+protected:
+  String _name;
+  
   DepthCameraPtr _depthCamera;
   
   Map<String, FilterParameterPtr> _parameters;
   
+  virtual bool _addParameters(const Vector<FilterParameterPtr> &params); 
+  
   // On setting of a parameter this is called
   virtual void _onSet(const FilterParameterPtr &f) = 0;
   
-  virtual bool _addParameters(const Vector<FilterParameterPtr> &params); 
-  
 public:
+  Filter(const String &name): _name(name) {}
+  
   inline void setDepthCamera(const DepthCameraPtr &d)
   {
     _depthCamera = d;
@@ -43,8 +48,11 @@ public:
   
   inline const Map<String, FilterParameterPtr> &parameters() { return _parameters; }
 
-  virtual const String &name() = 0;
+  inline const String &name() { return _name; }
+  
+  virtual bool filter(const FramePtr &in, FramePtr &out) = 0;
   virtual void reset() = 0;
+  
   
   template <typename T>
   bool get(const String &name, T &value);
@@ -110,32 +118,6 @@ bool Filter::set(const String &name, const T &value)
 }
 
 typedef Ptr<Filter> FilterPtr;
-
-
-class VOXEL_EXPORT Filter2D: public Filter
-{
-protected:
-  FrameSize _size;
-public:
-  Filter2D() { _size.width = _size.height = 0; }
-  Filter2D(FrameSize s): _size(s) {}
-  
-  inline const FrameSize &size() const { return _size; }
-  
-  inline void setSize(FrameSize s) { _size = s; reset(); }
-  
-  virtual ~Filter2D() {}
-};
-
-class VOXEL_EXPORT FrameFilter: public Filter
-{
-public:
-  virtual bool filter(const FramePtr &in, FramePtr &out) = 0;
-  
-  virtual ~FrameFilter() {}
-};
-
-typedef Ptr<FrameFilter> FrameFilterPtr;
 
 }
 

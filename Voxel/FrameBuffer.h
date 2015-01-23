@@ -12,6 +12,8 @@
 
 #include <algorithm>
 
+#define MAX_FRAME_BUFFERS 2
+
 namespace Voxel
 {
 
@@ -60,6 +62,16 @@ public:
   {
     for(auto i = 0; i < minBufferCount; i++)
       _available.push_back(BufferPtr());
+  }
+  
+  inline void setMinimumBufferCount(SizeType minBufferCount)
+  {
+    _minimumBufferCount = (minBufferCount > 0)?minBufferCount:MAX_FRAME_BUFFERS;
+  }
+  
+  inline SizeType getMinimumBufferCount() const
+  {
+    return _minimumBufferCount;
   }
   
   FrameBufferType get()

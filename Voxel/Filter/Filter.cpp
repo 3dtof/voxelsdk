@@ -20,7 +20,7 @@ bool Filter::_addParameters(const Vector<FilterParameterPtr> &params)
       logger(LOG_ERROR) << "Filter: A parameter with name '" << p->name() << "' already exists" << std::endl;
       return false;
     }
-    _parameters[p->name] = p;
+    _parameters[p->name()] = p;
   }
   return true;
 }

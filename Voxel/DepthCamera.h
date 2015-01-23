@@ -18,10 +18,8 @@
 
 #include <PointCloudTransform.h>
 
-#include <Filter/FrameFilterSet.h>
+#include <Filter/FilterSet.h>
 
-
-#define MAX_FRAME_BUFFERS 2
 
 namespace Voxel
 {
@@ -57,9 +55,9 @@ protected:
   FrameBufferManager<DepthFrame> _depthFrameBuffers;
   FrameBufferManager<PointCloudFrame> _pointCloudBuffers;
   
-  FrameFilterSet<RawFrame> _unprocessedFrameFilters, _processedFrameFilters;
+  FilterSet<RawFrame> _unprocessedFilters, _processedFilters;
   
-  FrameFilterSet<DepthFrame> _depthFrameFilters;
+  FilterSet<DepthFrame> _depthFilters;
   
   bool _addParameters(const Vector<ParameterPtr> &params);
   
@@ -117,8 +115,8 @@ public:
   DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
   _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
   _parameterInit(true), _running(false),
-  _unprocessedFrameFilters(_rawFrameBuffers), _processedFrameFilters(_rawFrameBuffers),
-  _depthFrameFilters(_depthFrameBuffers)
+  _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers),
+  _depthFilters(_depthFrameBuffers)
   {
     _makeID();
   }
@@ -165,7 +163,7 @@ public:
   virtual bool registerCallback(FrameType type, CallbackType f);
   virtual bool clearCallback();
   
-  virtual int addFilter(FrameFilterPtr p, FrameType frameType);
+  virtual int addFilter(FilterPtr p, FrameType frameType);
   virtual bool removeFilter(int filterID, FrameType frameType);
   virtual bool removeAllFilters(FrameType frameType);
   

@@ -41,7 +41,7 @@ public:
   
   inline const Vector<FilterDescription> &getSupportedFilters() const { return _supportedFilters; }
   
-  virtual FrameFilterPtr createFilter(const String &name, DepthCamera::FrameType type) = 0;
+  virtual FilterPtr createFilter(const String &name, DepthCamera::FrameType type) = 0;
 };
 
 bool FilterFactory::_addSupportedFilters(const Vector<FilterDescription> &f)

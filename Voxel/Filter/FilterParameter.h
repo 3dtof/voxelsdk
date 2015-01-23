@@ -24,6 +24,8 @@ public:
   inline const String &name() const { return _name; }
   inline const String &displayName() const { return _displayName; }
   inline const String &description() const { return _description; }
+  
+  virtual ~FilterParameter() {}
 };
 
 typedef Ptr<FilterParameter> FilterParameterPtr;
@@ -50,6 +52,8 @@ public:
   }
   
   virtual bool validate(const T &v) const = 0;
+  
+  virtual ~FilterParameterTemplate() {}
 };
 
 template <typename T>
@@ -75,6 +79,8 @@ public:
   {
     return (v >= _lowerLimit && v <= _upperLimit);
   }
+  
+  virtual ~FilterParameterRangeTemplate() {}
 };
 
 typedef FilterParameterRangeTemplate<uint> UnsignedFilterParameter;
@@ -108,6 +114,8 @@ public:
     }
     return false;
   }
+  
+  virtual ~FilterParameterEnumTemplate() {}
 };
 
 typedef FilterParameterEnumTemplate<int> EnumFilterParameter;
@@ -119,6 +127,8 @@ public:
     const Vector<String> &valueMeaning, const Vector<String> &valueDescription):
   FilterParameterEnumTemplate<bool>(name, displayName, description, defaultValue, {false, true},
     valueMeaning, valueDescription) {}
+    
+  virtual ~BoolFilterParameter() {}
 };
 
 }
