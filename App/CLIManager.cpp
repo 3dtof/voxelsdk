@@ -174,7 +174,7 @@ void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
       
       c++;
     }
-    else if(isalnum(*c) || *c == '_' || *c == '.' || *c == '-')
+    else if(isalnum(*c) || *c == '_' || *c == '.' || *c == '-' || *c == ':')
     {
       c++;
     }
@@ -1693,7 +1693,38 @@ void CLIManager::_addFilter(const Vector<String> &tokens)
 
 void CLIManager::_addFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
 {
-
+  if(tokens.size() == 1)
+  {
+    linenoiseAddCompletion(lc, (tokens[0] + " raw").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " raw_processed").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " depth").c_str());   
+  }
+  else if(tokens.size() == 2)
+  {
+    if(tokens[1] == "raw" || tokens[1] == "raw_processed" || tokens[1] == "depth")
+    {
+      const auto &m = _sys.getSupportedFilters();
+      
+      for(auto &f: m)
+        linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + f).c_str());
+    }
+    else
+    {
+      Vector<String> f = { "raw", "raw_processed", "depth" };
+      
+      for(auto &x: f)
+        if(x.size() > tokens[1].size() && x.compare(0, tokens[1].size(), tokens[1]) == 0)
+          linenoiseAddCompletion(lc, (tokens[0] + " " + x).c_str());
+    }
+  }
+  else if(tokens.size() == 3)
+  {
+    const auto &m = _sys.getSupportedFilters();
+      
+    for(auto &f: m)
+      if(f.size() > tokens[2].size() && f.compare(0, tokens[2].size(), tokens[2]) == 0)
+        linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + f).c_str());
+  }
 }
 
 void CLIManager::_removeFilter2(int filterID, DepthCamera::FrameType type)
@@ -1738,7 +1769,20 @@ void CLIManager::_removeFilter(const Vector<String> &tokens)
 
 void CLIManager::_removeFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
 {
-
+  if(tokens.size() == 1)
+  {
+    linenoiseAddCompletion(lc, (tokens[0] + " raw").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " raw_processed").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " depth").c_str());   
+  }
+  else if(tokens.size() == 2)
+  {
+    Vector<String> f = { "raw", "raw_processed", "depth" };
+      
+    for(auto &x: f)
+      if(x.size() > tokens[1].size() && x.compare(0, tokens[1].size(), tokens[1]) == 0)
+        linenoiseAddCompletion(lc, (tokens[0] + " " + x).c_str());
+  }
 }
 
 void CLIManager::_setFilterParam2(int filterID, DepthCamera::FrameType type, const String &paramName, const String &paramValue)
@@ -1852,7 +1896,66 @@ void CLIManager::_setFilterParam(const Vector<String> &tokens)
 
 void CLIManager::_setFilterParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
 {
-
+  if(tokens.size() == 1)
+  {
+    linenoiseAddCompletion(lc, (tokens[0] + " raw").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " raw_processed").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " depth").c_str());   
+  }
+  else if(tokens.size() == 2)
+  {
+    Vector<String> f = { "raw", "raw_processed", "depth" };
+    
+    for(auto &x: f)
+      if(x.size() > tokens[1].size() && x.compare(0, tokens[1].size(), tokens[1]) == 0)
+        linenoiseAddCompletion(lc, (tokens[0] + " " + x).c_str());
+  }
+  else if(tokens.size() == 3)
+  {
+    if(!_currentDepthCamera)
+      return;
+    
+    FilterPtr p;
+    
+    int filterID = atoi(tokens[2].c_str());
+    
+    if(tokens[1] == "raw")
+      p = _currentDepthCamera->getFilter(filterID, DepthCamera::FRAME_RAW_FRAME_UNPROCESSED);
+    else if(tokens[1] == "raw_processed")
+      p = _currentDepthCamera->getFilter(filterID, DepthCamera::FRAME_RAW_FRAME_PROCESSED);
+    else if(tokens[1] == "depth")
+      p = _currentDepthCamera->getFilter(filterID, DepthCamera::FRAME_DEPTH_FRAME);
+    
+    if(p)
+    {
+      for(auto &param: p->parameters())
+      {
+        linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + param.first).c_str());
+      }
+    }
+  }
+  else if(tokens.size() == 4)
+  {
+    FilterPtr p;
+    
+    int filterID = atoi(tokens[2].c_str());
+    
+    if(tokens[1] == "raw")
+      p = _currentDepthCamera->getFilter(filterID, DepthCamera::FRAME_RAW_FRAME_UNPROCESSED);
+    else if(tokens[1] == "raw_processed")
+      p = _currentDepthCamera->getFilter(filterID, DepthCamera::FRAME_RAW_FRAME_PROCESSED);
+    else if(tokens[1] == "depth")
+      p = _currentDepthCamera->getFilter(filterID, DepthCamera::FRAME_DEPTH_FRAME);
+    
+    if(p)
+    {
+      for(auto &param: p->parameters())
+      {
+        if(param.first.size() > tokens[3].size() && param.first.compare(0, tokens[3].size(), tokens[3]) == 0)
+          linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + param.first).c_str());
+      }
+    }
+  }
 }
 
 
