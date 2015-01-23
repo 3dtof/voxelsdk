@@ -181,6 +181,18 @@ int main(int argc, char *argv[])
   
   depthCamera->addFilter(p, DepthCamera::FRAME_RAW_FRAME_PROCESSED);
   
+  p = sys.createFilter("Voxel::IIRFilter", DepthCamera::FRAME_RAW_FRAME_PROCESSED);
+  
+  if(!p)
+  {
+    logger(LOG_ERROR) << "Failed to get IIRFilter" << std::endl;
+    return -1;
+  }
+  
+  p->set("gain", 0.2f);
+  
+  depthCamera->addFilter(p, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0);
+  
   int count = 0;
   
   TimeStampType lastTimeStamp = 0;

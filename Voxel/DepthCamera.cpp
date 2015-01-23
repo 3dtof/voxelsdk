@@ -359,14 +359,15 @@ bool DepthCamera::reset()
   return true;
 }
 
-int DepthCamera::addFilter(FilterPtr p, FrameType frameType)
+int DepthCamera::addFilter(FilterPtr p, FrameType frameType, int position)
 {
+  Lock<Mutex> _(_accessMutex);
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
-    return _unprocessedFilters.addFilter(p);
+    return _unprocessedFilters.addFilter(p, position);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
-    return _processedFilters.addFilter(p);
+    return _processedFilters.addFilter(p, position);
   else if(frameType == FRAME_DEPTH_FRAME)
-    return _depthFilters.addFilter(p);
+    return _depthFilters.addFilter(p, position);
   else
   {
     logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
@@ -376,6 +377,7 @@ int DepthCamera::addFilter(FilterPtr p, FrameType frameType)
 
 bool DepthCamera::removeAllFilters(FrameType frameType)
 {
+  Lock<Mutex> _(_accessMutex);
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
     return _unprocessedFilters.removeAllFilters();
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
@@ -391,6 +393,7 @@ bool DepthCamera::removeAllFilters(FrameType frameType)
 
 bool DepthCamera::removeFilter(int filterID, FrameType frameType)
 {
+  Lock<Mutex> _(_accessMutex);
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
     return _unprocessedFilters.removeFilter(filterID);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)

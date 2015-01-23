@@ -35,7 +35,8 @@ public:
   
   FilterSet(FrameBufferManager<FrameType> &m): _frameBufferManager(m), _filterCounter(0) { _indices.reserve(10); }
   
-  int addFilter(FilterPtr p);
+  // position = -1 => at the end, otherwise at zero-indexed 'position'
+  int addFilter(FilterPtr p, int position = -1);
   
   bool removeFilter(int index);
   bool removeAllFilters();
@@ -98,10 +99,14 @@ public:
 };
 
 template <typename FrameType>
-int FilterSet<FrameType>::addFilter(FilterPtr p)
+int FilterSet<FrameType>::addFilter(FilterPtr p, int position)
 {
   _filters[_filterCounter] = p;
-  _indices.push_back(_filterCounter);
+  
+  if(position == -1 || position >= _indices.size())
+    _indices.push_back(_filterCounter);
+  else
+    _indices.insert(_indices.begin() + position, _filterCounter);
   
   _frameBufferManager.setMinimumBufferCount(_frameBufferManager.getMinimumBufferCount() + 1);
   

@@ -163,7 +163,8 @@ public:
   virtual bool registerCallback(FrameType type, CallbackType f);
   virtual bool clearCallback();
   
-  virtual int addFilter(FilterPtr p, FrameType frameType);
+  // position = -1 => at the end, otherwise at zero-indexed 'position'
+  virtual int addFilter(FilterPtr p, FrameType frameType, int position = -1);
   virtual bool removeFilter(int filterID, FrameType frameType);
   virtual bool removeAllFilters(FrameType frameType);
   

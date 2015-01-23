@@ -84,7 +84,7 @@ bool IIRFilter::filter(const FramePtr &in, FramePtr &out)
       return false;
     }
     
-    logger(LOG_INFO) << "IIRFilter: Applying filter to ToFRawFrame id = " << tofFrame->id << std::endl;
+    logger(LOG_INFO) << "IIRFilter: Applying filter with gain = " << _gain << " to ToFRawFrame id = " << tofFrame->id << std::endl;
     
     uint s = _size.width*_size.height;
     memcpy(o->ambient(), tofFrame->ambient(), s*tofFrame->ambientWordWidth());
