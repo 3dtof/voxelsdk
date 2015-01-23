@@ -27,7 +27,16 @@ typedef Ptr<DepthCamera> DepthCameraPtr;
 class VOXEL_EXPORT Filter
 {
 protected:
-  String _name;
+  String _name, _nameScope;
+  String _id;
+  
+  inline void _makeID() 
+  {
+    if(_nameScope.size()) 
+      _id = _nameScope + "::" + _name; 
+    else 
+      _id = _name;
+  }
   
   DepthCameraPtr _depthCamera;
   
@@ -39,7 +48,10 @@ protected:
   virtual void _onSet(const FilterParameterPtr &f) = 0;
   
 public:
-  Filter(const String &name): _name(name) {}
+  Filter(const String &name, const String &nameScope = ""): _name(name), _nameScope(nameScope) 
+  {
+    _makeID();
+  }
   
   inline void setDepthCamera(const DepthCameraPtr &d)
   {
@@ -48,7 +60,9 @@ public:
   
   inline const Map<String, FilterParameterPtr> &parameters() { return _parameters; }
 
-  inline const String &name() { return _name; }
+  inline const String &name() { return _id; }
+  
+  inline void setNameScope(const String &scope) { _nameScope = scope; _makeID(); }
   
   virtual bool filter(const FramePtr &in, FramePtr &out) = 0;
   virtual void reset() = 0;

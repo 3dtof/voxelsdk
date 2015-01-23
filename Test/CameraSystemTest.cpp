@@ -14,8 +14,6 @@
 #include <iomanip>
 #include <fstream>
 
-#include <Filter/IIRFilter.h>
-
 using namespace Voxel;
 
 enum Options
@@ -173,7 +171,14 @@ int main(int argc, char *argv[])
   
   std::cout << "Successfully loaded depth camera for device " << toConnect->id() << std::endl;
   
-  FilterPtr p(new IIRFilter());
+  FilterPtr p = sys.createFilter("Voxel::IIRFilter", DepthCamera::FRAME_RAW_FRAME_PROCESSED);
+  
+  if(!p)
+  {
+    logger(LOG_ERROR) << "Failed to get IIRFilter" << std::endl;
+    return -1;
+  }
+  
   depthCamera->addFilter(p, DepthCamera::FRAME_RAW_FRAME_PROCESSED);
   
   int count = 0;

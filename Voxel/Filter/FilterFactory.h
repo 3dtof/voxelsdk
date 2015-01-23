@@ -13,24 +13,34 @@
 namespace Voxel
 {
 
-class FilterFactory
+class VOXEL_EXPORT FilterFactory
 {
+protected:
+  typedef Function<FilterPtr()> _CreateFilter;
 public:
-  struct FilterDescription
+  class FilterDescription
   {
+  protected:
+    _CreateFilter _createFilter;
+  public:
     String name;
     uint frameTypes; // supported frame types (see #DepthCamera::FrameType)
+    
+    FilterDescription() {}
+    
+    FilterDescription(const String &n, uint f, _CreateFilter c): name(n), frameTypes(f), _createFilter(c) {}
     
     inline bool supports(DepthCamera::FrameType type)
     {
       return frameTypes & (1 << type);
     }
+    
+    friend class FilterFactory;
   };
   
 protected:
-  Vector<FilterDescription> _supportedFilters;
-  
-  inline bool _addSupportedFilters(const Vector<FilterDescription> &f);
+  Map<String, FilterDescription> _supportedFilters;
+  bool _addSupportedFilters(const Vector<FilterDescription> &f);
   
   String _name;
   
@@ -39,16 +49,10 @@ public:
   
   inline const String &name() const { return _name; }
   
-  inline const Vector<FilterDescription> &getSupportedFilters() const { return _supportedFilters; }
+  inline const Map<String, FilterDescription> &getSupportedFilters() const { return _supportedFilters; }
   
-  virtual FilterPtr createFilter(const String &name, DepthCamera::FrameType type) = 0;
+  virtual FilterPtr createFilter(const String &name, DepthCamera::FrameType type);
 };
-
-bool FilterFactory::_addSupportedFilters(const Vector<FilterDescription> &f)
-{
-  _supportedFilters.reserve(_supportedFilters.size() + f.size());
-  _supportedFilters.insert(_supportedFilters.end(), f.begin(), f.end());
-}
 
 typedef Ptr<FilterFactory> FilterFactoryPtr;
 

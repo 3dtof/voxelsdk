@@ -19,6 +19,8 @@ protected:
   Map<String, DepthCameraFactoryPtr> _factories; // Key = device ID as returned by Device::id()
   Map<String, DepthCameraPtr> _depthCameras; // Key = device ID as returned by Device::id()
   
+  Map<String, FilterFactoryPtr> _filterFactories; // Key = filter name
+  
   void _init();
   
   void _loadLibraries(const Vector<String> &paths);
@@ -28,9 +30,13 @@ public:
   
   bool addDepthCameraFactory(DepthCameraFactoryPtr factory);
   
+  bool addFilterFactory(FilterFactoryPtr filterFactory);
+  
   Vector<DevicePtr> scan();
   
   DepthCameraPtr connect(const DevicePtr &device);
+  
+  FilterPtr createFilter(const String &name, DepthCamera::FrameType type);
   
   // Remove local reference. Outside calling function should remove reference to its DepthCamera as well
   bool disconnect(const DepthCameraPtr &depthCamera, bool reset = false);

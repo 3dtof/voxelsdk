@@ -4,9 +4,10 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
-#include "CameraSystem.h"
+#include <CameraSystem.h>
 #include <Logger.h>
-#include "Configuration.h"
+#include <Configuration.h>
+#include <Filter/VoxelFilterFactory.h>
 
 #include <fstream>
 
@@ -27,6 +28,8 @@ CameraSystem::CameraSystem()
 
 void CameraSystem::_init()
 {
+  addFilterFactory(FilterFactoryPtr(new VoxelFilterFactory()));
+  
   Configuration c;
   
   Vector<String> paths;
@@ -67,21 +70,30 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
           logger(LOG_WARNING) << "CameraSystem: Ignoring Voxel library " << file << " with ABI version = " << p->getABIVersion() << ". Expected ABI version = " << VOXEL_ABI_VERISON << std::endl;
           continue;
         }
-
+        
+        bool success = false;
+        
         DepthCameraFactoryPtr factory = p->getDepthCameraFactory();
         
         if(!factory || !addDepthCameraFactory(factory))
-        {
           logger(LOG_WARNING) << "CameraSystem: Failed to load or register a depth camera factory from library " << file  <<". Ignoring this library." << endl;
-          continue;
+        else
+          success = true;
+        
+        FilterFactoryPtr filterFactory = p->getFilterFactory();
+        
+        if(!filterFactory || !addFilterFactory(filterFactory))
+          logger(LOG_WARNING) << "CameraSystem: Failed to load or register filter factory" << std::endl;
+        else
+          success = true;
+        
+        if(success)
+        {
+          // Preserving this library
+          _libraries.push_back(p);
+          numberOfLoadLibraries++;
+          logger(LOG_INFO) << "CameraSystem: Successfully loaded factory from library " << file << endl;
         }
-        
-        // Preserving this library
-        _libraries.push_back(p);
-        
-        numberOfLoadLibraries++;
-        
-        logger(LOG_INFO) << "CameraSystem: Successfully loaded factory from library " << file << endl;
       }
       else
         logger(LOG_WARNING) << "CameraSystem: Library file " << file << " is not readable. Ignoring it." << endl;
@@ -131,6 +143,25 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
   
   return true;
 }
+
+bool CameraSystem::addFilterFactory(FilterFactoryPtr filterFactory)
+{
+  auto &desc = filterFactory->getSupportedFilters();
+  
+  for(auto &d: desc)
+  {
+    auto x = _filterFactories.find(d.first);
+    
+    if(x != _filterFactories.end())
+    {
+      logger(LOG_WARNING) << "CameraSystem: A filter with name '" << d.first << "' is already registered. Ignoring the new one." << std::endl;
+      continue;
+    }
+    
+    _filterFactories[d.first] = filterFactory;
+  }
+}
+
 
 
 Vector<DevicePtr> CameraSystem::scan()
@@ -188,8 +219,25 @@ DepthCameraPtr CameraSystem::connect(const DevicePtr &device)
     return p;
   }
   else
-    return 0;
+    return nullptr;
 }
+
+
+FilterPtr CameraSystem::createFilter(const String &name, DepthCamera::FrameType type)
+{
+  auto f = _filterFactories.find(name);
+  
+  if(f != _filterFactories.end())
+  {
+    return f->second->createFilter(name, type);
+  }
+  else
+  {
+    logger(LOG_ERROR) << "CameraSystem: Unknown filter '" << name << "'" << std::endl;
+    return nullptr;
+  }
+}
+
 
 bool CameraSystem::disconnect(const DepthCameraPtr &depthCamera, bool reset)
 {
