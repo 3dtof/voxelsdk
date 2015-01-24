@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include "LineNoiseUTF8.h"
 
-namespace Voxel
+namespace LineNoise
 {
 #ifdef USE_UTF8
 int utf8_fromunicode(char *p, unsigned short uc)

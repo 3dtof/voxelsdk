@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pid == 0 || firmwareFileName.size() == 0)
   {
-    logger(LOG_ERROR) << "Required argument missing." << endl;
+    logger(LOG_ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }

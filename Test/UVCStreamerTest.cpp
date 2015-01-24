@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pid == 0 || dumpFileName.size() == 0)
   {
-    logger(LOG_ERROR) << "Required argument missing." << endl;
+    logger(LOG_ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   
   if(!f.good())
   {
-    logger(LOG_ERROR) << "Failed to open '" << dumpFileName << "'" << endl;
+    logger(LOG_ERROR) << "Failed to open '" << dumpFileName << "'" << std::endl;
     return -1;
   }
   
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   
   if(!streamer.isInitialized())
   {
-    logger(LOG_ERROR) << "UVCStreamer not initialized" << endl;
+    logger(LOG_ERROR) << "UVCStreamer not initialized" << std::endl;
     return -1;
   }
   
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   if(streamer.getCurrentVideoMode(c))
     std::cout << "\nCurrent video mode: " << c.frameSize.width << "x" << c.frameSize.height << "@" << c.getFrameRate() << "fps" << std::endl;
   else
-    logger(LOG_ERROR) << "UVCStreamerTest: Could not get current video mode" << endl;
+    logger(LOG_ERROR) << "UVCStreamerTest: Could not get current video mode" << std::endl;
   
   c.frameSize.width = 320;
   c.frameSize.height = 240;
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
   
   if(!streamer.start())
   {
-    logger(LOG_ERROR) << "UVCStreamer not ready for capture" << endl;
+    logger(LOG_ERROR) << "UVCStreamer not ready for capture" << std::endl;
     return -1;
   }
   
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
   {
     if(!streamer.capture(p))
     {
-      logger(LOG_WARNING) << "UVCStreamer could not capture a frame" << endl;
+      logger(LOG_WARNING) << "UVCStreamer could not capture a frame" << std::endl;
       i--;
     }
     else
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
   
   if(!streamer.stop())
   {
-    logger(LOG_ERROR) << "UVCStreamer could not be stopped" << endl;
+    logger(LOG_ERROR) << "UVCStreamer could not be stopped" << std::endl;
     return -1;
   }
   

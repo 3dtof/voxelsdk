@@ -740,7 +740,7 @@ bool UVCStreamer::_start()
       
       if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QUERYBUF, &buf) == -1)
       {
-        logger(LOG_ERROR) << "UVCStreamer: Could not prepare raw data buffer '" << i << "'" << endl;
+        logger(LOG_ERROR) << "UVCStreamer: Could not prepare raw data buffer '" << i << "'" << std::endl;
         return _uvcStreamerPrivate->initialized = false;
       }
       
@@ -748,7 +748,7 @@ bool UVCStreamer::_start()
       
       if(!_uvcStreamerPrivate->uvc->getUVCPrivate().mmap(buf.m.offset, _uvcStreamerPrivate->rawDataBuffers[i]))
       {
-        logger(LOG_ERROR) << "UVCStreamer: Failed to get raw memory mapped buffer '" << i << "'" << endl;
+        logger(LOG_ERROR) << "UVCStreamer: Failed to get raw memory mapped buffer '" << i << "'" << std::endl;
         return _uvcStreamerPrivate->initialized = false;
       }
     }
@@ -784,7 +784,7 @@ bool UVCStreamer::_start()
       
       if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QBUF, &buf) == -1)
       {
-        logger(LOG_ERROR) << "UVCStreamer: Could not queue raw data buffer '" << i << "'" << endl;
+        logger(LOG_ERROR) << "UVCStreamer: Could not queue raw data buffer '" << i << "'" << std::endl;
         return _uvcStreamerPrivate->initialized = false;
       }
     }
@@ -793,7 +793,7 @@ bool UVCStreamer::_start()
     
     if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_STREAMON, &type) == -1)
     {
-      logger(LOG_ERROR) << "UVCStreamer: Failed to start capture stream" << endl;
+      logger(LOG_ERROR) << "UVCStreamer: Failed to start capture stream" << std::endl;
       return _uvcStreamerPrivate->initialized = false;
     }
   }
@@ -838,7 +838,7 @@ bool UVCStreamer::_stop()
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_STREAMOFF, &type) == -1)
   {
-    logger(LOG_ERROR) << "UVCStreamer: Failed to stop capture stream" << endl;
+    logger(LOG_ERROR) << "UVCStreamer: Failed to stop capture stream" << std::endl;
     return _uvcStreamerPrivate->initialized = false;
   }
   
@@ -856,7 +856,7 @@ bool UVCStreamer::_stop()
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_REQBUFS, &req) == -1)
   {
-    logger(LOG_ERROR) << "UVCStreamer: Failed to remove buffers" << endl;
+    logger(LOG_ERROR) << "UVCStreamer: Failed to remove buffers" << std::endl;
     return _uvcStreamerPrivate->initialized = false;
   }
   
@@ -881,7 +881,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
   if(!isInitialized() || !_uvcStreamerPrivate->uvc->getUVCPrivate().isReadReady(waitTime, timedOut))
   {
     if(timedOut)
-      logger(LOG_ERROR) << "No data available. Waited for " << waitTime << " ms" << endl;
+      logger(LOG_ERROR) << "No data available. Waited for " << waitTime << " ms" << std::endl;
     
     return false;
   }
@@ -892,7 +892,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     {
       p = RawDataFramePtr(new RawDataFrame());
       p->data.resize(_uvcStreamerPrivate->frameByteSize);
-      logger(LOG_DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
+      logger(LOG_DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << std::endl;
     }
     
     bool ret = _uvcStreamerPrivate->uvc->read(p->data.data(), _uvcStreamerPrivate->frameByteSize);
@@ -922,7 +922,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
           /* fall through */
           
         default:
-          logger(LOG_ERROR) << "UVCStreamer: Failed to dequeue a raw frame buffer" << endl;
+          logger(LOG_ERROR) << "UVCStreamer: Failed to dequeue a raw frame buffer" << std::endl;
           return false;
       }
     }
@@ -942,7 +942,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(buf.bytesused < _uvcStreamerPrivate->frameByteSize)
     {
-      logger(LOG_ERROR) << "Incomplete frame data. Skipping it." << endl;
+      logger(LOG_ERROR) << "Incomplete frame data. Skipping it." << std::endl;
       return false;
     }
     
@@ -950,7 +950,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     {
       p = RawDataFramePtr(new RawDataFrame());
       p->data.resize(buf.bytesused);
-      logger(LOG_DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << endl;
+      logger(LOG_DEBUG) << "UVCStreamer: Frame provided is not of appropriate size. Recreating a new frame." << std::endl;
     }
     
     p->timestamp = _time.convertToRealTime(buf.timestamp.tv_sec*1000000L + buf.timestamp.tv_usec);
@@ -958,7 +958,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QBUF, &buf) == -1)
     {
-      logger(LOG_ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << endl;
+      logger(LOG_ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << std::endl;
       return false;
     }
     
@@ -1010,7 +1010,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
     
     if(frameSizeEnum.type != V4L2_FRMSIZE_TYPE_DISCRETE)
     {
-      logger(LOG_WARNING) << "Frame types other than discrete, are not supported currently." << endl;
+      logger(LOG_WARNING) << "Frame types other than discrete, are not supported currently." << std::endl;
       continue;
     }
     
@@ -1037,7 +1037,7 @@ bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
       
       if(frameIntervalEnum.type != V4L2_FRMIVAL_TYPE_DISCRETE)
       {
-        logger(LOG_WARNING) << "Frame interval types other than discrete, are not supported currently." << endl;
+        logger(LOG_WARNING) << "Frame interval types other than discrete, are not supported currently." << std::endl;
         continue;
       }
       

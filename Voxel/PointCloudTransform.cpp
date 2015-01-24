@@ -387,7 +387,7 @@ Vector<Point> PointCloudTransform::ImageToWorld(Vector<int16_t> &distances)
   }
   catch(string alert)
   {
-    cerr << "Error: " << alert << endl;
+    cerr << "Error: " << alert << std::endl;
   }
   return pts;
 }

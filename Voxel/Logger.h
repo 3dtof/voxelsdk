@@ -94,7 +94,7 @@ public:
 
 extern Logger VOXEL_EXPORT logger;
 
-VOXEL_EXPORT Logger & endl(Logger &l);
+//VOXEL_EXPORT Logger & endl(Logger &l);
 
 class VOXEL_EXPORT LogLevelChanger
 {

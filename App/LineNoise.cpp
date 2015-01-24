@@ -146,7 +146,7 @@
 
 #define ctrl(C) ((C) - '@')
 
-namespace Voxel
+namespace LineNoise
 {
 
 /* Use -ve numbers here to co-exist with normal unicode chars */

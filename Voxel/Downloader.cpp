@@ -66,7 +66,7 @@ bool _configureForDownload(USBHandle device)
                                    buffer, 4, 5000);
   if (status != 4)
   {
-    logger(LOG_ERROR) << "USBDownloader: Control transfer issue: Status " << status << endl;
+    logger(LOG_ERROR) << "USBDownloader: Control transfer issue: Status " << status << std::endl;
     return false;
   }
 
@@ -146,7 +146,7 @@ bool _download(USBHandle device, std::ifstream &file, long unsigned int filesize
     
     if(rc != 0 && rc != LIBUSB_ERROR_TIMEOUT)
     {
-      logger(LOG_ERROR) << "USBDownloader: Bulk transfer failed." << endl;
+      logger(LOG_ERROR) << "USBDownloader: Bulk transfer failed." << std::endl;
       return false;
     }
 #elif WINDOWS
@@ -190,7 +190,7 @@ bool _download(USBHandle device, std::ifstream &file, long unsigned int filesize
       
       if(rc != 0 && rc != LIBUSB_ERROR_TIMEOUT)
       {
-        logger(LOG_ERROR) << "USBDownloader: Bulk transfer failed." << endl;
+        logger(LOG_ERROR) << "USBDownloader: Bulk transfer failed." << std::endl;
         return false;
       }
 #elif defined(WINDOWS)
@@ -228,7 +228,7 @@ bool USBDownloader::download(const String &file)
 {
   if(_device->interfaceID() != Device::USB)
   {
-    logger(LOG_ERROR) << "USBDownloader: cannot download to a non-USB device" << endl;
+    logger(LOG_ERROR) << "USBDownloader: cannot download to a non-USB device" << std::endl;
     return false;
   }
   
@@ -236,7 +236,7 @@ bool USBDownloader::download(const String &file)
   
   if(!_locateFile(fil))
   {
-    logger(LOG_ERROR) << "USBDownloader: Could not locate '" << file << "'." << endl;
+    logger(LOG_ERROR) << "USBDownloader: Could not locate '" << file << "'." << std::endl;
     return false;
   }
   
@@ -244,7 +244,7 @@ bool USBDownloader::download(const String &file)
   
   if(!f.good())
   {
-    logger(LOG_ERROR) << "USBDownloader: Could not open '" << fil << "'." << endl;
+    logger(LOG_ERROR) << "USBDownloader: Could not open '" << fil << "'." << std::endl;
     return false;
   }
   
@@ -259,7 +259,7 @@ bool USBDownloader::download(const String &file)
   
   if(!sys.isInitialized())
   {
-    logger(LOG_ERROR) << "USBDownloader: USBSystem init failed." << endl;
+    logger(LOG_ERROR) << "USBDownloader: USBSystem init failed." << std::endl;
     return false;
   }
   
@@ -276,7 +276,7 @@ bool USBDownloader::download(const String &file)
     {
       if((rc = libusb_claim_interface(handle, 0)) != LIBUSB_SUCCESS)
       {
-        logger(LOG_ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
+        logger(LOG_ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << std::endl;
         libusb_close(handle);
         libusb_unref_device(device);
         return false;
@@ -292,14 +292,14 @@ bool USBDownloader::download(const String &file)
     }
     else
     {
-      logger(LOG_ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << endl;
+      logger(LOG_ERROR) << "USBDownloader: " << libusb_strerror((libusb_error)rc) << std::endl;
       libusb_unref_device(device);
       return false;
     }
   }
   else
   {
-    logger(LOG_ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << endl;
+    logger(LOG_ERROR) << "USBDownloader: Failed to get device handle. Check that device is connected and is accessible from current user." << std::endl;
     return false;
   }
 #elif defined(WINDOWS)

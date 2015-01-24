@@ -75,7 +75,7 @@ bool DepthCameraLibrary::load()
 
   if(!_libraryPrivate->handle) 
   {
-    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load " << _libName << ". Error: " << dynamicLoadError() << endl;
+    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load " << _libName << ". Error: " << dynamicLoadError() << std::endl;
     return false;
   }
   return true;
@@ -99,7 +99,7 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
   String error;
   if ((error = dynamicLoadError()).size())  
   {
-    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
+    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
     return 0;
   }
   
@@ -125,7 +125,7 @@ FilterFactoryPtr DepthCameraLibrary::getFilterFactory()
   String error;
   if ((error = dynamicLoadError()).size())  
   {
-    logger(LOG_WARNING) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
+    logger(LOG_WARNING) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
     return 0;
   }
   
@@ -152,7 +152,7 @@ int DepthCameraLibrary::getABIVersion()
   String error;
   if ((error = dynamicLoadError()).size())
   {
-    logger(LOG_ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << endl;
+    logger(LOG_ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
     return 0;
   }
 

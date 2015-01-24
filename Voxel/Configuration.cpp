@@ -89,7 +89,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
       if(i < paths.size() - 1)
         logger(LOG_DEBUG) << PATH_SEP;
     }
-    logger(LOG_DEBUG) << endl;
+    logger(LOG_DEBUG) << std::endl;
   }
   
   return true;

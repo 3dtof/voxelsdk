@@ -14,7 +14,7 @@
 * See LICENCE for licence details.
 */
 
-namespace Voxel
+namespace LineNoise
 {
 #ifndef USE_UTF8
 #include <ctype.h>

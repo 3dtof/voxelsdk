@@ -65,7 +65,7 @@ bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, ui
   
   if(!udevHandle)
   {
-    logger(LOG_ERROR) << "USBSystem: UDev Init failed" << endl;
+    logger(LOG_ERROR) << "USBSystem: UDev Init failed" << std::endl;
     return false;
   }
   
@@ -168,7 +168,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
   
   if(!udevHandle)
   {
-    logger(LOG_ERROR) << "USBSystem: Init failed to get device node" << endl;
+    logger(LOG_ERROR) << "USBSystem: Init failed to get device node" << std::endl;
     return "";
   }
   
@@ -215,7 +215,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
     
     if(!pdev)
     {
-      logger(LOG_WARNING) << "USBSystem: Unable to find parent usb device." << endl;
+      logger(LOG_WARNING) << "USBSystem: Unable to find parent usb device." << std::endl;
       udev_device_unref(dev);
       continue;
     }
@@ -226,7 +226,7 @@ String USBSystemPrivate::getDeviceNode(const USBDevice& usbd)
       
       if(!pdev2)
       {
-        logger(LOG_WARNING) << "USBSystem: Unable to find parent usb interface." << endl;
+        logger(LOG_WARNING) << "USBSystem: Unable to find parent usb interface." << std::endl;
         udev_device_unref(dev);
         continue;
       }

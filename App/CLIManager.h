@@ -13,10 +13,15 @@
 
 #include <boost/signals2/connection.hpp>
 
+namespace LineNoise
+{  
+struct linenoiseCompletions;
+}
+
+using namespace LineNoise;
+
 namespace Voxel
 {
-  
-struct linenoiseCompletions;
 
 class CLIManager
 {
@@ -48,7 +53,7 @@ protected:
   void _getPrompt(String &prompt);
   
   void _commandLoop();
-  void _completionCallback(const char *buf, linenoiseCompletions *lc);
+  void _completionCallback(const char *buf, LineNoise::linenoiseCompletions *lc);
   
   // Comand related functions
   void _help(const Vector<String> &tokens);

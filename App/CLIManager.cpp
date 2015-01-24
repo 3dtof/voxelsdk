@@ -18,6 +18,8 @@
 
 #include <fstream>
 
+using namespace LineNoise;
+
 namespace Voxel
 {
   

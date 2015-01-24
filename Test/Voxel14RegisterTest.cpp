@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   
   if(vid == 0 || pid == 0 || address == -1)
   {
-    logger(LOG_ERROR) << "Required argument missing." << endl;
+    logger(LOG_ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }

@@ -46,7 +46,7 @@
 
 #include <functional>
 
-namespace Voxel
+namespace LineNoise
 {
 
 #ifndef NO_COMPLETION
