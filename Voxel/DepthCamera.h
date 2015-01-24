@@ -24,6 +24,14 @@
 namespace Voxel
 {
   
+/**
+  * \ingroup CamSys
+  * 
+  * \brief This is primary class which provides API for a depth camera. 
+  * 
+  * DepthCamera is an abstract class which needs to be derived and implemented 
+  * for individual depth camera types.
+  */
 class VOXEL_EXPORT DepthCamera
 {
 public:

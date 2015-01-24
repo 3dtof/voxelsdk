@@ -12,6 +12,18 @@
 namespace Voxel
 {
 
+/**
+ * \defgroup CamSys Camera System Components
+ * @{
+ * \brief This group of classes provide the higher level API for cameras
+ * @}
+ */
+
+/**
+ * \ingroup CamSys
+ * 
+ * \brief This class provides ways to instantiate individual cameras and components like filters.
+ */
 class VOXEL_EXPORT CameraSystem
 {
 protected:
