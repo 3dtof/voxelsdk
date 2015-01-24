@@ -13,6 +13,12 @@
 namespace Voxel
 {
 
+/**
+ * \addtogroup IO
+ * @{
+ */
+
+  
 // Parts of this class are borrowed from http://linuxtv.org/downloads/v4l-dvb-apis/capture-example.html
 // TODO This currently seeks only YUYV as pixel format
 class VOXEL_EXPORT UVCStreamer : public Streamer
@@ -43,6 +49,9 @@ public:
   
   virtual ~UVCStreamer();
 };
+/**
+ * @}
+ */
 
 }
 

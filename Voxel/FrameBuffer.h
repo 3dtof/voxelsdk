@@ -16,6 +16,12 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Frm
+ * @{
+ */
+
 
 template <typename BufferType>
 class FrameBufferManager;
@@ -107,6 +113,10 @@ public:
   
   virtual ~FrameBufferManager() { clear(); }
 };
+
+/**
+ * @}
+ */
 
 }
 

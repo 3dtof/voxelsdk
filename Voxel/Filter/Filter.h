@@ -23,6 +23,11 @@ namespace Voxel
 class DepthCamera;
 
 typedef Ptr<DepthCamera> DepthCameraPtr;
+
+/**
+ * \defgroup Flt Filter related classes
+ * @{
+ */
   
 class VOXEL_EXPORT Filter
 {
@@ -144,6 +149,11 @@ bool Filter::set(const String &name, const T &value)
 }
 
 typedef Ptr<Filter> FilterPtr;
+
+/**
+ * @}
+ */
+
 
 }
 

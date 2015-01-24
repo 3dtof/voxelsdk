@@ -11,6 +11,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Flt
+ * @{
+ */
 
 template <typename FrameType>
 class FilterSet
@@ -224,6 +229,9 @@ bool FilterSet<FrameType>::applyFilter(FrameSequence &seq)
   return true;
 }
 
+/**
+ * @}
+ */
 
   
 }

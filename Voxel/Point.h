@@ -14,6 +14,11 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup Frm
+ * @{
+ */
+
 
 class Point
 {
@@ -151,6 +156,9 @@ class Orientation // in radial co-ordinates
 public:
   float theta, phi; // in radians
 };
+/**
+ * @}
+ */
 
 }
 

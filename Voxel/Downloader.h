@@ -13,6 +13,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \defgroup IO I/O classes
+ * @{
+ */
 
 class VOXEL_EXPORT Downloader
 {
@@ -38,6 +43,10 @@ public:
   
   virtual ~USBDownloader() {}
 };
+
+/**
+ * @}
+ */
 
 }
 

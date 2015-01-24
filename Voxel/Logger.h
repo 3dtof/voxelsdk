@@ -15,6 +15,11 @@
 
 namespace Voxel
 {
+
+/**
+ * \addtogroup Util
+ * @{
+ */
   
 enum LogLevel
 {
@@ -112,6 +117,11 @@ public:
     logger.setDefaultLogLevel(_currentLogLevel);
   }
 };
+
+/**
+ * @}
+ */
+
 
 }
   

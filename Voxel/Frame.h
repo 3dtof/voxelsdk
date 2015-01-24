@@ -16,6 +16,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \defgroup Frm Frame related classes
+ * @{
+ */
 
 class VOXEL_EXPORT Frame
 {
@@ -307,6 +312,10 @@ typedef PointCloudFrameTemplate<Point> XYZPointCloudFrame;
 typedef PointCloudFrameTemplate<IntensityPoint> XYZIPointCloudFrame;
 
 typedef Ptr<XYZPointCloudFrame> XYZPointCloudFramePtr;
+
+/**
+ * @}
+ */
 
 }
 

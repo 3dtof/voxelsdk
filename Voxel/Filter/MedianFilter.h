@@ -12,6 +12,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Flt
+ * @{
+ */
 
 template <typename T>
 class MedianFilter: public Filter2D
@@ -141,6 +146,9 @@ bool MedianFilter::filter(const Vector<T> &in, Vector<T> &out)
   
   return true;
 }
+/**
+ * @}
+ */
 
 
 }

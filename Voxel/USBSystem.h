@@ -13,6 +13,12 @@
 namespace Voxel
 {
   
+/**
+ * \addtogroup IO
+ * @{
+ */
+
+  
 class VOXEL_NO_EXPORT USBSystemPrivate;
   
 // This facilitates getting device handle corresponding a particular vid:pid:serial
@@ -34,6 +40,9 @@ public:
   
   virtual ~USBSystem() {}
 };
+/**
+ * @}
+ */
 
 }
 #endif // VOXEL_USBSYSTEM_H

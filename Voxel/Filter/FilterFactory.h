@@ -12,6 +12,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Flt
+ * @{
+ */
 
 class VOXEL_EXPORT FilterFactory
 {
@@ -59,7 +64,11 @@ typedef Ptr<FilterFactory> FilterFactoryPtr;
 // Implement this function in support voxel library
 extern "C" void getFilterFactory(FilterFactoryPtr &filterFactory);
 typedef void (*GetFilterFactory)(FilterFactoryPtr &filterFactory); // Function type to return DepthCameraFactory
-  
+
+/**
+ * @}
+ */
+
 }
 
 

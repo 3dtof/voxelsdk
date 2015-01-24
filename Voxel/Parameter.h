@@ -18,6 +18,12 @@
 
 namespace Voxel
 {
+
+/**
+ * \defgroup Param Parameter related classes
+ * @{
+ */
+
   
 class ParameterDMLParser;
 
@@ -352,6 +358,9 @@ public:
   virtual ~FloatParameter() {}
 };
 
+/**
+ * @}
+ */
 }
 
 #endif // PARAMETER_H

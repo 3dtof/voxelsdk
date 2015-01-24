@@ -11,6 +11,12 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Util
+ * @{
+ */
+
 
 template <typename T>
 void deleter(T *data)
@@ -41,6 +47,11 @@ public:
   
   virtual ~Ptr() {}
 };
+
+/**
+ * @}
+ */
+
 
 }
 

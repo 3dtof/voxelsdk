@@ -14,6 +14,11 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup IO
+ * @{
+ */
+
 
 class VOXEL_EXPORT Streamer
 {
@@ -48,6 +53,9 @@ public:
   virtual bool getCurrentVideoMode(VideoMode &videoMode) = 0;
   virtual bool setVideoMode(const VideoMode &videoMode) = 0;
 };
+/**
+ * @}
+ */
 
 }
 

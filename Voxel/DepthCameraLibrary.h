@@ -14,6 +14,11 @@
 namespace Voxel
 {
 
+/**
+  * \addtogroup CamSys
+  * @{
+  */
+
 class VOXEL_NO_EXPORT DepthCameraLibraryPrivate;
 
 class VOXEL_EXPORT DepthCameraLibrary
@@ -41,7 +46,9 @@ public:
 
 typedef Ptr<DepthCameraLibrary> DepthCameraLibraryPtr;
 
-
+/**
+ * @}
+ */
 }
 
 #endif // VOXEL_DEPTHCAMERALIBRARY_H

@@ -11,6 +11,10 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup Frm
+ * @{
+ */
   
 class FrameSize
 {
@@ -65,7 +69,10 @@ public:
     this->bytesPerPixel = bytesPerPixel;
   }
 };
-  
+/**
+ * @}
+ */
+
 }
 
 #endif // VOXEL_POINT_H

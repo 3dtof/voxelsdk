@@ -134,6 +134,12 @@ static const int TIXML2_PATCH_VERSION = 0;
 
 namespace TinyXML2
 {
+  
+/**
+ * \addtogroup Util
+ * @{
+ */
+
 class XMLDocument;
 class XMLElement;
 class XMLAttribute;
@@ -2097,6 +2103,9 @@ private:
     DynArray< char, 20 > _buffer;
 };
 
+/**
+ * @}
+ */
 
 }	// TinyXML2
 

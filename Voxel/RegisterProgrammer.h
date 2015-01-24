@@ -13,6 +13,11 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup IO
+ * @{
+ */
+
   
 class VOXEL_EXPORT Parameter;
   
@@ -33,6 +38,11 @@ public:
   virtual ~RegisterProgrammer() {}
 };
   
+/**
+ * @}
+ */
+
+
 }
 
 #endif

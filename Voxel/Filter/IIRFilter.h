@@ -14,6 +14,11 @@
 namespace Voxel
 {
   
+/**
+ * \addtogroup Flt
+ * @{
+ */
+  
 class VOXEL_EXPORT IIRFilter: public Filter
 {
 protected:
@@ -36,6 +41,9 @@ public:
   
   virtual ~IIRFilter() {}
 };
+/**
+ * @}
+ */
 
 }
 #endif // VOXEL_IIR_H

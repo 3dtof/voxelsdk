@@ -11,6 +11,12 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup IO
+ * @{
+ */
+
 
 class VOXEL_EXPORT UVCRawData
 {
@@ -40,6 +46,9 @@ public:
 
   virtual ~UVC();
 };
+/**
+ * @}
+ */
 
 }
 #endif // UVC_H

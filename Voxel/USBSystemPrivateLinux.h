@@ -14,6 +14,12 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup IO
+ * @{
+ */
+
 
 class USBSystemPrivate
 {
@@ -62,6 +68,9 @@ public:
   }
 };
 
+/**
+ * @}
+ */
 
 }
 

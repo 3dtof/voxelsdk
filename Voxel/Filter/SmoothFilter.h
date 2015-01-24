@@ -14,6 +14,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Flt
+ * @{
+ */
 
 template <typename T>
 class SmoothFilter: public Filter2D 
@@ -96,6 +101,9 @@ float SmoothFilter<T>::_fastGaussian(float x2)
   return exp(-fval)/(2*M_PI*sigma2);
 }
 
+/**
+ * @}
+ */
 
 }
 #endif // VOXEL_SMOOTH_H

@@ -11,7 +11,11 @@
 
 namespace Voxel
 {
-  
+
+/**
+ * \addtogroup Flt
+ * @{
+ */  
 class VOXEL_NO_EXPORT VoxelFilterFactory: public FilterFactory
 {
 public:
@@ -19,7 +23,11 @@ public:
   
   virtual ~VoxelFilterFactory() {}
 };
-  
+
+/**
+ * @}
+ */
+
 }
 
 #endif // VOXEL_VOXEL_FILTER_FACTORY_H

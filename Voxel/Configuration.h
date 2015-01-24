@@ -12,6 +12,9 @@
 namespace Voxel
 {
 
+/**
+ * \ingroup Util
+ */
 class VOXEL_EXPORT Configuration
 {
 protected:

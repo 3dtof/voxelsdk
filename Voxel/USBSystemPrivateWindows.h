@@ -18,6 +18,12 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup IO
+ * @{
+ */
+
 
 struct DeviceInfo;
 typedef void *HANDLE;
@@ -58,6 +64,9 @@ public:
   
   virtual ~USBSystemPrivate() {}
 };
+/**
+ * @}
+ */
 
 }
 

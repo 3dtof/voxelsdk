@@ -19,6 +19,10 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup Frm
+ * @{
+ */
 
 class VOXEL_EXPORT PointCloudTransform
 {
@@ -79,6 +83,9 @@ private:
   Point _normalizedScreenToUnitWorld(const Point &normalizedScreen);
   void _computeClippingPlanes();
 };
+/**
+ * @}
+ */
 
 }
 

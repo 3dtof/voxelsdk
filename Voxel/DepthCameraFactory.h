@@ -14,6 +14,10 @@
 namespace Voxel
 {
   
+/**
+ *  \addtogroup CamSys
+ *  @{
+ */
 class VOXEL_EXPORT DepthCameraFactory
 {
 protected:
@@ -57,6 +61,10 @@ extern "C" int getABIVersion();
 typedef void (*GetDepthCameraFactory)(DepthCameraFactoryPtr &depthCameraFactory); // Function type to return DepthCameraFactory
 
 typedef int(*GetABIVersion)(); // Function type to return ABI version
+
+/**
+ * @}
+ */
 }
 
 #endif // DEPTHCAMERA_FACTORY_H

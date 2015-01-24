@@ -11,7 +11,12 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup IO
+ * @{
+ */
 
+  
 class VOXEL_EXPORT UVCXU : public UVC
 {
 protected:
@@ -32,6 +37,9 @@ public:
 };
 
 typedef Ptr<UVCXU> UVCXUPtr;
+/**
+ * @}
+ */
 
 }
 #endif // UVCXU_H

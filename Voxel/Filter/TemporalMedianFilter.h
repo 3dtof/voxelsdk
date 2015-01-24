@@ -13,7 +13,10 @@
 
 namespace Voxel
 {
-
+/**
+ * \addtogroup Flt
+ * @{
+ */
 template <typename T>
 class TemporalMedianFilter: public Filter2D
 {
@@ -119,6 +122,9 @@ T TemporalMedianFilter<T>::_getMedian(IndexType offset)
   
   return v[v.size()/2];
 }
+/**
+ * @}
+ */
 
 }
 #endif // VOXEL_TEMPORAL_MEDIAN_FILTER_H

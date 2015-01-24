@@ -13,6 +13,11 @@
 
 namespace Voxel
 {
+/**
+ * \addtogroup Param
+ * @{
+ */
+
 
 class VOXEL_EXPORT ParameterDMLParser
 {
@@ -44,6 +49,10 @@ public:
   
   virtual ~ParameterDMLParser() {}
 };
+
+/**
+ * @}
+ */
 
 }
 

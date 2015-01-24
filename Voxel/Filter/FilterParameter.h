@@ -11,6 +11,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Flt
+ * @{
+ */
  
 class FilterParameter
 {
@@ -130,6 +135,10 @@ public:
     
   virtual ~BoolFilterParameter() {}
 };
+
+/**
+ * @}
+ */
 
 }
 

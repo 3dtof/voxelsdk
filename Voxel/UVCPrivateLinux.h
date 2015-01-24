@@ -15,6 +15,12 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup IO
+ * @{
+ */
+
 
 class UVCPrivate
 {
@@ -45,6 +51,10 @@ public:
   
   virtual ~UVCPrivate();
 };
+
+/**
+ * @}
+ */
 
 }
 

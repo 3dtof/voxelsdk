@@ -14,6 +14,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \addtogroup Flt
+ * @{
+ */
 
 template <typename T>
 class BilateralFilter: public Filter2D
@@ -109,6 +114,10 @@ float BilateralFilter<T>::_fastGaussian(float x2)
   fval = x2 / (2.0 * sigma2);
   return exp(-fval)/(2*M_PI*sigma2);
 }
+
+/**
+ * @}
+ */
 
 }
 

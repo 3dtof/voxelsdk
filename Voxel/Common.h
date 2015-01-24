@@ -30,6 +30,11 @@
 
 namespace Voxel
 {
+  
+/**
+ * \defgroup Util Common and Utility classes
+ * @{
+ */
 
 template <typename T>
 using Vector = std::vector<T>;
@@ -103,6 +108,10 @@ inline bool floatEquals(float lhs, float rhs)
   else
     return true;
 }
+
+/**
+ * @}
+ */
 
 }
 

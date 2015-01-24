@@ -15,6 +15,12 @@
 namespace Voxel
 {
   
+/**
+ * \addtogroup IO
+ * @{
+ */
+
+  
 class VOXEL_NO_EXPORT UVCPrivate
 {
   Ptr<IBaseFilter> _captureFilter;
@@ -30,6 +36,9 @@ public:
   
   virtual ~UVCPrivate();
 };
+/**
+ * @}
+ */
 
 }
 

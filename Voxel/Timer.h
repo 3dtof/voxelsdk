@@ -12,6 +12,12 @@
 namespace Voxel
 {
   
+/**
+ * \addtogroup Util
+ * @{
+ */
+
+  
 class VOXEL_EXPORT Timer
 {
   TimeStampType _realTimeStart = 0, _monoticStart = 0;
@@ -34,6 +40,9 @@ public:
   TimeStampType getCurentRealTime();
 };
 
+/**
+ * @}
+ */
 
 }
 

@@ -13,6 +13,10 @@
 namespace Voxel
 {
   
+/**
+  * \addtogroup CamSys
+  * @{
+  */
 class VOXEL_EXPORT Device
 {
 public:
@@ -106,6 +110,10 @@ protected:
   
   virtual ~USBDeviceScanner() {}
 };
+
+/**
+ * @}
+ */
 
 }
 
