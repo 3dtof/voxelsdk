@@ -24,5 +24,23 @@ bool Filter::_addParameters(const Vector<FilterParameterPtr> &params)
   }
   return true;
 }
+
+bool Filter::_prepareOutput(const FramePtr &in, FramePtr &out)
+{
+  if(out && out->isSameSize(*in))
+  {
+    out->id = in->id;
+    out->timestamp = in->timestamp;
+    return true;
+  }
+  
+  out = in->newFrame();
+  
+  out->id = in->id;
+  out->timestamp = in->timestamp;
+  
+  return true;
+}
+
   
 }

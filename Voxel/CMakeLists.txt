@@ -30,6 +30,10 @@ add_library(voxel SHARED
   PointCloudTransform.cpp
   Filter/Filter.cpp
   Filter/IIRFilter.cpp
+  Filter/MedianFilter.cpp
+  Filter/TemporalMedianFilter.cpp
+  Filter/SmoothFilter.cpp
+  Filter/BilateralFilter.cpp
   Filter/FilterFactory.cpp
   Filter/VoxelFilterFactory.cpp
   ${OS_CPP_FILES}

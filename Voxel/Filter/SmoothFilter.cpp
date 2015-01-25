@@ -1,57 +1,72 @@
-/*
- * TI Voxel Lib component.
- *
- * Copyright (c) 2014 Texas Instruments Inc.
- */
 
-#include "IIRFilter.h"
+#include "SmoothFilter.h"
+
+#include <memory.h>
 
 namespace Voxel
 {
-  
-IIRFilter::IIRFilter(float gain): Filter("IIRFilter"), _gain(gain)
+
+SmoothFilter::SmoothFilter(float sigma): Filter("SmoothFilter"), _sigma(sigma) 
 {
   _addParameters({
-    FilterParameterPtr(new FloatFilterParameter("gain", "Gain", "IIR gain coefficient", gain, "", 0.0f, 1.0f))
+    FilterParameterPtr(new FloatFilterParameter("sigma", "Sigma", "Standard deviation", _sigma, "", 0, 100))
   });
 }
 
-void IIRFilter::_onSet(const FilterParameterPtr &f)
+void SmoothFilter::_onSet(const FilterParameterPtr &f)
 {
-  if(f->name() == "gain")
-    if(!_get(f->name(), _gain))
+  if(f->name() == "sigma")
+    if(!_get(f->name(), _sigma))
     {
-      logger(LOG_WARNING) << "IIRFilter:  Could not get the recently updated 'gain' parameter" << std::endl;
+      logger(LOG_WARNING) << "SmoothFilter: Could not get the recently updated 'sigma' parameter" << std::endl;
     }
 }
 
-void IIRFilter::reset()
-{
-  _current.clear();
-}
+void SmoothFilter::reset() {}
 
 template <typename T>
-bool IIRFilter::_filter(const T *in, T *out)
+bool SmoothFilter::_filter(const T *in, T *out)
 {
   uint s = _size.width*_size.height;
   
-  T *cur;
-  
-  if(_current.size() != s*sizeof(T))
-  {
-    _current.resize(s*sizeof(T));
-    memset(_current.data(), 0, s*sizeof(T));
+  for (int j = 0; j < _size.height; j++) {
+    for (int i = 0; i < _size.width; i++) {
+      int p = j*_size.width + i;
+      float weight_sum = 0;
+      float sum = 0;
+      for (int k = -2; k <= 2; k++) {
+        for (int m = -2; m <= 2; m++) {                         
+          int i2 = i + m; 
+          int j2 = j + k;
+          
+          if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) {
+            int q = j2*_size.width + i2;
+            float spatial_dist_squared = k*k + m*m;
+            float weight = _fastGaussian(spatial_dist_squared);
+            weight_sum += weight;
+            sum += weight * in[q];
+          }
+        }
+      }
+      out[p] = ((T)(sum / weight_sum));
+    }
   }
-  
-  cur = (T *)_current.data();
-  
-  for(auto i = 0; i < s; i++) 
-    out[i] = cur[i] = cur[i]*(1.0 - _gain) + in[i]*_gain;
-  
-  return true;
+  return true;  
 }
 
-bool IIRFilter::_filter(const FramePtr &in, FramePtr &out)
+float SmoothFilter::_fastGaussian(float x2)
+{
+  float fval;
+  float sigma2;
+  
+  if (_sigma == 0) return -1;
+  
+  sigma2 = _sigma * _sigma;
+  fval = x2 / (2.0 * sigma2);
+  return exp(-fval)/(2*M_PI*sigma2);
+}
+
+bool SmoothFilter::_filter(const FramePtr &in, FramePtr &out)
 {
   ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
   DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());

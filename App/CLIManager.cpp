@@ -1805,11 +1805,11 @@ void CLIManager::_setFilterParam2(int filterID, DepthCamera::FrameType type, con
     return;
   }
   
-  BoolFilterParameter *boolParam = dynamic_cast<BoolFilterParameter *>(param.get());
-  EnumFilterParameter *enumParam = dynamic_cast<EnumFilterParameter *>(param.get());
-  SignedFilterParameter *signedParam = dynamic_cast<SignedFilterParameter *>(param.get());
-  UnsignedFilterParameter *unsignedParam = dynamic_cast<UnsignedFilterParameter *>(param.get());
-  FloatFilterParameter *floatParam = dynamic_cast<FloatFilterParameter *>(param.get());
+  const BoolFilterParameter *boolParam = dynamic_cast<const BoolFilterParameter *>(param.get());
+  const EnumFilterParameter *enumParam = dynamic_cast<const EnumFilterParameter *>(param.get());
+  const SignedFilterParameter *signedParam = dynamic_cast<const SignedFilterParameter *>(param.get());
+  const UnsignedFilterParameter *unsignedParam = dynamic_cast<const UnsignedFilterParameter *>(param.get());
+  const FloatFilterParameter *floatParam = dynamic_cast<const FloatFilterParameter *>(param.get());
   
   if(boolParam)
   {

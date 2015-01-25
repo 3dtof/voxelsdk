@@ -34,6 +34,7 @@ public:
 };
 
 typedef Ptr<FilterParameter> FilterParameterPtr;
+typedef Ptr<const FilterParameter> FilterParameterConstPtr;
 
 template <typename T>
 class FilterParameterTemplate: public FilterParameter

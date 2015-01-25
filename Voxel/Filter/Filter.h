@@ -32,7 +32,7 @@ typedef Ptr<DepthCamera> DepthCameraPtr;
 class VOXEL_EXPORT Filter
 {
 protected:
-  String _name, _nameScope;
+  String _name, _nameScope, _description;
   String _id;
   
   inline void _makeID() 
@@ -43,17 +43,29 @@ protected:
       _id = _name;
   }
   
+  mutable Mutex _accessMutex;
+  
   DepthCameraPtr _depthCamera;
   
   Map<String, FilterParameterPtr> _parameters;
   
   virtual bool _addParameters(const Vector<FilterParameterPtr> &params); 
   
+  virtual bool _prepareOutput(const FramePtr &in, FramePtr &out);
+  
   // On setting of a parameter this is called
   virtual void _onSet(const FilterParameterPtr &f) = 0;
   
+  virtual bool _filter(const FramePtr &in, FramePtr &out) = 0;
+  
+  template <typename T>
+  bool _get(const String &name, T &value);
+  
+  template <typename T>
+  bool _set(const String &name, const T &value);
+  
 public:
-  Filter(const String &name, const String &nameScope = ""): _name(name), _nameScope(nameScope) 
+  Filter(const String &name, const String &description = "", const String &nameScope = ""): _name(name), _nameScope(nameScope), _description(description)
   {
     _makeID();
   }
@@ -66,13 +78,15 @@ public:
   inline const Map<String, FilterParameterPtr> &parameters() { return _parameters; }
 
   inline const String &name() { return _id; }
+  inline const String &description() { return _description; }
   
   inline void setNameScope(const String &scope) { _nameScope = scope; _makeID(); }
   
-  virtual bool filter(const FramePtr &in, FramePtr &out) = 0;
+  inline bool filter(const FramePtr &in, FramePtr &out);
+  
   virtual void reset() = 0;
   
-  inline FilterParameterPtr getParam(const String &name) const;
+  inline FilterParameterConstPtr getParam(const String &name) const;
   
   template <typename T>
   bool get(const String &name, T &value);
@@ -83,12 +97,21 @@ public:
   virtual ~Filter() {}
 };
 
-FilterParameterPtr Filter::getParam(const String &name) const
+inline bool Filter::filter(const FramePtr &in, FramePtr &out)
 {
+  Lock<Mutex> _(_accessMutex);
+  return _filter(in, out);
+}
+
+
+FilterParameterConstPtr Filter::getParam(const String &name) const
+{
+  Lock<Mutex> _(_accessMutex);
+  
   auto p = _parameters.find(name);
   
   if(p != _parameters.end())
-    return p->second;
+    return std::const_pointer_cast<const FilterParameter>(p->second);
   else
     return nullptr;
 }
@@ -96,6 +119,13 @@ FilterParameterPtr Filter::getParam(const String &name) const
 
 template <typename T>
 bool Filter::get(const String &name, T &value)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _get(name, value);
+}
+
+template <typename T>
+bool Filter::_get(const String &name, T &value)
 {
   auto p = _parameters.find(name);
   
@@ -120,6 +150,13 @@ bool Filter::get(const String &name, T &value)
 
 template <typename T>
 bool Filter::set(const String &name, const T &value)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _set(name, value);
+}
+
+template <typename T>
+bool Filter::_set(const String &name, const T &value)
 {
   auto p = _parameters.find(name);
   

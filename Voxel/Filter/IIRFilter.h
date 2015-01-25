@@ -30,14 +30,14 @@ protected:
   template <typename T>
   bool _filter(const T *in, T *out);
   
+  virtual bool _filter(const FramePtr &in, FramePtr &out);
+  
   virtual void _onSet(const FilterParameterPtr &f);
   
 public:
   IIRFilter(float gain = 0.5);
   
   virtual void reset();
-  
-  virtual bool filter(const FramePtr &in, FramePtr &out);
   
   virtual ~IIRFilter() {}
 };

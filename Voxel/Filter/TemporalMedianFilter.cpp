@@ -1,41 +1,46 @@
-/*
- * TI Voxel Lib component.
- *
- * Copyright (c) 2014 Texas Instruments Inc.
- */
 
-#include "IIRFilter.h"
+
+#include "TemporalMedianFilter.h"
+
+#include <utility>
 
 namespace Voxel
 {
   
-IIRFilter::IIRFilter(float gain): Filter("IIRFilter"), _gain(gain)
+TemporalMedianFilter::TemporalMedianFilter(uint order, float deadband): Filter("TemporalMedianFilter"), _order(order), _deadband(deadband) 
 {
   _addParameters({
-    FilterParameterPtr(new FloatFilterParameter("gain", "Gain", "IIR gain coefficient", gain, "", 0.0f, 1.0f))
+    FilterParameterPtr(new UnsignedFilterParameter("order", "Order", "Order of the filter", _order, "", 1, 100)),
+    FilterParameterPtr(new FloatFilterParameter("deadband", "Dead band", "Dead band", _deadband, "", 0, 1)),
   });
 }
 
-void IIRFilter::_onSet(const FilterParameterPtr &f)
+void TemporalMedianFilter::_onSet(const FilterParameterPtr &f)
 {
-  if(f->name() == "gain")
-    if(!_get(f->name(), _gain))
+  if(f->name() == "order")
+  {
+    if(!_get(f->name(), _order))
     {
-      logger(LOG_WARNING) << "IIRFilter:  Could not get the recently updated 'gain' parameter" << std::endl;
+      logger(LOG_WARNING) << "TemporalMedianFilter: Could not get the recently updated 'order' parameter" << std::endl;
     }
+  }
+  else if(f->name() == "deadband")
+  {
+    if(!_get(f->name(), _deadband))
+    {
+      logger(LOG_WARNING) << "TemporalMedianFilter: Could not get the recently updated 'deadband' parameter" << std::endl;
+    }
+  }
 }
 
-void IIRFilter::reset()
-{
-  _current.clear();
-}
+void TemporalMedianFilter::reset() { _history.clear(); _current.clear(); }
 
 template <typename T>
-bool IIRFilter::_filter(const T *in, T *out)
+bool TemporalMedianFilter::_filter(const T *in, T *out)
 {
   uint s = _size.width*_size.height;
   
-  T *cur;
+  T *cur, *hist;
   
   if(_current.size() != s*sizeof(T))
   {
@@ -45,13 +50,64 @@ bool IIRFilter::_filter(const T *in, T *out)
   
   cur = (T *)_current.data();
   
-  for(auto i = 0; i < s; i++) 
-    out[i] = cur[i] = cur[i]*(1.0 - _gain) + in[i]*_gain;
-  
+  if(_history.size() < _order)
+  {
+    Vector<ByteType> h;
+    h.resize(s*sizeof(T));
+    
+    memcpy(h.data(), in, s*sizeof(T));
+    
+    _history.push_back(std::move(h));
+    
+    memcpy(cur, in, s*sizeof(T));
+    memcpy(out, in, s*sizeof(T));
+  }
+  else
+  {
+    _history.pop_front();
+    
+    Vector<ByteType> h;
+    h.resize(s*sizeof(T));
+    
+    memcpy(h.data(), in, s*sizeof(T));
+    
+    _history.push_back(std::move(h));
+    
+    for(auto i = 0; i < s; i++)
+    {
+      T v;
+      
+      _getMedian(i, v);
+      
+      if(v > 0 && fabs(((float)v - cur[i])/cur[i]) > _deadband)
+        out[i] = cur[i] = v;
+      else
+        out[i] = cur[i];
+    }
+  }
   return true;
 }
 
-bool IIRFilter::_filter(const FramePtr &in, FramePtr &out)
+template <typename T>
+void TemporalMedianFilter::_getMedian(IndexType offset, T &value)
+{
+  Vector<T> v;
+  
+  v.reserve(_order);
+  
+  for(auto &h: _history)
+  {
+    T *h1 = (T *)(h.data());
+    if(h.size() > offset*sizeof(T))
+      v.push_back(h1[offset]);
+  }
+  
+  std::nth_element(v.begin(), v.begin() + v.size()/2,  v.end());
+  
+  value = v[v.size()/2];
+}
+
+bool TemporalMedianFilter::_filter(const FramePtr &in, FramePtr &out)
 {
   ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
   DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());

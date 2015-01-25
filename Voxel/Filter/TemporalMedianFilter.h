@@ -17,111 +17,33 @@ namespace Voxel
  * \addtogroup Flt
  * @{
  */
-template <typename T>
-class TemporalMedianFilter: public Filter2D
+class TemporalMedianFilter: public Filter
 {
 protected:
   float _deadband;
   uint _order;
   
-  List<Vector<T>> _history;
+  FrameSize _size;
+  List<Vector<ByteType>> _history;
+  Vector<ByteType> _current;
   
-  Vector<T> _current;
+  virtual void _onSet(const FilterParameterPtr &f);
   
-  T _getMedian(IndexType offset);
+  template <typename T>
+  void _getMedian(IndexType offset, T &value);
+  
+  template <typename T>
+  bool _filter(const T *in, T *out);
+  
+  virtual bool _filter(const FramePtr &in, FramePtr &out);
   
 public:
-  TemporalMedianFilter(FrameSize s, uint order, float deadband): Filter2D(s), _order(order), _deadband(deadband) 
-  {
-    _addParameters({
-      FilterParameterPtr(new UnsignedFilterParameter("order", "Order", "Order of the filter", "", 1, 100, _order)),
-      FilterParameterPtr(new FloatFilterParameter("deadband", "Dead band", "Dead band", "", 0, 1, _deadband)),
-    });
-  }
-  
+  TemporalMedianFilter(uint order = 3, float deadband = 0.05);
   virtual ~TemporalMedianFilter() {}
   
-  virtual const String &name() { return "TemporalMedianFilter"; }
-  
-  virtual void _onSet(const FilterParameterPtr &f)
-  {
-    if(f->name() == "order")
-    {
-      if(!get(f->name(), _order))
-      {
-        logger(LOG_WARNING) << "TemporalMedianFilter: Could not get the recently updated 'order' parameter" << std::endl;
-      }
-    }
-    else if(f->name() == "deadband")
-    {
-      if(!get(f->name(), _deadband))
-      {
-        logger(LOG_WARNING) << "TemporalMedianFilter: Could not get the recently updated 'deadband' parameter" << std::endl;
-      }
-    }
-  }
-  
-  virtual void reset() { _history.clear(); _current.clear(); }
-  
-  bool filter(const Vector<T> &in, Vector<T> &out);
+  virtual void reset();
 };
 
-template <typename T>
-bool TemporalMedianFilter<T>::filter(const Vector<T> &in, Vector<T> &out)
-{
-  uint s = _size.width*_size.height;
-  if(in.size() != s)
-    return false;
-  
-  if(out.size() != s)
-    out.resize(s);
-  
-  if(_current.size() != s)
-  {
-    _current.resize(s);
-    memset(_current.data(), 0, s*sizeof(T));
-  }
-  
-  if(_history.size() < _order)
-  {
-    _history.push_back(in);
-    out = _current = in;
-  }
-  else
-  {
-    _history.pop_front();
-    _history.push_back(in);
-    
-    for(auto i = 0; i < s; i++)
-    {
-      T v = _getMedian(i);
-      
-      if(v > 0 && fabs(((float)v - _current[i])/_current[i]) > _deadband)
-        out[i] = _current[i] = v;
-      else
-        out[i] = _current[i];
-    }
-  }
-  return true;
-}
-
-template <typename T>
-T TemporalMedianFilter<T>::_getMedian(IndexType offset)
-{
-  Vector<T> v;
-  
-  v.reserve(_order);
-  
-  for(auto &h: _history)
-  {
-    if((*h).size() > offset)
-      v.push_back((*h)[offset]);
-  }
-  
-  std::nth_element(v.begin(), v.begin() + v.size()/2,  v.end());
-  
-  return v[v.size()/2];
-}
 /**
  * @}
  */

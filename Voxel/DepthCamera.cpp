@@ -302,11 +302,13 @@ void DepthCamera::_captureThreadWrapper()
 
 bool DepthCamera::start()
 {
-  if(!_callback)
+  if(!_callBackTypesRegistered)
   {
     logger(LOG_ERROR) << "DepthCamera: Please register a callback to " << _id << " before starting capture" << std::endl;
     return false;
   }
+  
+  resetFilters();
   
   if(!_start())
     return false;
@@ -354,6 +356,11 @@ bool DepthCamera::reset()
     logger(LOG_ERROR) << "DepthCamera: Failed to reset device " << id() << std::endl;
     return false;
   }
+  
+  removeAllFilters(FRAME_RAW_FRAME_UNPROCESSED);
+  removeAllFilters(FRAME_RAW_FRAME_PROCESSED);
+  removeAllFilters(FRAME_DEPTH_FRAME);
+  
   _programmer = nullptr;
   _streamer = nullptr;
   return true;
@@ -420,6 +427,12 @@ bool DepthCamera::removeFilter(int filterID, FrameType frameType)
   }
 }
 
+void DepthCamera::resetFilters()
+{
+  _unprocessedFilters.reset();
+  _processedFilters.reset();
+  _depthFilters.reset();
+}
 
   
 }

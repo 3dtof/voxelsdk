@@ -20,7 +20,7 @@ set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(LINUX 1)
-  add_definitions(-msse2 -pthread -fopenmp -std=c++11)
+  add_definitions(-msse2 -pthread -std=c++11)
   ADD_DEFINITIONS(-DLINUX)  
 
   set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
@@ -51,15 +51,12 @@ include_directories(
   ${COMMON_INCLUDE}
 )
 
-# find_package(Doxygen)
-# if(DOXYGEN_FOUND)
-# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-# add_custom_target(doc
-# ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-# WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-# COMMENT "Generating API documentation with Doxygen" VERBATIM
-# )
-# endif(DOXYGEN_FOUND)
+find_package(OpenMP)
+
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 IF(LINUX)
   function(create_cpack_config name ver)

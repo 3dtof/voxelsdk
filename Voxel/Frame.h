@@ -38,6 +38,9 @@ public:
   virtual Ptr<Frame> copy() const = 0;
   virtual Ptr<Frame> newFrame() const = 0;
   
+  virtual bool isSameType(const Frame &other) const = 0;
+  virtual bool isSameSize(const Frame &other) const = 0;
+  
   virtual ~Frame() {}
 };
 
@@ -59,6 +62,18 @@ public:
     d->amplitude = amplitude;
     d->size = size;
     return FramePtr(d);
+  }
+  
+  virtual bool isSameType(const Frame &other) const
+  {
+    const DepthFrame *f = dynamic_cast<const DepthFrame *>(&other);
+    return f;
+  }
+  
+  virtual bool isSameSize(const Frame &other) const
+  {
+    const DepthFrame *f = dynamic_cast<const DepthFrame *>(&other);
+    return (f && size == f->size);
   }
   
   virtual Ptr<Frame> newFrame() const
@@ -229,6 +244,18 @@ public:
     return FramePtr(t);
   }
   
+  virtual bool isSameType(const Frame &other) const
+  {
+    const ToFRawFrameTemplate<PhaseByteType, AmbientByteType> *f = dynamic_cast<const ToFRawFrameTemplate<PhaseByteType, AmbientByteType> *>(&other);
+    return f;
+  }
+  
+  virtual bool isSameSize(const Frame &other) const
+  {
+    const ToFRawFrameTemplate<PhaseByteType, AmbientByteType> *f = dynamic_cast<const ToFRawFrameTemplate<PhaseByteType, AmbientByteType> *>(&other);
+    return (f && size == f->size);
+  }
+  
   virtual ~ToFRawFrameTemplate() {}
 };
 
@@ -253,6 +280,18 @@ public:
     return FramePtr(r);
   }
   
+  virtual bool isSameType(const Frame &other) const
+  {
+    const RawDataFrame *f = dynamic_cast<const RawDataFrame *>(&other);
+    return f;
+  }
+  
+  virtual bool isSameSize(const Frame &other) const
+  {
+    const RawDataFrame *f = dynamic_cast<const RawDataFrame *>(&other);
+    return f && data.size() == f->data.size();
+  }
+  
   virtual ~RawDataFrame() {}
 };
 
@@ -262,7 +301,7 @@ typedef Ptr<RawDataFrame> RawDataFramePtr;
 class VOXEL_EXPORT PointCloudFrame : public Frame
 {
 public:
-  virtual SizeType size() = 0;
+  virtual SizeType size() const = 0;
   virtual Point *operator [](IndexType index) = 0;
   
   virtual ~PointCloudFrame() {}
@@ -276,7 +315,7 @@ class PointCloudFrameTemplate : public PointCloudFrame
 public:
   Vector<PointType> points;
   
-  virtual SizeType size()
+  virtual SizeType size() const
   {
     return points.size();
   }
@@ -303,6 +342,18 @@ public:
     PointCloudFrameTemplate<PointType> *p = new PointCloudFrameTemplate<PointType>();
     p->points.resize(points.size());
     return FramePtr(p);
+  }
+  
+  virtual bool isSameType(const Frame &other) const
+  {
+    const PointCloudFrameTemplate<PointType> *f = dynamic_cast<const PointCloudFrameTemplate<PointType> *>(&other);
+    return f;
+  }
+  
+  virtual bool isSameSize(const Frame &other) const
+  {
+    const PointCloudFrameTemplate<PointType> *f = dynamic_cast<const PointCloudFrameTemplate<PointType> *>(&other);
+    return f && f->size() == size();
   }
   
   virtual ~PointCloudFrameTemplate() {}

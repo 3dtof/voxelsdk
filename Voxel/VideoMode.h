@@ -21,12 +21,12 @@ class FrameSize
 public:
   size_t width, height;
   
-  inline bool operator ==(FrameSize &other) const
+  inline bool operator ==(const FrameSize &other) const
   {
     return width == other.width && height == other.height;
   }
   
-  inline bool operator !=(FrameSize &other) const
+  inline bool operator !=(const FrameSize &other) const
   {
     return !operator==(other);
   }

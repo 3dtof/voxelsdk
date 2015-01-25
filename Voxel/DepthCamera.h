@@ -176,6 +176,7 @@ public:
   virtual FilterPtr getFilter(int filterID, FrameType frameType) const;
   virtual bool removeFilter(int filterID, FrameType frameType);
   virtual bool removeAllFilters(FrameType frameType);
+  virtual void resetFilters();
   
   inline const FilterSet<RawFrame> &getUnprocessedRawFilterSet() { return _unprocessedFilters; }
   inline const FilterSet<RawFrame> &getProcessedRawFilterSet() { return _processedFilters; }

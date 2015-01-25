@@ -55,6 +55,8 @@ public:
   // append one entry which contains the filter frame
   bool applyFilter(FrameSequence &seq);
   
+  void reset();
+  
   class Iterator
   {
   public:
@@ -228,6 +230,14 @@ bool FilterSet<FrameType>::applyFilter(FrameSequence &seq)
   }
   return true;
 }
+
+template <typename FrameType>
+void FilterSet<FrameType>::reset()
+{
+  for(auto f: *this)
+    f->reset();
+}
+
 
 /**
  * @}
