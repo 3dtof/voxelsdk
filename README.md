@@ -1,2 +1,2 @@
-# voxelsdk-test
-Test Repository for VoxelSDK
+# voxelsdk
+Repository for VoxelSDK
