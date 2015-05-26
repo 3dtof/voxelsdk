@@ -411,6 +411,12 @@ bool ToFCamera::_initStartParams()
     return false;
   }
   
+  if(!_applyCalibrationParams())
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not set calibration parameters" << std::endl;
+    return false;
+  }
+  
   return true;
 }
 
@@ -465,7 +471,7 @@ bool ToFCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forF
 
 bool ToFCamera::_reset()
 {
-  return set(SOFTWARE_RESET, true) && _applyCalibrationParams(); // Reset the chipset
+  return set(SOFTWARE_RESET, true); // Reset the chipset
 }
 
 
