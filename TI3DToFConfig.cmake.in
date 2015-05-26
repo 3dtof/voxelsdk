@@ -1,0 +1,17 @@
+# - Config file for the FooBar package
+# It defines the following variables
+#  TI3DToF_INCLUDE_DIRS - include directories for FooBar
+#  TI3DToF_LIBRARIES    - libraries to link against
+
+find_package(Voxel "@VOXEL_VERSION@" REQUIRED)
+ 
+# Compute paths
+get_filename_component(TI3DTOF_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+set(TI3DToF_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@" "${VOXEL_INCLUDE_DIRS}")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${TI3DToF_CMAKE_DIR}/VoxelTargets.cmake")
+ 
+# These are IMPORTED targets created by FooBarTargets.cmake
+set(TI3DToF_LIBRARIES ti3dtof ${VOXEL_LIBRARIES})

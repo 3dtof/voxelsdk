@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 //      
 //      count++;
 //      
-//      if(count >= 100)
+//      if(count >= frameCount)
 //        dc.stop();
 //    });
   
@@ -240,7 +240,16 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
     
     lastTimeStamp = d->timestamp;
-      
+
+    /*
+    std::cout << "Sizeof(timestamp) = " << sizeof(d->timestamp)
+      << "\nsizeof(id) = " << sizeof(d->id)
+      << "\nsizeof(phase[0]) = " << sizeof(uint16_t)
+      << "\n&phase[0] = 0x" << std::hex << (unsigned long)&d->phase()[0]
+      << "\n&phase[1] = 0x" << std::hex << (unsigned long)&((uint16_t *)d->phase())[1]
+      << std::endl;
+      */
+    
     if(d->phase())
       f.write((char *)d->phase(), d->phaseWordWidth()*d->size.width*d->size.height);
     
@@ -255,7 +264,7 @@ int main(int argc, char *argv[])
     
     count++;
     
-    if(count >= 100)
+    if(count >= frameCount)
       dc.stop();
   });
   
@@ -282,7 +291,7 @@ int main(int argc, char *argv[])
 //     
 //     count++;
 //     
-//     if(count >= 100)
+//     if(count >= frameCount)
 //       dc.stop();
 //   });
   
@@ -308,7 +317,7 @@ int main(int argc, char *argv[])
   //  
   //  count++;
   //  
-  //  if(count >= 100)
+  //  if(count >= frameCount)
   //    dc.stop();
   //});
   

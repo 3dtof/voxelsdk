@@ -9,8 +9,7 @@
 
 #include "Filter.h"
 
-#define _MATH_DEFINES
-#include <math.h>
+#include "DiscreteGaussian.h"
 
 namespace Voxel
 {
@@ -23,11 +22,9 @@ namespace Voxel
 class BilateralFilter: public Filter
 {
 protected:
-  float _sigma;
+  DiscreteGaussian _discreteGuassian;
   
   FrameSize _size;
-  
-  float _fastGaussian(float x2);
   
   virtual void _onSet(const FilterParameterPtr &f);
   

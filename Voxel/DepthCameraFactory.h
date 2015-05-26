@@ -40,6 +40,9 @@ public:
   // Instantiate a depth camera for the specified device
   virtual DepthCameraPtr getDepthCamera(DevicePtr device) = 0;
   
+  virtual bool getFrameGenerator(uint8_t frameType, GeneratorIDType generatorID, FrameGeneratorPtr &frameGenerator) = 0;
+  virtual Vector<GeneratorIDType> getSupportedGeneratorTypes() = 0; 
+  
   virtual ~DepthCameraFactory() {}
 };
 
@@ -54,9 +57,11 @@ void DepthCameraFactory::_addSupportedDevices(const Vector<DevicePtr> &devices)
 
 typedef Ptr<DepthCameraFactory> DepthCameraFactoryPtr;
 
+#ifndef SWIG
 extern "C" void getDepthCameraFactory(DepthCameraFactoryPtr &depthCameraFactory);
 
 extern "C" int getABIVersion();
+#endif
 
 typedef void (*GetDepthCameraFactory)(DepthCameraFactoryPtr &depthCameraFactory); // Function type to return DepthCameraFactory
 

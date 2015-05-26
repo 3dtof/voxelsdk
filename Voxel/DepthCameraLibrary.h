@@ -10,6 +10,7 @@
 #include <Common.h>
 #include <DepthCameraFactory.h>
 #include <Filter/FilterFactory.h>
+#include "DownloaderFactory.h"
 
 namespace Voxel
 {
@@ -38,6 +39,8 @@ public:
   DepthCameraFactoryPtr getDepthCameraFactory();
   
   FilterFactoryPtr getFilterFactory();
+  
+  DownloaderFactoryPtr getDownloaderFactory();
 
   int getABIVersion(); // Get DepthCameraLibrary's ABI version
   

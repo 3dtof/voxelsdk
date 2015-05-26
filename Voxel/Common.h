@@ -11,11 +11,18 @@
 #include <stdint.h>
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <unordered_map>
 #include <functional>
 #include <list>
 #include <set>
 #include <atomic>
+#include <cctype>
+
+#include <algorithm>
+
+#include <complex>
 
 #include <thread>
 
@@ -24,9 +31,12 @@
 #include <mutex>
 #include <condition_variable>
 
+#include "VoxelConfig.h"
 #include "VoxelExports.h"
 
-#define VOXEL_ABI_VERISON 1
+#ifdef _WIN32
+typedef uint32_t uint;
+#endif
 
 namespace Voxel
 {
@@ -36,6 +46,7 @@ namespace Voxel
  * @{
  */
 
+#ifndef SWIG
 template <typename T>
 using Vector = std::vector<T>;
 
@@ -51,28 +62,43 @@ using Map = std::unordered_map<K, V>;
 template <typename T>
 using Function = std::function<T>;
 
+template <typename T>
+using Atomic = std::atomic<T>;
+
+template <typename T>
+using Lock = std::unique_lock<T>;
+
+template <typename T>
+using shared_ptr = Ptr<T>;
+#else
+#define Vector std::vector
+#define List std::list
+#define Set std::set
+#define Map std::unordered_map
+#define Function std::function
+#define Atomic std::atomic
+#define Lock std::unique_lock
+#endif
+
 typedef std::string String;
 typedef int IndexType;
 typedef std::size_t SizeType;
 typedef uint8_t ByteType;
 typedef uint64_t TimeStampType;
-
-#ifdef _WIN32
-typedef uint32_t uint;
-#endif
+typedef uint32_t GeneratorIDType;
+typedef uint64_t FileOffsetType;
+typedef std::complex<float> Complex;
 
 typedef std::thread Thread;
 typedef Ptr<Thread> ThreadPtr;
-
-template <typename T>
-using Atomic = std::atomic<T>;
-
 typedef std::mutex Mutex;
-
-template <typename T>
-using Lock = std::unique_lock<T>;
-
 typedef std::condition_variable ConditionVariable;
+
+typedef std::ifstream InputFileStream;
+typedef std::ofstream OutputFileStream;
+
+typedef std::ostream OutputStream;
+typedef std::ostringstream OutputStringStream;
 
 /// String functions
 String VOXEL_EXPORT getHex(uint16_t value);
@@ -99,6 +125,9 @@ int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<S
 
 uint VOXEL_EXPORT gcd(uint n, uint m);
 
+// This returns nearest 'n = 2^m' such that 2^(m - 1) < value < 2^m
+unsigned int VOXEL_EXPORT nearestPowerOf2(unsigned int value, unsigned int &index);
+
 #define FLOAT_EPSILON 1E-5f
 
 inline bool floatEquals(float lhs, float rhs)
@@ -107,6 +136,49 @@ inline bool floatEquals(float lhs, float rhs)
     return false;
   else
     return true;
+}
+
+/**
+ * @brief Left Trim
+ *
+ * Trims whitespace from the left end of the provided String
+ *
+ * @param[out] s The String to trim
+ *
+ * @return The modified String&
+ */
+inline String& ltrim(String& s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                  std::ptr_fun<int, int>(std::isgraph)));
+  return s;
+}
+
+/**
+ * @brief Right Trim
+ *
+ * Trims whitespace from the right end of the provided String
+ *
+ * @param[out] s The String to trim
+ *
+ * @return The modified String&
+ */
+inline String& rtrim(String& s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(),
+                       std::ptr_fun<int, int>(std::isgraph)).base(), s.end());
+  return s;
+}
+
+/**
+ * @brief Trim
+ *
+ * Trims whitespace from both ends of the provided String
+ *
+ * @param[out] s The String to trim
+ *
+ * @return The modified String&
+ */
+inline String& trim(String& s) {
+  return ltrim(rtrim(s));
 }
 
 /**

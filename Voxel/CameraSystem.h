@@ -8,6 +8,7 @@
 #define VOXEL_CAMERASYSTEM_H
 
 #include <DepthCameraLibrary.h>
+#include "DownloaderFactory.h"
 
 namespace Voxel
 {
@@ -33,6 +34,10 @@ protected:
   
   Map<String, FilterFactoryPtr> _filterFactories; // Key = filter name
   
+  Map<String, DownloaderFactoryPtr> _downloaderFactories;// Key = device ID as returned by Device::id()
+  
+  Map<GeneratorIDType, DepthCameraFactoryPtr> _factoryForGeneratorID; // Key = frame generator ID
+  
   void _init();
   
   void _loadLibraries(const Vector<String> &paths);
@@ -42,18 +47,27 @@ public:
   
   bool addDepthCameraFactory(DepthCameraFactoryPtr factory);
   
-  bool addFilterFactory(FilterFactoryPtr filterFactory);
-  
   Vector<DevicePtr> scan();
   
-  Vector<String> getSupportedFilters();
-  
   DepthCameraPtr connect(const DevicePtr &device);
-  
-  FilterPtr createFilter(const String &name, DepthCamera::FrameType type);
-  
   // Remove local reference. Outside calling function should remove reference to its DepthCamera as well
   bool disconnect(const DepthCameraPtr &depthCamera, bool reset = false);
+  
+  
+  
+  bool addFilterFactory(FilterFactoryPtr filterFactory);
+  
+  Vector<String> getSupportedFilters();
+  bool getFilterDescription(const String &filterName, FilterDescription &description);
+  FilterPtr createFilter(const String &name, DepthCamera::FrameType type);
+  
+  Vector<DevicePtr> getProgrammableDevices();
+  bool addDownloaderFactory(DownloaderFactoryPtr downloaderFactory);
+  DownloaderPtr getDownloader(const DevicePtr &device);
+  
+  bool getFrameGenerator(uint8_t frameType, GeneratorIDType generatorID, FrameGeneratorPtr &frameGenerator);
+  
+  
   
   virtual ~CameraSystem();
 };

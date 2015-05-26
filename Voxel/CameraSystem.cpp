@@ -8,6 +8,7 @@
 #include <Logger.h>
 #include <Configuration.h>
 #include <Filter/VoxelFilterFactory.h>
+#include "PointCloudFrameGenerator.h"
 
 #include <fstream>
 
@@ -65,9 +66,9 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
           continue;
         }
         
-        if (p->getABIVersion() != VOXEL_ABI_VERISON)
+        if (p->getABIVersion() != VOXEL_ABI_VERSION)
         {
-          logger(LOG_WARNING) << "CameraSystem: Ignoring Voxel library " << file << " with ABI version = " << p->getABIVersion() << ". Expected ABI version = " << VOXEL_ABI_VERISON << std::endl;
+          logger(LOG_WARNING) << "CameraSystem: Ignoring Voxel library " << file << " with ABI version = " << p->getABIVersion() << ". Expected ABI version = " << VOXEL_ABI_VERSION << std::endl;
           continue;
         }
         
@@ -83,7 +84,14 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
         FilterFactoryPtr filterFactory = p->getFilterFactory();
         
         if(!filterFactory || !addFilterFactory(filterFactory))
-          logger(LOG_WARNING) << "CameraSystem: Failed to load or register filter factory" << std::endl;
+          logger(LOG_WARNING) << "CameraSystem: Could not find filter factory" << std::endl;
+        else
+          success = true;
+        
+        DownloaderFactoryPtr downloaderFactory = p->getDownloaderFactory();
+        
+        if(!downloaderFactory || !addDownloaderFactory(downloaderFactory))
+          logger(LOG_WARNING) << "CameraSystem: Could not find downloader factory" << std::endl;
         else
           success = true;
         
@@ -141,7 +149,42 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
     return false;
   }
   
+  Vector<GeneratorIDType> supportedGeneratorIDs = factory->getSupportedGeneratorTypes();
+  
+  for(auto &d: supportedGeneratorIDs)
+  {
+    auto f = _factoryForGeneratorID.find(d);
+    
+    if(f != _factoryForGeneratorID.end())
+    {
+      logger(LOG_WARNING) << "CameraSystem: A factory is already registered for generator ID '" << d << "'. Not replacing it." << std::endl;
+      continue;
+    }
+    
+    _factoryForGeneratorID[d] = factory;
+  }
+  
   return true;
+}
+
+bool CameraSystem::getFrameGenerator(uint8_t frameType, GeneratorIDType generatorID, FrameGeneratorPtr &frameGenerator)
+{
+  if(frameType == DepthCamera::FRAME_XYZI_POINT_CLOUD_FRAME)
+  {
+    frameGenerator = FrameGeneratorPtr(new PointCloudFrameGenerator());
+    return true;
+  }
+  else
+  {
+    auto f = _factoryForGeneratorID.find(generatorID);
+    
+    if(f == _factoryForGeneratorID.end())
+    {
+      logger(LOG_ERROR) << "CameraSystem: Could not find factory for generator ID '" << generatorID << "'" << std::endl;
+      return false;
+    }
+    return f->second->getFrameGenerator(frameType, generatorID, frameGenerator);
+  }
 }
 
 bool CameraSystem::addFilterFactory(FilterFactoryPtr filterFactory)
@@ -172,6 +215,25 @@ Vector<String> CameraSystem::getSupportedFilters()
     f.push_back(x.first);
   
   return f;
+}
+
+bool CameraSystem::getFilterDescription(const String &filterName, FilterDescription &description)
+{
+  auto x = _filterFactories.find(filterName);
+  
+  if(x != _filterFactories.end())
+  {
+    auto &desc = x->second->getSupportedFilters();
+    
+    auto y = desc.find(filterName);
+    
+    if(y != desc.end())
+    {
+      description = y->second;
+      return true;
+    }
+  }
+  return false;
 }
 
 
@@ -216,6 +278,10 @@ DepthCameraPtr CameraSystem::connect(const DevicePtr &device)
   if(c != _depthCameras.end())
   {
     logger(LOG_INFO) << "CameraSystem: DepthCamera for " << device->id() << " was already created. Returning it." << std::endl;
+    if(!c->second->refreshParams())
+      logger(LOG_ERROR) << "CameraSystem: Could not refresh parameters for " << c->second->id() << "." << std::endl;
+    else
+      logger(LOG_INFO) << "CameraSystem: Successfully refreshed parameters for " << c->second->id() << "." << std::endl;
     return c->second;
   }
   
@@ -226,6 +292,10 @@ DepthCameraPtr CameraSystem::connect(const DevicePtr &device)
   if(f != _factories.end())
   {
     DepthCameraPtr p = f->second->getDepthCamera(device);
+    if(!p->refreshParams())
+      logger(LOG_ERROR) << "CameraSystem: Could not refresh parameters for " << p->id() << "." << std::endl;
+    else
+      logger(LOG_INFO) << "CameraSystem: Successfully refreshed parameters for " << p->id() << "." << std::endl;
     _depthCameras[p->getDevice()->id()] = p;
     return p;
   }
@@ -257,13 +327,89 @@ bool CameraSystem::disconnect(const DepthCameraPtr &depthCamera, bool reset)
   if(f != _depthCameras.end())
   {
     _depthCameras.erase(f);
-     
+    
+    bool ret;
     if(reset)
-      return depthCamera->reset();
-    return true;
+      ret = depthCamera->reset();
+    
+    return depthCamera->close() && ret;
   }
   
   return false;
+}
+
+Vector<DevicePtr> CameraSystem::getProgrammableDevices()
+{
+  Vector<DevicePtr> devices = DeviceScanner::scan();
+  
+  Vector<DevicePtr> toReturn;
+  
+  for(auto &device: devices)
+  {
+    Device d(device->interfaceID(), device->deviceID(), ""); // get device ID without serial number
+    
+    auto f = _downloaderFactories.find(d.id());
+    if(f != _downloaderFactories.end())
+    {
+      toReturn.push_back(device);
+    }
+  }
+  
+  return toReturn;
+}
+
+bool CameraSystem::addDownloaderFactory(DownloaderFactoryPtr factory)
+{
+  // Adding factory to the "_downloaderFactories" map for later query
+  const Vector<DevicePtr> &devices = factory->getSupportedDevices();
+  
+  if(!devices.size()) // No devices?
+    return false;
+  
+  int numberOfDevicesAdded = 0;
+  
+  for(auto &device: devices)
+  {
+    if(device->serialNumber().size())
+    {
+      logger(LOG_WARNING) << "CameraSystem: Device type " << device->id() << " being registered from downloader factory has serial number. Ignoring it." << std::endl;
+      continue;
+    }
+    
+    auto f = _downloaderFactories.find(device->id());
+    if(f != _downloaderFactories.end())
+    {
+      logger(LOG_WARNING) << "CameraSystem: Device type " << device->id() << " already has a downloader factory '" << f->second->name() << "'. Not overwriting it." << std::endl;
+      continue;
+    }
+    
+    numberOfDevicesAdded++;
+    
+    _downloaderFactories[device->id()] = factory;
+  }
+  
+  if(!numberOfDevicesAdded)
+  {
+    logger(LOG_WARNING) << "CameraSystem: No devices added from downloader factory '" << factory->name() << ". Ignoring this factory." << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
+DownloaderPtr CameraSystem::getDownloader(const DevicePtr &device)
+{
+  Device d(device->interfaceID(), device->deviceID(), ""); // get device ID without serial number
+  
+  auto f = _downloaderFactories.find(d.id());
+  
+  if(f != _downloaderFactories.end())
+  {
+    DownloaderPtr p = f->second->getDownloader(device);
+    return p;
+  }
+  else
+    return nullptr;
 }
 
 
@@ -271,6 +417,8 @@ CameraSystem::~CameraSystem()
 {
   _depthCameras.clear();
   _factories.clear();
+  _downloaderFactories.clear();
+  _factoryForGeneratorID.clear();
   _libraries.clear();
 }
 

@@ -33,7 +33,8 @@ public:
   enum IOType
   {
     IO_READ_ONLY = 0,
-    IO_READ_WRITE
+    IO_READ_WRITE,
+    IO_WRITE_ONLY
   };
   
 protected:
@@ -75,6 +76,8 @@ public:
   inline void setName(const String &n) { _name = n; }
   inline void setAddress(uint32_t a) { _address = a; }
   
+  virtual bool refresh() = 0;
+  
   virtual ~Parameter() {}
   
   friend class ParameterDMLParser;
@@ -82,7 +85,7 @@ public:
 
 typedef Ptr<Parameter> ParameterPtr;
 
-// NOTE: _value is not initialized and need to be manually done from outside via set() or get(true)
+// NOTE: _value is initialized to defaultValue and not read from H/W. It needs to be manually done from outside via set() or get(true)
 template <typename T>
 class ParameterTemplate: public Parameter
 {
@@ -107,6 +110,11 @@ public:
   {
   }
   
+  static Ptr<ParameterTemplate<T>> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<ParameterTemplate<T>>(other);
+  }
+  
   virtual bool set(const T &value)
   {
     if(_ioType == IO_READ_ONLY || !validate(value))
@@ -114,7 +122,7 @@ public:
       return false;
     }
     
-    if(_programmer.setValue(*this, _toRawValue(value))) 
+    if(_programmer.setValue(*this, _toRawValue(value), _ioType == IO_WRITE_ONLY)) 
     { 
       _value = value;
       return true;       
@@ -125,9 +133,15 @@ public:
   
   virtual bool validate(const T &value) const = 0;
   
-  virtual bool get(T &value, bool refresh = true) const
+  virtual bool refresh()
   {
-    if(!refresh)
+    T v;
+    return get(v, true);
+  }
+  
+  virtual bool get(T &value, bool refresh = false)
+  {
+    if(!refresh || _ioType == IO_WRITE_ONLY)
     {
       value = _value;
       return true;
@@ -146,6 +160,7 @@ public:
       if(validate(val))
       {
         value = val;
+        _value = val;
         return true;
       }
       else
@@ -158,6 +173,18 @@ public:
   
   virtual ~ParameterTemplate() {}
 };
+
+typedef ParameterTemplate<bool> BoolParameterTemplate;
+typedef ParameterTemplate<int> IntegerParameterTemplate;
+typedef ParameterTemplate<uint> UnsignedIntegerParameterTemplate;
+typedef ParameterTemplate<float> FloatParameterTemplate;
+
+#ifdef SWIG
+%template(BoolParameterTemplate) ParameterTemplate<bool>;
+%template(IntegerParameterTemplate) ParameterTemplate<int>;
+%template(UnsignedIntegerParameterTemplate) ParameterTemplate<uint>;
+%template(FloatParameterTemplate) ParameterTemplate<float>;
+#endif
 
 template <typename T>
 class EnumParameterTemplate: public ParameterTemplate<T>
@@ -174,11 +201,25 @@ public:
   {
   }
   
+  static Ptr<EnumParameterTemplate<T>> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<EnumParameterTemplate<T>>(other);
+  }
+  
   inline const Vector<String> &valueDescription() const { return _valueDescription; }
   inline const Vector<String> &valueMeaning() const { return _valueMeaning; }
   
   virtual ~EnumParameterTemplate() {}
 };
+
+typedef EnumParameterTemplate<bool> BoolEnumParameterTemplate;
+typedef EnumParameterTemplate<int> IntegerEnumParameterTemplate;
+
+
+#ifdef SWIG
+%template(BoolEnumParameterTemplate) EnumParameterTemplate<bool>;
+%template(IntegerEnumParameterTemplate) EnumParameterTemplate<int>;
+#endif
 
 class VOXEL_EXPORT BoolParameter : public EnumParameterTemplate<bool>
 {
@@ -199,6 +240,11 @@ public:
   {
   }
   
+  static Ptr<BoolParameter> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<BoolParameter>(other);
+  }
+  
   virtual bool validate(const bool &value) const
   {
     return true; 
@@ -217,7 +263,12 @@ public:
   {
   }
   
-  virtual bool get(bool &value, bool refresh = true) const
+  static Ptr<StrobeBoolParameter> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<StrobeBoolParameter>(other);
+  }
+  
+  virtual bool get(bool &value, bool refresh = true)
   {
     return BoolParameter::get(value, true); // ignore the refresh set by user and force it to true
   }
@@ -237,6 +288,11 @@ public:
   EnumParameterTemplate<int>(programmer, name, address, registerLength, msb, lsb, valueDescription, valueMeaning, defaultValue, displayName, description, ioType, dependencies), 
   _allowedValues(allowedValues)
   {
+  }
+  
+  static Ptr<EnumParameter> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<EnumParameter>(other);
   }
   
   inline const Vector<int> &allowedValues() const { return _allowedValues; }
@@ -276,10 +332,15 @@ public:
   {
   }
   
+  static Ptr<RangeParameterTemplate<T>> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<RangeParameterTemplate<T>>(other);
+  }
+  
   const String &unit() const { return _unit; }
   
-  const T &lowerLimit() const { return _lowerLimit; }
-  const T &upperLimit() const { return _upperLimit; }
+  virtual const T lowerLimit() const { return _lowerLimit; }
+  virtual const T upperLimit() const { return _upperLimit; }
   
   virtual bool validate(const T &value) const
   {
@@ -288,6 +349,16 @@ public:
   
   virtual ~RangeParameterTemplate() {}
 };
+
+typedef RangeParameterTemplate<int> IntegerRangeParameterTemplate;
+typedef RangeParameterTemplate<float> FloatRangeParameterTemplate;
+
+
+#ifdef SWIG
+%template(IntegerRangeParameterTemplate) RangeParameterTemplate<int>;
+%template(UnsignedIntegerParameter) RangeParameterTemplate<uint>;
+%template(FloatRangeParameterTemplate) RangeParameterTemplate<float>;
+#endif
 
 class VOXEL_EXPORT IntegerParameter : public RangeParameterTemplate<int>
 {
@@ -316,6 +387,11 @@ public:
                  const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
   RangeParameterTemplate<int>(programmer, name, unit, address, registerLength, msb, lsb, lowerLimit, upperLimit, defaultValue, displayName, description, ioType, dependencies)
   {
+  }
+  
+  static Ptr<IntegerParameter> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<IntegerParameter>(other);
   }
   
   virtual ~IntegerParameter() {}
@@ -353,6 +429,11 @@ public:
                  const String &displayName, const String &description, Parameter::IOType ioType = Parameter::IO_READ_WRITE, const Vector<String> &dependencies = {}):
   RangeParameterTemplate<float>(programmer, name, unit, address, registerLength, msb, lsb, lowerLimit, upperLimit, defaultValue, displayName, description, ioType, dependencies)
   {
+  }
+  
+  static Ptr<FloatParameter> typeCast(const ParameterPtr &other)
+  {
+    return std::dynamic_pointer_cast<FloatParameter>(other);
   }
   
   virtual ~FloatParameter() {}

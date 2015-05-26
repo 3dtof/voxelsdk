@@ -10,6 +10,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <type_traits>
+
 #include "Common.h"
 
 namespace Voxel
@@ -35,20 +37,10 @@ public:
   inline float dot(const Point &other) const;
   inline Point cross(const Point &other) const;
   
-  virtual Point &operator =(const Point &other)
-  {
-    x = other.x;
-    y = other.y;
-    z = other.z;
-    return *this;
-  }
-  
   inline Point &operator -();
   inline Point operator +(const Point &other) const;
   inline Point operator *(const Point &other) const;
   inline Point operator *(const float &other) const;
-  
-  virtual ~Point() {}
 };
 
 float Point::dot(const Point &other) const
@@ -112,19 +104,10 @@ class IntensityPoint: public Point
 public:
   float i; // normalized 0-1
   
-  virtual Point &operator =(const Point &other)
+  static IntensityPoint *typeCast(Point *ptr)
   {
-    Point::operator=(other);
-    
-    const IntensityPoint *p = dynamic_cast<const IntensityPoint *>(&other);
-    
-    if(p)
-      i = p->i;
-    
-    return *this;
+    return (IntensityPoint *)(ptr);
   }
-  
-  virtual ~IntensityPoint() {}
 };
 
 class RGBPoint: public Point
@@ -132,23 +115,10 @@ class RGBPoint: public Point
 public:
   float r, g, b; // normalized 0-1
   
-  virtual Point &operator =(const Point &other)
+  static RGBPoint *typeCast(Point *ptr)
   {
-    Point::operator=(other);
-    
-    const RGBPoint *p = dynamic_cast<const RGBPoint *>(&other);
-    
-    if(p)
-    {
-      r = p->r;
-      g = p->g;
-      b = p->b;
-    }
-    
-    return *this;
+    return (RGBPoint *)(ptr);
   }
-  
-  virtual ~RGBPoint() {}
 };
 
 class Orientation // in radial co-ordinates

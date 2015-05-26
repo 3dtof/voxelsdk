@@ -18,6 +18,25 @@ namespace Voxel
  */
 
 template <typename FrameType>
+class FilterSet;
+
+template <typename FrameType>
+class FilterSetIterator
+{
+public:
+  int i;
+  const FilterSet<FrameType> &s;
+  int index;
+  
+  FilterSetIterator(const FilterSet<FrameType> &s, int i = 0);
+  inline FilterSetIterator &operator++(int);
+  inline FilterSetIterator &operator++();
+  inline const FilterPtr operator *();
+  inline bool operator !=(const FilterSetIterator &other) const;
+  inline bool operator ==(const FilterSetIterator &other) const;
+};
+
+template <typename FrameType>
 class FilterSet
 {
 protected:
@@ -43,7 +62,7 @@ public:
   FilterSet(FrameBufferManager<FrameType> &m): _frameBufferManager(m), _filterCounter(0) { _indices.reserve(10); }
   
   // position = -1 => at the end, otherwise at zero-indexed 'position'
-  int addFilter(FilterPtr p, int position = -1);
+  int addFilter(FilterPtr p, int beforeFilterIndex = -1);
   FilterPtr getFilter(int index) const;
   bool removeFilter(int index);
   bool removeAllFilters();
@@ -57,82 +76,40 @@ public:
   
   void reset();
   
-  class Iterator
+  FilterSetIterator<FrameType> begin() const
   {
-  public:
-    int i;
-    const FilterSet &s;
-    int index;
-    
-    Iterator(const FilterSet &s, int i = 0): s(s), i(i) 
-    {
-      if(i < s._indices.size())
-        index = s._indices[i];
-    }
-    
-    inline Iterator &operator++(int) 
-    {
-      i++;
-      
-      if(i < s._indices.size())
-        index = s._indices[i];
-      
-      return *this;
-    }
-    
-    inline Iterator &operator++() 
-    {
-      i++;
-      
-      if(i < s._indices.size())
-        index = s._indices[i];
-      
-      return *this;
-    }
-    
-    inline const FilterPtr operator *()
-    {
-      if(i < s._indices.size())
-      {
-        return s._filters.at(index);
-      }
-      else
-        return nullptr;
-    }
-    
-    inline bool operator !=(const Iterator &other) const
-    {
-      return !operator==(other);
-    }
-    
-    inline bool operator ==(const Iterator &other) const
-    {
-      return (&s == &other.s) && (i == other.i);
-    }
-  };
-  
-  Iterator begin() const
-  {
-    return Iterator(*this, 0); 
+    return FilterSetIterator<FrameType>(*this, 0); 
   }
   
-  Iterator end() const
+  FilterSetIterator<FrameType> end() const
   {
-    return Iterator(*this, _indices.size());
+    return FilterSetIterator<FrameType>(*this, _indices.size());
   }
+  
+  friend class FilterSetIterator<FrameType>;
 };
 
 template <typename FrameType>
-int FilterSet<FrameType>::addFilter(FilterPtr p, int position)
+int FilterSet<FrameType>::addFilter(FilterPtr p, int beforeFilterIndex)
 {
   Lock<Mutex> _(_accessMutex);
   
-  _filters[_filterCounter] = p;
-  
-  if(position == -1 || position >= _indices.size())
+  if( beforeFilterIndex == -1)
     _indices.push_back(_filterCounter);
   else
-    _indices.insert(_indices.begin() + position, _filterCounter);
+  {
+    auto found = -1;
+    for(auto i = 0; i < _indices.size(); i++)
+      if(_indices[i] == beforeFilterIndex)
+        found = i;
+      
+    if(found < 0)
+      return -1; // -1 => invalid filter index
+    
+    _indices.insert(_indices.begin() + found, _filterCounter);
+  }
+  
+  _filters[_filterCounter] = p;
   
   _frameBufferManager.setMinimumBufferCount(_frameBufferManager.getMinimumBufferCount() + 1);
   
@@ -236,6 +213,58 @@ void FilterSet<FrameType>::reset()
 {
   for(auto f: *this)
     f->reset();
+}
+
+template <typename FrameType>
+FilterSetIterator<FrameType>::FilterSetIterator(const FilterSet<FrameType> &s, int i): s(s), i(i) 
+{
+  if(i < s._indices.size())
+    index = s._indices[i];
+}
+
+template <typename FrameType>
+inline FilterSetIterator<FrameType> &FilterSetIterator<FrameType>::operator++(int) 
+{
+  i++;
+  
+  if(i < s._indices.size())
+    index = s._indices[i];
+  
+  return *this;
+}
+
+template <typename FrameType>
+inline FilterSetIterator<FrameType> &FilterSetIterator<FrameType>::operator++() 
+{
+  i++;
+  
+  if(i < s._indices.size())
+    index = s._indices[i];
+  
+  return *this;
+}
+
+template <typename FrameType>
+inline const FilterPtr FilterSetIterator<FrameType>::operator *()
+{
+  if(i < s._indices.size())
+  {
+    return s._filters.at(index);
+  }
+  else
+    return nullptr;
+}
+
+template <typename FrameType>
+inline bool FilterSetIterator<FrameType>::operator !=(const FilterSetIterator &other) const
+{
+  return !operator==(other);
+}
+
+template <typename FrameType>
+inline bool FilterSetIterator<FrameType>::operator ==(const FilterSetIterator &other) const
+{
+  return (&s == &other.s) && (i == other.i);
 }
 
 

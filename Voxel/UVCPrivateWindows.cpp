@@ -151,7 +151,8 @@ UVCPrivate::UVCPrivate(DevicePtr usb)
 UVCPrivate::~UVCPrivate()
 {
   _captureFilter = nullptr;
-  CoUninitialize();
+  logger(LOG_DEBUG) << "UVCPrivate: cleanup" << std::endl;
+  //CoUninitialize();
 }
 
 bool UVCPrivate::read(uint8_t *buffer, std::size_t size)

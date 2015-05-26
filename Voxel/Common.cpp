@@ -20,6 +20,10 @@
 #define DIR_SEP "\\"
 #endif
 
+#ifdef WINDOWS
+#include <intrin.h>
+#pragma intrinsic(_BitScanReverse)
+#endif
 
 namespace Voxel
 {
@@ -139,6 +143,35 @@ uint gcd(uint n, uint m)
   gcd = m;
   
   return gcd;
+}
+
+unsigned int nearestPowerOf2(unsigned int value, unsigned int &index)
+{
+  unsigned int result;
+#ifdef LINUX
+  index = (sizeof(value) * 8 - __builtin_clz(value));
+  result = 1 << index;
+#elif defined(WINDOWS)
+  unsigned long i;
+  if (_BitScanReverse(&i, value))
+  {
+    index = i + 1;
+    result = 1 << index;
+  }
+  else
+  {
+    result = 1;
+    index = 0;
+  }
+#endif
+
+  if ((result >> 1) == value)
+  {
+    index -= 1;
+    return value;
+  }
+  else
+    return result;
 }
 
   

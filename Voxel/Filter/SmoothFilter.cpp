@@ -6,20 +6,24 @@
 namespace Voxel
 {
 
-SmoothFilter::SmoothFilter(float sigma): Filter("SmoothFilter"), _sigma(sigma) 
+SmoothFilter::SmoothFilter(float sigma): Filter("SmoothFilter"), _discreteGaussian(sigma)
 {
   _addParameters({
-    FilterParameterPtr(new FloatFilterParameter("sigma", "Sigma", "Standard deviation", _sigma, "", 0, 100))
+    FilterParameterPtr(new FloatFilterParameter("sigma", "Sigma", "Standard deviation", sigma, "", 0, 100))
   });
 }
 
 void SmoothFilter::_onSet(const FilterParameterPtr &f)
 {
   if(f->name() == "sigma")
-    if(!_get(f->name(), _sigma))
+  {
+    float s;
+    if(!_get(f->name(), s))
     {
       logger(LOG_WARNING) << "SmoothFilter: Could not get the recently updated 'sigma' parameter" << std::endl;
     }
+    _discreteGaussian.setStandardDeviation(s);
+  }
 }
 
 void SmoothFilter::reset() {}
@@ -41,8 +45,7 @@ bool SmoothFilter::_filter(const T *in, T *out)
           
           if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) {
             int q = j2*_size.width + i2;
-            float spatial_dist_squared = k*k + m*m;
-            float weight = _fastGaussian(spatial_dist_squared);
+            float weight = _discreteGaussian.valueAt(k)*_discreteGaussian.valueAt(m);
             weight_sum += weight;
             sum += weight * in[q];
           }
@@ -52,18 +55,6 @@ bool SmoothFilter::_filter(const T *in, T *out)
     }
   }
   return true;  
-}
-
-float SmoothFilter::_fastGaussian(float x2)
-{
-  float fval;
-  float sigma2;
-  
-  if (_sigma == 0) return -1;
-  
-  sigma2 = _sigma * _sigma;
-  fval = x2 / (2.0 * sigma2);
-  return exp(-fval)/(2*M_PI*sigma2);
 }
 
 bool SmoothFilter::_filter(const FramePtr &in, FramePtr &out)

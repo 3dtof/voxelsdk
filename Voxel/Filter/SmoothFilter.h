@@ -8,6 +8,7 @@
 #define VOXEL_SMOOTH_H
 
 #include "Filter.h"
+#include "DiscreteGaussian.h"
 
 #define _MATH_DEFINES
 #include <math.h>
@@ -23,11 +24,9 @@ namespace Voxel
 class SmoothFilter: public Filter 
 {
 protected:
-  float _sigma;
+  DiscreteGaussian _discreteGaussian;
   
   FrameSize _size;
-  
-  float _fastGaussian(float x2);
   
   virtual void _onSet(const FilterParameterPtr &f);
   

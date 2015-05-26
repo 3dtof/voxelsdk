@@ -4,6 +4,10 @@ This is exactly same as the original, except that the namespace has been renamed
 Also, the .h and .cpp files have been renamed to TinyXML2.* from tinyxml2.*. This would avoid any conflicts 
 with system installed version of tinyxml2 (In Ubuntu 14.04 LTS, there are packages libtinyxml2* available).
 
+Copyright (c) 2014 Texas Instruments Inc.
+
+-----------------------------------------
+
 Original code by Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied

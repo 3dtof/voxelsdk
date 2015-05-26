@@ -22,7 +22,8 @@ Point &PointCloudTransform::getDirection(int row, int col)
   return directions[col * width + row];
 }
 
-PointCloudTransform::PointCloudTransform(int left, int top, int width, int height, 
+PointCloudTransform::PointCloudTransform(uint32_t left, uint32_t top, uint32_t width, uint32_t height, 
+                                         uint32_t rowsToMerge, uint32_t columnsToMerge,
                                          float fx, float fy, float cx, float cy,
                                          float k1, float k2, float k3, float p1, float p2)
 {
@@ -30,6 +31,8 @@ PointCloudTransform::PointCloudTransform(int left, int top, int width, int heigh
   this->top = top;
   this->width = width;
   this->height = height;
+  this->rowsToMerge = rowsToMerge;
+  this->columnsToMerge = columnsToMerge;
   this->fx = fx;
   this->fy = fy;
   this->cx = cx;
@@ -125,6 +128,21 @@ Point PointCloudTransform::_normalizedScreenToScreen(const Point &normalizedScre
 
   return (Point(x__, y__));
 }
+
+Point PointCloudTransform::_lensCorrection(const Point &normalizedScreen)
+{
+  float x_ = (normalizedScreen.x - cx)/fx;
+  float y_ = (normalizedScreen.y - cy)/fy;
+  float r2 = x_ * x_ + y_ * y_;
+  float r4 = r2 * r2;
+  float r6 = r2 * r4;
+  
+  float x__ = x_ * (1.0f + k1 * r2 + k2 * r4 + k3 * r6) + 2.0f * p1 * x_ * y_ + p2 * (r2 + 2.0f * x_ * x_);
+  float y__ = y_ * (1.0f + k1 * r2 + k2 * r4 + k3 * r6) + p1 * (r2 + 2.0f * y_ * y_) + 2.0f * p2 * x_ * y_;
+  
+  return (Point(x__, y__));
+}
+
 
 
 bool PointCloudTransform::_computeConcaveMirrorBorders(int width, int height, 
@@ -225,6 +243,7 @@ void PointCloudTransform::_init()
     for(int u = left; u < left + width; u++)
     {
       Point normalizedScreen = _screenToNormalizedScreen(Point(u, v), true);
+      //Point normalizedScreen = _lensCorrection(Point(u, v));
       Point dir = _normalizedScreenToUnitWorld(normalizedScreen);
       directions.push_back(dir);
     }
@@ -340,57 +359,28 @@ Point PointCloudTransform::imageToWorld(const Point &p, float depth)
 
 bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame)
 {
-  if(distances.size() != width*height ||
-    pointCloudFrame.size() != width*height)
+  if(distances.size() != (width/columnsToMerge)*(height/rowsToMerge) ||
+    pointCloudFrame.size() != (width/columnsToMerge)*(height/rowsToMerge))
     return false;
   
-  for(int v = 0; v < height; v++)
+  for(int v = 0; v < height; v += rowsToMerge)
   {
-    for(int u = 0; u < width; u++)
+    for(int u = 0; u < width; u += columnsToMerge)
     {
       int idx = v * width + u;
-      Point *p = pointCloudFrame[idx];
+      int idx2 = v/rowsToMerge * width/columnsToMerge + u/columnsToMerge;
+      Point *p = pointCloudFrame[idx2];
       
       if(p)
-        *p = directions[idx] * distances[idx];
+        *p = directions[idx] * distances[idx2];
       else
       {
-        logger(LOG_ERROR) << "Could not set point for index = " << idx << std::endl;
+        logger(LOG_ERROR) << "PointCloudTransform: Could not set point at (" << u << ", " << v << ")" << std::endl;
         return false;
       }
     }
   }
   return true;
 }
-
-/*
-Vector<Point> PointCloudTransform::ImageToWorld(Vector<int16_t> &distances)
-{
-  Vector<Point> pts;
-
-  try
-  {
-    if(distances.size() != width * height)
-    {
-      throw "ProjectiveTransformOpenCV_ScreenToWorld: Bad image dimensions.";
-    }
-    Vector<Point> dirs = directions;
-    for(int v = 0; v < height; v++)
-    {
-      for(int u = 0; u < width; u++)
-      {
-        int idx = v * width + u;
-        Point vert = dirs[idx] * (float)distances[idx];
-        pts.push_back(vert);
-      }
-    }
-  }
-  catch(string alert)
-  {
-    cerr << "Error: " << alert << std::endl;
-  }
-  return pts;
-}
-*/
 
 }

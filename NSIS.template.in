@@ -544,11 +544,13 @@ FunctionEnd
   
   !include "LogicLib.nsh"
   !include "Sections.nsh"
+  !include "x64.nsh"
 
 ;--------------------------------
 ; HLP - Custom variables
   Var PCLDir
   Var QTDir
+  Var PythonDir
 
 ;--------------------------------
 ; HLP - Custom macros 
@@ -561,8 +563,8 @@ FunctionEnd
 
   !define FileRemove `!insertmacro FileRemove`
   !macro FileRemove TargetDir FileName
-    Delete /REBOOTOK `${TargetDir}\${FileName}`
-    RMDir /REBOOTOK `${TargetDir}`
+    Delete `${TargetDir}\${FileName}`
+    RMDir `${TargetDir}`
   !macroend
 
   !define MenuItemRemove `!insertmacro MenuItemRemove`
@@ -573,7 +575,7 @@ FunctionEnd
 
   ; This function must be defined after components, sections and section groups are defined
   Function isPCLSelected
-    ${If} ${SectionIsSelected} ${pcl}
+    ${If} ${SectionIsSelected} ${voxelpcl_lib}
       goto noispclselectedabort
     ${EndIf}
     abort
@@ -594,6 +596,63 @@ FunctionEnd
     abort
 
   qtnoabort:
+  FunctionEnd
+
+  Function StripBackslash
+    Exch $0
+    Push $1
+    StrCpy $1 $0 "" -1
+    StrCmp $1 "\" 0 +2
+    StrCpy $0 $0 -1
+    Pop $1
+    Exch $0
+  FunctionEnd
+
+  !macro getPythonPath
+    ${If} ${RunningX64}
+      SetRegView 64
+    ${EndIf}
+    ReadRegStr $PythonDir HKLM "SOFTWARE\Python\PythonCore\2.7\InstallPath" ""
+    Push $PythonDir
+    Call StripBackslash
+    Pop $PythonDir
+    ${If} ${RunningX64}
+      SetRegView 32
+    ${EndIf}
+  !macroend
+
+  Function un.StripBackslash
+    Exch $0
+    Push $1
+    StrCpy $1 $0 "" -1
+    StrCmp $1 "\" 0 +2
+    StrCpy $0 $0 -1
+    Pop $1
+    Exch $0
+  FunctionEnd
+
+  !macro un.getPythonPath
+    ${If} ${RunningX64}
+      SetRegView 64
+    ${EndIf}
+    ReadRegStr $PythonDir HKLM "SOFTWARE\Python\PythonCore\2.7\InstallPath" ""
+    Push $PythonDir
+    Call un.StripBackslash
+    Pop $PythonDir
+    ${If} ${RunningX64}
+      SetRegView 32
+    ${EndIf}
+  !macroend
+
+  Function checkPyBindingsSelected
+    ${If} ${SectionIsSelected} ${voxel_lib_python}
+      !insertmacro getPythonPath
+;      messagebox mb_ok "Python Dir = $PythonDir"
+      ${If} $PythonDir == ""
+        messagebox mb_ok|mb_iconstop 'Could not locate Python2.7 installation. This is required to install to Python bindings.'
+        abort
+      ${EndIf}
+    ${EndIf}
   FunctionEnd
 
   Function checkPCLDir
@@ -677,6 +736,7 @@ FunctionEnd
   !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
   !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
 
+  !define MUI_PAGE_CUSTOMFUNCTION_LEAVE checkPyBindingsSelected
   @CPACK_NSIS_PAGE_COMPONENTS@
 
   #HLP -- Adding PCL selection

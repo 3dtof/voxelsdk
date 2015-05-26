@@ -141,7 +141,9 @@ int main(int argc, char *argv[])
   
   DevicePtr ud(new USBDevice(vid, pid, serialNumber));
   
-  TI::VoxelXUProgrammer programmer(ud);
+  TI::VoxelXUProgrammer programmer(
+    { {0x2D, 1}, {0x58, 3}, {0x5C, 3} },
+    ud);
   
   UnsignedIntegerParameter p(programmer, "", "", address, registerLength, msb, lsb, 0, (1 << (msb - lsb + 1)) - 1, 0, "", "");
   

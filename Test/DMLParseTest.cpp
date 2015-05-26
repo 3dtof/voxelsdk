@@ -13,10 +13,19 @@
 
 #include <TinyXML2.h>
 #include <ParameterDMLParser.h>
-#include <VoxelXUProgrammer.h>
 
 using namespace Voxel;
 using namespace TinyXML2;
+
+class DummyRegisterProgrammer: public RegisterProgrammer
+{
+  virtual bool getValue(const Parameter &param, uint32_t &value) const { return false; }
+  virtual bool isInitialized() const { return false; }
+  virtual bool readRegister(uint32_t address, uint32_t &value) const { return false; }
+  virtual bool reset() { return false; }
+  virtual bool setValue(const Parameter &param, uint32_t value, bool writeOnly = false) { return false; }
+  virtual bool writeRegister(uint32_t address, uint32_t value) { return false; }
+};
 
 enum Options
 {
@@ -100,9 +109,7 @@ int main(int argc, char *argv[])
   
   //XMLElement *node = doc.FirstChildElement("RegMap");
   
-  DevicePtr d(new USBDevice(0x0, 0x0, "")); // dummy device
-  
-  TI::VoxelXUProgrammer r(d); // dummy register programmer
+  DummyRegisterProgrammer r;
   
   ParameterDMLParser p(r, xmlFile);
   

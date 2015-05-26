@@ -18,30 +18,31 @@ namespace Voxel
  * @{
  */
 
+class FilterDescription
+{
+  typedef Function<FilterPtr()> _CreateFilter;
+protected:
+  _CreateFilter _createFilter;
+public:
+  String name;
+  uint frameTypes; // supported frame types (see #DepthCamera::FrameType)
+  
+  FilterDescription() {}
+  
+#ifndef SWIG
+  FilterDescription(const String &n, uint f, _CreateFilter c): name(n), frameTypes(f), _createFilter(c) {}
+#endif
+  
+  inline bool supports(DepthCamera::FrameType type)
+  {
+    return frameTypes & (1 << type);
+  }
+  
+  friend class FilterFactory;
+};
+
 class VOXEL_EXPORT FilterFactory
 {
-protected:
-  typedef Function<FilterPtr()> _CreateFilter;
-public:
-  class FilterDescription
-  {
-  protected:
-    _CreateFilter _createFilter;
-  public:
-    String name;
-    uint frameTypes; // supported frame types (see #DepthCamera::FrameType)
-    
-    FilterDescription() {}
-    
-    FilterDescription(const String &n, uint f, _CreateFilter c): name(n), frameTypes(f), _createFilter(c) {}
-    
-    inline bool supports(DepthCamera::FrameType type)
-    {
-      return frameTypes & (1 << type);
-    }
-    
-    friend class FilterFactory;
-  };
   
 protected:
   Map<String, FilterDescription> _supportedFilters;
@@ -61,8 +62,11 @@ public:
 
 typedef Ptr<FilterFactory> FilterFactoryPtr;
 
+#ifndef SWIG
 // Implement this function in support voxel library
 extern "C" void getFilterFactory(FilterFactoryPtr &filterFactory);
+#endif
+
 typedef void (*GetFilterFactory)(FilterFactoryPtr &filterFactory); // Function type to return DepthCameraFactory
 
 /**

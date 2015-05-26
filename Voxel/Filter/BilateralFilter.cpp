@@ -6,10 +6,10 @@
 namespace Voxel
 {
   
-BilateralFilter::BilateralFilter(float sigma): Filter("BilateralFilter"), _sigma(sigma)
+BilateralFilter::BilateralFilter(float sigma): Filter("BilateralFilter"), _discreteGuassian(sigma)
 {
   _addParameters({
-    FilterParameterPtr(new FloatFilterParameter("sigma", "Sigma", "Standard deviation", _sigma, "", 0, 100)),
+    FilterParameterPtr(new FloatFilterParameter("sigma", "Sigma", "Standard deviation", sigma, "", 0, 100)),
   });
 }
 
@@ -19,10 +19,12 @@ void BilateralFilter::_onSet(const FilterParameterPtr &f)
 {
   if(f->name() == "sigma")
   {
-    if(!_get(f->name(), _sigma))
+    float s;
+    if(!_get(f->name(), s))
     {
       logger(LOG_WARNING) << "BilateralFilter: Could not get the recently updated 'sigma' parameter" << std::endl;
     }
+    _discreteGuassian.setStandardDeviation(s);
   }
 }
 
@@ -50,10 +52,7 @@ bool BilateralFilter::_filter(const  T *in, const T2 *ref, T *out)
           if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
           {
             int q = j2*_size.width + i2;
-            float spatial_dist_squared = k*k + m*m;
-            float intensity_dist_squared = (ref[p]-ref[q])*(ref[p]-ref[q]);
-            float weight = _fastGaussian(spatial_dist_squared)*
-            _fastGaussian(intensity_dist_squared);
+            float weight = _discreteGuassian.valueAt(k)*_discreteGuassian.valueAt(m)*_discreteGuassian.valueAt(ref[p]-ref[q]);
             weight_sum += weight;
             sum += weight * in[q];
           }
@@ -65,17 +64,6 @@ bool BilateralFilter::_filter(const  T *in, const T2 *ref, T *out)
   return true;
 }
 
-float BilateralFilter::_fastGaussian(float x2)
-{
-  float fval;
-  float sigma2;
-  
-  if (_sigma == 0) return -1;
-  
-  sigma2 = _sigma * _sigma;
-  fval = x2 / (2.0 * sigma2);
-  return exp(-fval)/(2*M_PI*sigma2);
-}
 
 bool BilateralFilter::_filter(const FramePtr &in, FramePtr &out)
 {

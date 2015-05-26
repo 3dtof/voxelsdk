@@ -45,6 +45,12 @@ public:
   
   Ptr(const std::shared_ptr<T> &p): std::shared_ptr<T>(p) {}
   
+#ifdef SWIG
+  T *operator ->() { return this->std::shared_ptr<T>::operator->(); }
+  
+  const T *operator ->() const { return this->std::shared_ptr<T>::operator->(); }
+#endif
+  
   virtual ~Ptr() {}
 };
 

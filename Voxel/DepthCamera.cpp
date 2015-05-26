@@ -12,9 +12,27 @@
 
 #include "DepthCamera.h"
 #include "Logger.h"
+#include "PointCloudFrameGenerator.h"
 
 namespace Voxel
 {
+  
+DepthCamera::DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
+_rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
+_parameterInit(true), _running(false),
+_unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers), _depthFilters(_depthFrameBuffers),
+_pointCloudFrameGenerator(new PointCloudFrameGenerator())
+{
+  _frameGenerators[2] = std::dynamic_pointer_cast<FrameGenerator>(_pointCloudFrameGenerator);
+  _makeID();
+  
+  configFile.read(name + ".conf"); // Read and keep the configuration ready for use. The file must be in VOXEL_CONF_PATH
+}
+
+bool DepthCamera::_init()
+{
+  return setCameraProfile(configFile.getDefaultCameraProfileName());
+}
   
 bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
 {
@@ -29,17 +47,27 @@ bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
     else
     {
       logger(LOG_ERROR) << "DepthCamera: Found an existing parameter in the list of parameters, with name " << p->name() << ". Not overwriting it." << std::endl;
-      return _parameterInit = false;
+      //return _parameterInit = false;
     }
   }
   return true;
 }
 
-bool DepthCamera::clearCallback()
+bool DepthCamera::clearAllCallbacks()
 {
   for(auto i = 0; i < FRAME_TYPE_COUNT; i++)
     _callback[i] = nullptr;
   return true;
+}
+
+bool DepthCamera::clearCallback(FrameType type)
+{
+  if(type < FRAME_TYPE_COUNT)
+  {
+    _callback[type] = nullptr;
+    return true;
+  }
+  return false;
 }
 
 bool DepthCamera::registerCallback(FrameType type, CallbackType f)
@@ -85,7 +113,7 @@ void DepthCamera::_captureLoop()
       continue;
     }
     
-    if(_callBackTypesRegistered == 0 || _callBackTypesRegistered == FRAME_RAW_FRAME_UNPROCESSED) // Only unprocessed frame types requested or none requested?
+    if((_callBackTypesRegistered == 0 || _callBackTypesRegistered == FRAME_RAW_FRAME_UNPROCESSED) && !isSavingFrameStream()) // Only unprocessed frame types requested or none requested?
     {
       auto f = _rawFrameBuffers.get();
       
@@ -108,7 +136,14 @@ void DepthCamera::_captureLoop()
         }
         
         _callback[FRAME_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**_frameBuffers.begin()), FRAME_RAW_FRAME_UNPROCESSED);
+        
+        _writeToFrameStream(**_frameBuffers.begin());
       }
+      else
+      {
+        _writeToFrameStream(*f);
+      }
+      
       consecutiveCaptureFails = 0;
     }
     else
@@ -130,7 +165,7 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_RAW_FRAME_UNPROCESSED, ***_unprocessedFrameBuffers.begin()))
+      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_RAW_FRAME_UNPROCESSED, ***_unprocessedFrameBuffers.begin()) && !isSavingFrameStream())
       {
         consecutiveCaptureFails = 0;
         continue;
@@ -154,7 +189,7 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_RAW_FRAME_PROCESSED, ***_processedFrameBuffers.begin()))
+      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_RAW_FRAME_PROCESSED, ***_processedFrameBuffers.begin())  && !isSavingFrameStream())
       {
         consecutiveCaptureFails = 0;
         continue;
@@ -178,7 +213,7 @@ void DepthCamera::_captureLoop()
         continue;
       }
       
-      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_DEPTH_FRAME, ***_depthFrameBuffers.begin()))
+      if(!_callbackAndContinue(callBackTypesToBeCalled, FRAME_DEPTH_FRAME, ***_depthFrameBuffers.begin()) && !isSavingFrameStream())
       {
         consecutiveCaptureFails = 0;
         continue;
@@ -194,11 +229,14 @@ void DepthCamera::_captureLoop()
       
       _callbackAndContinue(callBackTypesToBeCalled, FRAME_XYZI_POINT_CLOUD_FRAME, **p);
       consecutiveCaptureFails = 0;
+      
+      _writeToFrameStream(**_unprocessedFrameBuffers.begin());
     }
   }
   
   if(!_running)
   {
+    closeFrameStream();
     _stop();
   }
 }
@@ -211,87 +249,18 @@ bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, Poi
     return false;
   }
   
-  XYZIPointCloudFrame *f = dynamic_cast<XYZIPointCloudFrame *>(pointCloudFrame.get());
+  FramePtr p1 = std::dynamic_pointer_cast<Frame>(depthFrame);
+  FramePtr p2 = std::dynamic_pointer_cast<Frame>(pointCloudFrame);
   
-  if(!f)
+  bool ret = _pointCloudFrameGenerator->generate(p1, p2);
+  
+  if(ret)
   {
-    f = new XYZIPointCloudFrame();
-    pointCloudFrame = PointCloudFramePtr(f);
+    pointCloudFrame = std::dynamic_pointer_cast<PointCloudFrame>(p2);
+    return true;
   }
-  
-  f->id = depthFrame->id;
-  f->timestamp = depthFrame->timestamp;
-  f->points.resize(depthFrame->size.width*depthFrame->size.height);
-  
-  if(!_pointCloudTransform->depthToPointCloud(depthFrame->depth, *pointCloudFrame))
-  {
-    logger(LOG_ERROR) << "DepthCamera: Could not convert depth frame to point cloud frame" << std::endl;
+  else
     return false;
-  }
-  
-  // Setting amplitude as intensity
-  auto index = 0;
-  
-  auto w = depthFrame->size.width;
-  auto h = depthFrame->size.height;
-  
-  for(auto y = 0; y < h; y++)
-    for(auto x = 0; x < w; x++, index++)
-    {
-      IntensityPoint &p = f->points[index];
-      p.i = depthFrame->amplitude[index];
-    }
-  
-  /*
-  auto index = 0;
-  
-  auto x1 = 0, y1 = 0;
-  
-  auto theta = 0.0f, phi = 0.0f, thetaMax = 0.0f;
-  
-  auto w = depthFrame->size.width;
-  auto h = depthFrame->size.height;
-  
-  auto scaleMax = sqrt(w*w/4.0f + h*h/4.0f);
-  
-  if(!getFieldOfView(thetaMax) || thetaMax == 0)
-  {
-    logger(LOG_ERROR) << "DepthCamera: Could not get the field of view angle for " << id() << std::endl;
-    return false;
-  }
-  
-  float focalLength;
-  
-  focalLength = scaleMax/tan(thetaMax);
-  
-  auto r = 0.0f;
-  
-  for(auto y = 0; y < h; y++)
-    for(auto x = 0; x < w; x++, index++)
-    {
-      IntensityPoint &p = f->points[index];
-      
-      x1 = x - w/2;
-      y1 = y - h/2;
-      
-      phi = atan(y1*1.0/x1);
-      
-      if(x1 < 0)
-        phi = M_PI + phi; // atan() principal range [-PI/2, PI/2]. outside that add PI
-      
-      theta = atan(sqrt(x1*x1 + y1*y1)/focalLength);
-      
-      r = depthFrame->depth[index];
-      p.i = depthFrame->amplitude[index];
-      
-      p.x = r*sin(theta)*cos(phi);
-      p.y = r*sin(theta)*sin(phi);
-      p.z = r*cos(theta);
-      
-      //logger(INFO) << "Point = " << p.i << "@(" << p.x << ", " << p.y << ", " << p.z << ")" << std::endl;
-    }
-    */
-  return true;
 }
 
 
@@ -302,6 +271,20 @@ void DepthCamera::_captureThreadWrapper()
 
 bool DepthCamera::start()
 {
+  if (isRunning())
+  {
+    logger(LOG_ERROR) << "DepthCamera: Camera is already running. Please stop it before calling start() again." << std::endl;
+    return false;
+  }
+
+  wait();
+
+  if (_captureThread &&  _captureThread->joinable())
+  {
+    logger(LOG_ERROR) << "DepthCamera: Camera is still running. Please wait for the current capture loop to complete before calling start() again." << std::endl;
+    return false;
+  }
+
   if(!_callBackTypesRegistered)
   {
     logger(LOG_ERROR) << "DepthCamera: Please register a callback to " << _id << " before starting capture" << std::endl;
@@ -312,10 +295,8 @@ bool DepthCamera::start()
   
   if(!_start())
     return false;
-  
+
   _running = true;
-  
-  wait();
   //_captureThreadWrapper();
   _captureThread = ThreadPtr(new Thread(&DepthCamera::_captureThreadWrapper, this));
   
@@ -324,6 +305,12 @@ bool DepthCamera::start()
 
 bool DepthCamera::stop()
 {
+  if (!isRunning())
+  {
+    logger(LOG_ERROR) << "DepthCamera: Camera is not running. Please start it before calling stop()." << std::endl;
+    return false;
+  }
+
   _running = false;
   wait();
   return true;
@@ -335,45 +322,55 @@ void DepthCamera::wait()
     _captureThread->join();
 }
 
-DepthCamera::~DepthCamera()
+bool DepthCamera::close()
 {
-  stop();
+  if(isRunning())
+    stop();
+  
+  _programmer.reset();
+  _streamer.reset();
   
   _rawFrameBuffers.clear();
   _depthFrameBuffers.clear();
   _pointCloudBuffers.clear();
   
   _parameters.clear();
+  
+  return true;
+}
+
+
+DepthCamera::~DepthCamera()
+{
+  close();
 }
 
 bool DepthCamera::reset()
 {
-  if(!stop())
+  if(isRunning())
+  {
+    logger(LOG_ERROR) << "DepthCamera: Please stop the depth camera before calling reset" << std::endl;
     return false;
+  }
   
-  if(!_programmer->reset())
+  if(!_reset())
   {
     logger(LOG_ERROR) << "DepthCamera: Failed to reset device " << id() << std::endl;
     return false;
   }
   
-  removeAllFilters(FRAME_RAW_FRAME_UNPROCESSED);
-  removeAllFilters(FRAME_RAW_FRAME_PROCESSED);
-  removeAllFilters(FRAME_DEPTH_FRAME);
-  
-  _programmer = nullptr;
-  _streamer = nullptr;
+  resetFilters();
   return true;
 }
 
-int DepthCamera::addFilter(FilterPtr p, FrameType frameType, int position)
+int DepthCamera::addFilter(FilterPtr p, DepthCamera::FrameType frameType, int beforeFilterID)
 {
   if(frameType == FRAME_RAW_FRAME_UNPROCESSED)
-    return _unprocessedFilters.addFilter(p, position);
+    return _unprocessedFilters.addFilter(p, beforeFilterID);
   else if(frameType == FRAME_RAW_FRAME_PROCESSED)
-    return _processedFilters.addFilter(p, position);
+    return _processedFilters.addFilter(p, beforeFilterID);
   else if(frameType == FRAME_DEPTH_FRAME)
-    return _depthFilters.addFilter(p, position);
+    return _depthFilters.addFilter(p, beforeFilterID);
   else
   {
     logger(LOG_ERROR) << "DepthCamera: Filter not supported for frame type = '" << frameType << "' for camera = " << id() << std::endl;
@@ -427,12 +424,230 @@ bool DepthCamera::removeFilter(int filterID, FrameType frameType)
   }
 }
 
+bool DepthCamera::refreshParams()
+{
+  Lock<Mutex> _(_accessMutex);
+  bool ret = true;
+  for(auto &i: _parameters)
+  {
+    if(!i.second->refresh())
+    {
+      logger(LOG_ERROR) << "DepthCamera: Failed to update value for parameter '" << i.first << "'" << std::endl;
+      ret = false;
+    }
+  }
+  return ret;
+}
+
+
 void DepthCamera::resetFilters()
 {
   _unprocessedFilters.reset();
   _processedFilters.reset();
   _depthFilters.reset();
 }
+
+bool DepthCamera::_writeToFrameStream(RawFramePtr &rawUnprocessed)
+{
+  Lock<Mutex> _(_frameStreamWriterMutex);
+  if(_frameStreamWriter && !_frameStreamWriter->write(std::dynamic_pointer_cast<Frame>(rawUnprocessed)))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Failed to save frames to frame stream" << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool DepthCamera::saveFrameStream(const String &fileName)
+{
+  Lock<Mutex> _(_frameStreamWriterMutex);
+  if(_frameStreamWriter)
+  {
+    logger(LOG_ERROR) << "DepthCamera: Frame stream is already being saved." << std::endl;
+    return false;
+  }
+  
+  if(!_frameGenerators[0] || !_frameGenerators[1] || !_frameGenerators[2])
+  {
+    logger(LOG_ERROR) << "DepthCamera: Necessary generators are not yet created? Can't save stream." << std::endl;
+    return false;
+  }
+  
+  FrameStreamWriterPtr w = FrameStreamWriterPtr(
+    new FrameStreamWriter(fileName, _frameGenerators[0]->id(), _frameGenerators[1]->id(), _frameGenerators[2]->id())
+  );
+  
+  _frameGenerators[0]->setFrameStreamWriter(w);
+  _frameGenerators[1]->setFrameStreamWriter(w);
+  _frameGenerators[2]->setFrameStreamWriter(w);
+  
+  _frameGenerators[0]->writeConfiguration();
+  _frameGenerators[1]->writeConfiguration();
+  _frameGenerators[2]->writeConfiguration();
+  
+  _frameStreamWriter = w;
+  
+  return _frameStreamWriter->isStreamGood();
+}
+
+bool DepthCamera::isSavingFrameStream()
+{
+  Lock<Mutex> _(_frameStreamWriterMutex);
+  return _frameStreamWriter?true:false;
+}
+
+
+bool DepthCamera::closeFrameStream()
+{
+  Lock<Mutex> _(_frameStreamWriterMutex);
+  if(_frameStreamWriter)
+  {
+    _frameGenerators[0]->removeFrameStreamWriter();
+    _frameGenerators[1]->removeFrameStreamWriter();
+    _frameGenerators[2]->removeFrameStreamWriter();
+    
+    _frameStreamWriter->close();
+    _frameStreamWriter.reset();
+    return true;
+  }
+  else
+  {
+    logger(LOG_DEBUG) << "DepthCamera: Frame stream writer not present." << std::endl;
+    return false;
+  }
+}
+
+bool DepthCamera::setCameraProfile(const String &cameraProfileName)
+{
+  if(!configFile.setCurrentCameraProfile(cameraProfileName))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Could not set the camera profile to '" << cameraProfileName << "'" << std::endl;
+    return false;
+  }
+  
+  /*
+  // Uncomment this perform soft-reset every time a profile is selected.
+  if(!reset())
+  {
+    logger(LOG_ERROR) << "DepthCamera: Failed to reset camera, to set new camera profile" << std::endl;
+    return false;
+  }
+  */
+  
+  if(!refreshParams())
+    return false;
+  
+  ConfigurationFile *config;
+  
+  if(!(config = configFile.getCameraProfile(cameraProfileName)))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile information" << std::endl;
+    return false;
+  }
+  
+  const ConfigSet *params;
+  
+  if(config->getConfigSet("params", params) && !_applyConfigParams(params))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
+    return false;
+  }
+  
+  if(config->getConfigSet("defining_params", params) && !_applyConfigParams(params))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
+    return false;
+  }
+  
+  if(!_onReset())
+    return false;
+  
+  return true;
+}
+
+bool DepthCamera::_applyConfigParams(const ConfigSet *params)
+{
+  for(auto i = 0; i < params->paramNames.size(); i++)
+  {
+    if(params->paramNames[i].compare(0, 2, "0x") == 0)
+    {
+      logger(LOG_INFO) << "DepthCamera: Setting register '" << params->paramNames[i] << "'" << std::endl;
+      
+      char *endptr;
+      uint32_t reg = (uint32_t)strtol(params->paramNames[i].c_str(), &endptr, 16);
+      uint32_t value = (uint32_t)strtol(params->get(params->paramNames[i]).c_str(), &endptr, 0);
+      
+      if(!_programmer->writeRegister(reg, value))
+      {
+        logger(LOG_ERROR) << "Failed to write to register @0x" << std::hex << reg << " = 0x" << value << std::dec << std::endl;
+      }
+      continue;
+    }
+    else if(params->paramNames[i] == "frame_rate")
+    {
+      float rate = params->getFloat(params->paramNames[i]);
+      FrameRate r;
+      r.numerator = rate*10000;
+      r.denominator = 10000;
+      
+      uint g = gcd(r.numerator, r.denominator);
+      
+      r.numerator /= g;
+      r.denominator /= g;
+      
+      if(!setFrameRate(r)) 
+      {
+        logger(LOG_ERROR) << "DepthCamera: Failed to set frame rate to " << rate << "fps" << std::endl;
+        return false;
+      }
+      continue;
+    }
+    
+    logger(LOG_INFO) << "DepthCamera: Setting parameter '" << params->paramNames[i] << "'" << std::endl;
+    
+    const Parameter *p = getParam(params->paramNames[i]).get();
+    
+    if(!p)
+    {
+      logger(LOG_ERROR) << "DepthCamera: Ignoring unknown parameter " << params->paramNames[i] << std::endl;
+      return false;
+    }
+    
+    const BoolParameter *bp = dynamic_cast<const BoolParameter *>(p);
+    const EnumParameter *ep = dynamic_cast<const EnumParameter *>(p);
+    const IntegerParameter *ip = dynamic_cast<const IntegerParameter *>(p);
+    const UnsignedIntegerParameter *up = dynamic_cast<const UnsignedIntegerParameter *>(p);
+    const FloatParameter *fp = dynamic_cast<const FloatParameter *>(p);
+    
+    if(bp)
+    {
+      if(!set(params->paramNames[i], params->getBoolean(params->paramNames[i])))
+        return false;
+    }
+    else if(ip || ep)
+    {
+      if(!set(params->paramNames[i], params->getInteger(params->paramNames[i])))
+        return false;
+    }
+    else if(up)
+    {
+      if(!set(params->paramNames[i], (uint)params->getInteger(params->paramNames[i])))
+        return false;
+    }
+    else if(fp)
+    {
+      if(!set(params->paramNames[i], params->getFloat(params->paramNames[i])))
+        return false;
+    }
+    else
+    {
+      logger(LOG_ERROR) << "DepthCamera: Parameter type unknown for " << params->paramNames[i] << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 
   
 }

@@ -27,7 +27,7 @@ public:
   virtual bool isInitialized() const = 0;
   
   // NOTE: Make these thread-safe when implementing
-  virtual bool setValue(const Parameter &param, uint32_t value) = 0;
+  virtual bool setValue(const Parameter &param, uint32_t value, bool writeOnly = false) = 0;
   virtual bool getValue(const Parameter &param, uint32_t &value) const = 0;
   
   virtual bool readRegister(uint32_t address, uint32_t &value) const = 0;

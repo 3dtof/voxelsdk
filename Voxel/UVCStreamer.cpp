@@ -12,6 +12,8 @@
 #include <memory.h>
 #include <assert.h>
 
+#define MAX_BUFFER_COUNT 2
+
 #ifdef LINUX
 #include <linux/videodev2.h>
 #include "UVCPrivateLinux.h"
@@ -188,6 +190,12 @@ public:
     logger(LOG_DEBUG) << "UVCStreamer: Got sample buffer at " << timestamp << std::endl;
 
     Lock<Mutex> _(_dataAccessMutex);
+
+    if (_inUseBuffers.size() >= MAX_BUFFER_COUNT)
+    {
+      logger(LOG_WARNING) << "UVCStreamer: Dropping a frame because of slow forward pipeline." << std::endl;
+      _inUseBuffers.pop_front();
+    }
 
     auto f = _rawBuffers.get();
 
@@ -516,6 +524,10 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   if(!isInitialized() || isRunning())
     return false;
   
+  logger(LOG_INFO) << "UVCStreamer: Setting video mode = " 
+    << videoMode.frameSize.width << "x" << videoMode.frameSize.height 
+    << "@" << videoMode.getFrameRate() << "fps" << std::endl;
+  
 #ifdef LINUX
   struct v4l2_format fmt;
   memset(&fmt, 0, sizeof(fmt));
@@ -666,7 +678,7 @@ bool UVCStreamer::_start()
     
     memset(&req, 0, sizeof(req));
     
-    req.count = 2;
+    req.count = MAX_BUFFER_COUNT;
     req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     req.memory = V4L2_MEMORY_MMAP;
     
@@ -678,7 +690,7 @@ bool UVCStreamer::_start()
         
         memset(&req, 0, sizeof(req));
         
-        req.count = 2;
+        req.count = MAX_BUFFER_COUNT;
         req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         req.memory = V4L2_MEMORY_USERPTR;
         
@@ -942,7 +954,15 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     
     if(buf.bytesused < _uvcStreamerPrivate->frameByteSize)
     {
-      logger(LOG_ERROR) << "Incomplete frame data. Skipping it." << std::endl;
+      logger(LOG_ERROR) << "Incomplete frame data. Skipping it. Expected bytes = " 
+      << _uvcStreamerPrivate->frameByteSize << ", got bytes = " << buf.bytesused << std::endl;
+      
+      if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_QBUF, &buf) == -1)
+      {
+        logger(LOG_ERROR) << "UVCStreamer: Failed to enqueue back the raw frame buffer" << std::endl;
+        return false;
+      }
+      
       return false;
     }
     

@@ -434,11 +434,11 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     return;
   }
   
-  const BoolParameter *boolParam = dynamic_cast<const BoolParameter *>(param.get());
-  const IntegerParameter *intParam = dynamic_cast<const IntegerParameter *>(param.get());
-  const UnsignedIntegerParameter *uintParam = dynamic_cast<const UnsignedIntegerParameter *>(param.get());
-  const FloatParameter *floatParam = dynamic_cast<const FloatParameter *>(param.get());
-  const EnumParameter *enumParam = dynamic_cast<const EnumParameter *>(param.get());
+  BoolParameter *boolParam = dynamic_cast<BoolParameter *>(param.get());
+  IntegerParameter *intParam = dynamic_cast<IntegerParameter *>(param.get());
+  UnsignedIntegerParameter *uintParam = dynamic_cast<UnsignedIntegerParameter *>(param.get());
+  FloatParameter *floatParam = dynamic_cast<FloatParameter *>(param.get());
+  EnumParameter *enumParam = dynamic_cast<EnumParameter *>(param.get());
   
   if(boolParam)
   {

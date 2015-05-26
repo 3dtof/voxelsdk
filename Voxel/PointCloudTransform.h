@@ -27,8 +27,9 @@ namespace Voxel
 class VOXEL_EXPORT PointCloudTransform
 {
 public:
-  int left, top;              // Image top-left corner
-  int width, height;            // sensor width and height
+  uint32_t left, top;              // Image top-left corner
+  uint32_t width, height;            // sensor width and height
+  uint32_t rowsToMerge, columnsToMerge; // Binning
   float fx, fy;             // x- and y- focal distance
   float cx, cy;             // image center
   float k1, k2, k3;           // radial distortion parameters
@@ -56,7 +57,8 @@ public:
   Point &getDirection(int row, int col);
 
 public:
-  PointCloudTransform(int left, int top, int width, int height, 
+  PointCloudTransform(uint32_t left, uint32_t top, uint32_t width, uint32_t height, 
+                      uint32_t rowsToMerge, uint32_t columnsToMerge,
                       float fx, float fy, float cx, float cy,
                       float k1, float k2, float k3, float p1, float p2);
   
@@ -70,6 +72,7 @@ public:
 private:
   Point _screenToNormalizedScreen(const Point &screen, bool verify);
   Point _normalizedScreenToScreen(const Point &normalizedScreen);
+  Point _lensCorrection(const Point &normalizedScreen);
   bool _computeConcaveMirrorBorders(int width, int height, double &minx, double &maxX,
                                       double &minY, double &maxY);
   bool _computeConcaveMirrorBordersOuter(int width, int height, double &minX, double &maxX,
@@ -83,6 +86,9 @@ private:
   Point _normalizedScreenToUnitWorld(const Point &normalizedScreen);
   void _computeClippingPlanes();
 };
+
+typedef Ptr<PointCloudTransform> PointCloudTransformPtr;
+
 /**
  * @}
  */

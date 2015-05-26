@@ -19,6 +19,10 @@
 #include <PointCloudTransform.h>
 
 #include <Filter/FilterSet.h>
+#include "FrameStream.h"
+#include "FrameGenerator.h"
+#include "PointCloudFrameGenerator.h"
+#include "Configuration.h"
 
 
 namespace Voxel
@@ -46,6 +50,10 @@ public:
   
   typedef Function<void (DepthCamera &camera, const Frame &frame, FrameType callBackType)> CallbackType;
   
+private:
+  mutable Mutex _accessMutex; // This is locked by getters and setters which are public
+  mutable Mutex _frameStreamWriterMutex;
+  
 protected:
   DevicePtr _device;
   
@@ -55,7 +63,11 @@ protected:
   
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
-  Ptr<PointCloudTransform> _pointCloudTransform;
+  
+  // NOTE: Constructors of derived classes need to initialize the first two entries in this array
+  FrameGeneratorPtr _frameGenerators[3];
+  
+  Ptr<PointCloudFrameGenerator> _pointCloudFrameGenerator;
   
   bool _parameterInit;
   
@@ -66,6 +78,8 @@ protected:
   FilterSet<RawFrame> _unprocessedFilters, _processedFilters;
   
   FilterSet<DepthFrame> _depthFilters;
+  
+  FrameStreamWriterPtr _frameStreamWriter;
   
   bool _addParameters(const Vector<ParameterPtr> &params);
   
@@ -92,12 +106,12 @@ protected:
   
   bool _running; // is capture running?
   
-  mutable Mutex _accessMutex; // This is locked by getters and setters which are public
+  bool _writeToFrameStream(RawFramePtr &rawUnprocessed);
   
   // These protected getters and setters are not thread-safe. These are to be directly called only when nested calls are to be done from getter/setter to another. 
   // Otherwise use the public functions
   template <typename T>
-  bool _get(const String &name, T &value, bool refresh = true) const;
+  bool _get(const String &name, T &value, bool refresh = false) const;
   
   template <typename T>
   bool _set(const String &name, const T &value);
@@ -108,8 +122,13 @@ protected:
   virtual bool _setFrameSize(const FrameSize &s) = 0;
   virtual bool _getFrameSize(FrameSize &s) const = 0;
   virtual bool _getMaximumFrameSize(FrameSize &s) const = 0;
+  virtual bool _getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const = 0;
   virtual bool _getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const = 0;
   virtual bool _getMaximumVideoMode(VideoMode &videoMode) const = 0;
+  
+  virtual bool _getBytesPerPixel(uint &bpp) const = 0;
+  virtual bool _setBytesPerPixel(const uint &bpp) = 0;
+  
   
   virtual bool _getROI(RegionOfInterest &roi) = 0;
   virtual bool _setROI(const RegionOfInterest &roi) = 0;
@@ -119,15 +138,17 @@ protected:
   
   inline void _makeID() { _id = _name + "(" + _device->id() + ")"; }
   
+  virtual bool _reset() = 0;
+  virtual bool _onReset() = 0;
+  
+  virtual bool _applyConfigParams(const ConfigSet *params);
+  
+  bool _init();
+  
 public:
-  DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
-  _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
-  _parameterInit(true), _running(false),
-  _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers),
-  _depthFilters(_depthFrameBuffers)
-  {
-    _makeID();
-  }
+  MainConfigurationFile configFile; // This corresponds to camera specific configuration file
+  
+  DepthCamera(const String &name, DevicePtr device);
   
   virtual bool isInitialized() const
   {
@@ -144,7 +165,12 @@ public:
   inline bool isRunning() const { return _running; }
   
   template <typename T>
-  bool get(const String &name, T &value, bool refresh = true) const;
+  bool getStreamParam(const String &name, T &value) const;
+  
+  bool refreshParams();
+  
+  template <typename T>
+  bool get(const String &name, T &value, bool refresh = false) const;
   
   template <typename T>
   bool set(const String &name, const T &value);
@@ -159,8 +185,12 @@ public:
   inline bool setFrameSize(const FrameSize &s);
   inline bool getFrameSize(FrameSize &s) const;
   inline bool getMaximumFrameSize(FrameSize &s) const;
+  inline bool getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const;
   inline bool getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const;
   inline bool getMaximumVideoMode(VideoMode &videoMode) const;
+  
+  inline bool getBytesPerPixel(uint &bpp) const;
+  inline bool setBytesPerPixel(const uint &bpp);
   
   inline bool getROI(RegionOfInterest &roi);
   inline bool setROI(const RegionOfInterest &roi);
@@ -168,11 +198,19 @@ public:
   
   inline bool getFieldOfView(float &fovHalfAngle) const;
   
-  virtual bool registerCallback(FrameType type, CallbackType f);
-  virtual bool clearCallback();
+  virtual bool saveFrameStream(const String &fileName);
+  virtual bool isSavingFrameStream();
+  virtual bool closeFrameStream();
   
-  // position = -1 => at the end, otherwise at zero-indexed 'position'
-  virtual int addFilter(FilterPtr p, FrameType frameType, int position = -1);
+  virtual bool registerCallback(FrameType type, CallbackType f);
+  virtual bool clearAllCallbacks();
+  virtual bool clearCallback(FrameType type);
+  
+  // beforeFilterIndex = -1 => at the end, otherwise at location before the given filter index.
+  // Return value: 
+  //   >= 0 => add successfully with return value as filter ID.
+  //     -1 => failed to add filter
+  virtual int addFilter(FilterPtr p, FrameType frameType, int beforeFilterID = -1);
   virtual FilterPtr getFilter(int filterID, FrameType frameType) const;
   virtual bool removeFilter(int filterID, FrameType frameType);
   virtual bool removeAllFilters(FrameType frameType);
@@ -187,11 +225,18 @@ public:
   
   void wait();
   
-  virtual bool reset();
+  bool reset();
   
   inline Ptr<RegisterProgrammer> getProgrammer() { return _programmer; } // RegisterProgrammer is usually thread-safe to use outside directly
   inline Ptr<Streamer> getStreamer() { return _streamer; } // Streamer may not be thread-safe
   
+  inline bool reloadConfiguration() { return configFile.read(_name + ".conf"); }
+  inline const Vector<String> &getCameraProfileNames() { return configFile.getCameraProfileNames(); }
+  inline const String &getCurrentCameraProfileName() { return configFile.getCurrentProfileName(); }
+  
+  bool setCameraProfile(const String &cameraProfileName);
+  
+  bool close();
   virtual ~DepthCamera();
 };
 
@@ -245,6 +290,13 @@ bool DepthCamera::getMaximumFrameSize(FrameSize &s) const
   return _getMaximumFrameSize(s);
 }
 
+bool DepthCamera::getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getMaximumFrameRate(frameRate, forFrameSize);
+}
+
+
 bool DepthCamera::getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
   Lock<Mutex> _(_accessMutex);
@@ -255,6 +307,18 @@ bool DepthCamera::getMaximumVideoMode(VideoMode &videoMode) const
 {
   Lock<Mutex> _(_accessMutex);
   return _getMaximumVideoMode(videoMode);
+}
+
+bool DepthCamera::getBytesPerPixel(uint &bpp) const
+{
+  Lock<Mutex> _(_accessMutex);
+  return _getBytesPerPixel(bpp);
+}
+
+bool DepthCamera::setBytesPerPixel(const uint &bpp)
+{
+  Lock<Mutex> _(_accessMutex);
+  return _setBytesPerPixel(bpp);
 }
 
 
@@ -313,6 +377,7 @@ bool DepthCamera::_set(const String &name, const T &value)
   
   if(p != _parameters.end())
   {
+    logger(LOG_DEBUG) << "DepthCamera: Setting parameter '" << name << "' = " << value << std::endl;
     ParameterTemplate<T> *param = dynamic_cast<ParameterTemplate<T> *>(p->second.get());
     
     if(param == 0)
@@ -347,6 +412,15 @@ const ParameterPtr DepthCamera::getParam(const String &name) const
     logger(LOG_ERROR) << "DepthCamera: Unknown parameter " << _id << "." << name << std::endl;
     return 0;
   }
+}
+
+template <typename T>
+bool DepthCamera::getStreamParam(const String &name, T &value) const
+{
+  if(!_frameGenerators[0]->get(name, value) && !_frameGenerators[1]->get(name, value) && !_frameGenerators[2]->get(name, value))
+    return false;
+  
+  return true;
 }
 
 

@@ -26,6 +26,9 @@ public:
   
   virtual bool getChannels(Device &device, Vector<int> &channels);
   
+  virtual Vector<GeneratorIDType> getSupportedGeneratorTypes();
+  virtual bool getFrameGenerator(uint8_t frameType, GeneratorIDType generatorID, FrameGeneratorPtr &frameGenerator);
+  
   virtual ~ToFCameraFactory() {}
 };
 

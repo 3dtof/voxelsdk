@@ -19,7 +19,7 @@ namespace Voxel
 class FrameSize
 {
 public:
-  size_t width, height;
+  uint32_t width, height;
   
   inline bool operator ==(const FrameSize &other) const
   {
@@ -35,13 +35,23 @@ public:
 class RegionOfInterest: public FrameSize
 {
 public:
-  size_t x, y;
+  uint32_t x, y;
+  
+  inline bool operator ==(const RegionOfInterest &other) const
+  {
+    return width == other.width && height == other.height && x == other.x && y == other.y;
+  }
+  
+  inline bool operator !=(const RegionOfInterest &other) const
+  {
+    return !operator==(other);
+  }
 };
 
 class FrameRate
 {
 public:
-  size_t numerator, denominator;
+  uint32_t numerator, denominator;
   
   inline float getFrameRate() const { return (denominator == 0)?0:(((float)numerator)/denominator); }
 };
@@ -60,7 +70,14 @@ class SupportedVideoMode: public VideoMode
 public:
   uint8_t bytesPerPixel;
   
-  SupportedVideoMode(size_t width, size_t height, size_t rateNumerator, size_t rateDenominator, uint8_t bytesPerPixel)
+  SupportedVideoMode(): bytesPerPixel(0)
+  {
+    frameSize.width = frameSize.height = 0;
+    frameRate.numerator = 0; 
+    frameRate.denominator = 1;
+  }
+  
+  SupportedVideoMode(uint32_t width, uint32_t height, uint32_t rateNumerator, uint32_t rateDenominator, uint8_t bytesPerPixel)
   {
     frameSize.width = width;
     frameSize.height = height;

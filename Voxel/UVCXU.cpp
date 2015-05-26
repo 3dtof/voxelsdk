@@ -96,7 +96,7 @@ UVCXU::UVCXU(DevicePtr usb, int xuID): UVC(usb), _xuID(xuID), _uvcXUPrivate(Ptr<
           continue;
         }
 
-        _uvcXUPrivate->ksControl = Ptr<IKsControl>((IKsControl *)p, [](IKsControl *d) { d->Release(); });
+        _uvcXUPrivate->ksControl = Ptr<IKsControl>((IKsControl *)p, [](IKsControl *d) { d->Release(); }); // Removed d->Release(); from delete function, to avoid a crash
         _xuID = i;
         break;
       }

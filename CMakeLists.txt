@@ -1,10 +1,11 @@
 cmake_minimum_required (VERSION 2.8.11)
-project (TIVoxel)
+project (Voxel)
 
 set(VOXEL_MAJOR_VERSION 0)
-set(VOXEL_MINOR_VERSION 2)
-set(VOXEL_PATCH_VERSION 0)
+set(VOXEL_MINOR_VERSION 4)
+set(VOXEL_PATCH_VERSION 8)
 set(VOXEL_VERSION ${VOXEL_MAJOR_VERSION}.${VOXEL_MINOR_VERSION}.${VOXEL_PATCH_VERSION})
+set(VOXEL_ABI_VERSION 21)
 
 ### Do not export any symbol by default
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -20,7 +21,7 @@ set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(LINUX 1)
-  add_definitions(-msse2 -pthread -std=c++11)
+  add_definitions(-msse2 -pthread -std=c++11 -fPIC -ffast-math)
   ADD_DEFINITIONS(-DLINUX)  
 
   set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
@@ -38,16 +39,19 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(WINDOWS 1)
+  add_definitions(/fp:fast /arch:SSE2)
   ADD_DEFINITIONS(-DWINDOWS /wd4251)
-  SET(COMMON_LIBS setupapi WinUsb strmiids strmbase Cfgmgr32)
-  SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI.lib)
+  SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32)
+  SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI/CyAPI.lib)
 endif()
 
 include_directories(
   Voxel
   TI3DToF
-  ${CMAKE_BINARY_DIR}/Voxel
-  ${CMAKE_BINARY_DIR}/TI3DToF
+  VoxelPCL
+  ${PROJECT_BINARY_DIR}/Voxel
+  ${PROJECT_BINARY_DIR}/TI3DToF
+  ${PROJECT_BINARY_DIR}/VoxelPCL
   ${COMMON_INCLUDE}
 )
 
@@ -76,12 +80,26 @@ INCLUDE(common.cmake)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-add_custom_target(doc
-${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-COMMENT "Generating API documentation with Doxygen" VERBATIM
-)
+  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
+  add_custom_target(doc
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+  )
+  install(CODE "execute_process(COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_BINARY_DIR})"
+        COMPONENT lib_dev)
+  
+  if(LINUX)
+    install(DIRECTORY 
+      ${CMAKE_BINARY_DIR}/doc/html/ 
+      DESTINATION share/doc/voxel-${VOXEL_VERSION}
+      COMPONENT lib_dev)
+  elseif(WINDOWS)
+  install(DIRECTORY 
+      ${CMAKE_BINARY_DIR}/doc/html/ 
+      DESTINATION doc/voxel
+      COMPONENT lib_dev)
+  endif()
 endif()
   
 #### Packaging related information -- common to both platforms
@@ -93,30 +111,29 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main 
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 add_subdirectory(Voxel)
+add_subdirectory(VoxelPCL)
 add_subdirectory(TI3DToF)
 add_subdirectory(Test)
 add_subdirectory(App)
+
+create_cmake_config(Voxel voxel voxel_dev Voxel)
+create_cmake_config(TI3DToF "voxel;ti3dtof" ti3dtof_dev TI3DToF)
+create_cmake_config(VoxelPCL "voxel;voxelpcl" voxelpcl_dev VoxelPCL voxelpcl)
+
+INCLUDE(windows_all_in_installer_config.cmake)
 
 IF(WINDOWS)
   SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
   SET(CPACK_NSIS_MODIFY_PATH ON)
   
-  #SET(CPACK_NSIS_MUI_FINISHPAGE_RUN "VoxelCLI.exe")
-  #SET(CPACK_NSIS_MUI_FINISHPAGE_RUN_TEXT "Run Voxel CLI")
   SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
   
   IF(CMAKE_CL_64)
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
-    
     install(PROGRAMS Windows/vcredist_x64.exe DESTINATION Prerequistes)
-    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
-      "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\vcredist_x64.exe\\\" /install'\n")
   ELSE()
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
-    
     install(PROGRAMS Windows/vcredist_x86.exe DESTINATION Prerequistes)
-    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
-      "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\vcredist_x86.exe\\\" /install'\n")
   ENDIF()
   
   include(CPack)

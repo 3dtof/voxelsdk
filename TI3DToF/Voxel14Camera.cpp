@@ -23,7 +23,7 @@ Voxel14Camera::Voxel14Camera(Voxel::DevicePtr device): ToFHaddockCamera("Voxel14
   _init();
 }
 
-class MixVoltageParameter: public UnsignedIntegerParameter
+class Voxel14MixVoltageParameter: public UnsignedIntegerParameter
 {
 protected:
   virtual uint _fromRawValue(uint32_t value) const
@@ -43,16 +43,16 @@ protected:
   }
   
 public:
-  MixVoltageParameter(RegisterProgrammer &programmer):
+  Voxel14MixVoltageParameter(RegisterProgrammer &programmer):
   UnsignedIntegerParameter(programmer, MIX_VOLTAGE, "mV", 0x2D05, 8, 7, 0, 500, 2075, 1500, "Mixing voltage", 
                            "Mixing voltage?", Parameter::IO_READ_WRITE, {})
   {}
   
-  virtual ~MixVoltageParameter() {}
+  virtual ~Voxel14MixVoltageParameter() {}
 };
 
 
-class IlluminationVoltageParameter: public UnsignedIntegerParameter
+class Voxel14IlluminationVoltageParameter: public UnsignedIntegerParameter
 {
 protected:
   virtual uint _fromRawValue(uint32_t value) const
@@ -72,12 +72,12 @@ protected:
   }
   
 public:
-  IlluminationVoltageParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ILLUM_VOLTAGE, "mV", 0x2D0E, 8, 7, 0, 500, 3650, 1500, "Illumination voltage", 
+  Voxel14IlluminationVoltageParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, ILLUM_VOLTAGE, "mV", 0x2D0E, 8, 7, 0, 500, 1850, 1500, "Illumination voltage", 
                            "Voltage applied to the infra-red Illumination source", Parameter::IO_READ_WRITE, {})
   {}
   
-  virtual ~IlluminationVoltageParameter() {}
+  virtual ~Voxel14IlluminationVoltageParameter() {}
 };
 
 
@@ -106,7 +106,7 @@ bool Voxel14Camera::_init()
     
     
     _downloader = Ptr<Downloader>(new USBDownloader(_device));
-    if(!_downloader->download("OPT9220_0v27.fw")) // TODO: This needs to come from a configuration
+    if(!_downloader->download(configFile.get("core", "fw")))
     {
       logger(LOG_ERROR) << "Voxel14Camera: Firmware download failed" << std::endl;
       return false;
@@ -122,15 +122,17 @@ bool Voxel14Camera::_init()
   else
     controlDevice = _device;
   
-  _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(controlDevice));
+  _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(
+    { {0x2D, 1}, {0x58, 3}, {0x5C, 3} },
+    controlDevice));
   _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
   
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
   if(!_addParameters({
-    ParameterPtr(new MixVoltageParameter(*_programmer)),
-    ParameterPtr(new IlluminationVoltageParameter(*_programmer)),
+    ParameterPtr(new Voxel14MixVoltageParameter(*_programmer)),
+    ParameterPtr(new Voxel14IlluminationVoltageParameter(*_programmer)),
     }))
   {
     return false;
@@ -146,8 +148,8 @@ bool Voxel14Camera::_init()
 bool Voxel14Camera::_initStartParams()
 {
   return 
-  set(ILLUM_VOLTAGE, 1500U) && 
-  set(MIX_VOLTAGE, 1500U) &&
+  //set(ILLUM_VOLTAGE, 1500U) && 
+  //set(MIX_VOLTAGE, 1500U) &&
   Voxel::TI::ToFHaddockCamera::_initStartParams();
 }
 
