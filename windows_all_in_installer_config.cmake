@@ -42,6 +42,7 @@ SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraShortRange.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraLongRange.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraPhaseOffset.bin` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
+    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraNoCalibration.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\fw\\\\OPT9220_0v27.tip` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\OPT9221.dml` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\fw\\\\OPT9221_0v8.tip` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n
