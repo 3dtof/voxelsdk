@@ -87,18 +87,18 @@ if(DOXYGEN_FOUND)
     COMMENT "Generating API documentation with Doxygen" VERBATIM
   )
   install(CODE "execute_process(COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_BINARY_DIR})"
-        COMPONENT lib_dev)
+        COMPONENT voxel_dev)
   
   if(LINUX)
     install(DIRECTORY 
       ${CMAKE_BINARY_DIR}/doc/html/ 
       DESTINATION share/doc/voxel-${VOXEL_VERSION}
-      COMPONENT lib_dev)
+      COMPONENT voxel_dev)
   elseif(WINDOWS)
   install(DIRECTORY 
       ${CMAKE_BINARY_DIR}/doc/html/ 
       DESTINATION doc/voxel
-      COMPONENT lib_dev)
+      COMPONENT voxel_dev)
   endif()
 endif()
   
