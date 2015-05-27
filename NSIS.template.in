@@ -645,7 +645,7 @@ FunctionEnd
   !macroend
 
   Function checkPyBindingsSelected
-    ${If} ${SectionIsSelected} ${voxel_lib_python}
+    ${If} ${SectionIsSelected} ${voxel_python}
       !insertmacro getPythonPath
 ;      messagebox mb_ok "Python Dir = $PythonDir"
       ${If} $PythonDir == ""

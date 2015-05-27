@@ -5,38 +5,6 @@ ELSE()
 ENDIF()
 
 IF(CMAKE_CL_64)
-  SET(INSTALL_ROOT_PR "C:/Program Files/")
-ELSE()
-  SET(INSTALL_ROOT_PR "C:/Program Files (x86)/")
-ENDIF()
-
-install(
-  DIRECTORY "${INSTALL_ROOT_PR}/libvoxel/"
-  DESTINATION "."
-  COMPONENT voxel_lib
-  PATTERN "python2.7/*" EXCLUDE
-)
-
-install(
-  DIRECTORY "${INSTALL_ROOT_PR}/libvoxel/"
-  DESTINATION "."
-  COMPONENT voxel_lib_python
-  FILES_MATCHING PATTERN "lib/python2.7/*"
-)
-
-install(
-  DIRECTORY "${INSTALL_ROOT_PR}/libti3dtof/"
-  DESTINATION "."
-  COMPONENT ti3dtof_lib
-)
-
-install(
-  DIRECTORY "${INSTALL_ROOT_PR}/libvoxelpcl/"
-  DESTINATION "."
-  COMPONENT voxelpcl_lib
-)
-
-IF(CMAKE_CL_64)
   SET(XARCHSUFFIX "x64")
   SET(ARCHSUFFIX "64")
 ELSE()
@@ -46,11 +14,11 @@ ENDIF()
 
 SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
   "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n
-  \\\${If}  \\\${SectionIsSelected} \\\${voxel_lib}\n
+  \\\${If}  \\\${SectionIsSelected} \\\${voxel}\n
     ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\vcredist_${XARCHSUFFIX}.exe\\\" /install'\n
   \\\${EndIf}\n
 
-  \\\${If}  \\\${SectionIsSelected} \\\${voxel_lib_python}\n
+  \\\${If}  \\\${SectionIsSelected} \\\${voxel_python}\n
 ;    messagebox mb_ok \\\"\\\$INSTDIR\\\\lib\\\\python2.7\\\\* \\\$PythonDir\\\\Lib\\\\site-packages\\\"\n
     CopyFiles \\\"\\\$INSTDIR\\\\lib\\\\python2.7\\\\_Voxel.pyd\\\" \\\"\\\$PythonDir\\\\Lib\\\\site-packages\\\\\\\"\n
     CopyFiles \\\"\\\$INSTDIR\\\\lib\\\\python2.7\\\\Voxel.py\\\" \\\"\\\$PythonDir\\\\Lib\\\\site-packages\\\\\\\"\n
