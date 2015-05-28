@@ -46,6 +46,7 @@ DepthCameraPtr ToFCameraFactory::getDepthCamera(DevicePtr device)
     {
       return DepthCameraPtr(new HaddockCDKCamera(device));
     }
+	else if(d.vendorID() == VOXEL_D_VENDOR_ID && (d.productID() == VOXEL_D_PRODUCT_ID1  || d.productID() == VOXEL_D_PRODUCT_ID2))
     {
       return DepthCameraPtr(new VoxelDCamera(device));
     }
