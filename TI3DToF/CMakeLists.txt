@@ -57,39 +57,39 @@ endforeach()
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets
-  LIBRARY DESTINATION lib/voxel COMPONENT ti3dtof_lib
-  ARCHIVE DESTINATION lib/voxel COMPONENT ti3dtof_lib
-  RUNTIME DESTINATION lib/voxel COMPONENT ti3dtof_lib
+  LIBRARY DESTINATION lib/voxel COMPONENT ti3dtof
+  ARCHIVE DESTINATION lib/voxel COMPONENT ti3dtof
+  RUNTIME DESTINATION lib/voxel COMPONENT ti3dtof
 )
 
 IF(LINUX)
 install(FILES 
   ${CONF_FILES}
   DESTINATION /etc/voxel/
-  COMPONENT ti3dtof_lib
+  COMPONENT ti3dtof
 )
 
 install(FILES 
   ${FW_FILES}
   DESTINATION /lib/firmware/voxel
-  COMPONENT ti3dtof_lib
+  COMPONENT ti3dtof
 )
 
 install(FILES
   72-ti3dtof.rules
   DESTINATION /etc/udev/rules.d/
-  COMPONENT ti3dtof_lib
+  COMPONENT ti3dtof
 )
 ELSEIF(WINDOWS)
 INSTALL(FILES
   ${CONF_FILES}
   DESTINATION lib/voxel/conf
-  COMPONENT ti3dtof_lib)
+  COMPONENT ti3dtof)
 
 INSTALL(FILES
   ${FW_FILES}
   DESTINATION lib/voxel/fw
-  COMPONENT ti3dtof_lib)
+  COMPONENT ti3dtof)
 ENDIF()
 
 install(FILES
@@ -115,18 +115,18 @@ install(FILES
 )
 
 set_target_properties(ti3dtof PROPERTIES 
-                      VERSION ${TI3DToF_VERSION} 
-                      SOVERSION ${TI3DToF_ABI_VERSION})
+                      VERSION ${VOXEL_VERSION} 
+                      SOVERSION ${VOXEL_ABI_VERSION})
 
 IF(LINUX)
-  set(CPACK_COMPONENTS_ALL ti3dtof_lib)
+  set(CPACK_COMPONENTS_ALL ti3dtof)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Support libraries for ToF depth camera from Texas Instruments")
   set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm;")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION})")
-  create_cpack_config(libti3dtof ${TI3DToF_VERSION})
+  create_cpack_config(libti3dtof ${VOXEL_VERSION})
 
   set(CPACK_COMPONENTS_ALL ti3dtof_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Header files for ToF depth camera from Texas Instruments.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION})")
-  create_cpack_config(libti3dtof-dev ${TI3DToF_VERSION})
+  create_cpack_config(libti3dtof-dev ${VOXEL_VERSION})
 ENDIF()

@@ -59,9 +59,9 @@ set_target_properties(voxel PROPERTIES
   
 install(TARGETS voxel
   EXPORT VoxelTargets
-  LIBRARY DESTINATION lib COMPONENT lib
-  ARCHIVE DESTINATION lib COMPONENT lib
-  RUNTIME DESTINATION lib COMPONENT lib
+  LIBRARY DESTINATION lib COMPONENT voxel
+  ARCHIVE DESTINATION lib COMPONENT voxel
+  RUNTIME DESTINATION lib COMPONENT voxel
 )
 
 install(FILES 
@@ -100,7 +100,7 @@ install(FILES
   PointCloudTransform.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
-  COMPONENT lib_dev
+  COMPONENT voxel_dev
 )
 
 install(FILES
@@ -115,7 +115,7 @@ install(FILES
   Filter/SmoothFilter.h
   Filter/DiscreteGaussian.h
   DESTINATION include/voxel/Filter
-  COMPONENT lib_dev
+  COMPONENT voxel_dev
 )
 
 configure_file(VoxelConfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/VoxelConfig.h" @ONLY)
@@ -123,23 +123,23 @@ configure_file(VoxelConfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/VoxelConfig.h" @ONL
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelConfig.h
   DESTINATION include/voxel
-  COMPONENT lib_dev
+  COMPONENT voxel_dev
 )
 
 add_subdirectory(SWIG)
 
 IF(LINUX)
-  set(CPACK_COMPONENTS_ALL lib)
+  set(CPACK_COMPONENTS_ALL voxel)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb-1.0-0, libudev1")
   create_cpack_config(libvoxel ${VOXEL_VERSION})
 
-  set(CPACK_COMPONENTS_ALL lib_dev)
+  set(CPACK_COMPONENTS_ALL voxel_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
   create_cpack_config(libvoxel-dev ${VOXEL_VERSION})
   
-  set(CPACK_COMPONENTS_ALL python)
+  set(CPACK_COMPONENTS_ALL voxel_python)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Python bindings for Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), python2.7 (>= 2.7.0)")
   create_cpack_config(libvoxel-python ${VOXEL_VERSION})

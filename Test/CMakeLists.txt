@@ -21,6 +21,9 @@ target_link_libraries(CameraSystemReadStreamTest voxel)
 add_executable(DMLParseTest DMLParseTest.cpp)
 target_link_libraries(DMLParseTest voxel)
 
+add_executable(Voxel14RegisterTest Voxel14RegisterTest.cpp)
+target_link_libraries(Voxel14RegisterTest ti3dtof)
+
 install(TARGETS
   DeviceTest 
   DownloaderTest 
@@ -29,6 +32,7 @@ install(TARGETS
   CameraSystemSaveStreamTest
   CameraSystemReadStreamTest
   DMLParseTest
+  Voxel14RegisterTest
   RUNTIME
   DESTINATION bin
   COMPONENT test

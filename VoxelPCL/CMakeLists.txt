@@ -17,31 +17,31 @@ generate_export_header(voxelpcl
 
 install(TARGETS voxelpcl
   EXPORT VoxelPCLTargets
-  LIBRARY DESTINATION lib COMPONENT pcl
-  ARCHIVE DESTINATION lib COMPONENT pcl
-  RUNTIME DESTINATION lib COMPONENT pcl
+  LIBRARY DESTINATION lib COMPONENT voxelpcl
+  ARCHIVE DESTINATION lib COMPONENT voxelpcl
+  RUNTIME DESTINATION lib COMPONENT voxelpcl
 )
 
 install(FILES
   PCLGrabber.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelPCLExports.h
   DESTINATION include/voxel/pcl
-  COMPONENT pcl_dev
+  COMPONENT voxelpcl_dev
 )
 
 set_target_properties(voxelpcl PROPERTIES 
-                      VERSION ${VOXEL_PCL_VERSION} 
-                      SOVERSION ${VOXEL_PCL_ABI_VERSION})
+                      VERSION ${VOXEL_VERSION} 
+                      SOVERSION ${VOXEL_ABI_VERSION})
 
 
 IF(LINUX)
-  set(CPACK_COMPONENTS_ALL pcl)
+  set(CPACK_COMPONENTS_ALL voxelpcl)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "PCL integration with Grabber and Viewer")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libpcl-visualization-1.7, libpcl-io-1.7, libpcl-common-1.7")
-  create_cpack_config(libvoxel-pcl ${VOXEL_PCL_VERSION})
+  create_cpack_config(libvoxel-pcl ${VOXEL_VERSION})
 
-  set(CPACK_COMPONENTS_ALL pcl_dev)
+  set(CPACK_COMPONENTS_ALL voxelpcl_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION}), libpcl-visualization-1.7-dev, libpcl-io-1.7-dev, libpcl-common-1.7-dev")
-  create_cpack_config(libvoxel-pcl-dev ${VOXEL_PCL_VERSION})
+  create_cpack_config(libvoxel-pcl-dev ${VOXEL_VERSION})
 ENDIF()

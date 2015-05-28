@@ -1,12 +1,11 @@
 cmake_minimum_required (VERSION 2.8.11)
-project (libvoxelapps)
+project (Voxel)
 
-set(VOXEL_APP_MAJOR_VERSION 0)
-set(VOXEL_APP_MINOR_VERSION 4)
-set(VOXEL_APP_PATCH_VERSION 8)
-set(VOXEL_APP_VERSION ${VOXEL_APP_MAJOR_VERSION}.${VOXEL_APP_MINOR_VERSION}.${VOXEL_APP_PATCH_VERSION})
-set(VOXEL_VERSION ${VOXEL_APP_VERSION})
-set(VOXEL_PCL_VERSION ${VOXEL_APP_VERSION})
+set(VOXEL_MAJOR_VERSION 0)
+set(VOXEL_MINOR_VERSION 4)
+set(VOXEL_PATCH_VERSION 8)
+set(VOXEL_VERSION ${VOXEL_MAJOR_VERSION}.${VOXEL_MINOR_VERSION}.${VOXEL_PATCH_VERSION})
+set(VOXEL_ABI_VERSION 21)
 
 ### Do not export any symbol by default
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -22,8 +21,15 @@ set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(LINUX 1)
-  add_definitions(-msse2 -pthread -std=c++11)
+  add_definitions(-msse2 -pthread -std=c++11 -fPIC -ffast-math)
   ADD_DEFINITIONS(-DLINUX)  
+
+  set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
+  SET(COMMON_LIBS_PRIVATE "")
+  set(COMMON_INCLUDE
+    ${COMMON_INCLUDE}
+    /usr/include/libusb-1.0
+  )
   
   if(ARCH STREQUAL "x86_64")
     set(ARCH amd64)
@@ -33,16 +39,20 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(WINDOWS 1)
+  add_definitions(/fp:fast /arch:SSE2)
   ADD_DEFINITIONS(-DWINDOWS /wd4251)
+  SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32)
+  SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI/CyAPI.lib)
 endif()
 
-find_package(VoxelPCL ${VOXEL_PCL_VERSION} REQUIRED)
-
-message(${VOXEL_PCL_INCLUDE_DIRS})
-
 include_directories(
-  ${VOXEL_INCLUDE_DIRS}
-  ${VOXEL_PCL_INCLUDE_DIRS}
+  Voxel
+  TI3DToF
+  VoxelPCL
+  ${PROJECT_BINARY_DIR}/Voxel
+  ${PROJECT_BINARY_DIR}/TI3DToF
+  ${PROJECT_BINARY_DIR}/VoxelPCL
+  ${COMMON_INCLUDE}
 )
 
 find_package(OpenMP)
@@ -66,39 +76,50 @@ IF(LINUX)
   set(CPACK_DEB_COMPONENT_INSTALL 1)
 ENDIF()
 
+INCLUDE(common.cmake)
+
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(doc
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Generating API documentation with Doxygen" VERBATIM
   )
   install(CODE "execute_process(COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_BINARY_DIR})"
-    COMPONENT apps)
+        COMPONENT lib_dev)
   
   if(LINUX)
     install(DIRECTORY 
       ${CMAKE_BINARY_DIR}/doc/html/ 
-      DESTINATION share/doc/voxelapps-${VOXEL_PCL_VERSION}
-      COMPONENT apps)
+      DESTINATION share/doc/voxel-${VOXEL_VERSION}
+      COMPONENT lib_dev)
   elseif(WINDOWS)
   install(DIRECTORY 
       ${CMAKE_BINARY_DIR}/doc/html/ 
-      DESTINATION doc/voxelapps
-      COMPONENT apps)
+      DESTINATION doc/voxel
+      COMPONENT lib_dev)
   endif()
 endif()
   
 #### Packaging related information -- common to both platforms
 set(CPACK_PACKAGE_NAME "Voxel SDK")
-set(CPACK_PACKAGE_VERSION ${VOXEL_APP_VERSION})
+set(CPACK_PACKAGE_VERSION ${VOXEL_VERSION})
 set(CPACK_PACKAGE_CONTACT "prasad.bhat@ti.com")
 set(CPACK_PACKAGE_VENDOR "Texas Instruments, Inc.")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main Voxel library.")
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
+add_subdirectory(Voxel)
+add_subdirectory(VoxelPCL)
+add_subdirectory(TI3DToF)
+add_subdirectory(Test)
 add_subdirectory(App)
+
+create_cmake_config(Voxel voxel voxel_dev Voxel)
+create_cmake_config(TI3DToF "voxel;ti3dtof" ti3dtof_dev TI3DToF)
+create_cmake_config(VoxelPCL "voxel;voxelpcl" voxelpcl_dev VoxelPCL voxelpcl)
+
 INCLUDE(windows_all_in_installer_config.cmake)
 
 IF(WINDOWS)
@@ -109,8 +130,10 @@ IF(WINDOWS)
   
   IF(CMAKE_CL_64)
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+    install(PROGRAMS Windows/vcredist_x64.exe DESTINATION Prerequistes)
   ELSE()
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+    install(PROGRAMS Windows/vcredist_x86.exe DESTINATION Prerequistes)
   ENDIF()
   
   include(CPack)

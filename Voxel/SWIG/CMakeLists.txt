@@ -26,12 +26,12 @@ SWIG_LINK_LIBRARIES(Voxel voxel ${PYTHON_LIBRARIES})
 
 install(TARGETS ${SWIG_MODULE_Voxel_REAL_NAME}
   DESTINATION lib/python2.7
-  COMPONENT python
+  COMPONENT voxel_python
 )
 
 install(FILES 
   ${CMAKE_CURRENT_BINARY_DIR}/Voxel.py
   DESTINATION lib/python2.7
-  COMPONENT python
+  COMPONENT voxel_python
 )
 ENDIF()
