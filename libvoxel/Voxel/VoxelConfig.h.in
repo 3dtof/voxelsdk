@@ -1,0 +1,12 @@
+/*
+ * TI Voxel Lib component.
+ *
+ * Copyright (c) 2014 Texas Instruments Inc.
+ */
+
+#ifndef VOXEL_VOXELCONFIG_H
+#define VOXEL_VOXELCONFIG_H
+
+#define VOXEL_ABI_VERSION @VOXEL_ABI_VERSION@
+
+#endif

@@ -1,0 +1,22 @@
+/**
+ * \mainpage Applications using Voxel SDK and PCL integration
+ * 
+ * This documents the code of sample applications including VoxelCLI
+ *
+ * \section Conventions Coding Conventions
+ * All public API elements are enclosed in namespace \ref Voxel. 
+ * \subsection Naming Naming Conventions
+ * 1. All class names are in title case. E.g.: \ref Voxel::EnumParameter
+ * 2. All function names and variable names are also in title case, 
+ *    except that the first character is always in lower case. E.g.: \ref breakLines()
+ * 3. All protected/private member begin with underscore, and public members do not. E.g.: \ref Voxel::DepthCamera::_addParameters()
+ * 
+ * \subsection CommonSTD Common Data-structures
+ * These use STL data-structures wrapped in \ref Common.h, which is part of Voxel-SDK.
+ *
+ * \section primary_classes
+ * Voxel::PCLViewer is a custom threaded viewer using the Voxel::PCLGrabber from libvoxel-pcl and Voxel::DepthCamera and libvoxel.
+ * 
+ * The CLI uses a custom class Voxel::CLIManager with a generalized command handling. 
+ * This using linenoise for CLI handling. See elements in namespace \ref LineNoise.
+ */

@@ -1,0 +1,26 @@
+/**
+ * \mainpage Voxel Library API Documentation
+ * 
+ * Voxel Library is meant to be a platform to 
+ * interface one or more depth cameras, with a common higher-level API.
+ * The higher level API is explained here. For installation instructions and overall documentation 
+ * of Voxel library, see http://uda0393673.apr.dhcp.ti.com/wiki/Main_Page
+ *
+ * \section Conventions Coding Conventions
+ * All public API elements are enclosed in namespace \ref Voxel. 
+ * \subsection Naming Naming Conventions
+ * 1. All class names are in title case. E.g.: \ref Voxel::EnumParameter
+ * 2. All function names and variable names are also in title case, 
+ *    except that the first character is always in lower case. E.g.: \ref breakLines()
+ * 3. All protected/private member begin with underscore, and public members do not. E.g.: \ref Voxel::DepthCamera::_addParameters()
+ * 
+ * \subsection CommonSTD Common Data-structures
+ * Several common STL data-structures such std::vector, std::list, std::thread, etc. are used in Voxel library. 
+ * However, they have been wrapped in typedefs and template aliases for ease of replacement later if necessary.
+ * All replacement typedefs are defined in \ref Common.h, and follows naming discussed in Section \ref Naming.
+ *
+ * \section ApiStructure Overall API Structure
+ * Two primary API classes which will be used by most of the users, are \ref Voxel::CameraSystem and \ref Voxel::DepthCamera.
+ *
+ * The rest of the classes in Voxel library are used to handle various individual functionalities. See <a href="modules.xhtml">Modules</a> to know about these classes.
+ */
