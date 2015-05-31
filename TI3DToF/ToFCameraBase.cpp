@@ -113,7 +113,7 @@ bool ToFCameraBase::_start()
     logger(LOG_ERROR) << "ToFCamera: Could not get current frame rate" << std::endl;
   }
   
-  logger(LOG_INFO) << "Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
+  logger(LOG_INFO) << "ToFCamera: Starting with " << m.frameSize.width << "x" << m.frameSize.height << "@" << m.getFrameRate() << "fps" << std::endl;
   
   if(!_initStartParams()) // Initialize parameters to starts streaming
     return false;

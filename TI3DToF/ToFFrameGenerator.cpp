@@ -32,6 +32,9 @@
 #define PARAM_COLUMNS_TO_MERGE "columnsToMerge"
 #define PARAM_HISTOGRAM_ENABLED "histogramEnabled"
 
+#define PARAM_FRAME_WIDTH "frameWidth"
+#define PARAM_FRAME_HEIGHT "frameHeight"
+
 #define PARAM_DEALIASED_16BIT_MODE "dealiased16BitMode"
 
 namespace Voxel
@@ -41,7 +44,7 @@ namespace TI
 {
   
 ToFFrameGenerator::ToFFrameGenerator(): 
-  FrameGenerator((TI_VENDOR_ID << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0, 2),
+  FrameGenerator((TI_VENDOR_ID << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0, 3),
 _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
 {
   _frameGeneratorParameters[PARAM_BYTES_PER_PIXEL] = SerializablePtr(new SerializableUnsignedInt());
@@ -53,6 +56,8 @@ _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
   _frameGeneratorParameters[PARAM_ROI_HEIGHT] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_MAX_FRAME_WIDTH] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_MAX_FRAME_HEIGHT] = SerializablePtr(new SerializableUnsignedInt());
+  _frameGeneratorParameters[PARAM_FRAME_WIDTH] = SerializablePtr(new SerializableUnsignedInt());
+  _frameGeneratorParameters[PARAM_FRAME_HEIGHT] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_ROWS_TO_MERGE] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_COLUMNS_TO_MERGE] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_HISTOGRAM_ENABLED] = SerializablePtr(new SerializableUnsignedInt());
@@ -101,9 +106,22 @@ bool ToFFrameGenerator::_onReadConfiguration()
     _dealiased16BitMode = d > 0;
   }
   
+  if(_majorVersion == 0 && _minorVersion < 3)
+  {
+    _size.width = _roi.width/_columnsToMerge;
+    _size.height = _roi.height/_rowsToMerge;
+    _frameSize = _size;
+  }
+  else
+  {
+    if(!get(PARAM_FRAME_WIDTH, _frameSize.width) || !get(PARAM_FRAME_HEIGHT, _frameSize.height))
+      return false;
+    
+    _size.width = std::min<uint>(_frameSize.width, _roi.width/_columnsToMerge);
+    _size.height = std::min<uint>(_frameSize.height, _roi.height/_rowsToMerge);
+  }
+  
   _frameType = (ToFFrameType)frameType;
-  _size.width = _roi.width/_columnsToMerge;
-  _size.height = _roi.height/_rowsToMerge;
   
   if(!_readPhaseOffsetCorrection() || !_createCrossTalkFilter())
     return false;
@@ -113,6 +131,7 @@ bool ToFFrameGenerator::_onReadConfiguration()
 bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_t bytesPerPixel, 
                                       uint32_t dataArrangeMode, 
                                       const RegionOfInterest &roi, const FrameSize &maxFrameSize, 
+                                      const FrameSize &frameSize,
                                       uint rowsToMerge, uint columnsToMerge,
                                       uint8_t histogramEnabled, const String &crossTalkCoefficients,
                                       ToFFrameType type, 
@@ -120,7 +139,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
 {
   if(_phaseOffsetFileName == phaseOffsetFileName && bytesPerPixel == _bytesPerPixel && 
     _dataArrangeMode == dataArrangeMode && 
-    _maxFrameSize == maxFrameSize && _roi == roi && _rowsToMerge == rowsToMerge && _columnsToMerge == columnsToMerge
+    _maxFrameSize == maxFrameSize && _frameSize == frameSize &&
+    _roi == roi && _rowsToMerge == rowsToMerge && _columnsToMerge == columnsToMerge
     && _histogramEnabled == histogramEnabled &&
     _crossTalkCoefficients == crossTalkCoefficients && _frameType == type &&
   _dealiased16BitMode == dealiased16BitMode)
@@ -150,8 +170,9 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
     return false;
   }
   
-  _size.width = _roi.width/_columnsToMerge;
-  _size.height = _roi.height/_rowsToMerge;
+  _frameSize = frameSize;
+  _size.width = std::min<uint>(frameSize.width, _roi.width/_columnsToMerge);
+  _size.height = std::min<uint>(frameSize.height, _roi.height/_rowsToMerge);
   
   _histogramEnabled = histogramEnabled;
   _crossTalkCoefficients = crossTalkCoefficients;
@@ -176,6 +197,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
     !_set(PARAM_HISTOGRAM_ENABLED, _histogramEnabled) ||
     !_set(PARAM_MAX_FRAME_WIDTH, _maxFrameSize.width) ||
     !_set(PARAM_MAX_FRAME_HEIGHT, _maxFrameSize.height) ||
+    !_set(PARAM_FRAME_WIDTH, _frameSize.width) ||
+    !_set(PARAM_FRAME_HEIGHT, _frameSize.height) ||
     !_set(PARAM_ROWS_TO_MERGE, _rowsToMerge) ||
     !_set(PARAM_COLUMNS_TO_MERGE, _columnsToMerge) ||
     !_set(PARAM_DEALIASED_16BIT_MODE, d))
@@ -250,10 +273,10 @@ bool ToFFrameGenerator::_applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData)
     return true; // Nothing to do
     
   if(_phaseOffsetCorrectionData.size() != _maxFrameSize.height*_maxFrameSize.width ||
-    phaseData.size() != (_roi.width/_columnsToMerge)*(_roi.height/_rowsToMerge))
+    phaseData.size() != (_size.width)*(_size.height))
     return false;
   
-  int i = _roi.height/_rowsToMerge, j;
+  int i = _size.height, j;
   
   int16_t v;
   uint16_t *d = phaseData.data();
@@ -263,7 +286,7 @@ bool ToFFrameGenerator::_applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData)
   
   while(i--)
   {
-    j = _roi.width/_columnsToMerge;
+    j = _size.width;
     while(j--)
     {
       v = *d - *o;
