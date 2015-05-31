@@ -359,8 +359,10 @@ Point PointCloudTransform::imageToWorld(const Point &p, float depth)
 
 bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame)
 {
-  if(distances.size() != (width/columnsToMerge)*(height/rowsToMerge) ||
-    pointCloudFrame.size() != (width/columnsToMerge)*(height/rowsToMerge))
+  uint w = (width + columnsToMerge - 1)/columnsToMerge, h = (height + rowsToMerge - 1)/rowsToMerge;
+  
+  if(distances.size() > w*h ||
+    pointCloudFrame.size() > w*h)
     return false;
   
   for(int v = 0; v < height; v += rowsToMerge)
@@ -373,11 +375,11 @@ bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, Poin
       
       if(p)
         *p = directions[idx] * distances[idx2];
-      else
-      {
-        logger(LOG_ERROR) << "PointCloudTransform: Could not set point at (" << u << ", " << v << ")" << std::endl;
-        return false;
-      }
+//       else
+//       {
+//         logger(LOG_ERROR) << "PointCloudTransform: Could not set point at (" << u << ", " << v << ")" << std::endl;
+//         return false;
+//       }
     }
   }
   return true;

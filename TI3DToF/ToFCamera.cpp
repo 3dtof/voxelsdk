@@ -228,8 +228,8 @@ bool ToFCamera::_setFrameSize(const FrameSize &s, bool resetROI)
     toSet = supportedVideoModes[index].frameSize;
   }
   
-  uint rowsToMerge = roi.height/toSet.height, 
-  columnsToMerge = roi.width/toSet.width;
+  uint rowsToMerge = (roi.height + toSet.height - 1)/toSet.height,
+  columnsToMerge = (roi.width + toSet.width - 1)/toSet.width;
   
   if(!_setBinning(rowsToMerge, columnsToMerge, toSet))
   {
@@ -340,9 +340,9 @@ bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &
 {
   RegionOfInterest roi;
   uint rowsToMerge, columnsToMerge;
-  FrameSize maxFrameSize;
+  FrameSize maxFrameSize, frameSize;
   
-  if(!getMaximumFrameSize(maxFrameSize) || !getROI(roi) || !_getBinning(rowsToMerge, columnsToMerge))
+  if(!getMaximumFrameSize(maxFrameSize) || !getFrameSize(frameSize) || !getROI(roi) || !_getBinning(rowsToMerge, columnsToMerge))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not get frame related parameters. Cannot convert raw data to ToF data" << std::endl;
     return false;
@@ -361,7 +361,7 @@ bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &
   }
   
   if(!_tofFrameGenerator->setParameters(configFile.get("calib", "phasecorrection"), bytesPerPixel, 
-                                    dataArrangeMode, roi, maxFrameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
+                                    dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
                                     configFile.get("calib", "cross_talk_coeff"),
                                     type, dealiased16BitMode
                                    ))

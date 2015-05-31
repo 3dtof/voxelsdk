@@ -24,7 +24,7 @@ class TI3DTOF_EXPORT ToFFrameGenerator: public FrameGenerator
   bool _dealiased16BitMode;
   
   RegionOfInterest _roi;
-  FrameSize _maxFrameSize, _size;
+  FrameSize _maxFrameSize, _frameSize, _size;
   uint32_t _rowsToMerge, _columnsToMerge;
   
   uint32_t _histogramEnabled;
@@ -58,7 +58,8 @@ public:
   
   bool setParameters(const String &phaseOffsetFileName, uint32_t bytesPerPixel, 
                      uint32_t dataArrangeMode,
-                     const RegionOfInterest &roi, const FrameSize &maxFrameSize, 
+                     const RegionOfInterest &roi, const FrameSize &maxFrameSize,
+                     const FrameSize &frameSize, 
                      uint rowsToMerge, uint columnsToMerge,
                      uint8_t histogramEnabled, 
                      const String &crossTalkCoefficients, ToFFrameType type, 

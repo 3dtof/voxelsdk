@@ -239,6 +239,8 @@ void DepthCamera::_captureLoop()
     closeFrameStream();
     _stop();
   }
+  
+  logger(LOG_INFO) << "DepthCamera: Streaming stopped." << std::endl;
 }
 
 bool DepthCamera::_convertToPointCloudFrame(const DepthFramePtr &depthFrame, PointCloudFramePtr &pointCloudFrame)
@@ -307,8 +309,8 @@ bool DepthCamera::stop()
 {
   if (!isRunning())
   {
-    logger(LOG_ERROR) << "DepthCamera: Camera is not running. Please start it before calling stop()." << std::endl;
-    return false;
+    logger(LOG_WARNING) << "DepthCamera: Camera is not running." << std::endl;
+    return true;
   }
 
   _running = false;

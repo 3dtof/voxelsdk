@@ -524,7 +524,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   if(!isInitialized() || isRunning())
     return false;
   
-  logger(LOG_INFO) << "UVCStreamer: Setting video mode = " 
+  logger(LOG_DEBUG) << "UVCStreamer: Setting video mode = " 
     << videoMode.frameSize.width << "x" << videoMode.frameSize.height 
     << "@" << videoMode.getFrameRate() << "fps" << std::endl;
   
