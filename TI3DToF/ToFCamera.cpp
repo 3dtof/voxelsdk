@@ -278,7 +278,7 @@ bool ToFCamera::_getOpDataArrangeMode(int &dataArrangeMode) const
 {
   int b;
 
-  if(!_get(OP_DATA_ARRANGE_MODE, b))
+  if(!get(OP_DATA_ARRANGE_MODE, b))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not get data arrange mode" << std::endl;
     return false;
@@ -333,7 +333,7 @@ bool ToFCamera::_getAmplitudeNormalizingFactor(float &factor)
 
 bool ToFCamera::_is16BitModeEnabled(bool &mode16Bit)
 {
-  return _get(DEALIAS_16BIT_OP_ENABLE, mode16Bit);
+  return get(DEALIAS_16BIT_OP_ENABLE, mode16Bit);
 }
 
 bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
@@ -350,10 +350,12 @@ bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &
   
   uint bytesPerPixel;
   int dataArrangeMode;
+  uint quadCount;
   ToFFrameType type;
+  
   bool dealiased16BitMode;
   if(!_getBytesPerPixel(bytesPerPixel) || !_getOpDataArrangeMode(dataArrangeMode) || !_getToFFrameType(type) ||
-    !_is16BitModeEnabled(dealiased16BitMode))
+    !_is16BitModeEnabled(dealiased16BitMode) || !get(QUAD_CNT_MAX, quadCount))
   {
     logger(LOG_ERROR) << "ToFCamera: Failed to read " << PIXEL_DATA_SIZE << " or " 
       << OP_DATA_ARRANGE_MODE << " or " << type << std::endl;
@@ -363,7 +365,7 @@ bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &
   if(!_tofFrameGenerator->setParameters(configFile.get("calib", "phasecorrection"), bytesPerPixel, 
                                     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
                                     configFile.get("calib", "cross_talk_coeff"),
-                                    type, dealiased16BitMode
+                                    type, quadCount, dealiased16BitMode
                                    ))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;

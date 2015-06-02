@@ -27,6 +27,10 @@ class TI3DTOF_EXPORT ToFFrameGenerator: public FrameGenerator
   FrameSize _maxFrameSize, _frameSize, _size;
   uint32_t _rowsToMerge, _columnsToMerge;
   
+  uint32_t _quadCount;
+  
+  Vector<double> _sineTable, _cosineTable;
+  
   uint32_t _histogramEnabled;
   
   String _phaseOffsetFileName;
@@ -63,6 +67,7 @@ public:
                      uint rowsToMerge, uint columnsToMerge,
                      uint8_t histogramEnabled, 
                      const String &crossTalkCoefficients, ToFFrameType type, 
+                     uint32_t quadCount,
                      bool dealiased16BitMode);
   
   virtual ~ToFFrameGenerator() {}

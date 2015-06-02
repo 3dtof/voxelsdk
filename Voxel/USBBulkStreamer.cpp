@@ -1,5 +1,7 @@
 /*
+ * TI Voxel Lib component.
  *
+ * Copyright (c) 2014 Texas Instruments Inc.
  */
 
 #include "USBBulkStreamer.h"
@@ -151,6 +153,8 @@ public:
     this->bufSize = bufSize;
     
     this->usbBuffer.resize(bufSize + BULK_XFER_EXTRA_SIZE);
+    
+    logger(LOG_DEBUG) << "USBBulkStreamer: Setting buffer size = " << bufSize << std::endl;
     
     return true;
   }

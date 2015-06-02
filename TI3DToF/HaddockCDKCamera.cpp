@@ -172,6 +172,13 @@ bool HaddockCDKCamera::_initStartParams()
      !set(CONFIDENCE_THRESHOLD, 1U))
     return false;
   
+  FrameSize s;
+  
+  // Re-calculate stream size everytime on start of stream. This is necessary because stream size 
+  // depends on parameters which could be changed in between...
+  if(!_getFrameSize(s) || !_setStreamerFrameSize(s))
+    return false;
+  
   return ToFCamera::_initStartParams(); // skip ToFHaddockCamera::_initStartParams()
 }
 
@@ -192,14 +199,21 @@ bool HaddockCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   }
   
   int bytesPerPixel;
+  uint quadCount;
+  ToFFrameType frameType;
   
-  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel) || !_get(QUAD_CNT_MAX, quadCount) || !_getToFFrameType(frameType))
   {
     logger(LOG_ERROR) << "HaddockCDKCamera: Could not get current bytes per pixel" << std::endl;
     return false;
   }
   
-  if(!streamer->setBufferSize(s.height*s.width*bytesPerPixel))
+  uint scaleFactor = bytesPerPixel;
+  
+  if(frameType == ToF_QUAD)
+    scaleFactor = quadCount*2;
+  
+  if(!streamer->setBufferSize(s.height*s.width*scaleFactor))
   {
     logger(LOG_ERROR) << "HaddockCDKCamera: Could not set video mode for USBBulkStreamer" << std::endl;
     return false;
