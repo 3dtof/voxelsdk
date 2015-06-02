@@ -161,7 +161,8 @@ typedef Ptr<RawFrame> RawFramePtr;
 
 enum ToFFrameType {
   ToF_PHASE_AMPLITUDE,
-  ToF_I_Q
+  ToF_I_Q,
+  ToF_QUAD
 };
 
 class VOXEL_EXPORT ToFRawFrame : public RawFrame

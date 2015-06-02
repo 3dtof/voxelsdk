@@ -32,6 +32,8 @@
 #define PARAM_COLUMNS_TO_MERGE "columnsToMerge"
 #define PARAM_HISTOGRAM_ENABLED "histogramEnabled"
 
+#define PARAM_QUAD_COUNT "quadCount"
+
 #define PARAM_FRAME_WIDTH "frameWidth"
 #define PARAM_FRAME_HEIGHT "frameHeight"
 
@@ -61,6 +63,7 @@ _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
   _frameGeneratorParameters[PARAM_ROWS_TO_MERGE] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_COLUMNS_TO_MERGE] = SerializablePtr(new SerializableUnsignedInt());
   _frameGeneratorParameters[PARAM_HISTOGRAM_ENABLED] = SerializablePtr(new SerializableUnsignedInt());
+  _frameGeneratorParameters[PARAM_QUAD_COUNT] = SerializablePtr(new SerializableUnsignedInt());
   
   _frameGeneratorParameters[PARAM_PHASE_OFFSETS_FILE] = SerializablePtr(new SerializableString());
   _frameGeneratorParameters[PARAM_CROSS_TALK_COEFF] = SerializablePtr(new SerializableString());
@@ -111,10 +114,12 @@ bool ToFFrameGenerator::_onReadConfiguration()
     _size.width = _roi.width/_columnsToMerge;
     _size.height = _roi.height/_rowsToMerge;
     _frameSize = _size;
+    _quadCount = 4;
   }
   else
   {
-    if(!get(PARAM_FRAME_WIDTH, _frameSize.width) || !get(PARAM_FRAME_HEIGHT, _frameSize.height))
+    if(!get(PARAM_FRAME_WIDTH, _frameSize.width) || !get(PARAM_FRAME_HEIGHT, _frameSize.height) ||
+      !get(PARAM_QUAD_COUNT, _quadCount))
       return false;
     
     _size.width = std::min<uint>(_frameSize.width, _roi.width/_columnsToMerge);
@@ -135,6 +140,7 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
                                       uint rowsToMerge, uint columnsToMerge,
                                       uint8_t histogramEnabled, const String &crossTalkCoefficients,
                                       ToFFrameType type, 
+                                      uint32_t quadCount,
                                       bool dealiased16BitMode)
 {
   if(_phaseOffsetFileName == phaseOffsetFileName && bytesPerPixel == _bytesPerPixel && 
@@ -142,7 +148,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
     _maxFrameSize == maxFrameSize && _frameSize == frameSize &&
     _roi == roi && _rowsToMerge == rowsToMerge && _columnsToMerge == columnsToMerge
     && _histogramEnabled == histogramEnabled &&
-    _crossTalkCoefficients == crossTalkCoefficients && _frameType == type &&
+    _crossTalkCoefficients == crossTalkCoefficients && 
+    _frameType == type && _quadCount == quadCount &&
   _dealiased16BitMode == dealiased16BitMode)
     return true;
   
@@ -179,6 +186,27 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
   _frameType = type;
   _dealiased16BitMode = dealiased16BitMode;
   
+  _quadCount = quadCount;
+  
+  if(_quadCount > 100) // Something not right about quad count
+  {
+    logger(LOG_ERROR) << "ToFFrameGenerator: Incorrect quad count = " << _quadCount << std::endl;
+    return false;
+  }
+  
+  if(_frameType == ToF_QUAD)
+  {
+    _sineTable.resize(_quadCount);
+    _cosineTable.resize(_quadCount);
+    
+    for(auto i = 0; i < _quadCount; i++)
+    {
+      _sineTable[i] = sin(2*M_PI/_quadCount*i);
+      _cosineTable[i] = cos(2*M_PI/_quadCount*i);
+      logger(LOG_INFO) << "table @" << i << " = " << _sineTable[i] << ", " << _cosineTable[i] << std::endl;
+    }
+  }
+  
   if(!_createCrossTalkFilter())
     return false;
   
@@ -186,6 +214,7 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
   uint32_t d = _dealiased16BitMode;
   if(
     !_set(PARAM_TOF_FRAME_TYPE, frameType) ||
+    !_set(PARAM_QUAD_COUNT, quadCount) ||
     !_set(PARAM_BYTES_PER_PIXEL, _bytesPerPixel) ||
     !_set(PARAM_DATA_ARRANGE_MODE, _dataArrangeMode) ||
     !_set(PARAM_ROI_X, _roi.x) ||
@@ -308,7 +337,7 @@ bool ToFFrameGenerator::_applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData)
 
 bool ToFFrameGenerator::generate(const FramePtr &in, FramePtr &out)
 {
-  if(_frameType == ToF_I_Q)
+  if(_frameType == ToF_I_Q || _frameType == ToF_QUAD)
     return _generateToFRawIQFrame(in, out);
   else
     return _generateToFRawFrame(in, out);
@@ -611,9 +640,9 @@ bool ToFFrameGenerator::generate(const ToFRawIQFramePtr &in, FramePtr &out)
 
 bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out)
 {
-  if(_dataArrangeMode != 0)
+  if((_frameType == ToF_I_Q && _dataArrangeMode != 0) || (_frameType == ToF_QUAD && _dataArrangeMode != 1))
   {
-    logger(LOG_ERROR) << "ToFFrameGenerator: Data arrange mode is expected to be zero, but got " << _dataArrangeMode << std::endl;
+    logger(LOG_ERROR) << "ToFFrameGenerator: Data arrange mode is incorrect. It is " << _dataArrangeMode << std::endl;
     return false;
   }
   
@@ -639,7 +668,12 @@ bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out
   t->id = rawDataFrame->id;
   t->timestamp = rawDataFrame->timestamp;
   
-  if(rawDataFrame->data.size() < _size.height*_size.width*2)
+  uint sizeFactor = 2;
+  
+  if(_frameType == ToF_QUAD)
+    sizeFactor = _quadCount;
+  
+  if(rawDataFrame->data.size() < _size.height*_size.width*sizeFactor)
   {
     logger(LOG_ERROR) << "ToFFrameGenerator: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << _size.height*_size.width*2 << std::endl;
     return false;
@@ -652,15 +686,44 @@ bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out
       
   uint16_t *data = (uint16_t *)rawDataFrame->data.data();
   
-  for (auto i = 0; i < _size.height; i++) 
+  if(_frameType == ToF_I_Q)
   {
-    for (auto j = 0; j < _size.width; j++) 
+    for (auto i = 0; i < _size.height; i++) 
     {
-      index1 = i*_size.width*2 + j*2;
-      index2 = i*_size.width + j;
-      
-      t->_i[index2] = (int16_t)data[index1];
-      t->_q[index2] = (int16_t)data[index1 + 1];
+      for (auto j = 0; j < _size.width; j++) 
+      {
+        index1 = i*_size.width*2 + j*2;
+        index2 = i*_size.width + j;
+        
+        t->_i[index2] = (int16_t)data[index1];
+        t->_q[index2] = (int16_t)data[index1 + 1];
+      }
+    }
+  }
+  else if(_frameType == ToF_QUAD)
+  {
+    for (auto i = 0; i < _size.height; i++) 
+    {
+      for (auto j = 0; j < _size.width; j++) 
+      {
+        index2 = i*_size.width + j;
+        index1 = index2*_quadCount;
+        
+        double ii = 0, iq = 0;
+        int16_t d;
+        
+        for(auto k = 0; k < _quadCount; k++)
+        {
+          d = (((int16_t)(data[index1 + k] << 4)) >> 4); // Sign extension...
+          ii += d*_cosineTable[k];
+          iq += d*_sineTable[k];
+        }
+        
+        //logger(LOG_INFO) << "@(" << j << ", " << i << ") = " << ii << ", " << iq << std::endl;
+        
+        t->_i[index2] = (int16_t)ii;
+        t->_q[index2] = (int16_t)iq;
+      }
     }
   }
   

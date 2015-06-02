@@ -251,31 +251,38 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
     return false;
   }
   
-  if(bytesPerPixel == 4)
-    m.frameSize.width *= 2;
-  
   if(!_getFrameRate(m.frameRate))
   {
     logger(LOG_ERROR) << "TintinCDKCamera: Could not get current frame rate" << std::endl;
     return false;
   }
   
-  if ((d.productID() == TINTIN_CDK_PRODUCT_UVC)) {
-    if (!uvcStreamer) {
+  if ((d.productID() == TINTIN_CDK_PRODUCT_UVC)) 
+  {
+    if(bytesPerPixel == 4)
+      m.frameSize.width *= 2;
+    if (!uvcStreamer) 
+    {
       logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type UVC" << std::endl;
       return false;
     }
-    if(!uvcStreamer->setVideoMode(m)) {
+    
+    if(!uvcStreamer->setVideoMode(m)) 
+    {
       logger(LOG_ERROR) << "TintinCDKCamera: Could not set video mode for UVC" << std::endl;
       return false;
     }
-  } else if ((d.productID() == TINTIN_CDK_PRODUCT_ID1)) {
-    if (!bulkStreamer) {
+  } 
+  else if ((d.productID() == TINTIN_CDK_PRODUCT_ID1)) 
+  {
+    if (!bulkStreamer) 
+    {
       logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type Bulk" << std::endl;
       return false;
     }
   
-    if (!bulkStreamer->setBufferSize(s.width * s.height * bytesPerPixel)) {
+    if (!bulkStreamer->setBufferSize(s.width * s.height * bytesPerPixel)) 
+    {
       logger(LOG_ERROR) << "TintinCDKCamera: Could not set buffer size for bulk transfer" << std::endl;
       return false;
     }
