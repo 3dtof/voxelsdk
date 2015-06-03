@@ -702,6 +702,7 @@ bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out
   }
   else if(_frameType == ToF_QUAD)
   {
+    uint16_t min = 0, max = 65535;
     for (auto i = 0; i < _size.height; i++) 
     {
       for (auto j = 0; j < _size.width; j++) 
@@ -714,17 +715,19 @@ bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out
         
         for(auto k = 0; k < _quadCount; k++)
         {
+          min = std::min(data[index1 + k], min);
+          max = std::max(data[index1 + k], max);
           d = (((int16_t)(data[index1 + k] << 4)) >> 4); // Sign extension...
           ii += d*_cosineTable[k];
           iq += d*_sineTable[k];
         }
         
-        //logger(LOG_INFO) << "@(" << j << ", " << i << ") = " << ii << ", " << iq << std::endl;
-        
         t->_i[index2] = (int16_t)ii;
         t->_q[index2] = (int16_t)iq;
       }
     }
+    
+    logger(LOG_INFO) << "min = " << min << ", max = " << max << std::endl;
   }
   
   return true;

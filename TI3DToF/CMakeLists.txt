@@ -2,21 +2,14 @@ add_library(ti3dtof SHARED
   VoxelProgrammerBase.cpp
   VoxelUSBProgrammer.cpp
   VoxelXUProgrammer.cpp
-  TintinEEPROMDownloader.cpp
-  ToFDownloaderFactory.cpp
   ToFCameraBase.cpp
   ToFCamera.cpp
   ToFDepthFrameGenerator.cpp
+  ToFCameraFactoryBase.cpp
   ToFFrameGenerator.cpp
   ToFCalculusCamera.cpp
   ToFHaddockCamera.cpp
-  ToFTinTinCamera.cpp
-  Voxel14Camera.cpp
-  CalculusCDKCamera.cpp
-  HaddockCDKCamera.cpp
-  VoxelDCamera.cpp
-  TintinCDKCamera.cpp
-  ToFCameraFactory.cpp
+  ToFTintinCamera.cpp
   ToFCrossTalkFilter.cpp
 )
 
@@ -28,27 +21,15 @@ target_link_libraries(ti3dtof
   voxel ${COMMON_LIBS}
 )
 
-set(CONF_FILES
+add_subdirectory(boards)
+
+list(APPEND CONF_FILES
   OPT8320.dml
   OPT9220.dml
   OPT9221.dml
-  CalculusCDKCamera.conf
-  CalculusCDKCameraNormal.conf
-  HaddockCDKCamera.conf
-  HaddockCDKCameraNormal.conf
-  Voxel14Camera.conf
-  Voxel14CameraNormal.conf
-  Voxel14CameraTestMode.conf
-  Voxel14CameraPhaseOffset.bin
-  VoxelDCamera.conf
-  TintinCDKCamera.conf
-  TintinCDKCameraShortRange.conf
-  TintinCDKCameraLongRange.conf
-  TintinCDKCameraNoCalibration.conf
-  TintinCDKCameraPhaseOffset.bin
 )
 
-set(FW_FILES
+list(APPEND FW_FILES
   OPT9220_0v27.tip
   OPT9221_0v8.tip
 )
@@ -62,9 +43,9 @@ endforeach()
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets
-  LIBRARY DESTINATION lib/voxel COMPONENT ti3dtof
-  ARCHIVE DESTINATION lib/voxel COMPONENT ti3dtof
-  RUNTIME DESTINATION lib/voxel COMPONENT ti3dtof
+  LIBRARY DESTINATION lib COMPONENT ti3dtof
+  ARCHIVE DESTINATION lib COMPONENT ti3dtof
+  RUNTIME DESTINATION lib COMPONENT ti3dtof
 )
 
 IF(LINUX)
@@ -81,7 +62,7 @@ install(FILES
 )
 
 install(FILES
-  72-ti3dtof.rules
+  ${UDEV_FILES}
   DESTINATION /etc/udev/rules.d/
   COMPONENT ti3dtof
 )
@@ -101,21 +82,17 @@ install(FILES
   ToFCalculusCamera.h
   ToFCamera.h
   ToFCameraBase.h
-  ToFCameraFactory.h
+  ToFCameraFactoryBase.h
   ToFHaddockCamera.h
+  ToFCalculusCamera.h
+  ToFTintinCamera.h
   ToFDepthFrameGenerator.h
   ToFCrossTalkFilter.h
   ToFFrameGenerator.h
-  CalculusCDKCamera.h
-  HaddockCDKCamera.h
-  Voxel14Camera.h
-  VoxelDCamera.h
-  TintinCDKCamera.h
+  ToFDepthFrameGenerator.h
   VoxelProgrammerBase.h
   VoxelUSBProgrammer.h
   VoxelXUProgrammer.h
-  TintinEEPROMDownloader.h
-  ToFDownloaderFactory.h
   ${CMAKE_CURRENT_BINARY_DIR}/TI3DToFExports.h
   DESTINATION include/voxel/ti3dtof
   COMPONENT ti3dtof_dev

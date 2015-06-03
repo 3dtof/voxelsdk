@@ -84,14 +84,14 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
         FilterFactoryPtr filterFactory = p->getFilterFactory();
         
         if(!filterFactory || !addFilterFactory(filterFactory))
-          logger(LOG_WARNING) << "CameraSystem: Could not find filter factory" << std::endl;
+          logger(LOG_DEBUG) << "CameraSystem: Could not find filter factory" << std::endl;
         else
           success = true;
         
         DownloaderFactoryPtr downloaderFactory = p->getDownloaderFactory();
         
         if(!downloaderFactory || !addDownloaderFactory(downloaderFactory))
-          logger(LOG_WARNING) << "CameraSystem: Could not find downloader factory" << std::endl;
+          logger(LOG_DEBUG) << "CameraSystem: Could not find downloader factory" << std::endl;
         else
           success = true;
         
