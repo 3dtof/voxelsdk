@@ -491,14 +491,6 @@ bool ToFTinTinCamera::_isHistogramEnabled() const
   return false;
 }
 
-bool ToFTinTinCamera::_getToFFrameType(ToFFrameType &frameType) const
-{
-  //TODO: Remove this and that in ToFHaddockCamera, and move the common one to ToFCamera from ToFHaddockCamera
-  frameType = ToF_PHASE_AMPLITUDE;
-  return true;
-}
-
-
 bool ToFTinTinCamera::_getDepthScalingFactor(float &factor)
 {
   float modulationFrequency1, modulationFrequency2;

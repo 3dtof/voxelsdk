@@ -471,6 +471,29 @@ bool ToFCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forF
   }  
 }
 
+bool ToFCamera::_getToFFrameType(ToFFrameType &frameType) const
+{
+  uint r;
+  
+  if(!_get(ToF_FRAME_TYPE, r))
+  {
+    frameType = ToF_PHASE_AMPLITUDE;
+    return true;
+  }
+  
+  if(r == 1)
+    frameType = ToF_I_Q;
+  else if(r == 0)
+    frameType = ToF_PHASE_AMPLITUDE;
+  else if(r == 15)
+    frameType = ToF_QUAD;
+  else
+    return false; // Unknown frame type
+    
+    return true;
+}
+
+
 bool ToFCamera::_reset()
 {
   return set(SOFTWARE_RESET, true); // Reset the chipset

@@ -125,7 +125,7 @@ protected:
   virtual bool _getSystemClockFrequency(uint &frequency) const = 0;
   virtual bool _isHistogramEnabled() const = 0;
   
-  virtual bool _getToFFrameType(ToFFrameType &frameType) const = 0;
+  virtual bool _getToFFrameType(ToFFrameType &frameType) const;
   
   virtual bool _is16BitModeEnabled(bool &mode16Bit);
   

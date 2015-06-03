@@ -54,7 +54,6 @@ protected:
   virtual bool _getDepthScalingFactor(float &factor);
   
   virtual bool _getSystemClockFrequency(uint &frequency) const;
-  virtual bool _getToFFrameType(ToFFrameType &frameType) const;
   virtual bool _allowedROI(String &message);
   virtual bool _getROI(RegionOfInterest &roi);
   virtual bool _setROI(const RegionOfInterest &roi);
