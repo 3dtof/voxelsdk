@@ -640,9 +640,9 @@ bool ToFFrameGenerator::generate(const ToFRawIQFramePtr &in, FramePtr &out)
 
 bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out)
 {
-  if((_frameType == ToF_I_Q && _dataArrangeMode != 0) || (_frameType == ToF_QUAD && _dataArrangeMode != 1))
+  if(_frameType == ToF_I_Q && _dataArrangeMode != 0)
   {
-    logger(LOG_ERROR) << "ToFFrameGenerator: Data arrange mode is incorrect. It is " << _dataArrangeMode << std::endl;
+    logger(LOG_ERROR) << "ToFFrameGenerator: Data arrange mode is expected to be zero. It is " << _dataArrangeMode << std::endl;
     return false;
   }
   
