@@ -71,7 +71,7 @@ protected:
   
   virtual bool _initStartParams();
   
-  virtual bool _getDepthScalingFactor(float &factor);
+  virtual bool _getIlluminationFrequency(float& frequency) const;
   bool _getMaximumFrameSize(FrameSize &s) const;
   
   virtual bool _getFrameSize(Voxel::FrameSize &s) const;
@@ -80,6 +80,8 @@ protected:
   virtual bool _getFrameRate(FrameRate &r) const;
   virtual bool _setFrameRate(const FrameRate &r);
   virtual bool _getSystemClockFrequency(uint &frequency) const;
+  
+  
   
   virtual bool _getToFFrameType(ToFFrameType &frameType) const;
   virtual bool _allowedROI(String &message);

@@ -602,7 +602,7 @@ bool ToFCalculusCamera::_getToFFrameType(ToFFrameType &frameType) const
   return true;
 }
 
-bool ToFCalculusCamera::_getDepthScalingFactor(float &factor)
+bool ToFCalculusCamera::_getIlluminationFrequency(float& frequency) const
 {
   float modulationFrequency1, modulationFrequency2;
   bool dealiasingEnabled;
@@ -621,22 +621,19 @@ bool ToFCalculusCamera::_getDepthScalingFactor(float &factor)
     if(!get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2))
       return false;
     
-    float freq = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
-    
-    factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 12)*freq);
+    frequency = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
     
     return true;
   }
   else
   {
-    if(!get(MOD_FREQ1, modulationFrequency1))
+    if(!get(MOD_FREQ1, frequency))
       return false;
     
-    factor = SPEED_OF_LIGHT/1E6f/2/modulationFrequency1/(1 << 12);
     return true;
   }
 #endif
-  factor = SPEED_OF_LIGHT/1E6f/2/19.2/(1<<12);
+  frequency = 19.2;
   return true;
 }
 
