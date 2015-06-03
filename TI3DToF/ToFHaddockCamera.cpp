@@ -511,30 +511,6 @@ bool ToFHaddockCamera::_isHistogramEnabled() const
   return _get(HISTOGRAM_EN, histogramEnabled) && histogramEnabled;
 }
 
-bool ToFHaddockCamera::_getToFFrameType(ToFFrameType &frameType) const
-{
-  uint r;
-  
-  if(!_get(ToF_FRAME_TYPE, r))
-  {
-    frameType = ToF_PHASE_AMPLITUDE;
-    return true;
-  }
-  
-  if(r == 1)
-    frameType = ToF_I_Q;
-  else if(r == 0)
-    frameType = ToF_PHASE_AMPLITUDE;
-  else if(r == 15)
-    frameType = ToF_QUAD;
-  else
-    return false; // Unknown frame type
-  
-  return true;
-}
-
-
-
 bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
 {
   float modulationFrequency1, modulationFrequency2;
