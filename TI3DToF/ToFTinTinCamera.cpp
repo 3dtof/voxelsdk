@@ -491,9 +491,8 @@ bool ToFTinTinCamera::_isHistogramEnabled() const
   return false;
 }
 
-bool ToFTinTinCamera::_getDepthScalingFactor(float &factor)
+bool ToFTinTinCamera::_getIlluminationFrequency(float& frequency) const
 {
-  float modulationFrequency1, modulationFrequency2;
   bool dealiasingEnabled;
   
   uint modulationPS1, modulationPS2, systemClockFrequency;
@@ -503,58 +502,25 @@ bool ToFTinTinCamera::_getDepthScalingFactor(float &factor)
   if(!get(DEALIAS_EN, dealiasingEnabled))
     return false;
   
-  bool frequencyCorrectionPresent = false;
-  float frequencyCorrection = 1.0f, frequencyCorrectionAt;
-  
-  bool op16BitEnabled;
-  int dealiasedPhaseMask;
-  uint ma, mb;
-  
-  if(configFile.isPresent("calib", "freq_corr"))
-  {
-    frequencyCorrection = configFile.getFloat("calib", "freq_corr");
-    frequencyCorrectionAt = configFile.getFloat("calib", "freq_corr_at");
-    
-    if(frequencyCorrectionAt < 1E-5)
-      frequencyCorrectionPresent = false;
-    else
-      frequencyCorrectionPresent = true;
-  }
-  
   if(dealiasingEnabled)
   {
     if(!_getSystemClockFrequency(systemClockFrequency) || !get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2) ||
       !get(MOD_M1, modM1) || !get(MOD_M2, modM2) ||
-      !get(MOD_N1, modN1) || !get(MOD_N2, modN2) ||
-      !get(DEALIAS_16BIT_OP_ENABLE, op16BitEnabled) ||
-      !get(DEALIASED_PHASE_MASK, dealiasedPhaseMask) ||
-      !get(MA, ma) || !get(MB, mb))
+      !get(MOD_N1, modN1) || !get(MOD_N2, modN2))
       return false;
     
     modulationPS1 ++;
     modulationPS2 ++;
     
-    float freq = systemClockFrequency*gcd(modM1*modN2*modulationPS2, modM2*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2);
-    
-    if(frequencyCorrectionPresent)
-      freq *= (frequencyCorrection*freq/frequencyCorrectionAt);
-    
-    if(op16BitEnabled)
-      factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 16)*freq)*(1 << (5 - dealiasedPhaseMask))*1.0f/ma/mb;
-    else
-      factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 12)*freq)*(1 << (5 - dealiasedPhaseMask))*1.0f/ma/mb;
+    frequency = systemClockFrequency*gcd(modM1*modN2*modulationPS2, modM2*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2);
     
     return true;
   }
   else
   {
-    if(!get(MOD_FREQ1, modulationFrequency1))
+    if(!get(MOD_FREQ1, frequency))
       return false;
     
-    if(frequencyCorrectionPresent)
-      modulationFrequency1 *= (frequencyCorrection*modulationFrequency1/frequencyCorrectionAt);
-    
-    factor = SPEED_OF_LIGHT/1E6f/2/modulationFrequency1/(1 << 12);
     return true;
   }
 }

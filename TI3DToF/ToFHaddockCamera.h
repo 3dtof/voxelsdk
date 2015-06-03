@@ -22,10 +22,12 @@ protected:
   
   virtual bool _initStartParams();
   
-  virtual bool _getDepthScalingFactor(float &factor);
   bool _getMaximumFrameSize(FrameSize &s) const;
   
   virtual bool _getSystemClockFrequency(uint &frequency) const;
+  virtual bool _getIlluminationFrequency(float& frequency) const;
+  
+  
   virtual bool _allowedROI(String &message);
   virtual bool _getROI(RegionOfInterest &roi);
   virtual bool _setROI(const RegionOfInterest &roi);

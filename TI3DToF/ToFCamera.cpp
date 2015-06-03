@@ -471,6 +471,62 @@ bool ToFCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forF
   }  
 }
 
+bool ToFCamera::_getDepthScalingFactor(float& factor)
+{
+  bool dealiasingEnabled;
+  
+  if(!get(DEALIAS_EN, dealiasingEnabled))
+    return false;
+  
+  float illuminationFrequency;
+  
+  if(!_getIlluminationFrequency(illuminationFrequency))
+    return false;
+  
+  bool frequencyCorrectionPresent = false;
+  float frequencyCorrection = 1.0f;
+  
+  if(configFile.isPresent("calib", "freq_corr"))
+  {
+    frequencyCorrection = configFile.getFloat("calib", "freq_corr");
+    
+    if(frequencyCorrection < FLOAT_EPSILON)
+      frequencyCorrectionPresent = false;
+    else
+      frequencyCorrectionPresent = true;
+  }
+  
+  if(dealiasingEnabled)
+  {
+    bool is16BitMode;
+    int dealiasedPhaseMask;
+    uint ma, mb;
+    
+    if(!_is16BitModeEnabled(is16BitMode) || !get(DEALIASED_PHASE_MASK, dealiasedPhaseMask) 
+      || !get(MA, ma) || !get(MB, mb))
+      return false;
+    
+    if(frequencyCorrectionPresent)
+      illuminationFrequency *= frequencyCorrection;
+    
+    if(is16BitMode)
+      factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 16)*illuminationFrequency)*(1 << (5 - dealiasedPhaseMask))*1.0f/ma/mb;
+    else
+      factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 12)*illuminationFrequency)*(1 << (5 - dealiasedPhaseMask))*1.0f/ma/mb;
+    
+    return true;
+  }
+  else
+  {
+    if(frequencyCorrectionPresent)
+      illuminationFrequency *= frequencyCorrection;
+    
+    factor = SPEED_OF_LIGHT/1E6f/2/illuminationFrequency/(1 << 12);
+    return true;
+  }
+}
+
+
 bool ToFCamera::_getToFFrameType(ToFFrameType &frameType) const
 {
   uint r;

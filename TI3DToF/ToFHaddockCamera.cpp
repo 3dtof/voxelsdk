@@ -511,9 +511,9 @@ bool ToFHaddockCamera::_isHistogramEnabled() const
   return _get(HISTOGRAM_EN, histogramEnabled) && histogramEnabled;
 }
 
-bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
+bool ToFHaddockCamera::_getIlluminationFrequency(float& frequency) const
 {
-  float modulationFrequency1, modulationFrequency2;
+  float modulationFrequency1;
   bool dealiasingEnabled;
   
   uint modulationPS1, modulationPS2;
@@ -521,59 +521,27 @@ bool ToFHaddockCamera::_getDepthScalingFactor(float &factor)
   if(!get(DEALIAS_EN, dealiasingEnabled))
     return false;
   
-  bool frequencyCorrectionPresent = false;
-  float frequencyCorrection = 1.0f, frequencyCorrectionAt;
-  
-  if(configFile.isPresent("calib", "freq_corr"))
-  {
-    frequencyCorrection = configFile.getFloat("calib", "freq_corr");
-    frequencyCorrectionAt = configFile.getFloat("calib", "freq_corr_at");
-    
-    if(frequencyCorrectionAt < 1E-5)
-      frequencyCorrectionPresent = false;
-    else
-      frequencyCorrectionPresent = true;
-  }
-  
   if(dealiasingEnabled)
   {
-    if(!get(MOD_FREQ1, modulationFrequency1) || !get(MOD_FREQ2, modulationFrequency2)) // ensure that these are valid
+    if(!get(MOD_FREQ1, modulationFrequency1)) // ensure that these are valid
       return false;
     
-    bool op16BitEnabled;
-    int dealiasedPhaseMask;
-    uint ma, mb;
-    
-    if(!get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2) ||
-      !get(DEALIAS_16BIT_OP_ENABLE, op16BitEnabled) ||
-      !get(DEALIASED_PHASE_MASK, dealiasedPhaseMask) ||
-      !get(MA, ma) || !get(MB, mb))
+    if(!get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2))
       return false;
     
-    float freq = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
-    
-    if(frequencyCorrectionPresent)
-      freq *= (frequencyCorrection*freq/frequencyCorrectionAt);
-    
-    if(op16BitEnabled)
-      factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 16)*freq)*(1 << (5 - dealiasedPhaseMask))*1.0f/ma/mb;
-    else
-      factor = SPEED_OF_LIGHT/1E6f/(2*(1 << 12)*freq)*(1 << (5 - dealiasedPhaseMask))*1.0f/ma/mb;
+    frequency = modulationFrequency1*gcd(modulationPS1, modulationPS2)/modulationPS2;
     
     return true;
   }
   else
   {
-    if(!get(MOD_FREQ1, modulationFrequency1))
+    if(!get(MOD_FREQ1, frequency))
       return false;
     
-    if(frequencyCorrectionPresent)
-      modulationFrequency1 *= (frequencyCorrection*modulationFrequency1/frequencyCorrectionAt);
-    
-    factor = SPEED_OF_LIGHT/1E6f/2/modulationFrequency1/(1 << 12);
     return true;
   }
 }
+
  
 }
 }

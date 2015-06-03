@@ -103,6 +103,7 @@ protected:
   virtual bool _processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput); // here output raw frame will have processed data, like ToF data for ToF cameras
   
   virtual bool _getAmplitudeNormalizingFactor(float &factor);
+  virtual bool _getDepthScalingFactor(float& factor);
   
   virtual bool _setFrameRate(const FrameRate &r);
   virtual bool _getFrameRate(FrameRate &r) const;
@@ -117,6 +118,10 @@ protected:
   virtual bool _setBytesPerPixel(const uint &bpp);
 
   virtual bool _getOpDataArrangeMode(int &dataArrangeMode) const;
+  
+  // Return the resultant modulation frequency. This is mod_freq1 for non-dealiased case and 
+  // gcd(mod_freq1, mod_freq2) for dealiased case
+  virtual bool _getIlluminationFrequency(float &frequency) const = 0;
   
   virtual bool _getBinning(uint &rowsToMerge, uint &columnsToMerge) const;
   virtual bool _setBinning(uint rowsToMerge, uint columnsToMerge, const FrameSize &frameSize);
