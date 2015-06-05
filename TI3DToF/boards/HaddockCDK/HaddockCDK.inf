@@ -29,22 +29,22 @@ ExcludeFromSelect = *
 
 ;for all platforms
 [Device]
-%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
+%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
 
 
 ;for windows 2000 non intel platforms
 [Device.NT]
-%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
+%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
 
 
 ;for x86 platforms
-;[Device.NTx86]
-;%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
+[Device.NTx86]
+%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
 
 
 ;for x64 platforms
 [Device.NTamd64]
-%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
+%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
 
 
 [TI3DTOF]
@@ -116,8 +116,8 @@ HKR,,DriverGUID,,%TI3DTOF.GUID%
 
 [Strings]
 TI3DTOF_Provider    = "Texas Instruments, Inc."
-TI3DTOF_Description = "Driver for Calculus CDK"
-TI3DTOF_Install     = "Calculus CDK Driver Installation Disk"
-VID_0451&PID_9107.DeviceDesc="Calculus CDK"
+TI3DTOF_Description = "Driver for Haddock CDK"
+TI3DTOF_Install     = "Haddock CDK Driver Installation Disk"
+VID_0451&PID_9100.DeviceDesc="Haddock CDK"
 TI3DTOF.GUID="{AE18AA60-7F6A-11d4-97DD-00010229B959}"
 TI3DTOF_Unused      = "."

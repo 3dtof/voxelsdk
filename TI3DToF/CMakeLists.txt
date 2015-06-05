@@ -36,10 +36,50 @@ list(APPEND FW_FILES
   
 ### Copy configuration and firmware files to build directory
 foreach(f ${CONF_FILES} ${FW_FILES})
-  add_custom_command(TARGET ti3dtof PRE_BUILD
+  get_filename_component(filename ${f} NAME)
+  list(APPEND filesToCopy
+    ${CMAKE_CURRENT_BINARY_DIR}/${filename}
+  )
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${filename}
                    COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_SOURCE_DIR}/TI3DToF/${f} $<TARGET_FILE_DIR:ti3dtof>)
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/
+                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
 endforeach()
+
+if(WINDOWS)
+list(APPEND filesToCopy
+    ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
+  )
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_CURRENT_SOURCE_DIR}/WinDrivers ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
+                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/WinDrivers)
+                   
+### Copy inf files
+foreach(f ${INF_FILES})
+  get_filename_component(filename ${f} NAME)
+  list(APPEND filesToCopy
+    ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x64/${filename}
+    ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x86/${filename}
+  )
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x64/${filename}
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x64/
+                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x86/${filename}
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x86/
+                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
+endforeach()
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
+  DESTINATION Prerequisites/WinDrivers
+  COMPONENT ti3dtof
+)
+endif()
+
+add_custom_target(filesToCopy ALL DEPENDS ${filesToCopy})
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets

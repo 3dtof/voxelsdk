@@ -35,6 +35,12 @@ list(APPEND UDEV_FILES
 )
 
 set(UDEV_FILES "${UDEV_FILES}" PARENT_SCOPE)
+
+list(APPEND INF_FILES
+  boards/TintinCDK/TintinCDK.inf
+)
+
+set(INF_FILES "${INF_FILES}" PARENT_SCOPE)
   
 set_target_properties(tintincdk PROPERTIES 
                       VERSION ${VOXEL_VERSION} 
