@@ -30,23 +30,19 @@ ExcludeFromSelect = *
 ;for all platforms
 [Device]
 %VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
-%VID_0451&PID_9103.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9103
 
 ;for windows 2000 non intel platforms
 [Device.NT]
 %VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
-%VID_0451&PID_9103.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9103
 
 
 ;for x86 platforms
 [Device.NTx86]
 %VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
-%VID_0451&PID_9103.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9103
 
 ;for x64 platforms
 [Device.NTamd64]
 %VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
-%VID_0451&PID_9103.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9103
 
 [TI3DTOF]
 CopyFiles=TI3DTOF.Files.Ext

@@ -1,7 +1,7 @@
 IF(CMAKE_CL_64)
-  install(PROGRAMS Windows/vcredist_x64.exe DESTINATION Prerequistes)
+  install(PROGRAMS Windows/vcredist_x64.exe DESTINATION Prerequisites)
 ELSE()
-  install(PROGRAMS Windows/vcredist_x86.exe DESTINATION Prerequistes)
+  install(PROGRAMS Windows/vcredist_x86.exe DESTINATION Prerequisites)
 ENDIF()
 
 IF(CMAKE_CL_64)
@@ -15,7 +15,7 @@ ENDIF()
 SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
   "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}\n
   \\\${If}  \\\${SectionIsSelected} \\\${voxel}\n
-    ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\vcredist_${XARCHSUFFIX}.exe\\\" /install'\n
+    ExecWait '\\\"$INSTDIR\\\\Prerequisites\\\\vcredist_${XARCHSUFFIX}.exe\\\" /install'\n
   \\\${EndIf}\n
 
   \\\${If}  \\\${SectionIsSelected} \\\${voxel_python}\n
@@ -25,36 +25,22 @@ SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
   \\\${EndIf}\n
       
   \\\${If}  \\\${SectionIsSelected} \\\${ti3dtof_lib}\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\ti3dtof.lib` `C:\\\\Program Files\\\\VoxelCommon\\\\lib`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\ti3dtof.dll` `C:\\\\Program Files\\\\VoxelCommon\\\\lib`\n 
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\OPT8320.dml` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\OPT9220.dml` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\CalculusCDKCamera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\CalculusCDKCameraNormal.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\HaddockCDKCamera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\HaddockCDKCameraNormal.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\Voxel14Camera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\Voxel14CameraNormal.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\Voxel14CameraTestMode.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\Voxel14CameraPhaseOffset.bin` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\VoxelDCamera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCamera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraShortRange.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraLongRange.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraPhaseOffset.bin` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraNoCalibration.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\fw\\\\OPT9220_0v27.tip` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\OPT9221.dml` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
-    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\fw\\\\OPT9221_0v8.tip` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n
-    ExecWait '\\\"$INSTDIR\\\\Prerequistes\\\\Drivers\\\\TI3DToF\\\\dpinst${ARCHSUFFIX}.exe\\\" /SW /PATH \\\"\\\$INSTDIR\\\\Prerequistes\\\\Drivers\\\\TI3DToF\\\\${XARCHSUFFIX}\\\"'\n
+    CreateDirectory `C:\\\\Program Files\\\\VoxelCommon\\\\lib`\n
+    CopyFiles `\\\$INSTDIR\\\\lib\\\\voxel\\\\*.dll` `C:\\\\Program Files\\\\VoxelCommon\\\\lib`\n
+    CopyFiles `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\*` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
+    CopyFiles `\\\$INSTDIR\\\\lib\\\\voxel\\\\fw\\\\*` `C:\\\\Program Files\\\\VoxelCommon\\\\fw`\n
+    ExecWait '\\\"$INSTDIR\\\\Prerequisites\\\\WinDrivers\\\\dpinst${ARCHSUFFIX}.exe\\\" /SW /PATH \\\"\\\$INSTDIR\\\\Prerequisites\\\\WinDrivers\\\\${XARCHSUFFIX}\\\"'\n
   \\\${EndIf}\n
   "
 )
   
 SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS 
   "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}\n
-  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `ti3dtof.lib`\n
-  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `ti3dtof.dll`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `haddockcdk.dll`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `voxel14.dll`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `voxeld.dll`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `tintincdk.dll`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `calculuscdk.dll`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `CalculusCDKCamera.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `CalculusCDKCameraNormal.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `HaddockCDKCamera.conf`\n
@@ -64,8 +50,10 @@ SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `Voxel14CameraTestMode.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `Voxel14CameraPhaseOffset.bin`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `VoxelDCamera.conf`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `VoxelDCameraNormal.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCamera.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraShortRange.conf`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraNoCalibration.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraLongRange.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraPhaseOffset.bin`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `OPT8320.dml`\n

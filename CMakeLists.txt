@@ -92,12 +92,12 @@ if(DOXYGEN_FOUND)
   if(LINUX)
     install(DIRECTORY 
       ${CMAKE_BINARY_DIR}/doc/html/ 
-      DESTINATION share/doc/voxel-${VOXEL_VERSION}
+      DESTINATION share/doc/voxel-sdk-${VOXEL_VERSION}
       COMPONENT voxel_dev)
   elseif(WINDOWS)
   install(DIRECTORY 
       ${CMAKE_BINARY_DIR}/doc/html/ 
-      DESTINATION doc/voxel
+      DESTINATION doc/voxel-sdk
       COMPONENT voxel_dev)
   endif()
 endif()
@@ -120,7 +120,6 @@ create_cmake_config(Voxel voxel voxel_dev Voxel)
 create_cmake_config(TI3DToF "voxel;ti3dtof" ti3dtof_dev TI3DToF)
 create_cmake_config(VoxelPCL "voxel;voxelpcl" voxelpcl_dev VoxelPCL voxelpcl)
 
-INCLUDE(windows_all_in_installer_config.cmake)
 
 IF(WINDOWS)
   SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
@@ -130,11 +129,11 @@ IF(WINDOWS)
   
   IF(CMAKE_CL_64)
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
-    install(PROGRAMS Windows/vcredist_x64.exe DESTINATION Prerequistes)
   ELSE()
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
-    install(PROGRAMS Windows/vcredist_x86.exe DESTINATION Prerequistes)
   ENDIF()
+  
+  INCLUDE(windows_all_in_installer_config.cmake)
   
   include(CPack)
 ENDIF()

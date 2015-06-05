@@ -72,14 +72,14 @@ foreach(f ${INF_FILES})
                    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
 endforeach()
 
-install(FILES
+install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
-  DESTINATION Prerequisites/WinDrivers
+  DESTINATION Prerequisites
   COMPONENT ti3dtof
 )
 endif()
 
-add_custom_target(filesToCopy ALL DEPENDS ${filesToCopy})
+add_custom_target(filesToCopy ALL DEPENDS ${filesToCopy} COMPONENT ti3dtof)
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets
