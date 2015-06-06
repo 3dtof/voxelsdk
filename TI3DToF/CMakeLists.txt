@@ -55,23 +55,6 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
                    ${CMAKE_CURRENT_SOURCE_DIR}/WinDrivers ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
                    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/WinDrivers)
                    
-### Copy inf files
-foreach(f ${INF_FILES})
-  get_filename_component(filename ${f} NAME)
-  list(APPEND filesToCopy
-    ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x64/${filename}
-    ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x86/${filename}
-  )
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x64/${filename}
-                   COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x64/
-                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x86/${filename}
-                   COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers/x86/
-                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
-endforeach()
-
 install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/WinDrivers
   DESTINATION Prerequisites

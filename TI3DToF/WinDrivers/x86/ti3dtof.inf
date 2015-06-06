@@ -1,5 +1,5 @@
 ; Installation INF for the TI 3DTOF USB Driver for Windows 7
-; Processor support for x64 based platforms.
+; Processor support for x86 based platforms.
 ;
 ; (c) Copyright 2013 Texas Instruments, Inc.
 ;
@@ -29,22 +29,38 @@ ExcludeFromSelect = *
 
 ;for all platforms
 [Device]
+%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
+%VID_0451&PID_9101.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9101
+%VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
 %VID_0451&PID_9105.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9105
+%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
 
 
 ;for windows 2000 non intel platforms
-[Device.NT]
-%VID_0451&PID_9105.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9105
+;[Device.NT]
+;%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
+;%VID_0451&PID_9101.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9101
+;%VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
+;%VID_0451&PID_9105.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9105
+;%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
 
 
 ;for x86 platforms
 [Device.NTx86]
+%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
+%VID_0451&PID_9101.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9101
+%VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
 %VID_0451&PID_9105.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9105
+%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
 
 
 ;for x64 platforms
-[Device.NTamd64]
-%VID_0451&PID_9105.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9105
+;[Device.NTamd64]
+;%VID_0451&PID_9100.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9100
+;%VID_0451&PID_9101.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9101
+;%VID_0451&PID_9102.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9102
+;%VID_0451&PID_9105.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9105
+;%VID_0451&PID_9107.DeviceDesc%=TI3DTOF, USB\VID_0451&PID_9107
 
 
 [TI3DTOF]
@@ -68,25 +84,25 @@ AddReg=TI3DTOF.AddReg.Guid
 Addservice = TI3DTOF,2,TI3DTOF.AddService
 
 
-;[TI3DTOF.NTx86]
-;CopyFiles=TI3DTOF.Files.Ext
-;AddReg=TI3DTOF.AddReg
-;
-;[TI3DTOF.NTx86.HW]
-;AddReg=TI3DTOF.AddReg.Guid
-;
-;[TI3DTOF.NTx86.Services]
-;Addservice = TI3DTOF,2,TI3DTOF.AddService
-
-[TI3DTOF.NTamd64]
+[TI3DTOF.NTx86]
 CopyFiles=TI3DTOF.Files.Ext
 AddReg=TI3DTOF.AddReg
 
-[TI3DTOF.NTamd64.HW]
+[TI3DTOF.NTx86.HW]
 AddReg=TI3DTOF.AddReg.Guid
 
-[TI3DTOF.NTamd64.Services]
+[TI3DTOF.NTx86.Services]
 Addservice = TI3DTOF,2,TI3DTOF.AddService
+
+;[TI3DTOF.NTamd64]
+;CopyFiles=TI3DTOF.Files.Ext
+;AddReg=TI3DTOF.AddReg
+
+;[TI3DTOF.NTamd64.HW]
+;AddReg=TI3DTOF.AddReg.Guid
+
+;[TI3DTOF.NTamd64.Services]
+;Addservice = TI3DTOF,2,TI3DTOF.AddService
 
 
 [TI3DTOF.AddReg]
@@ -116,8 +132,12 @@ HKR,,DriverGUID,,%TI3DTOF.GUID%
 
 [Strings]
 TI3DTOF_Provider    = "Texas Instruments, Inc."
-TI3DTOF_Description = "Driver for Calculus CDK"
-TI3DTOF_Install     = "Calculus CDK Driver Installation Disk"
-VID_0451&PID_9105.DeviceDesc="Calculus CDK"
+TI3DTOF_Description = "TI 3DTOF Reference Design"
+TI3DTOF_Install     = "TI 3DTOF Driver Installation Disk"
+VID_0451&PID_9100.DeviceDesc="TI 3DTOF CDK"
+VID_0451&PID_9101.DeviceDesc="TI Voxel-D"
+VID_0451&PID_9102.DeviceDesc="TI Voxel-A"
+VID_0451&PID_9105.DeviceDesc="TI 3DTOF CDK OPT8241"
+VID_0451&PID_9107.DeviceDesc="TI 3DTOF CDK OPT8320"
 TI3DTOF.GUID="{AE18AA60-7F6A-11d4-97DD-00010229B959}"
 TI3DTOF_Unused      = "."

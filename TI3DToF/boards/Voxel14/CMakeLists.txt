@@ -33,13 +33,6 @@ list(APPEND UDEV_FILES
 
 set(UDEV_FILES "${UDEV_FILES}" PARENT_SCOPE)
 
-list(APPEND INF_FILES
-  boards/Voxel14/Voxel14.inf
-)
-
-set(INF_FILES "${INF_FILES}" PARENT_SCOPE)
-
-  
 set_target_properties(voxel14 PROPERTIES 
                       VERSION ${VOXEL_VERSION} 
                       SOVERSION ${VOXEL_ABI_VERSION}
