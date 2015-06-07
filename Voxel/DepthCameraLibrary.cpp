@@ -177,7 +177,7 @@ int DepthCameraLibrary::getABIVersion()
   String error;
   if(!g && (error = dynamicLoadError()).size())
   {
-    logger(LOG_ERROR) << "DepthCameraFactory: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
+    logger(LOG_DEBUG) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
     return 0;
   }
 

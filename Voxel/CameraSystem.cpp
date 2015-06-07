@@ -157,7 +157,7 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
     
     if(f != _factoryForGeneratorID.end())
     {
-      logger(LOG_WARNING) << "CameraSystem: A factory is already registered for generator ID '" << d << "'. Not replacing it." << std::endl;
+      logger(LOG_DEBUG) << "CameraSystem: A factory is already registered for generator ID '" << d << "'. Not replacing it." << std::endl;
       continue;
     }
     
