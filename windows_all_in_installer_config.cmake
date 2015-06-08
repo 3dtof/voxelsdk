@@ -35,6 +35,7 @@ SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\Voxel14CameraTestMode.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\Voxel14CameraPhaseOffset.bin` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\VoxelDCamera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
+    \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\VoxelDCameraNoCalibration.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCamera.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraShortRange.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
     \\\${FileCopy} `\\\$INSTDIR\\\\lib\\\\voxel\\\\conf\\\\TintinCDKCameraLongRange.conf` `C:\\\\Program Files\\\\VoxelCommon\\\\conf`\n
@@ -59,6 +60,7 @@ SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `Voxel14CameraTestMode.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `Voxel14CameraPhaseOffset.bin`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `VoxelDCamera.conf`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `VoxelDCameraNoCalibration.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCamera.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraShortRange.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraNoCalibration.conf`\n

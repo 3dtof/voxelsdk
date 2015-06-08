@@ -36,6 +36,7 @@ set(CONF_FILES
   Voxel14CameraTestMode.conf
   Voxel14CameraPhaseOffset.bin
   VoxelDCamera.conf
+  VoxelDCameraNoCalibration.conf
   TintinCDKCamera.conf
   TintinCDKCameraShortRange.conf
   TintinCDKCameraLongRange.conf
