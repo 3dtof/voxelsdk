@@ -160,6 +160,9 @@ public:
   
   inline const String &id() const { return _id; }
   
+  virtual bool getSerialNumber(String &serialNumber) const;
+  virtual bool setSerialNumber(const String &serialNumber);
+  
   inline const DevicePtr &getDevice() const { return _device; }
   
   inline bool isRunning() const { return _running; }

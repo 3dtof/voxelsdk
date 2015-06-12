@@ -47,7 +47,8 @@ bool USBDownloader::_configureForDownload()
   buffer[2] = 0x07;
   buffer[3] = 0x00;
   
-  bool ret = _usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x05, 0, 0, buffer, 4, 5000);
+  uint16_t length = 4;
+  bool ret = _usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x05, 0, 0, buffer, length, true, 5000);
   _setProgress(10);
   return ret;
 }

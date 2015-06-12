@@ -115,6 +115,7 @@ add_subdirectory(VoxelPCL)
 add_subdirectory(TI3DToF)
 add_subdirectory(Test)
 add_subdirectory(App)
+add_subdirectory(Util)
 
 create_cmake_config(Voxel voxel voxel_dev Voxel)
 create_cmake_config(TI3DToF "voxel;ti3dtof" ti3dtof_dev TI3DToF)

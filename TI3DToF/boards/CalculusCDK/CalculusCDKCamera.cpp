@@ -153,13 +153,15 @@ bool CalculusCDKCamera::_initStartParams()
     return false;
   }
   
+  uint16_t length = 0;
+  
   if(
     // Enable Slave Fifo, reqCode 0x12
-    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x12, 0x00, 0x00) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x12, 0x00, 0x00, 0, length) ||
     // Set VD Counter to 1300 for now
-    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x13, 1300, 0x00) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x13, 1300, 0x00, 0, length) ||
     // Enable FSC
-    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x10, 0x0001, 0x00))
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x10, 0x0001, 0x00, 0, length))
     return false;
 
   return true;

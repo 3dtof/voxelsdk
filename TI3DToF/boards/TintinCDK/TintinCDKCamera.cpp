@@ -30,7 +30,6 @@ class TintinCDKMixVoltageParameter: public UnsignedIntegerParameter
 protected:
   virtual uint _fromRawValue(uint32_t value) const
   {
-    logger(LOG_ERROR) << "from raw value = " << value << std::endl;
     if(value > 0x80U)
       return (value - 0x80U)*50 + 500;
     else
@@ -39,7 +38,6 @@ protected:
   
   virtual uint32_t _toRawValue(uint value) const
   {
-    logger(LOG_ERROR) << "to raw value = " << value << std::endl;
     if(value > 500)
       return (value - 500)/50 + 0x80U;
     else

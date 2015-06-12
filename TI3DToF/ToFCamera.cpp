@@ -5,8 +5,12 @@
  */
 
 #include "ToFCamera.h"
+#include "VoxelUSBProgrammer.h"
 #include <Configuration.h>
 #include <ParameterDMLParser.h>
+
+#define TI_USBIO_SERIAL_NUMBER 0x32
+#define TI_SERIAL_NUMBER_SIZE 22
 
 namespace Voxel
 {
@@ -554,6 +558,70 @@ bool ToFCamera::_reset()
 {
   return set(SOFTWARE_RESET, true); // Reset the chipset
 }
+
+// NOTE: Not using the low-level API for getting serial number.
+// bool ToFCamera::getSerialNumber(String &serialNumber) const
+// {
+//   VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
+//   
+//   if(p)
+//   {
+//     USBIOPtr usbIO = p->getUSBIO();
+//     
+//     char sn[TI_SERIAL_NUMBER_SIZE + 1];
+//     sn[TI_SERIAL_NUMBER_SIZE] = '\0';
+//     
+//     uint16_t length = TI_SERIAL_NUMBER_SIZE;
+//     
+//     if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, TI_USBIO_SERIAL_NUMBER, 0, 0,
+//       (uint8_t *)sn, length, false))
+//     {
+//       logger(LOG_WARNING) << "ToFCamera: Could not get serial number from depth camera. Using that obtained from device" << std::endl;
+//       return DepthCamera::getSerialNumber(serialNumber);
+//     }
+//     else
+//     {
+//       sn[length] = '\0';
+//       serialNumber = sn;
+//       return true;
+//     }
+//   }
+//   
+//   return DepthCamera::getSerialNumber(serialNumber);
+// }
+
+bool ToFCamera::setSerialNumber(const String &serialNumber)
+{
+  if(serialNumber.size() != TI_SERIAL_NUMBER_SIZE)
+  {
+    logger(LOG_ERROR) << "ToFCamera: Please specify serial number with '" << TI_SERIAL_NUMBER_SIZE << "' bytes." << std::endl;
+    return false;
+  }
+  
+  VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
+  
+  if(p)
+  {
+    USBIOPtr usbIO = p->getUSBIO();
+    
+    uint16_t length = serialNumber.size();
+    
+    if(!usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, TI_USBIO_SERIAL_NUMBER, 0, 0,
+      (uint8_t *)serialNumber.c_str(), length))
+    {
+      logger(LOG_ERROR) << "ToFCamera: Could not set serial number from depth camera." << std::endl;
+      return false;
+    }
+    else
+    {
+      _device->setSerialNumber(serialNumber);
+      return true;
+    }
+  }
+  
+  return DepthCamera::setSerialNumber(serialNumber);
+}
+
 
 
 }

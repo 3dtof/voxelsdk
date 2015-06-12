@@ -33,6 +33,8 @@ list(APPEND FW_FILES
   OPT9220_0v27.tip
   OPT9221_0v8.tip
 )
+
+set(filesToCopy) # Remove this variable
   
 ### Copy configuration and firmware files to build directory
 foreach(f ${CONF_FILES} ${FW_FILES})
@@ -62,7 +64,7 @@ install(DIRECTORY
 )
 endif()
 
-add_custom_target(filesToCopy ALL DEPENDS ${filesToCopy} COMPONENT ti3dtof)
+add_custom_target(filesToCopyTarget ALL DEPENDS ${filesToCopy})
                    
 install(TARGETS ti3dtof
   EXPORT TI3DToFTargets
