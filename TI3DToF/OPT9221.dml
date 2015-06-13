@@ -7004,6 +7004,7 @@
 						<group desc="" name="data_pipeline">
 							<propertyList>
 								<property desc="" name="pixel_data_size" propertyId="1067"/>
+								<property desc="" name="output_mode" propertyId="1058"/>
 								<property desc="" name="op_data_arrange_mode" propertyId="1060"/>
 								<property desc="" name="iq_scale" propertyId="1040"/>
 								<property desc="" name="saturation_threshold" propertyId="1683"/>
