@@ -102,7 +102,7 @@ protected:
   
 public:
   TintinCDKIlluminationPowerParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x2D10, 8, 7, 0, 1050, 2200, 1129, "Illumination Power", 
+  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x5401, 8, 7, 0, 1050, 2200, 1129, "Illumination Power", 
                            "These power numbers are approximate (+- 20%) and the actual power numbers are subject to component tolerances.", Parameter::IO_READ_WRITE, {})
   {}
   
