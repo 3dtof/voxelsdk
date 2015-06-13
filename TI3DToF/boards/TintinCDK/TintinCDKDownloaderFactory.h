@@ -15,14 +15,14 @@ namespace Voxel
 namespace TI
 {
   
-class ToFDownloaderFactory: public DownloaderFactory
+class TintinCDKDownloaderFactory: public DownloaderFactory
 {
 public:
-  ToFDownloaderFactory(const String &name);
+  TintinCDKDownloaderFactory(const String &name);
   
   virtual DownloaderPtr getDownloader(DevicePtr device);
   
-  virtual ~ToFDownloaderFactory() {}
+  virtual ~TintinCDKDownloaderFactory() {}
 };
   
 }

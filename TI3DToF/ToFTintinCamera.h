@@ -44,7 +44,7 @@ namespace Voxel
 namespace TI
 {
 
-class TI3DTOF_EXPORT ToFTinTinCamera: public ToFCamera
+class TI3DTOF_EXPORT ToFTintinCamera: public ToFCamera
 {
 protected:
   bool _init();
@@ -63,13 +63,13 @@ protected:
   virtual bool _applyCalibrationParams();
     
 public:
-  ToFTinTinCamera(const String &name, DevicePtr device);
+  ToFTintinCamera(const String &name, DevicePtr device);
   
   virtual bool _getMaximumFrameSize(FrameSize &s) const;
-  virtual ~ToFTinTinCamera() {}
+  virtual ~ToFTintinCamera() {}
   
-  friend class TinTinVCOFrequency;
-  friend class TinTinModulationFrequencyParameter;
+  friend class TintinVCOFrequency;
+  friend class TintinModulationFrequencyParameter;
   friend class TintinUnambiguousRangeParameter;
 };
 

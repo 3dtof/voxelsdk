@@ -51,7 +51,7 @@ bool TintinEEPROMDownloader::_configureForDownload()
     logger(LOG_INFO) << "TintinEEPROMDownloader: Waiting for device reenumeration..." << std::endl;
     _outStream << "Waiting for device reenumeration..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(10));
-    controlDevice = DevicePtr(new USBDevice(TINTIN_CDK_VENDOR_ID, TINTIN_CDK_PRODUCT_ID1, _device->serialNumber(), 
+    controlDevice = DevicePtr(new USBDevice(TINTIN_CDK_VENDOR_ID, TINTIN_CDK_PRODUCT_BULK, _device->serialNumber(), 
                                             _device->channelID(), _device->description(), _device->serialIndex(), true));
   } else {
     controlDevice = _device;

@@ -4,20 +4,19 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
-#ifndef VOXEL_TI_VOXEL14CAMERA_H
-#define VOXEL_TI_VOXEL14CAMERA_H
+#ifndef VOXEL_TI_TINTINCDKCAMERA_H
+#define VOXEL_TI_TINTINCDKCAMERA_H
 
-#include <ToFHaddockCamera.h>
+#include <ToFTintinCamera.h>
 #include <Downloader.h>
 
-#include "TI3DToFExports.h"
+#define TINTIN_CDK_VENDOR_ID 0x0451U
+#define TINTIN_CDK_PRODUCT_BULK 0x9105U
+#define TINTIN_CDK_PRODUCT_UVC 0x9106U
 
-#define VOXEL_14_VENDOR_ID 0x0451U
-#define VOXEL_14_PRODUCT_ID1 0x9102U
-#define VOXEL_14_PRODUCT_ID2 0x9103U
-
-#define ILLUM_VOLTAGE "illum_volt" // Illumination voltage
+#define PVDD "pvdd" // Illumination voltage
 #define MIX_VOLTAGE "mix_volt" // Mixing voltage
+#define TILLUM_SLAVE_ADDR "tillum_slv_addr"
 
 namespace Voxel
 {
@@ -25,7 +24,7 @@ namespace Voxel
 namespace TI
 {
 
-class TI3DTOF_EXPORT Voxel14Camera : public ToFHaddockCamera
+class TintinCDKCamera: public ToFTintinCamera
 {
 protected:
   Ptr<Downloader> _downloader;
@@ -41,12 +40,12 @@ protected:
   virtual bool _initStartParams();
   
 public:
-  Voxel14Camera(DevicePtr device);
+  TintinCDKCamera(DevicePtr device);
   
-  virtual ~Voxel14Camera() {}
+  virtual ~TintinCDKCamera() {}
 };
 
 }
 }
 
-#endif // VOXEL_TI_VOXEL14CAMERA_H
+#endif // VOXEL_TI_TINTINCDKCAMERA_H

@@ -18,7 +18,7 @@ namespace Voxel
 namespace TI
 {
   
-VoxelDCamera::VoxelDCamera(Voxel::DevicePtr device): ToFTinTinCamera("VoxelDCamera", device)
+VoxelDCamera::VoxelDCamera(Voxel::DevicePtr device): ToFTintinCamera("VoxelDCamera", device)
 {
   _init();
 }
@@ -138,7 +138,7 @@ bool VoxelDCamera::_init()
     return false;
   }
   
-  if(!ToFTinTinCamera::_init())
+  if(!ToFTintinCamera::_init())
     return false;
   
   
@@ -150,7 +150,7 @@ bool VoxelDCamera::_initStartParams()
   return 
   //set(ILLUM_VOLTAGE, 1500U) && 
   //set(MIX_VOLTAGE, 1500U) &&
-  ToFTinTinCamera::_initStartParams() &&
+  ToFTintinCamera::_initStartParams() &&
   set(ILLUM_EN_POL, true);
 }
 

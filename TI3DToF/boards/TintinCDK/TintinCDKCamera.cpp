@@ -20,7 +20,7 @@ namespace Voxel
 namespace TI
 {
   
-TintinCDKCamera::TintinCDKCamera(Voxel::DevicePtr device): ToFTinTinCamera("TintinCDKCamera", device)
+TintinCDKCamera::TintinCDKCamera(Voxel::DevicePtr device): ToFTintinCamera("TintinCDKCamera", device)
 {
   _init();
 }
@@ -204,7 +204,7 @@ bool TintinCDKCamera::_init()
   )
     return false;
     
-  if(!ToFTinTinCamera::_init())
+  if(!ToFTintinCamera::_init())
     return false;
   
   return true;
@@ -214,13 +214,13 @@ bool TintinCDKCamera::_initStartParams()
 {
   USBDevice &d = (USBDevice &)*_device;
 
-  if(!ToFTinTinCamera::_initStartParams())
+  if(!ToFTintinCamera::_initStartParams())
     return false;
 
   if (!set(TILLUM_SLAVE_ADDR, 0x72U))
     return false;
 
-  if ((d.productID() == TINTIN_CDK_PRODUCT_ID1) && !set(BLK_HEADER_EN, false))
+  if ((d.productID() == TINTIN_CDK_PRODUCT_BULK) && !set(BLK_HEADER_EN, false))
     return false;
 
   return true;
@@ -273,7 +273,7 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
       return false;
     }
   } 
-  else if ((d.productID() == TINTIN_CDK_PRODUCT_ID1)) 
+  else if ((d.productID() == TINTIN_CDK_PRODUCT_BULK)) 
   {
     if (!bulkStreamer) 
     {

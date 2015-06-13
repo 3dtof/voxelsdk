@@ -4,7 +4,7 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
-#include "ToFTinTinCamera.h"
+#include "ToFTintinCamera.h"
 #include <Configuration.h>
 #include <ParameterDMLParser.h>
 
@@ -15,12 +15,12 @@ namespace TI
 {
   
 /// Custom parameters
-class TinTinVCOFrequency: public FloatParameter
+class TintinVCOFrequency: public FloatParameter
 {
-  ToFTinTinCamera &_depthCamera;
+  ToFTintinCamera &_depthCamera;
   String _vcoFreq, _modM, _modMFrac, _modN;
 public:
-  TinTinVCOFrequency(ToFTinTinCamera &depthCamera, RegisterProgrammer &programmer, const String &vcoFreq, const String &modM, const String &modMFrac, const String &modN):
+  TintinVCOFrequency(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &vcoFreq, const String &modM, const String &modMFrac, const String &modN):
   FloatParameter(programmer, vcoFreq, "MHz", 0, 0, 0, 1, 300, 600, 384, "VCO frequency", 
                  "Frequency of the VCO used for generating modulation frequencies", IOType::IO_READ_WRITE, {modM, modN}), _depthCamera(depthCamera),
                  _vcoFreq(vcoFreq), _modM(modM), _modMFrac(modMFrac), _modN(modN) {}
@@ -79,15 +79,15 @@ public:
     return true;
   }
   
-  virtual ~TinTinVCOFrequency() {}
+  virtual ~TintinVCOFrequency() {}
 };
 
-class TinTinModulationFrequencyParameter: public FloatParameter
+class TintinModulationFrequencyParameter: public FloatParameter
 {
-  ToFTinTinCamera &_depthCamera;
+  ToFTintinCamera &_depthCamera;
   String _modPS, _vcoFreq;
 public:
-  TinTinModulationFrequencyParameter(ToFTinTinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS):
+  TintinModulationFrequencyParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS):
   FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, 48, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
                  
@@ -158,7 +158,7 @@ public:
     if(quadCount == 0)
       return false;
     
-    TinTinVCOFrequency &v = (TinTinVCOFrequency &)*p;
+    TintinVCOFrequency &v = (TintinVCOFrequency &)*p;
     
     uint modulationPS = v.lowerLimit()/quadCount/value; // Using lower limit for setting VCO frequency
     
@@ -181,16 +181,16 @@ public:
     return true;
   }
   
-  virtual ~TinTinModulationFrequencyParameter() {}
+  virtual ~TintinModulationFrequencyParameter() {}
 };
 
 // NOTE: 0x5C60 is a software_state register available for software to store bits in Tintin camera.
 #define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/48/(1 << 12)
 class TintinUnambiguousRangeParameter: public UnsignedIntegerParameter
 {
-  ToFTinTinCamera &_depthCamera;
+  ToFTintinCamera &_depthCamera;
 public:
-  TintinUnambiguousRangeParameter(ToFTinTinCamera &depthCamera, RegisterProgrammer &programmer):
+  TintinUnambiguousRangeParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer):
     UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0x5C60, 24, 5, 0, 3, 50, 
     DEFAULT_UNAMBIGUOUS_RANGE, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"),
     _depthCamera(depthCamera) {}
@@ -217,9 +217,9 @@ public:
   {
     ParameterPtr p = _depthCamera.getParam(MOD_FREQ1);
     
-    TinTinModulationFrequencyParameter *mfp = dynamic_cast<TinTinModulationFrequencyParameter *>(p.get());
+    TintinModulationFrequencyParameter *mfp = dynamic_cast<TintinModulationFrequencyParameter *>(p.get());
     
-    TinTinVCOFrequency *vco = dynamic_cast<TinTinVCOFrequency *>(_depthCamera.getParam(VCO_FREQ1).get());
+    TintinVCOFrequency *vco = dynamic_cast<TintinVCOFrequency *>(_depthCamera.getParam(VCO_FREQ1).get());
     
     if(!mfp || !vco)
       return false;
@@ -331,18 +331,18 @@ public:
   }
 };
 
-ToFTinTinCamera::ToFTinTinCamera(const String &name, DevicePtr device): ToFCamera(name, device)
+ToFTintinCamera::ToFTintinCamera(const String &name, DevicePtr device): ToFCamera(name, device)
 {
 }
 
-bool ToFTinTinCamera::_getSystemClockFrequency(uint &frequency) const
+bool ToFTintinCamera::_getSystemClockFrequency(uint &frequency) const
 {
   frequency = 48;
   return true;
 }
 
 
-bool ToFTinTinCamera::_getMaximumFrameSize(FrameSize &s) const
+bool ToFTintinCamera::_getMaximumFrameSize(FrameSize &s) const
 {
   s.width = 320;
   s.height = 240;
@@ -350,7 +350,7 @@ bool ToFTinTinCamera::_getMaximumFrameSize(FrameSize &s) const
 }
 
   
-bool ToFTinTinCamera::_init()
+bool ToFTintinCamera::_init()
 {
   Configuration c;
   
@@ -358,7 +358,7 @@ bool ToFTinTinCamera::_init()
   
   if(!name.size() || !c.getConfFile(name)) // true => name is now a proper path
   {
-    logger(LOG_ERROR) << "ToFTinTinCamera: Failed to locate/read DML file '" << name << "'" << std::endl;
+    logger(LOG_ERROR) << "ToFTintinCamera: Failed to locate/read DML file '" << name << "'" << std::endl;
     return false;
   }
   
@@ -368,7 +368,7 @@ bool ToFTinTinCamera::_init()
   
   if(!p.getParameters(params))
   {
-    logger(LOG_ERROR) << "ToFTinTinCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
+    logger(LOG_ERROR) << "ToFTintinCamera: Could not read parameters from DML file '" << name << "'" << std::endl;
     return _parameterInit = false;
   }
   
@@ -385,10 +385,10 @@ bool ToFTinTinCamera::_init()
   
   
   if(!_addParameters({
-    ParameterPtr(new TinTinVCOFrequency(*this, *_programmer, VCO_FREQ1, MOD_M1, MOD_M_FRAC1, MOD_N1)),
-    ParameterPtr(new TinTinVCOFrequency(*this, *_programmer, VCO_FREQ2, MOD_M2, MOD_M_FRAC2, MOD_N2)),
-    ParameterPtr(new TinTinModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ1, MOD_PS1)),
-    ParameterPtr(new TinTinModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, VCO_FREQ2, MOD_PS2)),
+    ParameterPtr(new TintinVCOFrequency(*this, *_programmer, VCO_FREQ1, MOD_M1, MOD_M_FRAC1, MOD_N1)),
+    ParameterPtr(new TintinVCOFrequency(*this, *_programmer, VCO_FREQ2, MOD_M2, MOD_M_FRAC2, MOD_N2)),
+    ParameterPtr(new TintinModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ1, MOD_PS1)),
+    ParameterPtr(new TintinModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, VCO_FREQ2, MOD_PS2)),
     ParameterPtr(new TintinUnambiguousRangeParameter(*this, *_programmer))
   }))
     return false;
@@ -401,7 +401,7 @@ bool ToFTinTinCamera::_init()
   return true;
 }
 
-bool ToFTinTinCamera::_initStartParams()
+bool ToFTintinCamera::_initStartParams()
 {
   if(
     !set(TG_DISABLE, true) ||
@@ -421,20 +421,20 @@ bool ToFTinTinCamera::_initStartParams()
   return ToFCamera::_initStartParams();
 }
 
-bool ToFTinTinCamera::_allowedROI(String &message)
+bool ToFTintinCamera::_allowedROI(String &message)
 {
   message  = "Column start and end must be multiples of 16, both between 0 to 319. ";
   message += "Row start and end must be between 0 to 239.";
   return true;
 }
 
-bool ToFTinTinCamera::_getROI(RegionOfInterest &roi)
+bool ToFTintinCamera::_getROI(RegionOfInterest &roi)
 {
   uint rowStart, rowEnd, colStart, colEnd;
   
   if(!_get(ROW_START, rowStart) || !_get(ROW_END, rowEnd) || !_get(COL_START, colStart) || !_get(COL_END, colEnd))
   {
-    logger(LOG_ERROR) << "ToFTinTinCamera: Could not get necessary parameters for ROI." << std::endl;
+    logger(LOG_ERROR) << "ToFTintinCamera: Could not get necessary parameters for ROI." << std::endl;
     return false;
   }
   
@@ -448,11 +448,11 @@ bool ToFTinTinCamera::_getROI(RegionOfInterest &roi)
   return true;
 }
 
-bool ToFTinTinCamera::_setROI(const RegionOfInterest &roi)
+bool ToFTintinCamera::_setROI(const RegionOfInterest &roi)
 {
   if(isRunning())
   {
-    logger(LOG_ERROR) << "ToFTinTinCamera: Cannot set frame size while the camera is streaming" << std::endl;
+    logger(LOG_ERROR) << "ToFTintinCamera: Cannot set frame size while the camera is streaming" << std::endl;
     return false;
   }
   
@@ -466,7 +466,7 @@ bool ToFTinTinCamera::_setROI(const RegionOfInterest &roi)
   
   if(!_set(ROW_START, rowStart) || !_set(ROW_END, rowEnd) || !_set(COL_START, colStart) || !_set(COL_END, colEnd))
   {
-    logger(LOG_ERROR) << "ToFTinTinCamera: Could not get necessary parameters for ROI." << std::endl;
+    logger(LOG_ERROR) << "ToFTintinCamera: Could not get necessary parameters for ROI." << std::endl;
     return false;
   }
   
@@ -479,19 +479,19 @@ bool ToFTinTinCamera::_setROI(const RegionOfInterest &roi)
   FrameSize s;
   if(!_getFrameSize(s) || !_setFrameSize(s, false)) // Get and set frame size to closest possible
   {
-    logger(LOG_ERROR) << "ToFTinTinCamera: Could not update frame size to closest valid frame size" << std::endl;
+    logger(LOG_ERROR) << "ToFTintinCamera: Could not update frame size to closest valid frame size" << std::endl;
     return false;
   }
   
   return true;
 }
 
-bool ToFTinTinCamera::_isHistogramEnabled() const
+bool ToFTintinCamera::_isHistogramEnabled() const
 {
   return false;
 }
 
-bool ToFTinTinCamera::_getIlluminationFrequency(float& frequency) const
+bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
 {
   bool dealiasingEnabled;
   
@@ -525,7 +525,7 @@ bool ToFTinTinCamera::_getIlluminationFrequency(float& frequency) const
   }
 }
 
-bool ToFTinTinCamera::_applyCalibrationParams()
+bool ToFTintinCamera::_applyCalibrationParams()
 {
   return set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) &&
     set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) &&
