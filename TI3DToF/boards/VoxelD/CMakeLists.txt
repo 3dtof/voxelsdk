@@ -20,7 +20,7 @@ install(TARGETS voxeld
 
 list(APPEND CONF_FILES
   boards/VoxelD/VoxelDCamera.conf
-  boards/VoxelD/VoxelDCameraNoCalibration.conf
+  boards/VoxelD/VoxelDCameraNormal.conf
 )
 
 set(CONF_FILES "${CONF_FILES}" PARENT_SCOPE)
