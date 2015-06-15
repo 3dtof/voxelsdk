@@ -2469,7 +2469,13 @@
 					<rangeList>
 						<range address="37" bankId="3" lsb="8" msb="11"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="phase, confidence, ambient and flags" meaning="depth data" value="0"/>
+						<value desc="in-phase and quadrature data." meaning="raw IQ data" value="1"/>
+						<value desc="dealiased phase, scaled confidence, ambient and flags" meaning="dealiased depth data" value="2"/>
+						<value desc="raw quad data." meaning="raw quad data" value="15"/>
+						<value desc="" meaning="raw iq data" value="3"/>
+					</valueList>
 				</property>
 				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="1059" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
@@ -4024,6 +4030,7 @@
 					<groupList>
 						<group desc="" name="data_pipeline">
 							<propertyList>
+								<property desc="" name="output_mode" propertyId="1058"/>
 								<property desc="" name="pixel_data_size" propertyId="1067"/>
 								<property desc="" name="op_data_arrange_mode" propertyId="1060"/>
 								<property desc="" name="config_iq_scale" propertyId="1040"/>
