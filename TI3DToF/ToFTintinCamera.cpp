@@ -261,7 +261,9 @@ public:
         !_depthCamera._set(QUAD_CNT_MAX, 6U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2U))
         return false;
       
-      uint ma = 15, mb = 14, k0 = 1, modPS1 = 1, modPS2 = 1;
+      uint ma = 15, mb = 14, ka = 1, kb = 14, modPS1 = 1, modPS2 = 1;
+      
+      uint freqRatio = mb*(1 << 12)/ma, delayFBCoeff1;
       
       float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
       vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*mb)/ma*6*(1 + modPS2), vco->upperLimit());
@@ -301,6 +303,9 @@ public:
       else
         vcoFreq = s;
       
+      // delayFBCoeff1 = modFreq1*(1 << 12)/24
+      delayFBCoeff1 = (vcoFreq*ma/mb/6/(1 + modPS1))*(1 << 12)/24;
+      
       if(!_depthCamera._set(MOD_PLL_UPDATE, true))
         return false;
       
@@ -313,7 +318,10 @@ public:
         !_depthCamera._set(MOD_PS2, modPS2) ||
         !_depthCamera._set(MA, ma) || 
         !_depthCamera._set(MB, mb) || 
-        !_depthCamera._set(K0, k0) || 
+        !_depthCamera._set(KA, ka) ||
+        !_depthCamera._set(KB, kb) ||
+        //!_depthCamera._set(FREQ_RATIO, freqRatio) ||
+        //!_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) || 
         !_depthCamera._set(DEALIASED_PHASE_MASK, (int)sign*phaseMask) ||
         !_depthCamera._setFrameRate(r) ||
         !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||

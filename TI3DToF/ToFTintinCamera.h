@@ -34,6 +34,11 @@
 #undef CONFIDENCE_THRESHOLD
 #define CONFIDENCE_THRESHOLD "amplitude_threshold"
 
+#define KA "ka"
+#define KB "kb"
+#define FREQ_RATIO "freq_ratio"
+#define DELAY_FB_COEFF1 "delay_fb_coeff_1"
+
 #undef HISTOGRAM_EN
 
 #define TG_DISABLE "tg_dis"
