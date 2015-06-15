@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10021" propertyViewSeed="1" version="PG1P0" wordLength="24">
+<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10023" propertyViewSeed="1" version="PG1P0" wordLength="24">
 	<bankList>
 		<bank id="0" name="TG" offset="256" size="256">
 			<invalidRangeList>
@@ -3245,8 +3245,10 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="2109" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
-					<rangeList/>
+				<property aid_0="" default="2047" desc="" function="" fuseId="-1" id="2109" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+					<rangeList>
+						<range address="73" bankId="3" lsb="0" msb="11"/>
+					</rangeList>
 					<valueList/>
 				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="2111" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
@@ -6682,7 +6684,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Integration duty cycle is scaled down this value.$Scaling is given by the formula : $integration time (scaled) = integration time (normal) &gt;&gt; normal_frm_intg_scale_scale" function="2**x" fuseId="-1" id="9980" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="0" default="0" desc="Integration duty cycle is scaled down this value.$Scaling is given by the formula : $integration time (scaled) = integration time (normal) &gt;&gt; normal_frm_intg_scale_scale" function="2**x" fuseId="-1" id="9980" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="77" bankId="3" lsb="6" msb="8"/>
 					</rangeList>
@@ -6875,6 +6877,16 @@
 					<rangeList/>
 					<valueList/>
 				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10021" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+					<rangeList>
+						<range address="74" bankId="3" lsb="0" msb="11"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10022" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
+					<valueList/>
+				</property>
 			</propertyList>
 		</propertyView>
 	</propertyViewList>
@@ -6994,6 +7006,8 @@
 								<property desc="" name="disable_temp_corr" propertyId="2099"/>
 								<property desc="" name="coeff_illum_1" propertyId="2100"/>
 								<property desc="" name="coeff_sensor_1" propertyId="2101"/>
+								<property desc="" name="coeff_illum_2" propertyId="2109"/>
+								<property desc="" name="coeff_sensor_2" propertyId="10021"/>
 								<property desc="" name="tillum_calib" propertyId="2102"/>
 								<property desc="" name="tsensor_calib" propertyId="2103"/>
 								<property desc="" name="calib_prec" propertyId="2104"/>

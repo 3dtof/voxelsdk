@@ -184,14 +184,14 @@ bool TintinCDKCamera::_init()
   
   if(!_addParameters({
     ParameterPtr(new TintinCDKMixVoltageParameter(*_programmer)),
-    ParameterPtr(new TintinCDKPVDDParameter(*_programmer)),
+    //ParameterPtr(new TintinCDKPVDDParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerPercentParameter(*this, *_programmer)),
     }))
   {
     return false;
   }
-  
+  /*
   // Settings for mix voltage and PVDD
   if(!_programmer->writeRegister(0x2D06, 0xFF) || 
     !_programmer->writeRegister(0x2D04, 0x40) ||
@@ -201,6 +201,7 @@ bool TintinCDKCamera::_init()
     !_programmer->writeRegister(0x2D0F, 0xFF)
   )
     return false;
+	*/
     
   if(!ToFTintinCamera::_init())
     return false;
