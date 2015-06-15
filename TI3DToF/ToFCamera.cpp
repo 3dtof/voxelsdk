@@ -533,7 +533,7 @@ bool ToFCamera::_getDepthScalingFactor(float& factor)
 
 bool ToFCamera::_getToFFrameType(ToFFrameType &frameType) const
 {
-  uint r;
+  int r;
   
   if(!_get(ToF_FRAME_TYPE, r))
   {
