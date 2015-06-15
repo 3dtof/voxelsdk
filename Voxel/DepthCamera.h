@@ -354,7 +354,7 @@ bool DepthCamera::_get(const String &name, T &value, bool refresh) const
     
     if(param == 0)
     {
-      logger(LOG_ERROR) << "DepthCamera: Invalid value type '" << typeid(value).name() << "' used to set parameter " << _id << "." << name << std::endl;
+      logger(LOG_ERROR) << "DepthCamera: Invalid value type '" << typeid(value).name() << "' used to get parameter " << _id << "." << name << std::endl;
       return false;
     }
     
