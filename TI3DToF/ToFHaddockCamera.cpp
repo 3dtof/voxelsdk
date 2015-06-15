@@ -302,15 +302,6 @@ public:
 
 
 
-class HaddockToFFrameTypeParameter: public UnsignedIntegerParameter
-{
-public:
-  HaddockToFFrameTypeParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ToF_FRAME_TYPE, "", 0x5c25, 24, 11, 8, 0, 15, 0, "", "Type of ToF frame", Parameter::IO_READ_WRITE) {}
-  
-  virtual ~HaddockToFFrameTypeParameter() {}
-};
-
 class HaddockSensorTemperatureParameter: public IntegerParameter
 {
   ToFHaddockCamera &_depthCamera;
@@ -387,7 +378,6 @@ bool ToFHaddockCamera::_init()
     ParameterPtr(new HaddockModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, MOD_PS1)),
     ParameterPtr(new HaddockModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, MOD_PS2)),
     ParameterPtr(new HaddockUnambiguousRangeParameter(*this, *_programmer)),
-    ParameterPtr(new HaddockToFFrameTypeParameter(*_programmer)),
     ParameterPtr(new HaddockSensorTemperatureParameter(*this, *_programmer))
   }))
     return false;
