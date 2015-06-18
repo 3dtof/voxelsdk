@@ -150,6 +150,82 @@ public:
   virtual ~TintinCDKIlluminationPowerPercentParameter() {}
 };
 
+class TintinCDKIllumVrefParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    return (3300U * value / 255U);
+  }
+  
+  virtual uint32_t _toRawValue(uint value) const
+  {
+    return (255U * value / 3300U);
+  }
+  
+public:
+  TintinCDKIllumVrefParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, "comp_vref", "mV", 0x5400, 8, 7, 0, 0, 3300, 1200, "Comp Vref", 
+                           "This voltage is the reference voltage used for comparing the laser voltage in the illumination delay compensation loop.", Parameter::IO_READ_WRITE, {})
+  {}
+  
+  virtual ~TintinCDKIllumVrefParameter() {}
+};
+
+class TintinCDKIllumCurrentParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    uint8_t lsbyte = value & 0xFF;
+    uint8_t msbyte = (value >> 8) & 0xFF;
+    uint current = (lsbyte << 8) + msbyte;
+
+    // Calibration register is set to 6991 to get about 122.07 uA/bit
+    return (current * 0.12207);
+  }
+  
+  //virtual uint32_t _toRawValue(uint value) const
+  //{
+  //  return (255U * value / 3300U);
+  //}
+  
+public:
+  TintinCDKIllumCurrentParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, "illum_current", "mA", 0x4E04, 8, 7, 0, 0, 4000, 0000, "Illumination Current", 
+                           "This is the current on the illumination 5V rail.", Parameter::IO_READ_ONLY, {})
+  {}
+  
+  virtual ~TintinCDKIllumCurrentParameter() {}
+};
+
+class TintinCDKMainCurrentParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    uint8_t lsbyte = value & 0xFF;
+    uint8_t msbyte = (value >> 8) & 0xFF;
+    uint current = (lsbyte << 8) + msbyte;
+
+    // Calibration register is set to 1864 to get about 61.035 uA/bit
+    return (current * 0.061035);
+  }
+  
+  //virtual uint32_t _toRawValue(uint value) const
+  //{
+  //  return (255U * value / 3300U);
+  //}
+  
+public:
+  TintinCDKMainCurrentParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, "main_current", "mA", 0x4B04, 8, 7, 0, 0, 2000, 0000, "Main Board Current", 
+                           "This is the current drawn by the main board.", Parameter::IO_READ_ONLY, {})
+  {}
+  
+  virtual ~TintinCDKMainCurrentParameter() {}
+};
+
 
 bool TintinCDKCamera::_init()
 {
@@ -190,6 +266,9 @@ bool TintinCDKCamera::_init()
   if(!_addParameters({
     ParameterPtr(new TintinCDKMixVoltageParameter(*_programmer)),
     //ParameterPtr(new TintinCDKPVDDParameter(*_programmer)),
+    ParameterPtr(new TintinCDKIllumVrefParameter(*_programmer)),
+    ParameterPtr(new TintinCDKMainCurrentParameter(*_programmer)),
+    ParameterPtr(new TintinCDKIllumCurrentParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerPercentParameter(*this, *_programmer)),
     }))
