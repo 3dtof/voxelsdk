@@ -292,24 +292,43 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
 
 bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
-  supportedVideoModes = Vector<SupportedVideoMode> {
-    SupportedVideoMode(320,240,25,1,4),
-    SupportedVideoMode(160,240,50,1,4),
-    SupportedVideoMode(160,120,100,1,4),
-    SupportedVideoMode(80,120,200,1,4),
-    SupportedVideoMode(80,60,400,1,4),
-    SupportedVideoMode(320,240,50,1,2),
-    SupportedVideoMode(320,120,100,1,2),
-    SupportedVideoMode(160,120,200,1,2),
-    SupportedVideoMode(160,60,400,1,2),
-    SupportedVideoMode(80,60,400,1,2),
-  };
+  USBDevice &d = (USBDevice &)*_device;
+
+  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
+    supportedVideoModes = Vector<SupportedVideoMode> {
+      SupportedVideoMode(320,240,25,1,4),
+      SupportedVideoMode(160,240,50,1,4),
+      SupportedVideoMode(160,120,100,1,4),
+      SupportedVideoMode(80,120,200,1,4),
+      SupportedVideoMode(80,60,400,1,4),
+      SupportedVideoMode(320,240,50,1,2),
+      SupportedVideoMode(320,120,100,1,2),
+      SupportedVideoMode(160,120,200,1,2),
+      SupportedVideoMode(160,60,400,1,2),
+      SupportedVideoMode(80,60,400,1,2),
+    };
+  } else {
+    supportedVideoModes = Vector<SupportedVideoMode> {
+      SupportedVideoMode(320,240,50,1,4),
+      SupportedVideoMode(160,240,100,1,4),
+      SupportedVideoMode(160,120,100,1,4),
+      SupportedVideoMode(80,120,200,1,4),
+      SupportedVideoMode(80,60,400,1,4),
+      SupportedVideoMode(320,240,50,1,2),
+      SupportedVideoMode(320,120,100,1,2),
+      SupportedVideoMode(160,120,200,1,2),
+      SupportedVideoMode(160,60,400,1,2),
+      SupportedVideoMode(80,60,400,1,2),
+    };
+  }
+
   return true;
 }
 
 bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
 {
   int bytesPerPixel;
+  USBDevice &d = (USBDevice &)*_device;
   if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
   {
     logger(LOG_ERROR) << "TintinCDKCamera: Could not get current bytes per pixel" << std::endl;
@@ -319,7 +338,12 @@ bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
   videoMode.frameSize.width = 320;
   videoMode.frameSize.height = 240;
   videoMode.frameRate.denominator = 1;
-  videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
+  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
+    videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
+  } else {
+    videoMode.frameRate.numerator = 30;
+  }
+
   return true;
 }
 
