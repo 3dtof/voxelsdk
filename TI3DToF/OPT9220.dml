@@ -2465,7 +2465,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="1058" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="1058" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="37" bankId="3" lsb="8" msb="11"/>
 					</rangeList>
