@@ -182,6 +182,11 @@ bool TintinCDKCamera::_init()
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
+  /* TPL0102 - remove non-volatile access */
+
+  if (!_programmer->writeRegister(0x5410, 0xC0))
+    return false;
+
   if(!_addParameters({
     ParameterPtr(new TintinCDKMixVoltageParameter(*_programmer)),
     //ParameterPtr(new TintinCDKPVDDParameter(*_programmer)),
@@ -191,6 +196,13 @@ bool TintinCDKCamera::_init()
   {
     return false;
   }
+  /* INA226 initializations: note byteswapped for now */
+  if (!_programmer->writeRegister(0x4B00, 0x274F) ||
+    !_programmer->writeRegister(0x4E00, 0x274F) ||
+    !_programmer->writeRegister(0x4B05, 0x4807) ||
+    !_programmer->writeRegister(0x4E05, 0x4F1B)
+  )
+    return false;
   /*
   // Settings for mix voltage and PVDD
   if(!_programmer->writeRegister(0x2D06, 0xFF) || 
