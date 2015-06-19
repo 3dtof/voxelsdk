@@ -69,6 +69,7 @@ namespace std
 %template(DeviceVector) vector<Voxel::DevicePtr>;
 %template(StringVector) vector<string>;
 %template(PointVector) vector<Voxel::Point>;
+%template(StringMap) unordered_map<string, string>;
 %template(ParamMap) unordered_map<string, Voxel::Ptr<Voxel::Parameter>>;
 %template(FilterParamMap) unordered_map<string, Voxel::Ptr<Voxel::FilterParameter>>;
 %template(VideoModeVector) vector<Voxel::SupportedVideoMode>;
@@ -86,6 +87,10 @@ namespace std
 
 %handle_reference(Voxel::VideoMode);
 %apply Voxel::VideoMode &OUTPUT { Voxel::VideoMode &videoMode };
+
+%handle_reference(Voxel::ConfigSet);
+%handle_reference(Voxel::ConfigSet *);
+%apply Voxel::ConfigSet *&OUTPUT { Voxel::ConfigSet *&configSet };
 
 %handle_reference(Voxel::RegionOfInterest);
 %apply Voxel::RegionOfInterest &OUTPUT { Voxel::RegionOfInterest &roi };
