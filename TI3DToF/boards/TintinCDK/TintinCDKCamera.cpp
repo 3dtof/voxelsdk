@@ -150,6 +150,82 @@ public:
   virtual ~TintinCDKIlluminationPowerPercentParameter() {}
 };
 
+class TintinCDKIllumVrefParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    return (3300U * value / 255U);
+  }
+  
+  virtual uint32_t _toRawValue(uint value) const
+  {
+    return (255U * value / 3300U);
+  }
+  
+public:
+  TintinCDKIllumVrefParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, "comp_vref", "mV", 0x5400, 8, 7, 0, 0, 3300, 1200, "Comp Vref", 
+                           "This voltage is the reference voltage used for comparing the laser voltage in the illumination delay compensation loop.", Parameter::IO_READ_WRITE, {})
+  {}
+  
+  virtual ~TintinCDKIllumVrefParameter() {}
+};
+
+class TintinCDKIllumCurrentParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    uint8_t lsbyte = value & 0xFF;
+    uint8_t msbyte = (value >> 8) & 0xFF;
+    uint current = (lsbyte << 8) + msbyte;
+
+    // Calibration register is set to 6991 to get about 122.07 uA/bit
+    return (current * 0.12207);
+  }
+  
+  //virtual uint32_t _toRawValue(uint value) const
+  //{
+  //  return (255U * value / 3300U);
+  //}
+  
+public:
+  TintinCDKIllumCurrentParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, "illum_current", "mA", 0x4E04, 8, 7, 0, 0, 4000, 0000, "Illumination Current", 
+                           "This is the current on the illumination 5V rail.", Parameter::IO_READ_ONLY, {})
+  {}
+  
+  virtual ~TintinCDKIllumCurrentParameter() {}
+};
+
+class TintinCDKMainCurrentParameter: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    uint8_t lsbyte = value & 0xFF;
+    uint8_t msbyte = (value >> 8) & 0xFF;
+    uint current = (lsbyte << 8) + msbyte;
+
+    // Calibration register is set to 1864 to get about 61.035 uA/bit
+    return (current * 0.061035);
+  }
+  
+  //virtual uint32_t _toRawValue(uint value) const
+  //{
+  //  return (255U * value / 3300U);
+  //}
+  
+public:
+  TintinCDKMainCurrentParameter(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, "main_current", "mA", 0x4B04, 8, 7, 0, 0, 2000, 0000, "Main Board Current", 
+                           "This is the current drawn by the main board.", Parameter::IO_READ_ONLY, {})
+  {}
+  
+  virtual ~TintinCDKMainCurrentParameter() {}
+};
+
 
 bool TintinCDKCamera::_init()
 {
@@ -182,15 +258,30 @@ bool TintinCDKCamera::_init()
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
+  /* TPL0102 - remove non-volatile access */
+
+  if (!_programmer->writeRegister(0x5410, 0xC0))
+    return false;
+
   if(!_addParameters({
     ParameterPtr(new TintinCDKMixVoltageParameter(*_programmer)),
     //ParameterPtr(new TintinCDKPVDDParameter(*_programmer)),
+    ParameterPtr(new TintinCDKIllumVrefParameter(*_programmer)),
+    ParameterPtr(new TintinCDKMainCurrentParameter(*_programmer)),
+    ParameterPtr(new TintinCDKIllumCurrentParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerPercentParameter(*this, *_programmer)),
     }))
   {
     return false;
   }
+  /* INA226 initializations: note byteswapped for now */
+  if (!_programmer->writeRegister(0x4B00, 0x274F) ||
+    !_programmer->writeRegister(0x4E00, 0x274F) ||
+    !_programmer->writeRegister(0x4B05, 0x4807) ||
+    !_programmer->writeRegister(0x4E05, 0x4F1B)
+  )
+    return false;
   /*
   // Settings for mix voltage and PVDD
   if(!_programmer->writeRegister(0x2D06, 0xFF) || 
@@ -292,24 +383,43 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
 
 bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
-  supportedVideoModes = Vector<SupportedVideoMode> {
-    SupportedVideoMode(320,240,25,1,4),
-    SupportedVideoMode(160,240,50,1,4),
-    SupportedVideoMode(160,120,100,1,4),
-    SupportedVideoMode(80,120,200,1,4),
-    SupportedVideoMode(80,60,400,1,4),
-    SupportedVideoMode(320,240,50,1,2),
-    SupportedVideoMode(320,120,100,1,2),
-    SupportedVideoMode(160,120,200,1,2),
-    SupportedVideoMode(160,60,400,1,2),
-    SupportedVideoMode(80,60,400,1,2),
-  };
+  USBDevice &d = (USBDevice &)*_device;
+
+  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
+    supportedVideoModes = Vector<SupportedVideoMode> {
+      SupportedVideoMode(320,240,25,1,4),
+      SupportedVideoMode(160,240,50,1,4),
+      SupportedVideoMode(160,120,100,1,4),
+      SupportedVideoMode(80,120,200,1,4),
+      SupportedVideoMode(80,60,400,1,4),
+      SupportedVideoMode(320,240,50,1,2),
+      SupportedVideoMode(320,120,100,1,2),
+      SupportedVideoMode(160,120,200,1,2),
+      SupportedVideoMode(160,60,400,1,2),
+      SupportedVideoMode(80,60,400,1,2),
+    };
+  } else {
+    supportedVideoModes = Vector<SupportedVideoMode> {
+      SupportedVideoMode(320,240,50,1,4),
+      SupportedVideoMode(160,240,100,1,4),
+      SupportedVideoMode(160,120,100,1,4),
+      SupportedVideoMode(80,120,200,1,4),
+      SupportedVideoMode(80,60,400,1,4),
+      SupportedVideoMode(320,240,50,1,2),
+      SupportedVideoMode(320,120,100,1,2),
+      SupportedVideoMode(160,120,200,1,2),
+      SupportedVideoMode(160,60,400,1,2),
+      SupportedVideoMode(80,60,400,1,2),
+    };
+  }
+
   return true;
 }
 
 bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
 {
   int bytesPerPixel;
+  USBDevice &d = (USBDevice &)*_device;
   if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
   {
     logger(LOG_ERROR) << "TintinCDKCamera: Could not get current bytes per pixel" << std::endl;
@@ -319,7 +429,12 @@ bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
   videoMode.frameSize.width = 320;
   videoMode.frameSize.height = 240;
   videoMode.frameRate.denominator = 1;
-  videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
+  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
+    videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
+  } else {
+    videoMode.frameRate.numerator = 30;
+  }
+
   return true;
 }
 
