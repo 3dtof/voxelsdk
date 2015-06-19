@@ -261,7 +261,7 @@ public:
         !_depthCamera._set(QUAD_CNT_MAX, 6U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2U))
         return false;
       
-      uint ma = 15, mb = 14, ka = 1, kb = 14, modPS1 = 1, modPS2 = 1;
+      uint ma = 15, mb = 14, ka = 1, kb = 1, modPS1 = 1, modPS2 = 1;
       
       uint freqRatio = mb*(1 << 12)/ma, delayFBCoeff1;
       
@@ -320,8 +320,8 @@ public:
         !_depthCamera._set(MB, mb) || 
         !_depthCamera._set(KA, ka) ||
         !_depthCamera._set(KB, kb) ||
-        //!_depthCamera._set(FREQ_RATIO, freqRatio) ||
-        //!_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) || 
+        !_depthCamera._set(FREQ_RATIO, freqRatio) ||
+        !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) || 
         !_depthCamera._set(DEALIASED_PHASE_MASK, (int)sign*phaseMask) ||
         !_depthCamera._setFrameRate(r) ||
         !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
@@ -543,9 +543,7 @@ bool ToFTintinCamera::_applyCalibrationParams()
     set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) &&
     set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) &&
     set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)) &&
-    set(COEFF_ILLUM_2, configFile.getInteger("calib", COEFF_ILLUM_2)) &&
-    set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)) &&
-    set(COEFF_SENSOR_2, configFile.getInteger("calib", COEFF_SENSOR_2));
+    set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1));
 }
  
 }
