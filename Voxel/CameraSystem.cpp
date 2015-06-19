@@ -145,7 +145,7 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
   
   if(!numberOfDevicesAdded)
   {
-    logger(LOG_WARNING) << "CameraSystem: No devices added from factory '" << factory->name() << ". Ignoring this factory." << std::endl;
+    logger(LOG_WARNING) << "CameraSystem: No devices added from factory '" << factory->name() << "'. Ignoring this factory." << std::endl;
     return false;
   }
   
