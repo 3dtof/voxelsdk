@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10025" propertyViewSeed="1" version="PG1P0" wordLength="24">
+<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10039" propertyViewSeed="1" version="PG1P0" wordLength="24">
 	<bankList>
 		<bank id="0" name="TG" offset="256" size="256">
 			<invalidRangeList>
@@ -318,7 +318,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="4" desc="Total number of sub frames in each frame." function="" fuseId="-1" id="83" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="1" default="4" desc="Total number of sub frames in each frame. Only values of 1,2,4 and 8 are valid. The behavior is unpredicatable when set to other values." function="" fuseId="-1" id="83" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="131" bankId="0" lsb="4" msb="7"/>
 					</rangeList>
@@ -1524,7 +1524,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="enable flicker cancel mode. Enables phase offset hop across even and odd sub-frames." function="" fuseId="-1" id="635" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="1" default="0" desc="Enables a different sequence of quads for odd and even frames" function="" fuseId="-1" id="635" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="18" bankId="0" lsb="7" msb="7"/>
 					</rangeList>
@@ -1542,7 +1542,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="1" desc="The programmable delay between external vd and synced vd. The delay has to be at the least 1 cycle." function="" fuseId="-1" id="638" max="4194303" min="0" readonly="0" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="2" default="1" desc="The programmable delay between external vd and synced vd. The minimum value of programmable delay is 1 cycle." function="" fuseId="-1" id="638" max="4194303" min="0" readonly="0" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="214" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
@@ -1577,8 +1577,8 @@
 						<range address="14" bankId="0" lsb="17" msb="17"/>
 					</rangeList>
 					<valueList>
-						<value desc="default" meaning="Increase the duty cycle" value="0"/>
-						<value desc="" meaning="Reduce the duty cycle" value="1"/>
+						<value desc="default" meaning="Increase the duty cycle of ILLUM_P" value="0"/>
+						<value desc="" meaning="Reduce the duty cycle of ILLUM_P" value="1"/>
 					</valueList>
 				</property>
 				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="676" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
@@ -1793,13 +1793,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="858" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="1" default="0" desc="The offset of the quad sequence for alternate frames for base frequency" function="" fuseId="-1" id="858" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="18" bankId="0" lsb="8" msb="10"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="859" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="1" default="0" desc="The offset of the quad sequence for alternate frames for de-aliasing frequency" function="" fuseId="-1" id="859" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="18" bankId="0" lsb="11" msb="13"/>
 					</rangeList>
@@ -1848,7 +1848,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="6" desc="The integration duty cycle can be set using this parameter." function="" fuseId="-1" id="907" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
+				<property aid_0="0" default="6" desc="If no scaling is used,$Integration time = intg_duty_cycle * 100/63.0." function="" fuseId="-1" id="907" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
 					<rangeList>
 						<range address="76" bankId="3" lsb="0" msb="5"/>
 					</rangeList>
@@ -2101,73 +2101,73 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="quad0 mapping to even microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1016" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="1016" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="27" bankId="3" lsb="17" msb="19"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="1" desc="quad1 mapping to even microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1017" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="1017" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="28" bankId="3" lsb="0" msb="2"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="2" desc="quad2 mapping to even microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1018" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="2" desc="" function="" fuseId="-1" id="1018" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="28" bankId="3" lsb="4" msb="6"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="3" desc="quad3 mapping to even microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1019" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="3" desc="" function="" fuseId="-1" id="1019" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="28" bankId="3" lsb="8" msb="10"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="4" desc="quad4 mapping to even microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1020" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="4" desc="" function="" fuseId="-1" id="1020" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="28" bankId="3" lsb="12" msb="14"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="5" desc="quad5 mapping to even microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1021" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="5" desc="" function="" fuseId="-1" id="1021" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="28" bankId="3" lsb="16" msb="18"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="quad0 mapping to odd microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1022" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="1022" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="28" bankId="3" lsb="20" msb="22"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="1" desc="quad1 mapping to odd microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1023" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="1023" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="29" bankId="3" lsb="0" msb="2"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="2" desc="quad2 mapping to odd microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1024" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="2" desc="" function="" fuseId="-1" id="1024" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="29" bankId="3" lsb="4" msb="6"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="3" desc="quad3 mapping to odd microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1025" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="3" desc="" function="" fuseId="-1" id="1025" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="29" bankId="3" lsb="8" msb="10"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="4" desc="quad4 mapping to odd microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1026" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="4" desc="" function="" fuseId="-1" id="1026" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="29" bankId="3" lsb="12" msb="14"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="5" desc="quad5 mapping to odd microframes (uf count start from &quot;0&quot;)" function="" fuseId="-1" id="1027" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="5" desc="" function="" fuseId="-1" id="1027" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="29" bankId="3" lsb="16" msb="18"/>
 					</rangeList>
@@ -2360,7 +2360,6 @@
 					<valueList>
 						<value desc="phase, amplitude, ambient and flags" meaning="depth data" value="0"/>
 						<value desc="in-phase and quadrature data." meaning="raw IQ data" value="1"/>
-						<value desc="dealiased phase, scaled amplitude, ambient and flags" meaning="dealiased depth data" value="2"/>
 						<value desc="raw quad data." meaning="raw quad data" value="15"/>
 					</valueList>
 				</property>
@@ -2378,7 +2377,6 @@
 						<value desc="Continuous" meaning="Continuous" value="0"/>
 						<value desc="Continuous" meaning="Continuous" value="1"/>
 						<value desc="Rearraged in chunks of 8" meaning="rearrange_8" value="2"/>
-						<value desc="Rearranged in chunks of 16" meaning="rearrange_16" value="3"/>
 					</valueList>
 				</property>
 				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="1061" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
@@ -2811,7 +2809,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="temperature output from temp sensor with slave address = TEMP_SLV_ADDR2" function="" fuseId="-1" id="1989" max="127" min="-128" readonly="1" signed="1" strobe="0" totalBits="8" units="">
+				<property aid_0="0" default="0" desc="temperature output from temp sensor with slave address = TEMP_SLV_ADDR" function="" fuseId="-1" id="1989" max="127" min="-128" readonly="1" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="98" bankId="3" lsb="0" msb="7"/>
 					</rangeList>
@@ -3013,13 +3011,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="DDR calibration flag" function="" fuseId="-1" id="2067" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="DDR calibration done flag" function="" fuseId="-1" id="2067" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="99" bankId="3" lsb="2" msb="2"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="controller initialization done flag" function="" fuseId="-1" id="2068" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="controller initialization done flag" function="" fuseId="-1" id="2068" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="99" bankId="3" lsb="1" msb="1"/>
 					</rangeList>
@@ -3248,7 +3246,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="2109" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the base frequency data. This value is substracted from the obtained phase." function="" fuseId="-1" id="2109" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="58" bankId="3" lsb="4" msb="15"/>
 					</rangeList>
@@ -3306,7 +3304,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="Indicates that the integration duty cycle is too high. Write a '0' to reset the state$" function="" fuseId="-1" id="2124" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="Indicates that the integration duty cycle is too high.$" function="" fuseId="-1" id="2124" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="99" bankId="3" lsb="23" msb="23"/>
 					</rangeList>
@@ -3622,19 +3620,19 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="Enables 16-bit output of dealiased data. Flags will not be available in this mode. This mode is available only if pixel_data_size is set to 4 byte mode." function="" fuseId="-1" id="6374" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="Enables 16-bit output of dealiased data. Ambient will not be available in this mode. This mode is available only if pixel_data_size is set to 4 byte mode." function="" fuseId="-1" id="6374" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="40" bankId="3" lsb="23" msb="23"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="Enabled dynamic range extension by scaling the integration time on alternate frames. $If HDR scale is set to 0, no scaling happens (The default case). $Scaling is given by the formula : $integration time (scaled) = integration time (normal) &gt;&gt; hdr_frm_intg_scale. Note that this scaling is in addition to the scaling of the normal integration duty cycle set using the normal_frm_intg_scale register." function="" fuseId="-1" id="6377" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="0" default="0" desc="Enables scaling of integration time on alternate frames. $If HDR scale is set to 0, no scaling happens (The default case). $Scaling is given by the formula : $integration time (scaled) = integration time &gt;&gt; hdr_frm_intg_scale. Note that this scaling is in addition to the scaling of the normal integration duty cycle set using the normal_frm_intg_scale register." function="2**x" fuseId="-1" id="6377" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="76" bankId="3" lsb="6" msb="8"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Indicates that the output data rate is too low. Write a '0' to reset the state." function="" fuseId="-1" id="6378" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="Indicates that the output data rate is too low. Write a '0' to reset the state." function="" fuseId="-1" id="6378" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="99" bankId="3" lsb="20" msb="20"/>
 					</rangeList>
@@ -3693,14 +3691,11 @@
 						<value desc="Starts 15 us before start of integration time" meaning="early" value="1"/>
 					</valueList>
 				</property>
-				<property aid_0="0" default="1" desc="Sets the polarity of illum_en signal during active state" function="" fuseId="-1" id="6393" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="1" desc="" function="" fuseId="-1" id="6393" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="53" bankId="3" lsb="23" msb="23"/>
 					</rangeList>
-					<valueList>
-						<value desc="" meaning="Low" value="0"/>
-						<value desc="" meaning="High" value="1"/>
-					</valueList>
+					<valueList/>
 				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="6394" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
 					<rangeList/>
@@ -6215,7 +6210,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="8801" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="Enable phase non-linearity correction. The linearity coefficients represent the lookup table for converting the obtained phase to actual phase." function="" fuseId="-1" id="8801" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="128" bankId="3" lsb="0" msb="0"/>
 					</rangeList>
@@ -6239,9 +6234,15 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="8834" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
-					<rangeList/>
-					<valueList/>
+				<property aid_0="" default="0" desc="Represents the repetition period of non-linearity. The 16 LUT values are spread over this period. The remaining periods in 360 degrees are a repeat of this period." function="" fuseId="-1" id="8834" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
+					<rangeList>
+						<range address="128" bankId="3" lsb="1" msb="2"/>
+					</rangeList>
+					<valueList>
+						<value desc="" meaning="90" value="0"/>
+						<value desc="" meaning="180" value="1"/>
+						<value desc="" meaning="360" value="2"/>
+					</valueList>
 				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="8838" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
 					<rangeList>
@@ -6435,7 +6436,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="enable dummy column output" function="" fuseId="-1" id="9926" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="9926" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="58" bankId="0" lsb="9" msb="9"/>
 					</rangeList>
@@ -6657,7 +6658,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="9973" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Enable scaling of integration times in alternate frames." function="" fuseId="-1" id="9973" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="77" bankId="3" lsb="5" msb="5"/>
 					</rangeList>
@@ -6687,52 +6688,43 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Integration duty cycle is scaled down this value.$Scaling is given by the formula : $integration time (scaled) = integration time (normal) &gt;&gt; normal_frm_intg_scale_scale" function="2**x" fuseId="-1" id="9980" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="" default="0" desc="Integration duty cycle is scaled by down this value.$Scaling is given by the formula : $integration time (scaled) = integration time &gt;&gt; normal_frm_intg_scale_scale" function="2**x" fuseId="-1" id="9980" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="77" bankId="3" lsb="6" msb="8"/>
 					</rangeList>
-					<valueList>
-						<value desc="" meaning="1" value="0"/>
-						<value desc="" meaning="2" value="1"/>
-						<value desc="" meaning="4" value="2"/>
-						<value desc="" meaning="8" value="3"/>
-						<value desc="" meaning="16" value="4"/>
-						<value desc="" meaning="32" value="5"/>
-						<value desc="" meaning="64" value="6"/>
-						<value desc="" meaning="128" value="7"/>
-					</valueList>
+					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="enable pixel crosstalk correction" function="" fuseId="-1" id="9981" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Enable spatial filter. The filter acts on the complex representation of phase data at each pixel given by I+jQ.$Only the adjacent pixels are used in the filter. Diagonal elements are not taken into consideration. The filter's center has a coefficient of 1+0j. " function="" fuseId="-1" id="9981" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="182" bankId="3" lsb="19" msb="19"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="crosstalk correction at (x,y) :$I(x,y) + j Q(x,y) + ((I(x,y-1)+I(x,y+1))+j(Q(x,y-1)+Q(x,y+1)))*(filt_coef_row_real+ j filt_coef_row_imag))/(512&lt;&lt;filt_scale)$+ $((I(x-1,y)+I(x+1,y))+j(Q(x-1,y)+Q(x+1,y)))*(filt_coef_col_real+ j filt_coef_col_imag))/(512&lt;&lt;filt_scale)$" function="" fuseId="-1" id="9982" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
+				<property aid_0="0" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Above or below the center pixel.$Frequency : f1$Component : Real" function="" fuseId="-1" id="9982" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="173" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="9983" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Above or below the center pixel.$Frequency : f1$Component : Imaginary" function="" fuseId="-1" id="9983" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="173" bankId="3" lsb="16" msb="23"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="crosstalk correction :$((I(y-1)+I(y+1))+j(Q(y-1)+Q(y+1)))*(filt_coef_row_real+ j filt_coef_row_imag))/(256&lt;&lt;filt_scale)" function="" fuseId="-1" id="9984" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Left or Right of the center pixel.$Frequency : f1$Component : Real" function="" fuseId="-1" id="9984" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="174" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="9985" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Left or Right of the center pixel.$Frequency : f1$Component : Imaginary" function="" fuseId="-1" id="9985" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="174" bankId="3" lsb="16" msb="23"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="9986" max="3" min="0" readonly="1" signed="0" strobe="0" totalBits="2" units="">
+				<property aid_0="0" default="0" desc="Filter coefficients will be scaled by this number.$filt_coeff (programmed) = 128 * 2^(2+filt_scale) * coeff$where coeff is the complex coefficient with absolute value between 0 and 1." function="2**(-2-x)" fuseId="-1" id="9986" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="182" bankId="3" lsb="16" msb="17"/>
 					</rangeList>
@@ -6814,13 +6806,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="delay correction :$freq1 : config_tc_en*(config_tc_coef+1)*(delay_illum-delay_comp)/256$$freq2 : config_tc_en*(delay_illum-delay_comp)/256" function="" fuseId="-1" id="10005" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="delay correction :$delay_fb_corr_1 = (delay_fb_corr_mode*delay_fb_coeff_1*(delay_fb_illum-delay_fb_comp)/256$$delay_fb_corr_1 = freq_ratio*delay_fb_corr_1" function="" fuseId="-1" id="10005" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="177" bankId="3" lsb="21" msb="22"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10009" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="delay correction :$freq1 : delay_fb_dc_corr_1 = (delay_fb_dc_corr_mode*0.5*delay_fb_coeff_1*(dc_fb_illum-0.5))/256$$freq2 : delay_fb_dc_corr_2 = freq_ratio*delay_fb_dc_corr_1" function="" fuseId="-1" id="10009" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="177" bankId="3" lsb="19" msb="20"/>
 					</rangeList>
@@ -6840,37 +6832,37 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10014" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Left or Right of the center pixel.$Frequency : f2$Component : Imaginary" function="" fuseId="-1" id="10014" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="172" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="crosstalk correction :$((I(y-1)+I(y+1))+j(Q(y-1)+Q(y+1)))*(filt_coef_row_real+ j filt_coef_row_imag))/(256&lt;&lt;filt_scale)" function="" fuseId="-1" id="10015" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Left or Right of the center pixel.$Frequency : f2$Component : Real" function="" fuseId="-1" id="10015" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="172" bankId="3" lsb="16" msb="23"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10016" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Above or below the center pixel.$Frequency : f2$Component : Imaginary" function="" fuseId="-1" id="10016" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="171" bankId="3" lsb="16" msb="23"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="crosstalk correction at (x,y) :$I(x,y) + j Q(x,y) + ((I(x,y-1)+I(x,y+1))+j(Q(x,y-1)+Q(x,y+1)))*(filt_coef_row_real+ j filt_coef_row_imag))/(512&lt;&lt;filt_scale)$+ $((I(x-1,y)+I(x+1,y))+j(Q(x-1,y)+Q(x+1,y)))*(filt_coef_col_real+ j filt_coef_col_imag))/(512&lt;&lt;filt_scale)$" function="" fuseId="-1" id="10017" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="Spatial filter coeffcient. Used if filt_en is set to '1'.$Location : Above or below the center pixel.$Frequency : f1$Component : Real" function="" fuseId="-1" id="10017" max="127" min="-128" readonly="0" signed="1" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="171" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="freq_ratio = mb*4096/ma" function="" fuseId="-1" id="10018" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="freq_ratio = f2*4096/f1" function="" fuseId="-1" id="10018" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="178" bankId="3" lsb="0" msb="11"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="freq_ratio_comp=modulation_frequency*4096/24MHz" function="" fuseId="-1" id="10019" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="delay_fb_coeff_1=f1*1024/24MHz" function="" fuseId="-1" id="10019" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="179" bankId="3" lsb="0" msb="11"/>
 					</rangeList>
@@ -6880,13 +6872,93 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10021" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the de-aliasing frequency data. This value is substracted from the obtained phase." function="" fuseId="-1" id="10021" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="59" bankId="3" lsb="4" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10022" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10025" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
+					<valueList/>
+				</property>
+				<property aid_0="0" default="0" desc="disable the interrupt on DDR initialization failure" function="" fuseId="-1" id="10026" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="1" msb="1"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="disable the interrupt on DDR calibration failure" function="" fuseId="-1" id="10027" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="2" msb="2"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="disable the interrupt on master PLL lock failure" function="" fuseId="-1" id="10028" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="4" msb="4"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="disable the interrupt on LVDS PLL lock failure" function="" fuseId="-1" id="10029" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="3" msb="3"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10030" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="22" msb="22"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10031" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="23" msb="23"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="disable the interrupt on output data path overflow failure" function="" fuseId="-1" id="10032" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="20" msb="20"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="disable the interrupt on output data path underflow failure" function="" fuseId="-1" id="10033" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="21" msb="21"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="disable the interrupt on sensor overtemperature" function="" fuseId="-1" id="10034" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="18" msb="18"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="0" default="0" desc="disable the interrupt on illumination overtemperature" function="" fuseId="-1" id="10035" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="175" bankId="3" lsb="19" msb="19"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10036" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+					<rangeList>
+						<range address="176" bankId="3" lsb="0" msb="7"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10037" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+					<rangeList>
+						<range address="176" bankId="3" lsb="8" msb="15"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10038" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
 					<rangeList/>
 					<valueList/>
 				</property>
@@ -6922,9 +6994,9 @@
 								<property desc="" name="intg_duty_cycle" propertyId="907"/>
 								<property desc="" name="intg_duty_cycle_set_failed" propertyId="2124"/>
 								<property desc="" name="lumped_dead_time" propertyId="6366"/>
-								<property desc="" name="hdr_scale" propertyId="6377"/>
-								<property desc="" name="hdr_en" propertyId="9973"/>
 								<property desc="" name="normal_frm_intg_scale" propertyId="9980"/>
+								<property desc="" name="hdr_en" propertyId="9973"/>
+								<property desc="" name="hdr_scale" propertyId="6377"/>
 							</propertyList>
 						</group>
 						<group desc="" name="top_level">
@@ -6959,7 +7031,7 @@
 				</section>
 				<section desc="" name="DE">
 					<groupList>
-						<group desc="" name="crosstalk">
+						<group desc="" name="SpatialFilter">
 							<propertyList>
 								<property desc="" name="filt_en" propertyId="9981"/>
 								<property desc="" name="filt_coef_y_re_f1" propertyId="9982"/>
@@ -6970,6 +7042,7 @@
 								<property desc="" name="filt_coef_y_im_f2" propertyId="10016"/>
 								<property desc="" name="filt_coef_x_re_f2" propertyId="10015"/>
 								<property desc="" name="filt_coef_x_im_f2" propertyId="10014"/>
+								<property desc="" name="filt_scale" propertyId="9986"/>
 							</propertyList>
 						</group>
 						<group desc="" name="data_pipeline">
@@ -7048,59 +7121,6 @@
 								<property desc="" name="cos_f2_q5_coeff" propertyId="1015"/>
 							</propertyList>
 						</group>
-						<group desc="" name="quad_maps">
-							<propertyList>
-								<property desc="" name="even_quad_map0" propertyId="1016"/>
-								<property desc="" name="even_quad_map1" propertyId="1017"/>
-								<property desc="" name="even_quad_map2" propertyId="1018"/>
-								<property desc="" name="even_quad_map3" propertyId="1019"/>
-								<property desc="" name="even_quad_map4" propertyId="1020"/>
-								<property desc="" name="even_quad_map5" propertyId="1021"/>
-								<property desc="" name="odd_quad_map0" propertyId="1022"/>
-								<property desc="" name="odd_quad_map1" propertyId="1023"/>
-								<property desc="" name="odd_quad_map2" propertyId="1024"/>
-								<property desc="" name="odd_quad_map3" propertyId="1025"/>
-								<property desc="" name="odd_quad_map4" propertyId="1026"/>
-								<property desc="" name="odd_quad_map5" propertyId="1027"/>
-							</propertyList>
-						</group>
-						<group desc="" name="linearity_corr">
-							<propertyList>
-								<property desc="" name="lin_corr_enable" propertyId="8801"/>
-								<property desc="" name="lin_coeff0_0" propertyId="8800"/>
-								<property desc="" name="lin_coeff0_1" propertyId="8807"/>
-								<property desc="" name="lin_coeff0_2" propertyId="8806"/>
-								<property desc="" name="lin_coeff0_3" propertyId="8805"/>
-								<property desc="" name="lin_coeff0_4" propertyId="8838"/>
-								<property desc="" name="lin_coeff0_5" propertyId="8839"/>
-								<property desc="" name="lin_coeff0_6" propertyId="8840"/>
-								<property desc="" name="lin_coeff0_7" propertyId="8841"/>
-								<property desc="" name="lin_coeff0_8" propertyId="8842"/>
-								<property desc="" name="lin_coeff0_9" propertyId="8843"/>
-								<property desc="" name="lin_coeff0_10" propertyId="8844"/>
-								<property desc="" name="lin_coeff0_11" propertyId="8845"/>
-								<property desc="" name="lin_coeff0_12" propertyId="8846"/>
-								<property desc="" name="lin_coeff0_13" propertyId="8847"/>
-								<property desc="" name="lin_coeff0_14" propertyId="8848"/>
-								<property desc="" name="lin_coeff0_15" propertyId="8849"/>
-								<property desc="" name="lin_coeff1_0" propertyId="8931"/>
-								<property desc="" name="lin_coeff1_1" propertyId="8932"/>
-								<property desc="" name="lin_coeff1_2" propertyId="8934"/>
-								<property desc="" name="lin_coeff1_3" propertyId="8935"/>
-								<property desc="" name="lin_coeff1_4" propertyId="8933"/>
-								<property desc="" name="lin_coeff1_5" propertyId="8926"/>
-								<property desc="" name="lin_coeff1_6" propertyId="8925"/>
-								<property desc="" name="lin_coeff1_7" propertyId="8924"/>
-								<property desc="" name="lin_coeff1_8" propertyId="8923"/>
-								<property desc="" name="lin_coeff1_9" propertyId="8922"/>
-								<property desc="" name="lin_coeff1_10" propertyId="8921"/>
-								<property desc="" name="lin_coeff1_11" propertyId="8920"/>
-								<property desc="" name="lin_coeff1_12" propertyId="8919"/>
-								<property desc="" name="lin_coeff1_13" propertyId="8918"/>
-								<property desc="" name="lin_coeff1_14" propertyId="8917"/>
-								<property desc="" name="lin_coeff1_15" propertyId="8916"/>
-							</propertyList>
-						</group>
 						<group desc="" name="delay_fb_comp">
 							<propertyList>
 								<property desc="" name="comp_mod_ref_inv" propertyId="9998"/>
@@ -7108,10 +7128,48 @@
 								<property desc="" name="illum_fb_error_cnt" propertyId="10000"/>
 								<property desc="" name="comp_fb_error_cnt" propertyId="10002"/>
 								<property desc="" name="fb_error_cnt_threshold" propertyId="10003"/>
-								<property desc="" name="delay_fb_corr_en" propertyId="10005"/>
-								<property desc="" name="delay_fb_dc_corr_en" propertyId="10009"/>
+								<property desc="" name="delay_fb_corr_mode" propertyId="10005"/>
+								<property desc="" name="delay_fb_dc_corr_mode" propertyId="10009"/>
 								<property desc="" name="freq_ratio" propertyId="10018"/>
 								<property desc="" name="delay_fb_coeff_1" propertyId="10019"/>
+							</propertyList>
+						</group>
+						<group desc="" name="phase_linearity_corr">
+							<propertyList>
+								<property desc="" name="phase_lin_corr_en" propertyId="8801"/>
+								<property desc="" name="phase_lin_coeff0_0" propertyId="8800"/>
+								<property desc="" name="phase_lin_coeff0_1" propertyId="8807"/>
+								<property desc="" name="phase_lin_coeff0_2" propertyId="8806"/>
+								<property desc="" name="phase_lin_coeff0_3" propertyId="8805"/>
+								<property desc="" name="phase_lin_coeff0_4" propertyId="8838"/>
+								<property desc="" name="phase_lin_coeff0_5" propertyId="8839"/>
+								<property desc="" name="phase_lin_coeff0_6" propertyId="8840"/>
+								<property desc="" name="phase_lin_coeff0_7" propertyId="8841"/>
+								<property desc="" name="phase_lin_coeff0_8" propertyId="8842"/>
+								<property desc="" name="phase_lin_coeff0_9" propertyId="8843"/>
+								<property desc="" name="phase_lin_coeff0_10" propertyId="8844"/>
+								<property desc="" name="phase_lin_coeff0_11" propertyId="8845"/>
+								<property desc="" name="phase_lin_coeff0_12" propertyId="8846"/>
+								<property desc="" name="phase_lin_coeff0_13" propertyId="8847"/>
+								<property desc="" name="phase_lin_coeff0_14" propertyId="8848"/>
+								<property desc="" name="phase_lin_coeff0_15" propertyId="8849"/>
+								<property desc="" name="phase_lin_coeff1_0" propertyId="8931"/>
+								<property desc="" name="phase_lin_coeff1_1" propertyId="8932"/>
+								<property desc="" name="phase_lin_coeff1_2" propertyId="8934"/>
+								<property desc="" name="phase_lin_coeff1_3" propertyId="8935"/>
+								<property desc="" name="phase_lin_coeff1_4" propertyId="8933"/>
+								<property desc="" name="phase_lin_coeff1_5" propertyId="8926"/>
+								<property desc="" name="phase_lin_coeff1_6" propertyId="8925"/>
+								<property desc="" name="phase_lin_coeff1_7" propertyId="8924"/>
+								<property desc="" name="phase_lin_coeff1_8" propertyId="8923"/>
+								<property desc="" name="phase_lin_coeff1_9" propertyId="8922"/>
+								<property desc="" name="phase_lin_coeff1_10" propertyId="8921"/>
+								<property desc="" name="phase_lin_coeff1_11" propertyId="8920"/>
+								<property desc="" name="phase_lin_coeff1_12" propertyId="8919"/>
+								<property desc="" name="phase_lin_coeff1_13" propertyId="8918"/>
+								<property desc="" name="phase_lin_coeff1_14" propertyId="8917"/>
+								<property desc="" name="phase_lin_coeff1_15" propertyId="8916"/>
+								<property desc="" name="phase_lin_corr_period" propertyId="8834"/>
 							</propertyList>
 						</group>
 					</groupList>
@@ -7124,7 +7182,6 @@
 								<property desc="" name="illum_p_dis_pol" propertyId="9941"/>
 								<property desc="" name="illum_en_early" propertyId="6370"/>
 								<property desc="" name="illum_mod_early" propertyId="6392"/>
-								<property desc="" name="illum_en_pol" propertyId="6393"/>
 								<property desc="" name="modulation_hold" propertyId="7085"/>
 								<property desc="" name="demod_static_pol" propertyId="7086"/>
 								<property desc="" name="illum_static_pol" propertyId="7087"/>
@@ -7132,14 +7189,8 @@
 								<property desc="" name="illum_dc_corr" propertyId="663"/>
 							</propertyList>
 						</group>
-						<group desc="Registers used to control the phases of pll blocks in different quads." name="modulation_clk_ph_ctrl">
-							<propertyList>
-								<property desc="" name="flicker_cancel_mode" propertyId="635"/>
-							</propertyList>
-						</group>
 						<group desc="" name="demod_pll_ctrl">
 							<propertyList>
-								<property desc="" name="sync_mix" propertyId="9926"/>
 								<property desc="" name="mod_pll_update" propertyId="7984"/>
 								<property desc="" name="mod_m1" propertyId="7062"/>
 								<property desc="" name="mod_m_frac1" propertyId="7061"/>
@@ -7149,6 +7200,13 @@
 								<property desc="" name="mod_n2" propertyId="7079"/>
 								<property desc="" name="mod_ps1" propertyId="7080"/>
 								<property desc="" name="mod_ps2" propertyId="7081"/>
+							</propertyList>
+						</group>
+						<group desc="Registers used to control the phases of pll blocks in different quads." name="modulation_clk_ph_ctrl">
+							<propertyList>
+								<property desc="" name="quad_hop_en" propertyId="635"/>
+								<property desc="" name="quad_hop_offset1" propertyId="858"/>
+								<property desc="" name="quad_hop_offset2" propertyId="859"/>
 							</propertyList>
 						</group>
 					</groupList>
@@ -7212,6 +7270,8 @@
 								<property desc="" name="tsensor" propertyId="2001"/>
 								<property desc="" name="tillum_slv_addr" propertyId="1985"/>
 								<property desc="" name="tillum" propertyId="1989"/>
+								<property desc="" name="illum_ovtemp_thresh" propertyId="10037"/>
+								<property desc="" name="sensor_ovtemp_thresh" propertyId="10036"/>
 							</propertyList>
 						</group>
 					</groupList>
@@ -7224,6 +7284,18 @@
 								<property desc="" name="master_pll_lock" propertyId="2070"/>
 								<property desc="" name="ddr_calibration_flag" propertyId="2067"/>
 								<property desc="" name="ddr_controller_flag" propertyId="2068"/>
+							</propertyList>
+						</group>
+						<group desc="" name="int_out_ctrl">
+							<propertyList>
+								<property desc="" name="ddr_controller_intr_dis" propertyId="10026"/>
+								<property desc="" name="ddr_calibration_intr_dis" propertyId="10027"/>
+								<property desc="" name="master_pll_lock_intr_dis" propertyId="10028"/>
+								<property desc="" name="lvds_pll_lock_intr_dis" propertyId="10029"/>
+								<property desc="" name="op_overflow_intr_dis" propertyId="10032"/>
+								<property desc="" name="op_underflow_intr_dis" propertyId="10033"/>
+								<property desc="" name="sensor_ovtemp_intr_dis" propertyId="10034"/>
+								<property desc="" name="illum_ovtemp_intr_dis" propertyId="10035"/>
 							</propertyList>
 						</group>
 						<group desc="" name="test">
