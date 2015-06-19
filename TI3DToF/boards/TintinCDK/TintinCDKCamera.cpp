@@ -56,6 +56,7 @@ public:
 
 class TintinCDKPVDDParameter: public UnsignedIntegerParameter
 {
+  TintinCDKCamera &_depthCamera;
 protected:
   virtual uint _fromRawValue(uint32_t value) const
   {
@@ -74,9 +75,9 @@ protected:
   }
   
 public:
-  TintinCDKPVDDParameter(RegisterProgrammer &programmer):
+  TintinCDKPVDDParameter(TintinCDKCamera &depthCamera, RegisterProgrammer &programmer):
   UnsignedIntegerParameter(programmer, PVDD, "mV", 0x2D0E, 8, 7, 0, 2000, 3600, 3300, "Pixel VDD", 
-                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {})
+                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {}), _depthCamera(depthCamera)
   {}
   
   virtual ~TintinCDKPVDDParameter() {}
@@ -233,12 +234,17 @@ bool TintinCDKCamera::_init()
   
   DevicePtr controlDevice = _device;
   
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
+  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
+  {
     _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(
       { {0x2D, 1}, {0x52, 1}, {0x54, 1}, {0x4B, 2}, {0x4E, 2}, {0x58, 3}, {0x5C, 3} },
       controlDevice));
     _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
-  } else {
+    
+    _boardRevision[0] = _boardRevision[1] = 0;
+  } 
+  else 
+  {
     USBIOPtr usbIO(new USBIO(controlDevice));
 
     _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
@@ -253,6 +259,15 @@ bool TintinCDKCamera::_init()
         {0x54, {0x04, 0x03, 8}}
       }, usbIO, controlDevice));
     _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
+    
+    uint16_t length = 2;
+    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, TINTIN_CDK_USBIO_BOARD_REVISION, 0, 0, _boardRevision, length))
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Failed to get board revision" << std::endl;
+      return false;
+    }
+    
+    logger(LOG_INFO) << "TintinCDKCamera: Board revision = " << (int)_boardRevision[0] << "." << (int)_boardRevision[1] << std::endl;
   }
   
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
@@ -265,7 +280,7 @@ bool TintinCDKCamera::_init()
 
   if(!_addParameters({
     ParameterPtr(new TintinCDKMixVoltageParameter(*_programmer)),
-    //ParameterPtr(new TintinCDKPVDDParameter(*_programmer)),
+    //ParameterPtr(new TintinCDKPVDDParameter(*this, *_programmer)),
     ParameterPtr(new TintinCDKIllumVrefParameter(*_programmer)),
     ParameterPtr(new TintinCDKMainCurrentParameter(*_programmer)),
     ParameterPtr(new TintinCDKIllumCurrentParameter(*_programmer)),
@@ -293,7 +308,7 @@ bool TintinCDKCamera::_init()
   )
     return false;
 	*/
-    
+  
   if(!ToFTintinCamera::_init())
     return false;
   

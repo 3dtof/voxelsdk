@@ -18,6 +18,8 @@
 #define MIX_VOLTAGE "mix_volt" // Mixing voltage
 #define TILLUM_SLAVE_ADDR "tillum_slv_addr"
 
+#define TINTIN_CDK_USBIO_BOARD_REVISION 0x30
+
 namespace Voxel
 {
   
@@ -28,6 +30,8 @@ class TintinCDKCamera: public ToFTintinCamera
 {
 protected:
   Ptr<Downloader> _downloader;
+  
+  uint8_t _boardRevision[2];
   
   bool _init();
   
@@ -43,6 +47,8 @@ public:
   TintinCDKCamera(DevicePtr device);
   
   virtual ~TintinCDKCamera() {}
+  
+  friend class TintinCDKPVDDParameter;
 };
 
 }
