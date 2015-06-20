@@ -96,7 +96,7 @@ public:
                  
   virtual const float lowerLimit() const 
   { 
-    uint quadCount;
+    int quadCount;
     
     if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
       return _lowerLimit;
@@ -109,7 +109,7 @@ public:
   }
   virtual const float upperLimit() const 
   { 
-    uint quadCount;
+    int quadCount;
     
     if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
       return _upperLimit;
@@ -126,7 +126,7 @@ public:
     
     uint modulationPS;
     
-    uint quadCount;
+    int quadCount;
     
     if(!_depthCamera._get(_vcoFreq, vcoFrequency, refresh) || !_depthCamera._get(_modPS, modulationPS, refresh) || !_depthCamera._get(QUAD_CNT_MAX, quadCount, refresh))
       return false;
@@ -150,7 +150,7 @@ public:
     
     ParameterPtr p = _depthCamera.getParam(_vcoFreq);
     
-    uint quadCount;
+    int quadCount;
     
     if(!p || !_depthCamera._get(QUAD_CNT_MAX, quadCount))
       return false;
@@ -240,8 +240,8 @@ public:
       delayFBCoeff1 = modulationFrequency1*(1 << 10)/24;
       
       if(!_depthCamera._set(TG_DISABLE, true) || 
-        !_depthCamera._set(QUAD_CNT_MAX, 4U) || 
-        !_depthCamera._set(SUBFRAME_CNT_MAX, 4U) || 
+        !_depthCamera._set(QUAD_CNT_MAX, 4) || 
+        !_depthCamera._set(SUBFRAME_CNT_MAX, 4) || 
         !_depthCamera._setFrameRate(r) ||
         !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
         !_depthCamera._set(DEALIASED_PHASE_MASK, 0) || 
@@ -257,7 +257,7 @@ public:
     else
     {
       if(!_depthCamera._set(TG_DISABLE, true) ||
-        !_depthCamera._set(QUAD_CNT_MAX, 6U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2U))
+        !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
         return false;
       
       uint ma = 8, mb = 7, ka = 1, kb = 1, modPS1 = 1, modPS2 = 1;

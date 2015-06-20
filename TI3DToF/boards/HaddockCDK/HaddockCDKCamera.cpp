@@ -199,7 +199,7 @@ bool HaddockCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   }
   
   int bytesPerPixel;
-  uint quadCount;
+  int quadCount;
   ToFFrameType frameType;
   
   if(!_get(PIXEL_DATA_SIZE, bytesPerPixel) || !_get(QUAD_CNT_MAX, quadCount) || !_getToFFrameType(frameType))
