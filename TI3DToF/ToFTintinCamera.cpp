@@ -228,29 +228,28 @@ public:
     
     FrameRate r;
     
+    uint delayFBCoeff1;
+    
     if(!_depthCamera._getFrameRate(r))
       return false;
     
     // No need of dealiasing?
     if(value <= (uint)(4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/modulationFrequency1Minimum))
     {
+      float modulationFrequency1 = 4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/value;
+      delayFBCoeff1 = modulationFrequency1*(1 << 10)/24;
+      
       if(!_depthCamera._set(TG_DISABLE, true) || 
-        !_depthCamera._set(QUAD_CNT_MAX, 4U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 4U) || 
+        !_depthCamera._set(QUAD_CNT_MAX, 4U) || 
+        !_depthCamera._set(SUBFRAME_CNT_MAX, 4U) || 
         !_depthCamera._setFrameRate(r) ||
         !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
-        !_depthCamera._set(DEALIASED_PHASE_MASK, 0))
-        return false;
-      
-      if(!mfp->set(4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/value))
-        return false;
-      
-      if(!_depthCamera._set(DEALIAS_EN, false)) // Disable dealiasing explicitly
-        return false;
-      
-      if(!UnsignedIntegerParameter::set(value)) // Save the value in a register
-        return false;
-      
-      if(!_depthCamera._set(TG_DISABLE, false))
+        !_depthCamera._set(DEALIASED_PHASE_MASK, 0) || 
+        !mfp->set(modulationFrequency1) ||
+        !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) ||
+        !_depthCamera._set(DEALIAS_EN, false) || // Disable dealiasing explicitly
+        !UnsignedIntegerParameter::set(value) || // Save the value in a register
+        !_depthCamera._set(TG_DISABLE, false))
         return false;
       
       return true;
@@ -261,9 +260,9 @@ public:
         !_depthCamera._set(QUAD_CNT_MAX, 6U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2U))
         return false;
       
-      uint ma = 15, mb = 14, ka = 1, kb = 1, modPS1 = 1, modPS2 = 1;
+      uint ma = 8, mb = 7, ka = 1, kb = 1, modPS1 = 1, modPS2 = 1;
       
-      uint freqRatio = mb*(1 << 12)/ma, delayFBCoeff1;
+      uint freqRatio = mb*(1 << 12)/ma;
       
       float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
       vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*mb)/ma*6*(1 + modPS2), vco->upperLimit());
@@ -303,8 +302,8 @@ public:
       else
         vcoFreq = s;
       
-      // delayFBCoeff1 = modFreq1*(1 << 12)/24
-      delayFBCoeff1 = (vcoFreq*ma/mb/6/(1 + modPS1))*(1 << 12)/24;
+      // delayFBCoeff1 = modFreq1*(1 << 10)/24
+      delayFBCoeff1 = (vcoFreq*ma/mb/6/(1 + modPS1))*(1 << 10)/24;
       
       if(!_depthCamera._set(MOD_PLL_UPDATE, true))
         return false;
