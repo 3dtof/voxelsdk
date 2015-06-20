@@ -260,12 +260,12 @@ public:
         !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
         return false;
       
-      uint ma = 8, mb = 7, ka = 1, kb = 1, modPS1 = 0, modPS2 = 0;
+      uint ma = 7, mb = 8, ka = 7, kb = 6, modPS1 = 0, modPS2 = 0;
       
-      uint freqRatio = mb*(1 << 12)/ma;
+      uint freqRatio = ma*(1 << 12)/mb;
       
       float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
-      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*mb)/ma*6*(1 + modPS2), vco->upperLimit()*mb/ma);
+      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS2), vco->upperLimit()*ma/mb);
       
       float s = (96.0f/15)*(1 + modPS2)*SPEED_OF_LIGHT*1E-6/value; // in MHz
       
@@ -303,7 +303,7 @@ public:
         vcoFreq = s;
       
       // delayFBCoeff1 = modFreq1*(1 << 10)/24
-      delayFBCoeff1 = (vcoFreq*ma/mb/6/(1 + modPS1))*(1 << 10)/24;
+      delayFBCoeff1 = (vcoFreq*mb/ma/6/(1 + modPS2))*(1 << 10)/24;
       
       if(!_depthCamera._set(MOD_PLL_UPDATE, true))
         return false;
@@ -311,8 +311,8 @@ public:
       ParameterPtr pllUpdate(nullptr, [this](Parameter *) 
       { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
       
-      if(!_depthCamera._set(VCO_FREQ1, vcoFreq*ma/mb) ||
-        !_depthCamera._set(VCO_FREQ2, vcoFreq) ||
+      if(!_depthCamera._set(VCO_FREQ1, vcoFreq) ||
+        !_depthCamera._set(VCO_FREQ2, vcoFreq*mb/ma) ||
         !_depthCamera._set(MOD_PS1, modPS1) ||
         !_depthCamera._set(MOD_PS2, modPS2) ||
         !_depthCamera._set(MA, ma) || 
