@@ -54,9 +54,8 @@ public:
 };
 
 
-class TintinCDKPVDDParameter: public UnsignedIntegerParameter
+class TintinCDKPVDDParameterRev1: public UnsignedIntegerParameter
 {
-  TintinCDKCamera &_depthCamera;
 protected:
   virtual uint _fromRawValue(uint32_t value) const
   {
@@ -75,12 +74,40 @@ protected:
   }
   
 public:
-  TintinCDKPVDDParameter(TintinCDKCamera &depthCamera, RegisterProgrammer &programmer):
+  TintinCDKPVDDParameterRev1(RegisterProgrammer &programmer):
   UnsignedIntegerParameter(programmer, PVDD, "mV", 0x2D0E, 8, 7, 0, 2000, 3600, 3300, "Pixel VDD", 
-                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {}), _depthCamera(depthCamera)
+                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {})
   {}
   
-  virtual ~TintinCDKPVDDParameter() {}
+  virtual ~TintinCDKPVDDParameterRev1() {}
+};
+
+class TintinCDKPVDDParameterRev2: public UnsignedIntegerParameter
+{
+protected:
+  virtual uint _fromRawValue(uint32_t value) const
+  {
+    if(value > 0x80U)
+      return (value - 0x80U)*25 + 800;
+    else
+      return 800;
+  }
+  
+  virtual uint32_t _toRawValue(uint value) const
+  {
+    if(value > 800)
+      return (value - 800)/25 + 0x80U;
+    else
+      return 0x80U;
+  }
+  
+public:
+  TintinCDKPVDDParameterRev2(RegisterProgrammer &programmer):
+  UnsignedIntegerParameter(programmer, PVDD, "mV", 0x2D1E, 8, 7, 0, 2000, 3300, 3300, "Pixel VDD", 
+                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {})
+  {}
+  
+  virtual ~TintinCDKPVDDParameterRev2() {}
 };
 
 class TintinCDKIlluminationPowerParameter: public UnsignedIntegerParameter
@@ -280,7 +307,6 @@ bool TintinCDKCamera::_init()
 
   if(!_addParameters({
     ParameterPtr(new TintinCDKMixVoltageParameter(*_programmer)),
-    //ParameterPtr(new TintinCDKPVDDParameter(*this, *_programmer)),
     ParameterPtr(new TintinCDKIllumVrefParameter(*_programmer)),
     ParameterPtr(new TintinCDKMainCurrentParameter(*_programmer)),
     ParameterPtr(new TintinCDKIllumCurrentParameter(*_programmer)),
@@ -290,6 +316,15 @@ bool TintinCDKCamera::_init()
   {
     return false;
   }
+
+  if ((int) _boardRevision[0] == 1) {
+    if (!_addParameters({ParameterPtr(new TintinCDKPVDDParameterRev1(*_programmer)),}))
+      return false;
+  } else {
+    if (!_addParameters({ParameterPtr(new TintinCDKPVDDParameterRev2(*_programmer)),}))
+      return false;
+  }
+
   /* INA226 initializations: note byteswapped for now */
   if (!_programmer->writeRegister(0x4B00, 0x274F) ||
     !_programmer->writeRegister(0x4E00, 0x274F) ||
@@ -297,17 +332,6 @@ bool TintinCDKCamera::_init()
     !_programmer->writeRegister(0x4E05, 0x4F1B)
   )
     return false;
-  /*
-  // Settings for mix voltage and PVDD
-  if(!_programmer->writeRegister(0x2D06, 0xFF) || 
-    !_programmer->writeRegister(0x2D04, 0x40) ||
-    !_programmer->writeRegister(0x2D05, 0x94) ||
-    !_programmer->writeRegister(0x2D0D, 0x40) || 
-    !_programmer->writeRegister(0x2D0E, 0xB8) ||
-    !_programmer->writeRegister(0x2D0F, 0xFF)
-  )
-    return false;
-	*/
   
   if(!ToFTintinCamera::_init())
     return false;
