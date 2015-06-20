@@ -87,7 +87,11 @@ class TintinCDKPVDDParameterRev2: public UnsignedIntegerParameter
 protected:
   virtual uint _fromRawValue(uint32_t value) const
   {
-    if(value > 0x80U)
+    if (value > 0xBC)
+      return (value - 0xBC)*100 + 3000;
+    else if (value > 0xA0)
+      return (value - 0xA0)*50 + 1600;
+    else if(value > 0x80U)
       return (value - 0x80U)*25 + 800;
     else
       return 800;
@@ -95,7 +99,11 @@ protected:
   
   virtual uint32_t _toRawValue(uint value) const
   {
-    if(value > 800)
+    if(value >= 3000)
+      return (value - 3000)/100 + 0xBCU;
+    else if(value >= 1600)
+      return (value - 1600)/50 + 0xA0U;
+    else if(value >= 800)
       return (value - 800)/25 + 0x80U;
     else
       return 0x80U;
