@@ -91,7 +91,7 @@ public:
   FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, 48, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
                  
-  virtual const float getOptimalMaximum() const { return 50; }
+  virtual const float getOptimalMaximum() const { return 90; }
   virtual const float getOptimalMinimum() const { return 39; }
                  
   virtual const float lowerLimit() const 
@@ -260,14 +260,14 @@ public:
         !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
         return false;
       
-      uint ma = 8, mb = 7, ka = 1, kb = 1, modPS1 = 1, modPS2 = 1;
+      uint ma = 8, mb = 7, ka = 1, kb = 1, modPS1 = 0, modPS2 = 0;
       
       uint freqRatio = mb*(1 << 12)/ma;
       
       float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
-      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*mb)/ma*6*(1 + modPS2), vco->upperLimit());
+      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*mb)/ma*6*(1 + modPS2), vco->upperLimit()*mb/ma);
       
-      float s = (192.0f/15)*SPEED_OF_LIGHT*1E-6/value; // in MHz
+      float s = (96.0f/15)*(1 + modPS2)*SPEED_OF_LIGHT*1E-6/value; // in MHz
       
       int phaseMask = 0;
       int sign = 1;
