@@ -410,13 +410,21 @@
 					<rangeList>
 						<range address="131" bankId="0" lsb="0" msb="3"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="4" value="4"/>
+						<value desc="" meaning="6" value="6"/>
+					</valueList>
 				</property>
-				<property aid_0="1" default="4" desc="Total number of sub frames." function="" fuseId="-1" id="83" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="1" default="4" desc="Total number of sub frames in each frame. Only values of 1, 2, 4 and 8 are valid. The behavior is unpredictable when set to other values." function="" fuseId="-1" id="83" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="131" bankId="0" lsb="4" msb="7"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="1" value="1"/>
+						<value desc="" meaning="2" value="2"/>
+						<value desc="" meaning="3" value="3"/>
+						<value desc="" meaning="4" value="4"/>
+					</valueList>
 				</property>
 				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="84" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>

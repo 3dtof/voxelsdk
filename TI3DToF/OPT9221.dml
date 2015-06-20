@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10039" propertyViewSeed="1" version="PG1P0" wordLength="24">
+<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10043" propertyViewSeed="1" version="PG1P0" wordLength="24">
 	<bankList>
 		<bank id="0" name="TG" offset="256" size="256">
 			<invalidRangeList>
@@ -316,13 +316,21 @@
 					<rangeList>
 						<range address="131" bankId="0" lsb="0" msb="3"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="4" value="4"/>
+						<value desc="" meaning="6" value="6"/>
+					</valueList>
 				</property>
 				<property aid_0="1" default="4" desc="Total number of sub frames in each frame. Only values of 1,2,4 and 8 are valid. The behavior is unpredicatable when set to other values." function="" fuseId="-1" id="83" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="131" bankId="0" lsb="4" msb="7"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="1" value="1"/>
+						<value desc="" meaning="2" value="2"/>
+						<value desc="" meaning="4" value="4"/>
+						<value desc="" meaning="8" value="8"/>
+					</valueList>
 				</property>
 				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="84" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
@@ -6962,6 +6970,28 @@
 					<rangeList/>
 					<valueList/>
 				</property>
+				<property aid_0="" default="0" desc="General purpose scratch register" function="" fuseId="-1" id="10039" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+					<rangeList>
+						<range address="167" bankId="3" lsb="0" msb="7"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="General purpose scratch register" function="" fuseId="-1" id="10040" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+					<rangeList>
+						<range address="167" bankId="3" lsb="8" msb="15"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="General purpose scratch register" function="" fuseId="-1" id="10041" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+					<rangeList>
+						<range address="167" bankId="3" lsb="16" msb="23"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10042" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
+					<valueList/>
+				</property>
 			</propertyList>
 		</propertyView>
 	</propertyViewList>
@@ -7305,6 +7335,13 @@
 								<property desc="" name="ramp_pat" propertyId="1974"/>
 								<property desc="" name="amplitude_scale" propertyId="1973"/>
 								<property desc="" name="frequency_scale" propertyId="1975"/>
+							</propertyList>
+						</group>
+						<group desc="" name="scratch">
+							<propertyList>
+								<property desc="" name="scratch1" propertyId="10039"/>
+								<property desc="" name="scratch2" propertyId="10040"/>
+								<property desc="" name="scratch3" propertyId="10041"/>
 							</propertyList>
 						</group>
 					</groupList>

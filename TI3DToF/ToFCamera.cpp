@@ -97,7 +97,8 @@ bool ToFCamera::_getFrameRate(FrameRate &r) const
 {
   bool pixCountSetFailed;
   
-  uint quadCount, subFrameCount, pixCount, sysClkFrequency;
+  uint pixCount, sysClkFrequency;
+  int quadCount, subFrameCount;
   
   if(!_get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
@@ -119,7 +120,8 @@ bool ToFCamera::_setFrameRate(const FrameRate &r)
 {
   bool pixCountSetFailed;
   
-  uint quadCount, subFrameCount, sysClkFrequency, pixCount;
+  uint sysClkFrequency, pixCount;
+  int quadCount, subFrameCount;
   
   if(!_get(QUAD_CNT_MAX, quadCount) || !_get(SUBFRAME_CNT_MAX, subFrameCount) || !_getSystemClockFrequency(sysClkFrequency))
     return false;
@@ -354,7 +356,7 @@ bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &
   
   uint bytesPerPixel;
   int dataArrangeMode;
-  uint quadCount;
+  int quadCount;
   ToFFrameType type;
   
   bool dealiased16BitMode;
@@ -369,7 +371,7 @@ bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &
   if(!_tofFrameGenerator->setParameters(configFile.get("calib", "phasecorrection"), bytesPerPixel, 
                                     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
                                     configFile.get("calib", "cross_talk_coeff"),
-                                    type, quadCount, dealiased16BitMode
+                                    type, (uint32_t) quadCount, dealiased16BitMode
                                    ))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;

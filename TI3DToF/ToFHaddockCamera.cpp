@@ -208,7 +208,7 @@ public:
     if(value <= (uint)(4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/modulationFrequency1Minimum))
     {
       if(!_depthCamera._set(TG_EN, false) || 
-        !_depthCamera._set(QUAD_CNT_MAX, 4U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 4U) || 
+        !_depthCamera._set(QUAD_CNT_MAX, 4) || !_depthCamera._set(SUBFRAME_CNT_MAX, 4) || 
         !_depthCamera._setFrameRate(r) ||
         !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
         !_depthCamera._set(DEALIASED_PHASE_MASK, 0))
@@ -231,7 +231,7 @@ public:
     else
     {
       if(!_depthCamera._set(TG_EN, false) ||
-        !_depthCamera._set(QUAD_CNT_MAX, 6U) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2U))
+        !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
         return false;
       
       uint ma = 8, mb = 7, k0 = 1, modPS1 = 14, modPS2 = 16;
