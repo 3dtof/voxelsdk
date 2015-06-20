@@ -48,8 +48,6 @@ public:
   
   virtual ~TintinCDKCamera() {}
   
-  friend class TintinCDKPVDDParameterRev1;
-  friend class TintinCDKPVDDParameterRev2;
 };
 
 }
