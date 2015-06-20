@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10043" propertyViewSeed="1" version="PG1P0" wordLength="24">
+<RegMap bankSeed="45" miscAttrSeed="1" name="OPT9221" propertySeed="10045" propertyViewSeed="1" version="PG1P0" wordLength="24">
 	<bankList>
 		<bank id="0" name="TG" offset="256" size="256">
 			<invalidRangeList>
@@ -6814,15 +6814,15 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="delay correction :$delay_fb_corr_1 = (delay_fb_corr_mode*delay_fb_coeff_1*(delay_fb_illum-delay_fb_comp)/256$$delay_fb_corr_1 = freq_ratio*delay_fb_corr_1" function="" fuseId="-1" id="10005" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="delay correction :$delay_fb_corr_1 = (delay_fb_corr_mode*delay_fb_coeff_1*(delay_fb_illum-delay_fb_comp)/256$$delay_fb_corr_1 = freq_ratio*delay_fb_corr_1" function="" fuseId="-1" id="10005" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
-						<range address="177" bankId="3" lsb="21" msb="22"/>
+						<range address="177" bankId="3" lsb="21" msb="21"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="delay correction :$freq1 : delay_fb_dc_corr_1 = (delay_fb_dc_corr_mode*0.5*delay_fb_coeff_1*(dc_fb_illum-0.5))/256$$freq2 : delay_fb_dc_corr_2 = freq_ratio*delay_fb_dc_corr_1" function="" fuseId="-1" id="10009" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="delay correction :$freq1 : delay_fb_dc_corr_1 = (delay_fb_dc_corr_mode*0.5*delay_fb_coeff_1*(dc_fb_illum-0.5))/256$$freq2 : delay_fb_dc_corr_2 = freq_ratio*delay_fb_dc_corr_1" function="" fuseId="-1" id="10009" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
-						<range address="177" bankId="3" lsb="19" msb="20"/>
+						<range address="177" bankId="3" lsb="19" msb="19"/>
 					</rangeList>
 					<valueList/>
 				</property>
@@ -6876,8 +6876,10 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10020" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
-					<rangeList/>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10020" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="177" bankId="3" lsb="22" msb="22"/>
+					</rangeList>
 					<valueList/>
 				</property>
 				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the de-aliasing frequency data. This value is substracted from the obtained phase." function="" fuseId="-1" id="10021" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
@@ -6989,6 +6991,16 @@
 					<valueList/>
 				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10042" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10043" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="177" bankId="3" lsb="20" msb="20"/>
+					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10044" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
 					<rangeList/>
 					<valueList/>
 				</property>
@@ -7158,8 +7170,10 @@
 								<property desc="" name="illum_fb_error_cnt" propertyId="10000"/>
 								<property desc="" name="comp_fb_error_cnt" propertyId="10002"/>
 								<property desc="" name="fb_error_cnt_threshold" propertyId="10003"/>
-								<property desc="" name="delay_fb_corr_mode" propertyId="10005"/>
-								<property desc="" name="delay_fb_dc_corr_mode" propertyId="10009"/>
+								<property desc="" name="delay_fb_corr_mode" propertyId="10020"/>
+								<property desc="" name="delay_fb_corr_en" propertyId="10005"/>
+								<property desc="" name="delay_fb_dc_corr_mode" propertyId="10043"/>
+								<property desc="" name="delay_fb_dc_corr_en" propertyId="10009"/>
 								<property desc="" name="freq_ratio" propertyId="10018"/>
 								<property desc="" name="delay_fb_coeff_1" propertyId="10019"/>
 							</propertyList>
