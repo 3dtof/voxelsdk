@@ -184,14 +184,14 @@ public:
   virtual ~TintinModulationFrequencyParameter() {}
 };
 
-// NOTE: 0x5C60 is a software_state register available for software to store bits in Tintin camera.
+// NOTE: scratch1 register available for software to store bits in Tintin camera.
 #define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/48/(1 << 12)
 class TintinUnambiguousRangeParameter: public UnsignedIntegerParameter
 {
   ToFTintinCamera &_depthCamera;
 public:
   TintinUnambiguousRangeParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer):
-    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0x5C60, 24, 5, 0, 3, 50, 
+    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0, 0, 0, 0, 3, 50, 
     DEFAULT_UNAMBIGUOUS_RANGE, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"),
     _depthCamera(depthCamera) {}
   
@@ -199,7 +199,7 @@ public:
   {
     if(refresh)
     {
-      if(!UnsignedIntegerParameter::get(value, refresh))// Invalid value? Probably register not set yet
+      if(!_depthCamera._get(SCRATCH1, value, refresh))// Invalid value? Probably register not set yet
       {
         if(!set(DEFAULT_UNAMBIGUOUS_RANGE)) // set range of 3 meters
           return false;
@@ -210,7 +210,7 @@ public:
       return true;
     }
     else
-      return UnsignedIntegerParameter::get(value, refresh);
+      return _depthCamera._get(SCRATCH1, value, refresh);
   }
 
   virtual bool set(const uint &value)
@@ -327,7 +327,7 @@ public:
         !_depthCamera._set(DEALIAS_EN, true)) // Enable dealiasing explicitly
       return false;
       
-      if(!UnsignedIntegerParameter::set(value)) // Save the value in a register
+      if(!_depthCamera._set(SCRATCH1, value)) // Save the value in a register
         return false;
       
       if(!_depthCamera._set(TG_DISABLE, false))
