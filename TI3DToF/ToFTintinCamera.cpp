@@ -91,7 +91,7 @@ public:
   FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, 48, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
                  
-  virtual const float getOptimalMaximum() const { return 90; }
+  virtual const float getOptimalMaximum() const { return 80; }
   virtual const float getOptimalMinimum() const { return 39; }
                  
   virtual const float lowerLimit() const 
@@ -184,14 +184,14 @@ public:
   virtual ~TintinModulationFrequencyParameter() {}
 };
 
-// NOTE: 0x5C60 is a software_state register available for software to store bits in Tintin camera.
+// NOTE: scratch1 register available for software to store bits in Tintin camera.
 #define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/48/(1 << 12)
 class TintinUnambiguousRangeParameter: public UnsignedIntegerParameter
 {
   ToFTintinCamera &_depthCamera;
 public:
   TintinUnambiguousRangeParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer):
-    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0x5C60, 24, 5, 0, 3, 50, 
+    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0, 0, 0, 0, 3, 50, 
     DEFAULT_UNAMBIGUOUS_RANGE, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"),
     _depthCamera(depthCamera) {}
   
@@ -199,7 +199,7 @@ public:
   {
     if(refresh)
     {
-      if(!UnsignedIntegerParameter::get(value, refresh))// Invalid value? Probably register not set yet
+      if(!_depthCamera._get(SCRATCH1, value, refresh))// Invalid value? Probably register not set yet
       {
         if(!set(DEFAULT_UNAMBIGUOUS_RANGE)) // set range of 3 meters
           return false;
@@ -210,7 +210,7 @@ public:
       return true;
     }
     else
-      return UnsignedIntegerParameter::get(value, refresh);
+      return _depthCamera._get(SCRATCH1, value, refresh);
   }
 
   virtual bool set(const uint &value)
@@ -267,7 +267,7 @@ public:
       float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
       vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS2), vco->upperLimit()*ma/mb);
       
-      float s = (96.0f/15)*(1 + modPS2)*SPEED_OF_LIGHT*1E-6/value; // in MHz
+      float s = (96.0f/15)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
       
       int phaseMask = 0;
       int sign = 1;
@@ -327,7 +327,7 @@ public:
         !_depthCamera._set(DEALIAS_EN, true)) // Enable dealiasing explicitly
       return false;
       
-      if(!UnsignedIntegerParameter::set(value)) // Save the value in a register
+      if(!_depthCamera._set(SCRATCH1, value)) // Save the value in a register
         return false;
       
       if(!_depthCamera._set(TG_DISABLE, false))

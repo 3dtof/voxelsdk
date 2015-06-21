@@ -43,6 +43,9 @@
 
 #define TG_DISABLE "tg_dis"
 
+#define SCRATCH1 "scratch1" // Used for storing unambiguous range
+#define SCRATCH2 "scratch2" // Used for storing current camera profile ID
+
 namespace Voxel
 {
   
