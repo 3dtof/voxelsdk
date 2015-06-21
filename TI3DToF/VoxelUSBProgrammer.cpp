@@ -42,13 +42,15 @@ bool VoxelUSBProgrammer::_readRegister(uint16_t slaveAddress, uint16_t registerA
   
   const RequestParams &y = x->second;
   
+  uint16_t l = length;
+  
   if(length == 1) // TPS -- addr[0] == 0x2D
   {
     uint8_t data[1];
     data[0] = 0x0;
     
     if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-        y.readRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, 1))
+        y.readRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, l))
     {
       logger(LOG_ERROR) << "VoxelUSBProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;
@@ -64,7 +66,7 @@ bool VoxelUSBProgrammer::_readRegister(uint16_t slaveAddress, uint16_t registerA
     data[2] = 0x0;
     
     if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      y.readRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, 3))
+      y.readRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, l))
     {
       logger(LOG_ERROR) << "VoxelUSBProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;
@@ -79,7 +81,7 @@ bool VoxelUSBProgrammer::_readRegister(uint16_t slaveAddress, uint16_t registerA
     data[1] = 0x0;
     
     if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      y.readRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, 2))
+      y.readRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, l))
     {
       logger(LOG_ERROR) << "VoxelUSBProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;
@@ -108,13 +110,15 @@ bool VoxelUSBProgrammer::_writeRegister(uint16_t slaveAddress, uint16_t register
   
   RequestParams &y = x->second;
   
+  uint16_t l = length;
+  
   if(length == 1) // TPS  -- slaveAddress == 0x2D
   {
     uint8_t data[1];
     data[0] = value & 0xFF;
     
     if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      y.writeRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, 1))
+      y.writeRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, l))
     {
       logger(LOG_ERROR) << "VoxelUSBProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;
@@ -128,7 +132,7 @@ bool VoxelUSBProgrammer::_writeRegister(uint16_t slaveAddress, uint16_t register
     data[2] = (value >> 16) & 0xFF;
     
     if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      y.writeRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, 3))
+      y.writeRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, l))
     {
       logger(LOG_ERROR) << "VoxelUSBProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;
@@ -141,7 +145,7 @@ bool VoxelUSBProgrammer::_writeRegister(uint16_t slaveAddress, uint16_t register
     data[1] = (value >> 8) & 0xFF;
     
     if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      y.writeRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, 2))
+      y.writeRequestCode, slaveAddress << y.leftShiftBits, registerAddress << y.leftShiftBits, data, l))
     {
       logger(LOG_ERROR) << "VoxelUSBProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;

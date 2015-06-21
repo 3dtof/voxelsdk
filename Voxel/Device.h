@@ -67,6 +67,7 @@ public:
   inline Interface interfaceID() const { return _interfaceID; }
   inline const String &deviceID() const { return _deviceID; }
   inline const String &serialNumber() const { return _serialNumber; }
+  inline void setSerialNumber(const String &s) { _serialNumber = s; }
   inline const String &serialIndex() const { return _serialIndex; }
   inline void showSerialIndex() { _showSerialIndex = true; _makeID(); }
   inline void dontShowSerialIndex() { _showSerialIndex = false; _makeID(); }

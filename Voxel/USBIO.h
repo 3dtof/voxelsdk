@@ -46,7 +46,7 @@ public:
   };
   
   bool controlTransfer(Direction direction, RequestType requestType, RecipientType recipientType, uint8_t request, uint16_t value, uint16_t index, 
-                       uint8_t *data = 0, uint16_t length = 0, long timeout = 1000);
+                       uint8_t *data, uint16_t &length, bool needFullLength = true, long timeout = 1000);
   
   bool bulkTransfer(uint8_t endpoint, uint8_t *data, long toTransferLength, long &transferredLength, long timeout = 1000);
   

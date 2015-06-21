@@ -650,6 +650,17 @@ bool DepthCamera::_applyConfigParams(const ConfigSet *params)
   return true;
 }
 
+bool DepthCamera::getSerialNumber(String &serialNumber) const 
+{ 
+  serialNumber = _device->serialNumber(); 
+  return true;
+}
+
+bool DepthCamera::setSerialNumber(const String &serialNumber) 
+{ 
+  return false;
+}
+
 
   
 }

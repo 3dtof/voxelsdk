@@ -44,7 +44,7 @@ typedef Ptr<CCyUSBDevice> USBHandle;
   inline bool isInitialized() { return _initialized && handle != 0; }
   
   bool controlTransfer(Direction direction, RequestType requestType, RecipientType recipientType, uint8_t request, uint16_t value, uint16_t index, 
-                       uint8_t *data = 0, uint16_t length = 0, long timeout = 1000);
+                       uint8_t *data, uint16_t &length, bool needFullLength = true, long timeout = 1000);
   
   bool bulkTransfer(uint8_t endpoint, uint8_t *data, long toTransferLength, long &transferredLength, long timeout = 1000);
   
@@ -149,7 +149,7 @@ USBIO::USBIOPrivate::~USBIOPrivate()
 #endif
 }
 
-bool USBIO::USBIOPrivate::controlTransfer(Direction direction, RequestType requestType, RecipientType recipientType, uint8_t request, uint16_t value, uint16_t index, uint8_t *data, uint16_t length, long timeout)
+bool USBIO::USBIOPrivate::controlTransfer(Direction direction, RequestType requestType, RecipientType recipientType, uint8_t request, uint16_t value, uint16_t index, uint8_t *data, uint16_t &length, bool needFullLength, long timeout)
 {
 #ifdef LINUX
   int status;
@@ -159,11 +159,13 @@ bool USBIO::USBIOPrivate::controlTransfer(Direction direction, RequestType reque
                                    value,
                                    index,
                                    data, length, timeout);
-  if (status != length)
+  if ((needFullLength && status != length) || (!needFullLength && status < 0))
   {
     logger(LOG_ERROR) << "USBIO: Control transfer issue: Status " << status << std::endl;
     return false;
   }
+  
+  length = (uint16_t)status;
   
   return true;
 #elif defined(WINDOWS)
@@ -182,7 +184,7 @@ bool USBIO::USBIOPrivate::controlTransfer(Direction direction, RequestType reque
     logger(LOG_ERROR) << "USBIO: Control transfer issue." << std::endl;
     return false;
   }
-  
+  length = (uint16_t)l;
   return true;
 #endif
 }
@@ -258,7 +260,7 @@ USBIO::USBIO(DevicePtr device): _usbIOPrivate(new USBIOPrivate(device))
 {
 }
 
-bool USBIO::controlTransfer(Direction direction, RequestType requestType, RecipientType recipientType, uint8_t request, uint16_t value, uint16_t index, uint8_t *data, uint16_t length, long timeout)
+bool USBIO::controlTransfer(Voxel::USBIO::Direction direction, Voxel::USBIO::RequestType requestType, Voxel::USBIO::RecipientType recipientType, uint8_t request, uint16_t value, uint16_t index, uint8_t *data, uint16_t &length, bool needFullLength, long int timeout)
 {
   if(!_usbIOPrivate->isInitialized())
   {
@@ -266,7 +268,7 @@ bool USBIO::controlTransfer(Direction direction, RequestType requestType, Recipi
     return false;
   }
   
-  return _usbIOPrivate->controlTransfer(direction, requestType, recipientType, request, value, index, data, length, timeout);
+  return _usbIOPrivate->controlTransfer(direction, requestType, recipientType, request, value, index, data, length, needFullLength, timeout);
 }
 
 bool USBIO::bulkTransfer(uint8_t endpoint, uint8_t *data, long toTransferLength, long &transferredLength, long timeout)

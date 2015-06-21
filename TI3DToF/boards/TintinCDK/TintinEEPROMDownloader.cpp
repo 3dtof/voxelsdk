@@ -69,10 +69,13 @@ bool TintinEEPROMDownloader::_configureForDownload()
     return false;
   }
   
+  uint16_t length;
+  
   // Write init
   uint8_t writeInit[] = { 0x06 };
+  length = 1;
   if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      0x17, 0x00, 0x00, writeInit, 1))
+      0x17, 0x00, 0x00, writeInit, length))
   {
     logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to init write in EEPROM" << std::endl;
     _outStream << "Failed to init write in EEPROM" << std::endl;
@@ -81,8 +84,9 @@ bool TintinEEPROMDownloader::_configureForDownload()
 
   // JEDEC ID
   uint8_t jedecID[3];
+  length = 3;
   if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      0x1D, 0x00, 0x00, jedecID, 3))
+      0x1D, 0x00, 0x00, jedecID, length))
   {
     logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to read JEDEC ID" << std::endl;
     _outStream << "Failed to read JEDEC ID" << std::endl;
@@ -103,8 +107,9 @@ bool TintinEEPROMDownloader::_configureForDownload()
     return false;
   
   // Write enable
+  length = 1;
   if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-    0x1E, 0x00, 0x00, writeInit, 1))
+    0x1E, 0x00, 0x00, writeInit, length))
   {
     logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to enable write" << std::endl;
     _outStream << "Failed to enable write" << std::endl;
@@ -120,8 +125,9 @@ bool TintinEEPROMDownloader::_configureForDownload()
   
   // EEPROM Erase
   uint8_t eepromEraseCommand[] = {0xC7};
+  length = 1;
   if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-    0x1E, 0x00, 0x00, eepromEraseCommand, 1))
+    0x1E, 0x00, 0x00, eepromEraseCommand, length))
   {
     logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to erase EEPROM" << std::endl;
     _outStream << "Failed to erase EEPROM" << std::endl;
@@ -157,10 +163,12 @@ bool TintinEEPROMDownloader::_configureForDownload()
 
 bool TintinEEPROMDownloader::_getEEPROMStatus(uint8_t &eepromStatus)
 {
+  uint16_t length;
   // EEPROM status
   uint8_t eepromStat[1];
+  length = 1;
   if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-    0x1B, 0x00, 0x00, eepromStat, 1))
+    0x1B, 0x00, 0x00, eepromStat, length))
   {
     logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to read EEPROM status" << std::endl;
     _outStream << "Failed to read EEPROM status" << std::endl;
@@ -176,8 +184,10 @@ bool TintinEEPROMDownloader::_printEEPROMFirst64Bytes()
 {
   uint8_t bytes[64];
   
+  uint16_t length = 64;
+  
   if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-    0x19, 0x00, 0x00, bytes, 64))
+    0x19, 0x00, 0x00, bytes, length))
   {
     logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to read EEPROM bytes" << std::endl;
     _outStream << "Failed to read EEPROM bytes" << std::endl;
@@ -228,16 +238,18 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
     
     // Write enable
     uint8_t writeInit[] = { 0x06 };
+    uint16_t length = 1;
     if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      0x1E, 0x00, 0x00, writeInit, 1))
+      0x1E, 0x00, 0x00, writeInit, length))
     {
       logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to enable write" << std::endl;
       _outStream << "Failed to enable write" << std::endl;
       return false;
     }
     
+    length = bytesToSend;
     if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      0x18, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, dataReverse.data() + startAddress, bytesToSend))
+      0x18, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, dataReverse.data() + startAddress, length))
     {
       logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;
       _outStream << "Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;

@@ -145,6 +145,11 @@ protected:
 public:
   ToFCamera(const String &name, DevicePtr device);
   
+  // NOTE: Not using the low-level API for getting serial number. USB's serial number is enough
+  //virtual bool getSerialNumber(String& serialNumber) const;
+  
+  virtual bool setSerialNumber(const String& serialNumber);
+  
   virtual ~ToFCamera() {}
   
   friend class IntegrationTimeParameter;
