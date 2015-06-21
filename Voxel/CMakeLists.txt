@@ -12,6 +12,7 @@ add_library(voxel SHARED
   Device.cpp
   Common.cpp
   Downloader.cpp
+  FFT.cpp
   Parameter.cpp
   RegisterProgrammer.cpp
   USBSystem.cpp

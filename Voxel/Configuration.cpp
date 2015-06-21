@@ -22,7 +22,7 @@
 #endif
 
 
-#define CAMERA_PROFILES_SECTION "camera_profiles"
+#define CAMERA_PROFILES "camera_profiles"
 
 namespace Voxel
 {
@@ -154,12 +154,34 @@ bool ConfigSet::isPresent(const String &name) const
 
 bool ConfigurationFile::isPresent(const String &section, const String &name) const
 {
+  bool checkParent = false;
+  
   if(configs.find(section) == configs.end())
-    return false;
+    checkParent = true;
+  else
+  {
+    const ConfigSet &set = configs.at(section);
+    
+    if(!set.isPresent(name))
+      checkParent = true;
+    else
+      return true;
+  }
   
-  const ConfigSet &set = configs.at(section);
-  
-  return set.isPresent(name);
+  if(checkParent)
+  {
+    if(section != "global" && _mainConfigurationFile && isPresent("global", "parent"))
+    {
+      int parentID = getInteger("global", "parent");
+      
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(parentID);
+      
+      // TODO This does not handle circular references between profiles
+      if(parentConfig)
+        return parentConfig->isPresent(section, name);
+    }
+  }
+  return false;
 }
 
 bool ConfigurationFile::getConfigSet(const String &section, const ConfigSet *&configSet) const
@@ -168,6 +190,19 @@ bool ConfigurationFile::getConfigSet(const String &section, const ConfigSet *&co
   {
     configSet = &configs.at(section);
     return true;
+  }
+  else
+  {
+    if(section != "global" && _mainConfigurationFile && isPresent("global", "parent"))
+    {
+      int parentID = getInteger("global", "parent");
+      
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(parentID);
+      
+      // TODO This does not handle circular references between profiles
+      if(parentConfig)
+        return parentConfig->getConfigSet(section, configSet);
+    }
   }
   
   return false;
@@ -186,11 +221,33 @@ bool ConfigSet::_get(const String &name, String &value) const
 
 bool ConfigurationFile::_get(const String &section, const String &name, String &value) const
 {
+  int parentID;
+  bool checkParent = false;
+  
   if(configs.find(section) != configs.end())
   {
     const ConfigSet &set = configs.at(section);
     
-    return set._get(name, value);
+    if(!set._get(name, value))
+      checkParent = true;
+    else
+      return true;
+  }
+  else 
+    checkParent = true;
+  
+  if(checkParent)
+  {
+    if(section != "global" && _mainConfigurationFile && isPresent("global", "parent"))
+    {
+      parentID = getInteger("global", "parent");
+      
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(parentID);
+      
+      // TODO This does not handle circular references between profiles
+      if(parentConfig)
+        return parentConfig->_get(section, name, value);
+    }
   }
   
   return false;
@@ -365,68 +422,103 @@ bool MainConfigurationFile::read(const String &configFile)
   _cameraProfiles.clear();
   _cameraProfileNames.clear();
   
-  const ConfigSet *cameraProfiles;
+  String cameraProfiles;
   
-  if(!getConfigSet(CAMERA_PROFILES_SECTION, cameraProfiles))
+  if(!isPresent("core", CAMERA_PROFILES))
   {
-    logger(LOG_ERROR) << "Could not find 'camera_profiles' section in " << configFile << std::endl;
+    logger(LOG_ERROR) << "Could not find 'camera_profiles' in " << configFile << std::endl;
     return false;
   }
   
-  for(auto i = 0; i < cameraProfiles->paramNames.size(); i++)
+  cameraProfiles = get("core", CAMERA_PROFILES);
+  
+  Vector<String> cp;
+  split(cameraProfiles, ',', cp);
+  
+  for(auto i = 0; i < cp.size(); i++)
   {
-    if(cameraProfiles->paramNames[i] == "default")
-    {
-      _defaultCameraProfileName = cameraProfiles->params.at(cameraProfiles->paramNames[i]);
-      continue;
-    }
+    const String &profileConfigFile = trim(cp[i]);
     
-    const String &profileConfigFile = cameraProfiles->params.at(cameraProfiles->paramNames[i]);
+    ConfigurationFile cf(this);
+    int id;
     
-    if(!_cameraProfiles[cameraProfiles->paramNames[i]].read(profileConfigFile))
+    if(!cf.read(profileConfigFile))
     {
-      logger(LOG_ERROR) << "Could not read " << profileConfigFile << std::endl;
+      logger(LOG_ERROR) << "MainConfigurationFile: Could not read " << profileConfigFile << std::endl;
       return false;
     }
     
-    _cameraProfileNames.push_back(cameraProfiles->paramNames[i]);
+    if(!cf.isPresent("global", "id"))
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: Could not get ID of profile " << profileConfigFile << std::endl;
+      return false;
+    }
+    
+    id = cf.getInteger("global", "id");
+    
+    if(_cameraProfiles.find(id) != _cameraProfiles.end())
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: A profile with ID = " << id << " already exists." << std::endl;
+      return false;
+    }
+    
+    String cameraProfileName;
+    
+    if(!cf.isPresent("global", "name"))
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: Could not get name of profile in " << profileConfigFile << std::endl;
+      return false;
+    }
+    
+    cameraProfileName = cf.get("global", "name");
+    
+    _cameraProfiles[id] = cf;
+    _cameraProfileNames[id] = cameraProfileName;
   }
   
-  if(_defaultCameraProfileName.size() == 0)
+  if(!isPresent("core", "default_profile"))
   {
-    logger(LOG_ERROR) << "Default profile not defined in " << configFile << std::endl;
+    logger(LOG_ERROR) << "MainConfigurationFile: Default profile not defined in " << configFile << std::endl;
     return false;
   }
   
-  if(!setCurrentCameraProfile(_defaultCameraProfileName))  
+  _defaultCameraProfileID = getInteger("core", "default_profile");
+  
+  if(_cameraProfiles.find(_defaultCameraProfileID) == _cameraProfiles.end())
   {
-    logger(LOG_ERROR) << "Default profile is defined but not found in " << configFile << std::endl;
+    logger(LOG_ERROR) << "MainConfigurationFile: Default profile not valid in " << configFile << std::endl;
+    return false;
+  }
+  
+  if(!setCurrentCameraProfile(_defaultCameraProfileID))  
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Default profile is defined but not found in " << configFile << std::endl;
     return false;
   }
   
   return true;
 }
 
-ConfigurationFile *MainConfigurationFile::getCameraProfile(const String &profileName)
+ConfigurationFile *MainConfigurationFile::getCameraProfile(const int id)
 {
-  if(_cameraProfiles.find(profileName) != _cameraProfiles.end())
+  if(_cameraProfiles.find(id) != _cameraProfiles.end())
   {
-    return &_cameraProfiles.at(profileName);
+    return &_cameraProfiles.at(id);
   }
   return 0;
 }
 
 ConfigurationFile *MainConfigurationFile::getDefaultCameraProfile()
 {
-  return getCameraProfile(_defaultCameraProfileName);
+  return getCameraProfile(_defaultCameraProfileID);
 }
 
-bool MainConfigurationFile::setCurrentCameraProfile(const String &profileName)
+bool MainConfigurationFile::setCurrentCameraProfile(const int id)
 {
-  if(_cameraProfiles.find(profileName) != _cameraProfiles.end())
+  if(_cameraProfiles.find(id) != _cameraProfiles.end())
   {
-    _currentCameraProfileName = profileName;
-    _currentCameraProfile = &_cameraProfiles.at(profileName);
+    _currentCameraProfileID = id;
+    _currentCameraProfile = &_cameraProfiles.at(id);
     return true;
   }
   
@@ -457,6 +549,17 @@ bool MainConfigurationFile::isPresent(const String &section, const String &name)
     return true;
   
   return false;
+}
+
+bool MainConfigurationFile::getCameraProfileName(const int id, String &cameraProfileName)
+{
+  if(_cameraProfileNames.find(id) != _cameraProfileNames.end())
+  {
+    cameraProfileName = _cameraProfileNames.at(id);
+    return true;
+  }
+  
+  return false; 
 }
 
 

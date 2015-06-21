@@ -234,10 +234,10 @@ public:
   inline Ptr<Streamer> getStreamer() { return _streamer; } // Streamer may not be thread-safe
   
   inline bool reloadConfiguration() { return configFile.read(_name + ".conf"); }
-  inline const Vector<String> &getCameraProfileNames() { return configFile.getCameraProfileNames(); }
-  inline const String &getCurrentCameraProfileName() { return configFile.getCurrentProfileName(); }
+  inline const Map<int, String> &getCameraProfileNames() { return configFile.getCameraProfileNames(); }
+  inline int getCurrentCameraProfileID() { return configFile.getCurrentProfileID(); }
   
-  bool setCameraProfile(const String &cameraProfileName);
+  bool setCameraProfile(const int id);
   
   bool close();
   virtual ~DepthCamera();

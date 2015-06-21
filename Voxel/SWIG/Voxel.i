@@ -70,6 +70,7 @@ namespace std
 %template(StringVector) vector<string>;
 %template(PointVector) vector<Voxel::Point>;
 %template(StringMap) unordered_map<string, string>;
+%template(IntStringMap) unordered_map<int, string>;
 %template(ParamMap) unordered_map<string, Voxel::Ptr<Voxel::Parameter>>;
 %template(FilterParamMap) unordered_map<string, Voxel::Ptr<Voxel::FilterParameter>>;
 %template(VideoModeVector) vector<Voxel::SupportedVideoMode>;

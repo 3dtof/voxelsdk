@@ -302,7 +302,7 @@ public:
       else
         vcoFreq = s;
       
-      // delayFBCoeff1 = modFreq1*(1 << 10)/24
+      // delayFBCoeff1 = modFreq2*(1 << 10)/24
       delayFBCoeff1 = (vcoFreq*mb/ma/6/(1 + modPS2))*(1 << 10)/24;
       
       if(!_depthCamera._set(MOD_PLL_UPDATE, true))

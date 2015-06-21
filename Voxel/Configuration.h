@@ -78,6 +78,8 @@ protected:
   
   String _fileName;
   
+  MainConfigurationFile *_mainConfigurationFile;
+  
 public:
   typedef Map<String, ConfigSet> ConfigSetMap;
   
@@ -94,7 +96,7 @@ public:
   
   inline const String &getConfigFileName() { return _fileName; }
   
-  ConfigurationFile() {}
+  ConfigurationFile(MainConfigurationFile *mainConfigurationFile = 0): _mainConfigurationFile(mainConfigurationFile) {}
   virtual ~ConfigurationFile() {}
   
   friend class MainConfigurationFile;
@@ -102,10 +104,10 @@ public:
 
 class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
 {
-  Vector<String> _cameraProfileNames;
-  Map<String, ConfigurationFile> _cameraProfiles;
-  String _defaultCameraProfileName;
-  String _currentCameraProfileName;
+  Map<int, ConfigurationFile> _cameraProfiles;
+  Map<int, String> _cameraProfileNames;
+  int _defaultCameraProfileID;
+  int _currentCameraProfileID;
   ConfigurationFile *_currentCameraProfile;
 public:
   MainConfigurationFile(): _currentCameraProfile(0) {}
@@ -115,14 +117,17 @@ public:
   virtual String get(const String &section, const String &name) const;
   virtual bool isPresent(const String &section, const String &name) const;
   
-  bool setCurrentCameraProfile(const String &profileName);
+  bool setCurrentCameraProfile(const int id);
   
   ConfigurationFile *getDefaultCameraProfile();
-  ConfigurationFile *getCameraProfile(const String &profileName);
+  ConfigurationFile *getCameraProfile(const int id);
   
-  const String &getDefaultCameraProfileName() { return _defaultCameraProfileName; }
-  const String &getCurrentProfileName() { return _currentCameraProfileName; }
-  const Vector<String> &getCameraProfileNames() { return _cameraProfileNames; }
+  int getDefaultCameraProfileID() { return _defaultCameraProfileID; }
+  int getCurrentProfileID() { return _currentCameraProfileID; }
+  
+  bool getCameraProfileName(const int id, String &cameraProfileName);
+  
+  const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
   
   virtual ~MainConfigurationFile() {}
 };
