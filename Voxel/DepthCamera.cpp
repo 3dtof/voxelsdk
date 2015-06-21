@@ -31,7 +31,7 @@ _pointCloudFrameGenerator(new PointCloudFrameGenerator())
 
 bool DepthCamera::_init()
 {
-  return setCameraProfile(configFile.getDefaultCameraProfileName());
+  return setCameraProfile(configFile.getDefaultCameraProfileID());
 }
   
 bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
@@ -519,11 +519,11 @@ bool DepthCamera::closeFrameStream()
   }
 }
 
-bool DepthCamera::setCameraProfile(const String &cameraProfileName)
+bool DepthCamera::setCameraProfile(const int id)
 {
-  if(!configFile.setCurrentCameraProfile(cameraProfileName))
+  if(!configFile.setCurrentCameraProfile(id))
   {
-    logger(LOG_ERROR) << "DepthCamera: Could not set the camera profile to '" << cameraProfileName << "'" << std::endl;
+    logger(LOG_ERROR) << "DepthCamera: Could not set the camera profile to '" << id << "'" << std::endl;
     return false;
   }
   
@@ -541,7 +541,15 @@ bool DepthCamera::setCameraProfile(const String &cameraProfileName)
   
   ConfigurationFile *config;
   
-  if(!(config = configFile.getCameraProfile(cameraProfileName)))
+  String cameraProfileName; 
+  
+  if(!configFile.getCameraProfileName(id, cameraProfileName))
+  {
+    logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile name" << std::endl;
+    return false;
+  }
+  
+  if(!(config = configFile.getCameraProfile(id)))
   {
     logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile information" << std::endl;
     return false;

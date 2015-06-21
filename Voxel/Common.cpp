@@ -44,7 +44,7 @@ void split(const String &str, const char delimiter, Vector<String> &split)
   
   while (pos != String::npos)
   {
-    split.push_back(str.substr(previous, pos));
+    split.push_back(str.substr(previous, pos - previous));
     
     previous = pos + 1;
     pos = str.find(delimiter, previous);

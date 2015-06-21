@@ -127,18 +127,21 @@ protected:
     float R = value*100.0/255; //Digipot resistance in kOhms for given register setting
     float Rlim = R*113.0/(R+113)+51.1; //Effective current limiting resistor in kOhms for the given digipot resistance
     float I = 118079.0e-3/Rlim; //Current limit implemented by the linear current limiting IC for the given limiting resistance. This has a small variation as compared to the datasheet. That assumption has been made for the purpose of simplification.
-    return (I-0.2)*1100; //Subtracting the threshold current and multiplying by the power gain of the laser diode.
+    
+    std::cout << "illum_power = " << 4*(I-0.2)*1100 << std::endl;
+    
+    return 4*(I-0.2)*1100; //Subtracting the threshold current and multiplying by the power gain of the laser diode.
   }
   
   virtual uint32_t _toRawValue(uint value) const
   {
-    float v = value/1000.0;
+    float v = value/1000.0/4;
     return uint32_t(((130000/(v + 0.22))-51.1e3)*28815e3/((164.1e3 - 130000/(v + 0.22))*100e3));
   }
   
 public:
   TintinCDKIlluminationPowerParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x5401, 8, 7, 0, 1050, 2200, 1129, "Illumination Power", 
+  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x5401, 8, 7, 0, 4*1050, 4*2200, 4*1129, "Illumination Power", 
                            "These power numbers are approximate (+- 20%) and the actual power numbers are subject to component tolerances.", Parameter::IO_READ_WRITE, {})
   {}
   
@@ -216,19 +219,18 @@ protected:
     uint8_t lsbyte = value & 0xFF;
     uint8_t msbyte = (value >> 8) & 0xFF;
     uint current = (lsbyte << 8) + msbyte;
-
     // Calibration register is set to 6991 to get about 122.07 uA/bit
     return (current * 0.12207);
   }
   
-  //virtual uint32_t _toRawValue(uint value) const
-  //{
-  //  return (255U * value / 3300U);
-  //}
+//   virtual uint32_t _toRawValue(uint value) const
+//   {
+//     return (255U * value / 3300U);
+//   }
   
 public:
   TintinCDKIllumCurrentParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, "illum_current", "mA", 0x4E04, 8, 7, 0, 0, 4000, 0000, "Illumination Current", 
+  UnsignedIntegerParameter(programmer, "illum_current", "mA", 0x4E04, 8, 7, 0, 0, 8000, 0000, "Illumination Current", 
                            "This is the current on the illumination 5V rail.", Parameter::IO_READ_ONLY, {})
   {}
   
@@ -248,10 +250,10 @@ protected:
     return (current * 0.061035);
   }
   
-  //virtual uint32_t _toRawValue(uint value) const
-  //{
-  //  return (255U * value / 3300U);
-  //}
+//   virtual uint32_t _toRawValue(uint value) const
+//   {
+//     return (255U * value / 3300U);
+//   }
   
 public:
   TintinCDKMainCurrentParameter(RegisterProgrammer &programmer):

@@ -24,6 +24,7 @@ list(APPEND CONF_FILES
   boards/TintinCDK/TintinCDKCamera.conf
   boards/TintinCDK/TintinCDKCameraShortRange.conf
   boards/TintinCDK/TintinCDKCameraLongRange.conf
+  boards/TintinCDK/TintinCDKCameraHighAmbient.conf
   boards/TintinCDK/TintinCDKCameraNoCalibration.conf
   boards/TintinCDK/TintinCDKCameraPhaseOffset.bin
 )

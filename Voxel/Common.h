@@ -88,6 +88,7 @@ typedef uint64_t TimeStampType;
 typedef uint32_t GeneratorIDType;
 typedef uint64_t FileOffsetType;
 typedef std::complex<float> Complex;
+typedef std::complex<double> ComplexDouble;
 
 typedef std::thread Thread;
 typedef Ptr<Thread> ThreadPtr;
