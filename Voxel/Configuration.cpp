@@ -28,7 +28,7 @@ namespace Voxel
 {
 
 const Map<String, Configuration::_Path> Configuration::_pathTypes = {
-  { "firmware",
+  { "fw", // Firmwares
     {
 #ifdef LINUX
       "/lib/firmware/voxel",
@@ -84,6 +84,46 @@ bool Configuration::_addPath(const String &type, const String &path)
 #endif
 }
 
+bool Configuration::_getLocalPath(const String &type, String &path)
+{
+  // Adding local path ~/.Voxel/<type>
+  // Works typically for Windows
+  char *homeDrive = getenv("HOMEDRIVE");
+  char *homePath = getenv("HOMEPATH");
+  if(homeDrive != 0 && homePath != 0)
+  {
+    String s = homeDrive;
+    s += homePath;
+    
+    s += DIR_SEP;
+    s += ".Voxel";
+    s += DIR_SEP;
+    s += type;
+    
+    path = s;
+    return true;
+  }
+  
+  // Adding local path ~/.Voxel/<type>
+  // Works typically for Linux
+  char *home = getenv("HOME");
+  if(home != 0)
+  {
+    String s = home;
+    
+    s += DIR_SEP;
+    s += ".Voxel";
+    s += DIR_SEP;
+    s += type;
+    
+    path = s;
+    return true;
+  }
+  
+  return false;
+}
+
+
 bool Configuration::_getPaths(const String &type, Vector<String> &paths)
 {
   auto t = _pathTypes.find(type);
@@ -94,6 +134,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   const _Path &pt = t->second;
   
   paths.clear();
+  
   paths.push_back(pt.standardPath);
   
   char *p = getenv(pt.environmentVariable.c_str());
@@ -109,6 +150,11 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     paths.reserve(paths.size() + splits.size());
     paths.insert(paths.begin(), splits.begin(), splits.end()); // Insert at the beginning to override standard path
   }
+  
+  String localPath;
+  
+  if(_getLocalPath(type, localPath))
+    paths.insert(paths.begin(), localPath);
   
   if(logger.getDefaultLogLevel() >= LOG_DEBUG) 
   {
