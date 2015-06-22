@@ -127,9 +127,6 @@ protected:
     float R = value*100.0/255; //Digipot resistance in kOhms for given register setting
     float Rlim = R*113.0/(R+113)+51.1; //Effective current limiting resistor in kOhms for the given digipot resistance
     float I = 118079.0e-3/Rlim; //Current limit implemented by the linear current limiting IC for the given limiting resistance. This has a small variation as compared to the datasheet. That assumption has been made for the purpose of simplification.
-    
-    std::cout << "illum_power = " << 4*(I-0.2)*1100 << std::endl;
-    
     return 4*(I-0.2)*1100; //Subtracting the threshold current and multiplying by the power gain of the laser diode.
   }
   
