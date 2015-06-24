@@ -18,15 +18,16 @@ namespace Voxel
 namespace TI
 {
   
-class IntegrationTimeParameter: public FloatParameter
+class IntegrationTimeParameter: public UnsignedIntegerParameter
 {
   ToFCamera &_depthCamera;
 public:
   IntegrationTimeParameter(ToFCamera &depthCamera, RegisterProgrammer &programmer):
-  FloatParameter(programmer, INTG_TIME, "%", 0, 0, 0, 1, 0, 100, 0, "Integration time", 
+  UnsignedIntegerParameter(programmer, INTG_TIME, "%", 0, 0, 0, 1, 0, 100, 0, "Integration time", 
                 "Integration time as percentage of total cycle time", Parameter::IO_READ_WRITE, {INTG_DUTY_CYCLE}), _depthCamera(depthCamera) {}
-                
-  virtual bool get(float &value, bool refresh = false)
+              
+  
+  virtual bool get(uint &value, bool refresh = false)
   {
     uint integrationDutyCycle;
     
@@ -38,7 +39,7 @@ public:
       return false;
     
     
-    float v = integrationDutyCycle*100/63;
+    uint v = (uint)((integrationDutyCycle*100.0)/63 + 0.5); // rounded value
     
     if(v > 100) v = 100;
     if(v < 0) v = 0;
@@ -47,12 +48,12 @@ public:
     return true;
   }
   
-  virtual bool set(const float &value)
+  virtual bool set(const uint &value)
   {
     if(!validate(value))
       return false;
     
-    uint integrationDutyCycle = (value/100)*63;
+    uint integrationDutyCycle = (uint)((value*63.0/100) + 0.5); // rounded value
     
     if(integrationDutyCycle > 63) integrationDutyCycle = 63;
     

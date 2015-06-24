@@ -98,6 +98,7 @@ typedef std::condition_variable ConditionVariable;
 typedef std::ifstream InputFileStream;
 typedef std::ofstream OutputFileStream;
 
+typedef std::istream InputStream;
 typedef std::ostream OutputStream;
 typedef std::ostringstream OutputStringStream;
 
@@ -181,6 +182,9 @@ inline String& rtrim(String& s) {
 inline String& trim(String& s) {
   return ltrim(rtrim(s));
 }
+
+String VOXEL_EXPORT dirname(const String &filename);
+String VOXEL_EXPORT basename(const String &filename);
 
 /**
  * @}
