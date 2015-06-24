@@ -165,7 +165,7 @@ public:
     if(!p || !p->get(v))
       return false;
     
-    value = v*100/p->upperLimit();
+    value = (uint)((v*100.0f)/p->upperLimit() + 0.5); // Rounded value
     return true;
   }
   
@@ -175,7 +175,7 @@ public:
     if(!p)
       return false;
     
-    uint v = value*p->upperLimit()/100;
+    uint v = (value*p->upperLimit())/100;
     
     if(!p->set(v))
       return false;

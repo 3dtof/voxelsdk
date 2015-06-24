@@ -15,9 +15,9 @@
 #endif
 
 #ifdef LINUX
-#define DIR_SEP "/"
+#define DIR_SEP '/'
 #elif defined(WINDOWS)
-#define DIR_SEP "\\"
+#define DIR_SEP '\\'
 #endif
 
 #ifdef WINDOWS
@@ -173,6 +173,38 @@ unsigned int nearestPowerOf2(unsigned int value, unsigned int &index)
   else
     return result;
 }
+
+String dirname(const String &filename)
+{
+  String s = filename;
+  if (s.size() <= 1) //Make sure it's possible to check the last character.
+  {
+    return s;
+  }
+  if (*(s.rbegin() + 1) == DIR_SEP) //Remove trailing slash if it exists.
+  {
+    s.pop_back();
+  }
+  s.erase(std::find(s.rbegin(), s.rend(), DIR_SEP).base(), s.end());
+  return s;
+}
+
+
+String basename(const String &filename)
+{
+  String s = filename;
+  if (s.size() <= 1) //Make sure it's possible to check the last character.
+  {
+    return s;
+  }
+  if (*(s.rbegin() + 1) == DIR_SEP) //Remove trailing slash if it exists.
+  {
+    s.pop_back();
+  }
+  s.erase(s.begin(), std::find(s.rbegin(), s.rend(), DIR_SEP).base());
+  return s;
+}
+
 
   
 }

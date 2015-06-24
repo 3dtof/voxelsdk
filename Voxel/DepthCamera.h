@@ -237,7 +237,9 @@ public:
   inline const Map<int, String> &getCameraProfileNames() { return configFile.getCameraProfileNames(); }
   inline int getCurrentCameraProfileID() { return configFile.getCurrentProfileID(); }
   
+  int addCameraProfile(const String &profileName, const int parentID);
   bool setCameraProfile(const int id);
+  bool removeCameraProfile(const int id);
   
   bool close();
   virtual ~DepthCamera();

@@ -60,16 +60,26 @@ class VOXEL_EXPORT ConfigSet
 {
 protected:
   bool _get(const String &name, String &value) const;
+  bool _set(const String &name, const String &value);
   
 public:
   Map<String, String> params;
   Vector<String> paramNames;
+  
+  bool remove(const String &name);
+  
+  bool isEmpty() { return params.size() == 0; }
   
   bool isPresent(const String &name) const;
   String get(const String &name) const;
   int getInteger(const String &name) const;
   float getFloat(const String &name) const;
   bool getBoolean(const String &name) const;
+  
+  bool set(const String &name, const String &value);
+  bool setInteger(const String &name, int value);
+  bool setFloat(const String &name, float value);
+  bool setBoolean(const String &name, bool value);
   
   friend class ConfigurationFile;
 };
@@ -80,10 +90,16 @@ class VOXEL_EXPORT ConfigurationFile
 {
 protected:
   bool _get(const String &section, const String &name, String &value) const;
+  bool _set(const String &section, const String &name, const String &value);
   
   String _fileName;
   
   MainConfigurationFile *_mainConfigurationFile;
+  
+  int _id, _parentID;
+  String _profileName;
+  
+  mutable Mutex _mutex;
   
 public:
   typedef Map<String, ConfigSet> ConfigSetMap;
@@ -95,13 +111,48 @@ public:
   int getInteger(const String &section, const String &name) const;
   float getFloat(const String &section, const String &name) const;
   bool getBoolean(const String &section, const String &name) const;
+  
+  virtual bool set(const String &section, const String &name, const String &value);
+  bool setInteger(const String &section, const String &name, int value);
+  bool setFloat(const String &section, const String &name, float value);
+  bool setBoolean(const String &section, const String &name, bool value);
+  
+  bool remove(const String &section, const String &name);
+  
   virtual bool getConfigSet(const String &section, const ConfigSet *&configSet) const;
   
   virtual bool read(const String &configFile);
+  virtual bool read(InputStream &in);
+  
+  virtual bool write(const String &configFile = "");
+  virtual bool write(OutputStream &out);
+  
+  virtual bool removeFile();
+  
+  inline void clear() { Lock<Mutex> _(_mutex); configs.clear(); }
   
   inline const String &getConfigFileName() { return _fileName; }
   
-  ConfigurationFile(MainConfigurationFile *mainConfigurationFile = 0): _mainConfigurationFile(mainConfigurationFile) {}
+  ConfigurationFile(): ConfigurationFile(0) {}
+  ConfigurationFile(MainConfigurationFile *mainConfigurationFile): 
+  _mainConfigurationFile(mainConfigurationFile), _id(-1), _parentID(-1) {}
+  
+  ConfigurationFile(const ConfigurationFile &other)
+  {
+    operator =(other);
+  }
+  
+  inline ConfigurationFile &operator =(const ConfigurationFile &other) 
+  { 
+    configs = other.configs; 
+    _fileName = other._fileName;
+    _mainConfigurationFile = other._mainConfigurationFile;
+    _id = other._id;
+    _profileName = other._profileName;
+    _parentID = other._parentID;
+    return *this;
+  }
+  
   virtual ~ConfigurationFile() {}
   
   friend class MainConfigurationFile;
@@ -114,15 +165,21 @@ class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
   int _defaultCameraProfileID;
   int _currentCameraProfileID;
   ConfigurationFile *_currentCameraProfile;
+
+  bool _updateCameraProfileList();
+  
+  String _mainConfigName;
 public:
-  MainConfigurationFile(): _currentCameraProfile(0) {}
+  MainConfigurationFile(const String &name): _currentCameraProfile(0), _mainConfigName(name) {}
   
   virtual bool read(const String &configFile);
   
   virtual String get(const String &section, const String &name) const;
   virtual bool isPresent(const String &section, const String &name) const;
   
+  int addCameraProfile(const String &profileName, const int parentID);
   bool setCurrentCameraProfile(const int id);
+  bool removeCameraProfile(const int id);
   
   ConfigurationFile *getDefaultCameraProfile();
   ConfigurationFile *getCameraProfile(const int id);

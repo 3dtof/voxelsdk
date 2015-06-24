@@ -156,6 +156,8 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   if(_getLocalPath(type, localPath))
     paths.insert(paths.begin(), localPath);
   
+  paths.insert(paths.begin(), ""); // Empty path for absolute file paths and also relative file paths
+  
   if(logger.getDefaultLogLevel() >= LOG_DEBUG) 
   {
     for(auto i = 0; i < paths.size(); i++)
@@ -216,15 +218,15 @@ bool ConfigurationFile::isPresent(const String &section, const String &name) con
   
   if(checkParent)
   {
-    if(section != "global" && _mainConfigurationFile && isPresent("global", "parent"))
+    if(section != "global" && _mainConfigurationFile && _parentID >= 0)
     {
-      int parentID = getInteger("global", "parent");
-      
-      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(parentID);
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
       
       // TODO This does not handle circular references between profiles
       if(parentConfig)
+      {
         return parentConfig->isPresent(section, name);
+      }
     }
   }
   return false;
@@ -239,11 +241,9 @@ bool ConfigurationFile::getConfigSet(const String &section, const ConfigSet *&co
   }
   else
   {
-    if(section != "global" && _mainConfigurationFile && isPresent("global", "parent"))
+    if(section != "global" && _mainConfigurationFile && _parentID >= 0)
     {
-      int parentID = getInteger("global", "parent");
-      
-      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(parentID);
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
       
       // TODO This does not handle circular references between profiles
       if(parentConfig)
@@ -267,6 +267,7 @@ bool ConfigSet::_get(const String &name, String &value) const
 
 bool ConfigurationFile::_get(const String &section, const String &name, String &value) const
 {
+  Lock<Mutex> _(_mutex);
   int parentID;
   bool checkParent = false;
   
@@ -284,11 +285,9 @@ bool ConfigurationFile::_get(const String &section, const String &name, String &
   
   if(checkParent)
   {
-    if(section != "global" && _mainConfigurationFile && isPresent("global", "parent"))
+    if(section != "global" && _mainConfigurationFile && _parentID >= 0)
     {
-      parentID = getInteger("global", "parent");
-      
-      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(parentID);
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
       
       // TODO This does not handle circular references between profiles
       if(parentConfig)
@@ -391,12 +390,6 @@ bool ConfigurationFile::getBoolean(const String &section, const String &name) co
 
 bool ConfigurationFile::read(const String &filename)
 {
-  char buffer[2048];
-  char name[1000];
-  char value[1000];
-  
-  ConfigSet *currentSet = 0;
-  
   Configuration c;
   String f = filename;
   
@@ -418,47 +411,288 @@ bool ConfigurationFile::read(const String &filename)
     return false;
   }
   
-  while(fin.good())
+  return read(fin);
+}
+
+bool ConfigurationFile::read(InputStream &in)
+{
   {
-    fin.getline(buffer, 2048);
+    Lock<Mutex> _(_mutex);
     
-    if(strlen(buffer) < 2)
+    char buffer[2048];
+    char name[1000];
+    char value[1000];
+    
+    ConfigSet *currentSet = 0;
+    
+    while(in.good())
     {
-      // ignore this line - nothing to do
-    }
-    else if(buffer[0] == '[') // new section
-    {
-      int nret = sscanf(buffer, "[%[^]]]", name);
+      in.getline(buffer, 2048);
       
-      if(nret == 1)
-        currentSet = &configs[name];
-      else
-        return false;
-    }
-    else if(buffer[0] != '#') // allow comments
-    {
-      int nret = sscanf(buffer, "%[^=] = %[^\t\r\n]", name, value);
-      
-      if(nret >= 1 && currentSet != 0)
-      { 
-        String n = name;
-        trim(n);
-        String v;
-        if(nret == 2)
-        {
-          v = value;
-          trim(v);
-        }
-        (*currentSet).paramNames.push_back(n);
-        (*currentSet).params[n] = v;
+      if(strlen(buffer) < 2)
+      {
+        // ignore this line - nothing to do
       }
-      else
-        return false;
+      else if(buffer[0] == '[') // new section
+      {
+        int nret = sscanf(buffer, "[%[^]]]", name);
+        
+        if(nret == 1)
+          currentSet = &configs[name];
+        else
+          return false;
+      }
+      else if(buffer[0] != '#') // allow comments
+      {
+        int nret = sscanf(buffer, "%[^=] = %[^\t\r\n]", name, value);
+        
+        if(nret >= 1 && currentSet != 0)
+        { 
+          String n = name;
+          trim(n);
+          String v;
+          if(nret == 2)
+          {
+            v = value;
+            trim(v);
+          }
+          (*currentSet).paramNames.push_back(n);
+          (*currentSet).params[n] = v;
+        }
+        else
+          return false;
+      }
     }
+  }
+  
+  if(isPresent("global", "id"))
+    _id = getInteger("global", "id");
+  
+  if(isPresent("global", "parent"))
+    _parentID = getInteger("global", "parent");
+  
+  if(isPresent("global", "name"))
+    _profileName = get("global", "name");
+  
+  return true;
+}
+
+bool ConfigurationFile::write(OutputStream &out)
+{
+  Lock<Mutex> _(_mutex);
+  
+  for(auto c = configs.begin(); c != configs.end(); c++)
+  {
+    out << "[" << c->first << "]\n";
+    
+    for(auto i = 0; i < c->second.paramNames.size(); i++)
+    {
+      out << c->second.paramNames[i] << " = " << c->second.params[c->second.paramNames[i]] << std::endl;
+    }
+    out << std::endl;
+  }
+  return true;
+}
+
+bool ConfigurationFile::write(const String &configFile)
+{
+  Configuration c;
+  String path;
+  
+  if(!c.getLocalConfPath(path))
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Failed to get configuration local path." << std::endl;
+    return false;
+  }
+  
+  if(configFile != "") // Use new file name or old one itself?
+  {
+    String f = configFile;
+    _fileName = path + DIR_SEP + basename(f);
+  }
+  else
+  {
+    if(_fileName.compare(0, path.size(), path) != 0)
+      _fileName = path + DIR_SEP + basename(_fileName);
+  }
+  
+  OutputFileStream fout(_fileName, std::ios::binary | std::ios::out);
+  
+  if (!fout.good())
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Could not write file '" << configFile << "'" << std::endl;
+    return false;
+  }
+  
+  return write(fout);
+}
+
+bool ConfigSet::_set(const String &name, const String &value)
+{
+  String n = name, v = value;
+  trim(n);
+  trim(v);
+  params[n] = v;
+  
+  bool present = false;
+  
+  for(auto i = 0; i < paramNames.size(); i++)
+    if(paramNames[i] == n)
+    {
+      present = true;
+      break;
+    }
+    
+  if(!present)
+    paramNames.push_back(name);
+  
+  return true;
+}
+
+bool ConfigSet::set(const String &name, const String &value)
+{
+  return _set(name, value);
+}
+
+bool ConfigSet::setBoolean(const String &name, bool value)
+{
+  if(value)
+    return _set(name, "true");
+  else
+    return _set(name, "false");
+}
+
+bool ConfigSet::setFloat(const String &name, float value)
+{
+  OutputStringStream o;
+  o << value;
+  
+  return _set(name, o.str());
+}
+
+bool ConfigSet::setInteger(const String &name, int value)
+{
+  OutputStringStream o;
+  o << value;
+  
+  return _set(name, o.str());
+}
+
+bool ConfigurationFile::_set(const String &section, const String &name, const String &value)
+{
+  Lock<Mutex> _(_mutex);
+  if(configs.find(section) == configs.end())
+    configs[section]; // Create section
+    
+  ConfigSet &set = configs.at(section);
+    
+  return set._set(name, value);
+}
+
+bool ConfigurationFile::set(const String &section, const String &name, const String &value)
+{
+  if(section == "global" && name == "name")
+    _profileName = value;
+  
+  return _set(section, name, value);
+}
+
+bool ConfigurationFile::setBoolean(const String &section, const String &name, bool value)
+{
+  if(value)
+    return _set(section, name, "true");
+  else
+    return _set(section, name, "false");
+}
+
+bool ConfigurationFile::setFloat(const String &section, const String &name, float value)
+{
+  OutputStringStream s;
+  s << value;
+  
+  return _set(section, name, s.str());
+}
+
+bool ConfigurationFile::setInteger(const String &section, const String &name, int value)
+{
+  OutputStringStream s;
+  s << value;
+  
+  if(section == "global")
+  {
+    if(name == "id")
+      _id = value;
+    else if(name == "parent")
+      _parentID = value;
+  }
+  
+  return _set(section, name, s.str());
+}
+
+bool ConfigSet::remove(const String &name)
+{
+  if(params.find(name) != params.end())
+  {
+    params.erase(params.find(name));
+    
+    for(auto i = paramNames.begin(); i != paramNames.end(); i++)
+      if(name == *i)
+      {
+        paramNames.erase(i);
+        break;
+      }
+    return true;
+  }
+  return false;
+}
+
+bool ConfigurationFile::remove(const String &section, const String &name)
+{
+  if(configs.find(section) != configs.end())
+  {
+    ConfigSet &set = configs.at(section);
+    
+    if(set.remove(name))
+    {
+      if(set.isEmpty())
+      {
+        configs.erase(configs.find(section)); // Remove section
+      }
+      
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ConfigurationFile::removeFile()
+{
+  if(_fileName.size() == 0)
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: No file present for current configuration" << std::endl;
+    return false;
+  }
+  
+  InputFileStream f(_fileName);
+  
+  if(!f.good())
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Could not find file '" << _fileName << "'" << std::endl;
+    return false;
+  }
+  
+  f.close();
+  
+  if(::remove(_fileName.c_str()) != 0)
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Failed to remove file '" << _fileName << "'" << std::endl;
+    return false;
   }
   
   return true;
 }
+
+
 
 bool MainConfigurationFile::read(const String &configFile)
 {
@@ -467,6 +701,8 @@ bool MainConfigurationFile::read(const String &configFile)
   
   _cameraProfiles.clear();
   _cameraProfileNames.clear();
+  _currentCameraProfile = 0;
+  _currentCameraProfileID = -1;
   
   String cameraProfiles;
   
@@ -570,6 +806,97 @@ bool MainConfigurationFile::setCurrentCameraProfile(const int id)
   
   return false;
 }
+
+int MainConfigurationFile::addCameraProfile(const String &profileName, const int parentID)
+{
+  if(_cameraProfiles.find(parentID) == _cameraProfiles.end())
+    return -1;
+  
+  int maxID = 0;
+  for(auto c = _cameraProfileNames.begin(); c != _cameraProfileNames.end(); c++)
+  {
+    maxID = std::max(maxID, c->first);
+    
+    if(c->second == profileName)
+      return -1;
+  }
+  
+  int id = maxID + 1;
+  _cameraProfiles[id] = ConfigurationFile(this);
+  _cameraProfiles[id].setInteger("global", "id", id);
+  _cameraProfiles[id].setInteger("global", "parent", parentID);
+  _cameraProfiles[id].set("global", "name", profileName);
+  
+  _cameraProfileNames[id] = profileName;
+  
+  String fileName = profileName;
+  fileName.erase(std::remove(fileName.begin(), fileName.end(), ' '), fileName.end());
+  
+  fileName = _mainConfigName + fileName + ".conf";
+  
+  if(!_cameraProfiles[id].write(fileName))
+  {
+    logger(LOG_WARNING) << "MainConfigurationFile: Could not write configuration file for '" << profileName << "' to '" << fileName << "'." << std::endl;
+  }
+  
+  if(!_updateCameraProfileList())
+  {
+    logger(LOG_WARNING) << "MainConfigurationFile: Could not update profile list in main configuration file '" << _fileName << "'." << std::endl;
+  }
+  
+  return id;
+}
+
+bool MainConfigurationFile::_updateCameraProfileList()
+{
+  String n;
+  
+  bool first = true;
+  
+  for(auto c = _cameraProfiles.begin(); c != _cameraProfiles.end(); c++)
+  {
+    if(!first)
+      n += ", ";
+    
+    first = false;
+    
+    n += c->second.getConfigFileName();
+  }
+  
+  if(!set("core", "camera_profiles", n))
+    return false;
+  
+  if(!write())
+    return false;
+  
+  return true;
+}
+
+
+bool MainConfigurationFile::removeCameraProfile(const int id)
+{
+  if(_cameraProfiles.find(id) == _cameraProfiles.end())
+    return false;
+  
+  ConfigurationFile *c = &_cameraProfiles.at(id);
+  
+  if(!c->removeFile())
+    return false;
+  
+  _cameraProfiles.erase(_cameraProfiles.find(id));
+  
+  if(_cameraProfileNames.find(id) != _cameraProfileNames.end())
+    _cameraProfileNames.erase(_cameraProfileNames.find(id));
+  
+  if(!_updateCameraProfileList())
+  {
+    logger(LOG_WARNING) << "MainConfigurationFile: Could not update profile list in main configuration file '" << _fileName << "'." << std::endl;
+  }
+  
+  return true;
+}
+
+
 
 String MainConfigurationFile::get(const String &section, const String &name) const
 {

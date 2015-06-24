@@ -21,7 +21,8 @@ DepthCamera::DepthCamera(const String &name, DevicePtr device): _device(device),
 _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
 _parameterInit(true), _running(false),
 _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers), _depthFilters(_depthFrameBuffers),
-_pointCloudFrameGenerator(new PointCloudFrameGenerator())
+_pointCloudFrameGenerator(new PointCloudFrameGenerator()),
+configFile(name)
 {
   _frameGenerators[2] = std::dynamic_pointer_cast<FrameGenerator>(_pointCloudFrameGenerator);
   _makeID();
@@ -574,6 +575,18 @@ bool DepthCamera::setCameraProfile(const int id)
   
   return true;
 }
+
+int DepthCamera::addCameraProfile(const String &profileName, const int parentID)
+{
+  return configFile.addCameraProfile(profileName, parentID);
+}
+
+
+bool DepthCamera::removeCameraProfile(const int id)
+{
+  return configFile.removeCameraProfile(id);
+}
+
 
 bool DepthCamera::_applyConfigParams(const ConfigSet *params)
 {
