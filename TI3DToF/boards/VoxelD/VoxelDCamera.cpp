@@ -147,11 +147,19 @@ bool VoxelDCamera::_init()
 
 bool VoxelDCamera::_initStartParams()
 {
+  /*
+   * The first two magic register writes are to invert the illum_en polarity
+   * They are required only for the first set of boards, and should not be done
+   * for the later revisions.
+   * TODO: Add these to named parameters instead of hardcoded register values
+   */
   return 
-  //set(ILLUM_VOLTAGE, 1500U) && 
-  //set(MIX_VOLTAGE, 1500U) &&
-  ToFTintinCamera::_initStartParams() &&
-  set(ILLUM_EN_POL, true);
+    _programmer->writeRegister(0x58A9, 0x800202) &&
+    _programmer->writeRegister(0x58AD, 0x000181) &&
+    set(ILLUM_VOLTAGE, 1800U) && 
+    ToFTintinCamera::_initStartParams() &&
+    set(MOD_FREQ1, 24.0f) &&
+    set(CONFIDENCE_THRESHOLD, 2U);
 }
 
 
