@@ -24,6 +24,9 @@ target_link_libraries(DMLParseTest voxel)
 add_executable(Voxel14RegisterTest Voxel14RegisterTest.cpp)
 target_link_libraries(Voxel14RegisterTest ti3dtof)
 
+add_executable(Data2DCodecTest Data2DCodecTest.cpp)
+target_link_libraries(Data2DCodecTest voxel)
+
 install(TARGETS
   DeviceTest 
   DownloaderTest 
@@ -32,6 +35,7 @@ install(TARGETS
   CameraSystemSaveStreamTest
   CameraSystemReadStreamTest
   DMLParseTest
+  Data2DCodecTest
   Voxel14RegisterTest
   RUNTIME
   DESTINATION bin
