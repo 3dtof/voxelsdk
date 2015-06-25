@@ -46,6 +46,22 @@
 #define SCRATCH1 "scratch1" // Used for storing unambiguous range
 #define SCRATCH2 "scratch2" // Used for storing current camera profile ID
 
+#define X_CROSS_TALK_COEFF_F1 "x_cross_talk_coeff_f1"
+#define Y_CROSS_TALK_COEFF_F1 "y_cross_talk_coeff_f1"
+#define X_CROSS_TALK_COEFF_F2 "x_cross_talk_coeff_f2"
+#define Y_CROSS_TALK_COEFF_F2 "y_cross_talk_coeff_f2"
+
+#define CROSS_TALK_FILT_COEFF_X_RE_F1 "filt_coef_x_re_f1"
+#define CROSS_TALK_FILT_COEFF_X_IM_F1 "filt_coef_x_im_f1"
+#define CROSS_TALK_FILT_COEFF_Y_RE_F1 "filt_coef_y_re_f1"
+#define CROSS_TALK_FILT_COEFF_Y_IM_F1 "filt_coef_y_im_f1"
+#define CROSS_TALK_FILT_COEFF_X_RE_F2 "filt_coef_x_re_f2"
+#define CROSS_TALK_FILT_COEFF_X_IM_F2 "filt_coef_x_im_f2"
+#define CROSS_TALK_FILT_COEFF_Y_RE_F2 "filt_coef_y_re_f2"
+#define CROSS_TALK_FILT_COEFF_Y_IM_F2 "filt_coef_y_im_f2"
+#define CROSS_TALK_EN "filt_en"
+#define CROSS_TALK_SCALE "filt_scale"
+
 namespace Voxel
 {
   

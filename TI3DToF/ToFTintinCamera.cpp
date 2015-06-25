@@ -8,6 +8,9 @@
 #include <Configuration.h>
 #include <ParameterDMLParser.h>
 
+#include <iterator>
+#include <algorithm>
+
 namespace Voxel
 {
   
@@ -534,15 +537,82 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
 
 bool ToFTintinCamera::_applyCalibrationParams()
 {
-  return set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) &&
-    set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) &&
-    set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) &&
-    set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) &&
-    set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)) &&
-    set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) &&
-    set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) &&
-    set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)) &&
-    set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1));
+  if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
+    !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
+    !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
+    !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
+    !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)) ||
+    !set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) ||
+    !set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) ||
+    !set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)) ||
+    !set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)))
+    return false;
+  
+  if(configFile.isPresent("calib", X_CROSS_TALK_COEFF_F1) && configFile.isPresent("calib", Y_CROSS_TALK_COEFF_F1) &&
+    configFile.isPresent("calib", X_CROSS_TALK_COEFF_F2) && configFile.isPresent("calib", Y_CROSS_TALK_COEFF_F2))
+  {
+  
+    String crossTalk = 
+      configFile.get("calib", X_CROSS_TALK_COEFF_F1) + " " +
+      configFile.get("calib", Y_CROSS_TALK_COEFF_F1) + " " +
+      configFile.get("calib", X_CROSS_TALK_COEFF_F2) + " " +
+      configFile.get("calib", Y_CROSS_TALK_COEFF_F2);
+      
+    Vector<Complex> coefficients;
+    
+    coefficients.reserve(4);
+    
+    std::istringstream ss(crossTalk);
+    
+    std::copy(std::istream_iterator<Complex>(ss),
+              std::istream_iterator<Complex>(),
+              std::back_inserter(coefficients));
+    
+    if(coefficients.size() != 4)
+      return false;
+    
+    float min = 128, max = 0;
+    
+    for(auto i = 0; i < coefficients.size(); i++)
+    {
+      if(std::fabs(coefficients[i].real()) < min)
+        min = std::fabs(coefficients[i].real());
+      
+      if(std::fabs(coefficients[i].imag()) < min)
+        min = std::fabs(coefficients[i].imag());
+      
+      if(std::fabs(coefficients[i].real()) > max)
+        max = std::fabs(coefficients[i].real());
+      
+      if(std::fabs(coefficients[i].imag()) > max)
+        max = std::fabs(coefficients[i].imag());
+    }
+    
+    uint scale = 3;
+    
+    min *= 128*4;
+    max *= 128*4;
+    
+    while(max*(1 << scale) > 127 && scale > 0)
+      scale--;
+    
+    uint scale2 = 128*4*(1 << scale);
+    
+    if(
+      !set(CROSS_TALK_FILT_COEFF_X_RE_F1, (int)(coefficients[0].real()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_X_IM_F1, (int)(coefficients[0].imag()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_Y_RE_F1, (int)(coefficients[1].real()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_Y_IM_F1, (int)(coefficients[1].imag()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_X_RE_F2, (int)(coefficients[2].real()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_X_IM_F2, (int)(coefficients[2].imag()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_Y_RE_F2, (int)(coefficients[3].real()*scale2)) ||
+      !set(CROSS_TALK_FILT_COEFF_Y_IM_F2, (int)(coefficients[3].imag()*scale2)) ||
+      !set(CROSS_TALK_SCALE, scale) ||
+      !set(CROSS_TALK_EN, true))
+      return false;
+  }
+  
+  return true;
 }
  
 }
