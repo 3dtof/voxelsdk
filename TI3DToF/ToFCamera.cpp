@@ -641,7 +641,7 @@ bool ToFCamera::_getCurrentProfileID(int &id)
   {
     id = i;
     
-    if(id == 255)
+    if(id == 0)
       return false;
     
     return true;
