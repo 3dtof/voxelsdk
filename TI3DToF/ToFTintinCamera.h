@@ -62,6 +62,11 @@
 #define CROSS_TALK_EN "filt_en"
 #define CROSS_TALK_SCALE "filt_scale"
 
+#define NONLINEARITY_PHASE_PERIOD "phase_lin_corr_period"
+#define NONLINEARITY_COEFF_F1 "phase_lin_coeff0"
+#define NONLINEARITY_COEFF_F2 "phase_lin_coeff1"
+#define NONLINEARITY_ENABLE "phase_lin_corr_en"
+
 namespace Voxel
 {
   
