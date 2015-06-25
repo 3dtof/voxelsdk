@@ -25,7 +25,8 @@ bool ToFCameraBase::_onReset()
 {
   VideoMode m, m2;
   
-  if(!getMaximumVideoMode(m) || !getFrameSize(m2.frameSize) || !getFrameRate(m2.frameRate))
+  /* setFrameSize to set the right stream parameters for streamer */
+  if(!getMaximumVideoMode(m) || !getFrameSize(m2.frameSize) || !getFrameRate(m2.frameRate) || !setFrameSize(m2.frameSize))
     return false;
   
   // Just ensure that the frame rate is not out of bounds
