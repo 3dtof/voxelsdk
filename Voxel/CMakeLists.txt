@@ -13,6 +13,7 @@ add_library(voxel SHARED
   Common.cpp
   Downloader.cpp
   FFT.cpp
+  Data2DCodec.cpp
   Parameter.cpp
   RegisterProgrammer.cpp
   USBSystem.cpp
@@ -77,6 +78,9 @@ install(FILES
   Device.h
   Downloader.h
   Frame.h
+  Convolve2D.h
+  FFT.h
+  Data2DCodec.h
   FrameStream.h
   FrameGenerator.h
   PointCloudFrameGenerator.h
@@ -100,7 +104,6 @@ install(FILES
   USBIO.h
   VideoMode.h
   PointCloudTransform.h
-  Convolve2D.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
   COMPONENT voxel_dev

@@ -13,6 +13,8 @@
 #include <malloc.h>
 #include "FFT.h"
 
+#include "Logger.h"
+
 namespace Voxel
 {
 
@@ -34,10 +36,16 @@ bool FFT2D(Complex2D &c,int dir)
   real = (double *)malloc(nx * sizeof(double));
   imag = (double *)malloc(nx * sizeof(double));
   if (real == NULL || imag == NULL)
+  {
+    logger(LOG_ERROR) << "FFT2D: Failed to allocate memory" << std::endl;
     return false;
+  }
   
   if (!Powerof2(nx,&m,&twopm) || twopm != nx)
+  {
+    logger(LOG_ERROR) << "FFT2D: Failed to get nearest power of 2 of '" << nx << "'" << std::endl;
     return false;
+  }
   
   for (j=0;j<ny;j++) {
     for (i=0;i<nx;i++) {
@@ -57,9 +65,17 @@ bool FFT2D(Complex2D &c,int dir)
   real = (double *)malloc(ny * sizeof(double));
   imag = (double *)malloc(ny * sizeof(double));
   if (real == NULL || imag == NULL)
+  {
+    logger(LOG_ERROR) << "FFT2D: Failed to allocate memory" << std::endl;
     return false;
+  }
+  
   if (!Powerof2(ny,&m,&twopm) || twopm != ny)
+  {
+    logger(LOG_ERROR) << "FFT2D: Failed to get nearest power of 2 of '" << nx << "'" << std::endl;
     return false;
+  }
+  
   for (i=0;i<nx;i++) {
     for (j=0;j<ny;j++) {
       real[j] = c[i][j].real();
