@@ -109,7 +109,6 @@ install(FILES
   ToFCameraBase.h
   ToFCameraFactoryBase.h
   ToFHaddockCamera.h
-  ToFCalculusCamera.h
   ToFTintinCamera.h
   ToFDepthFrameGenerator.h
   ToFCrossTalkFilter.h
