@@ -416,17 +416,17 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
           for (auto k = 0; k < 8; k++) 
           {
             t->_amplitude[index2 + k] = data[index1 + k] & MAX_PHASE_VALUE;
-            t->_ambient[index2 + k] = (data[index1 + k] & 0xF000) >> 12;
+            t->_flags[index2 + k] = (data[index1 + k + 8] & 0xF000) >> 12;
             
             if(_dealiased16BitMode)
             {
-              t->_phase[index2 + k] = (data[index1 + k + 8] << 4) + (data[index1 + k + 8] >> 12);
-              t->_flags[index2 + k] = 0;
+              t->_phase[index2 + k] = ((data[index1 + k + 8] & MAX_PHASE_VALUE) << 4) + (data[index1 + k] >> 12);
+              t->_ambient[index2 + k] = 0xF;
             }
             else
             {
               t->_phase[index2 + k] = data[index1 + k + 8] & MAX_PHASE_VALUE;
-              t->_flags[index2 + k] = (data[index1 + k + 8] & 0xF000) >> 12;
+              t->_ambient[index2 + k] = (data[index1 + k] & 0xF000) >> 12;
             }
           }
         }
@@ -445,17 +445,17 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
           index1 = i*_size.width*2 + j*2;
           index2 = i*_size.width + j;
           t->_amplitude[index2] = data[index1] & MAX_PHASE_VALUE;
-          t->_ambient[index2] = (data[index1] & 0xF000) >> 12;
+          t->_flags[index2] = (data[index1 + 1] & 0xF000) >> 12;
           
           if(_dealiased16BitMode)
           {
-            t->_phase[index2] = (data[index1 + 1] << 4) + (data[index1 + 1] >> 12);
-            t->_flags[index2] = 0;
+            t->_phase[index2] = ((data[index1 + 1] & MAX_PHASE_VALUE) << 4) + (data[index1] >> 12);
+            t->_ambient[index2] = 0xF;
           }
           else
           {
             t->_phase[index2] = data[index1 + 1] & MAX_PHASE_VALUE;
-            t->_flags[index2] = (data[index1 + 1] & 0xF000) >> 12;
+            t->_ambient[index2] = (data[index1] & 0xF000) >> 12;
           }
         }
       }
