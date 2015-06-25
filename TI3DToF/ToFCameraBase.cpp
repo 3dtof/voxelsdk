@@ -14,16 +14,6 @@ namespace TI
   
 bool ToFCameraBase::_init()
 {
-  VideoMode m;
-  
-  if(!getMaximumVideoMode(m) || !setFrameRate(m.frameRate) || !setFrameSize(m.frameSize)) 
-    // NOTE: Set frame rate first and them frame size. In frame size setting, streamer's video mode 
-    // will be set which uses frame rate
-  {
-    logger(LOG_ERROR) << "ToFCamera: Could not set maximum video mode" << std::endl;
-    return false;
-  }
-  
   if(!DepthCamera::_init())
     return false;
   

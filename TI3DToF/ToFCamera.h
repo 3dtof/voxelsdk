@@ -16,7 +16,6 @@
 #define PIX_CNT_MAX "pix_cnt_max"
 #define QUAD_CNT_MAX "quad_cnt_max"
 #define SUBFRAME_CNT_MAX "sub_frame_cnt_max"
-#define SYS_CLK_FREQ "sys_clk_freq"
 
 #define TG_EN "tg_en"
 #define BLK_SIZE "blk_size"
@@ -43,6 +42,8 @@
 
 #define PIXEL_DATA_SIZE "pixel_data_size"
 #define OP_DATA_ARRANGE_MODE "op_data_arrange_mode"
+#define OP_CLK_FREQ "op_clk_freq"
+
 #define HISTOGRAM_EN "histogram_en"
 
 #define INTG_TIME "intg_time"  // Integration time
@@ -137,6 +138,10 @@ protected:
   virtual bool _initStartParams();
   
   virtual bool _applyCalibrationParams() = 0;
+  
+  virtual bool _getCurrentProfileRegisterName(String &name) = 0;
+  virtual bool _getCurrentProfileID(int& id);
+  virtual bool _saveCurrentProfileID(const int id);
   
   virtual bool _reset();
   

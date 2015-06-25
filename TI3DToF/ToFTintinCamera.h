@@ -90,6 +90,8 @@ protected:
   virtual bool _isHistogramEnabled() const;
   
   virtual bool _applyCalibrationParams();
+  
+  virtual bool _getCurrentProfileRegisterName(String& name);
     
 public:
   ToFTintinCamera(const String &name, DevicePtr device);

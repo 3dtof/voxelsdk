@@ -431,7 +431,8 @@ bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &suppor
 {
   USBDevice &d = (USBDevice &)*_device;
 
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
+  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
+  {
     supportedVideoModes = Vector<SupportedVideoMode> {
       SupportedVideoMode(320,240,25,1,4),
       SupportedVideoMode(160,240,50,1,4),
@@ -444,19 +445,10 @@ bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &suppor
       SupportedVideoMode(160,60,400,1,2),
       SupportedVideoMode(80,60,400,1,2),
     };
-  } else {
-    supportedVideoModes = Vector<SupportedVideoMode> {
-      SupportedVideoMode(320,240,50,1,4),
-      SupportedVideoMode(160,240,100,1,4),
-      SupportedVideoMode(160,120,100,1,4),
-      SupportedVideoMode(80,120,200,1,4),
-      SupportedVideoMode(80,60,400,1,4),
-      SupportedVideoMode(320,240,50,1,2),
-      SupportedVideoMode(320,120,100,1,2),
-      SupportedVideoMode(160,120,200,1,2),
-      SupportedVideoMode(160,60,400,1,2),
-      SupportedVideoMode(80,60,400,1,2),
-    };
+  } 
+  else 
+  {
+    supportedVideoModes.clear();
   }
 
   return true;
@@ -478,10 +470,34 @@ bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
   if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
     videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
   } else {
-    videoMode.frameRate.numerator = 30;
+    videoMode.frameRate.numerator = 60;
   }
 
   return true;
+}
+
+bool TintinCDKCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const
+{
+  int opClockFrequency, bytesPerPixel;
+  
+  if(!_get(OP_CLK_FREQ, opClockFrequency) || !_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  {
+    logger(LOG_ERROR) << "TintinCDKCamera: Could not get " << OP_CLK_FREQ << " or " << PIXEL_DATA_SIZE << std::endl;
+    return false;
+  }
+  
+  opClockFrequency = 24/(1 << opClockFrequency);
+  
+  uint numerator = opClockFrequency*1000000,
+  denominator = bytesPerPixel*forFrameSize.width*forFrameSize.height;
+  
+  uint g = gcd(numerator, denominator);
+  
+  frameRate.numerator = 0.8*numerator/g; // 90% of maximum
+  frameRate.denominator = denominator/g;
+  
+  return true;
+  
 }
 
 

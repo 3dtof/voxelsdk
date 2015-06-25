@@ -137,6 +137,11 @@ bool ToFCamera::_setFrameRate(const FrameRate &r)
   if(!_set(PIX_CNT_MAX, pixCount) || !_get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
   
+  uint integrationTime;
+  
+  if(!_get(INTG_TIME, integrationTime) || !_set(INTG_TIME, integrationTime))
+    return false;
+  
   return true;
 }
 
@@ -625,7 +630,34 @@ bool ToFCamera::setSerialNumber(const String &serialNumber)
   return DepthCamera::setSerialNumber(serialNumber);
 }
 
+bool ToFCamera::_getCurrentProfileID(int &id)
+{
+  String name;
+  if(!_getCurrentProfileRegisterName(name))
+    return false;
+  
+  uint i;
+  if(_get(name, i, true))
+  {
+    id = i;
+    
+    if(id == 255)
+      return false;
+    
+    return true;
+  }
+  return false;
+}
 
+bool ToFCamera::_saveCurrentProfileID(const int id)
+{
+  String name;
+  if(!_getCurrentProfileRegisterName(name))
+    return false;
+  
+  uint i = id;
+  return _set(name, i);
+}
 
 }
 }
