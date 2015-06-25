@@ -653,6 +653,12 @@ bool ToFTintinCamera::_applyCalibrationParams()
   
   return true;
 }
- 
+
+bool ToFTintinCamera::_getCurrentProfileRegisterName(String &name)
+{
+  name = SCRATCH2;
+  return true;
+}
+
 }
 }

@@ -29,7 +29,7 @@ public:
   virtual bool get(float &value, bool refresh = false)
   {
     uint modM, modN, systemClockFrequency;
-    if(!_depthCamera._get(MOD_M, modM, refresh) || !_depthCamera._get(MOD_N, modN, refresh) || !_depthCamera._get(SYS_CLK_FREQ, systemClockFrequency, refresh))
+    if(!_depthCamera._get(MOD_M, modM, refresh) || !_depthCamera._get(MOD_N, modN, refresh) || !_depthCamera._getSystemClockFrequency(systemClockFrequency))
       return false;
     
     if(modN == 0)
@@ -327,7 +327,8 @@ ToFHaddockCamera::ToFHaddockCamera(const String &name, DevicePtr device): ToFCam
 
 bool ToFHaddockCamera::_getSystemClockFrequency(uint &frequency) const
 {
-  return _get(SYS_CLK_FREQ, frequency);
+  frequency = 48;
+  return true;
 }
 
 
@@ -532,6 +533,11 @@ bool ToFHaddockCamera::_getIlluminationFrequency(float& frequency) const
   }
 }
 
+bool ToFHaddockCamera::_getCurrentProfileRegisterName(String &name)
+{
+  name = CURRENT_PROFILE;
+  return true;
+}
  
 }
 }

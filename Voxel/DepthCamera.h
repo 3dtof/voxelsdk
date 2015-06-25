@@ -143,6 +143,9 @@ protected:
   
   virtual bool _applyConfigParams(const ConfigSet *params);
   
+  virtual bool _saveCurrentProfileID(const int id) = 0;
+  virtual bool _getCurrentProfileID(int &id) = 0;
+  
   bool _init();
   
 public:
@@ -238,7 +241,7 @@ public:
   inline int getCurrentCameraProfileID() { return configFile.getCurrentProfileID(); }
   
   int addCameraProfile(const String &profileName, const int parentID);
-  bool setCameraProfile(const int id);
+  bool setCameraProfile(const int id, bool softApply = false);
   bool removeCameraProfile(const int id);
   
   bool close();

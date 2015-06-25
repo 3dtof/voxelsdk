@@ -32,7 +32,11 @@ configFile(name)
 
 bool DepthCamera::_init()
 {
-  return setCameraProfile(configFile.getDefaultCameraProfileID());
+  int currentID = -1;
+  if(_getCurrentProfileID(currentID) && currentID >= 0)
+    return setCameraProfile(currentID, true);
+  else
+    return setCameraProfile(configFile.getDefaultCameraProfileID());
 }
   
 bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
@@ -520,13 +524,16 @@ bool DepthCamera::closeFrameStream()
   }
 }
 
-bool DepthCamera::setCameraProfile(const int id)
+bool DepthCamera::setCameraProfile(const int id, bool softApply)
 {
   if(!configFile.setCurrentCameraProfile(id))
   {
     logger(LOG_ERROR) << "DepthCamera: Could not set the camera profile to '" << id << "'" << std::endl;
     return false;
   }
+  
+  if(!_saveCurrentProfileID(id))
+    logger(LOG_WARNING) << "DepthCamera: Could not save the camera profile ID '" << id << "'" << std::endl;
   
   /*
   // Uncomment this perform soft-reset every time a profile is selected.
@@ -540,34 +547,37 @@ bool DepthCamera::setCameraProfile(const int id)
   if(!refreshParams())
     return false;
   
-  ConfigurationFile *config;
-  
-  String cameraProfileName; 
-  
-  if(!configFile.getCameraProfileName(id, cameraProfileName))
+  if(!softApply)
   {
-    logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile name" << std::endl;
-    return false;
-  }
-  
-  if(!(config = configFile.getCameraProfile(id)))
-  {
-    logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile information" << std::endl;
-    return false;
-  }
-  
-  const ConfigSet *params;
-  
-  if(config->getConfigSet("params", params) && !_applyConfigParams(params))
-  {
-    logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
-    return false;
-  }
-  
-  if(config->getConfigSet("defining_params", params) && !_applyConfigParams(params))
-  {
-    logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
-    return false;
+    ConfigurationFile *config;
+    
+    String cameraProfileName; 
+    
+    if(!configFile.getCameraProfileName(id, cameraProfileName))
+    {
+      logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile name" << std::endl;
+      return false;
+    }
+    
+    if(!(config = configFile.getCameraProfile(id)))
+    {
+      logger(LOG_ERROR) << "DepthCamera: Failed to get new camera profile information" << std::endl;
+      return false;
+    }
+    
+    const ConfigSet *params;
+    
+    if(config->getConfigSet("params", params) && !_applyConfigParams(params))
+    {
+      logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
+      return false;
+    }
+    
+    if(config->getConfigSet("defining_params", params) && !_applyConfigParams(params))
+    {
+      logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
+      return false;
+    }
   }
   
   if(!_onReset())

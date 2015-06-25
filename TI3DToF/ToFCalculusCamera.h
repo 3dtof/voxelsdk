@@ -97,6 +97,8 @@ protected:
   virtual bool _applyCalibrationParams();
 
   bool _updateEasyConf();
+  
+  virtual bool _getCurrentProfileRegisterName(String& name);
     
 public:
   ToFCalculusCamera(const String &name, DevicePtr device);

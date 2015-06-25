@@ -40,6 +40,7 @@ protected:
   virtual bool _setStreamerFrameSize(const FrameSize &s);
   
   virtual bool _getMaximumVideoMode(VideoMode &videoMode) const;
+  virtual bool _getMaximumFrameRate(FrameRate& frameRate, const FrameSize& forFrameSize) const;
   
   virtual bool _initStartParams();
   

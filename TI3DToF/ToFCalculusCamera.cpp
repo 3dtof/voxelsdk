@@ -648,6 +648,11 @@ bool ToFCalculusCamera::_applyCalibrationParams()
   return true;
 }
 
+bool ToFCalculusCamera::_getCurrentProfileRegisterName(String &name)
+{
+  return false;
+}
+
  
 }
 }

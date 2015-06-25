@@ -13,9 +13,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#define OP_CLK_FREQ "op_clk_freq"
-
-
 namespace Voxel
 {
   

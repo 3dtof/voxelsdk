@@ -9,6 +9,8 @@
 
 #include <ToFCamera.h>
 
+#define CURRENT_PROFILE "sys_clk_freq" //sys_clk_freq used as scratch register
+
 namespace Voxel
 {
   
@@ -35,6 +37,8 @@ protected:
   virtual bool _isHistogramEnabled() const;
   
   virtual bool _applyCalibrationParams();
+  
+  virtual bool _getCurrentProfileRegisterName(String& name);
     
 public:
   ToFHaddockCamera(const String &name, DevicePtr device);
