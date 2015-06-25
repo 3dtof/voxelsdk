@@ -27,6 +27,7 @@
 #include "PyLoggerOutputStream.h"
 #include "PyProgressFunction.h"
 #include "../Logger.h"
+#include "../Convolve2D.h"
 %}
 
 %include "VoxelExports.h"
@@ -81,6 +82,7 @@ namespace std
 %template(IntegerVector) vector<int>;
 %template(UnsignedIntegerVector) vector<uint>;
 %template(FrameVector) vector<Voxel::FramePtr>;
+
 }
 
 %handle_reference(std::vector<Voxel::SupportedVideoMode>);
@@ -96,6 +98,9 @@ namespace std
 %handle_reference(Voxel::RegionOfInterest);
 %apply Voxel::RegionOfInterest &OUTPUT { Voxel::RegionOfInterest &roi };
 %apply const Voxel::RegionOfInterest &INPUT { const Voxel::RegionOfInterest &roi };
+
+%handle_reference(std::vector<float>);
+%apply std::vector<float> &OUTPUT { std::vector<float> &out };
 
 %typemap(in,numinputs=0) PyObject *selfObject { $1 = self; }
 
@@ -135,6 +140,7 @@ namespace std
   }
 }
 
+%include "../Convolve2D.h"
 %include "../Filter/Filter.h"
 %include "../Filter/FilterFactory.h"
 %include "../Filter/FilterSet.h"

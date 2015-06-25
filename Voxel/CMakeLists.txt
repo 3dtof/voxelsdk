@@ -42,6 +42,7 @@ add_library(voxel SHARED
   Filter/BilateralFilter.cpp
   Filter/FilterFactory.cpp
   Filter/VoxelFilterFactory.cpp
+  Convolve2D.cpp
   ${OS_CPP_FILES}
 )
 
@@ -99,6 +100,7 @@ install(FILES
   USBIO.h
   VideoMode.h
   PointCloudTransform.h
+  Convolve2D.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
   DESTINATION include/voxel
   COMPONENT voxel_dev
