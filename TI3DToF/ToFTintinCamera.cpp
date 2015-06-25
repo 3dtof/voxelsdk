@@ -612,6 +612,45 @@ bool ToFTintinCamera::_applyCalibrationParams()
       return false;
   }
   
+  if(configFile.isPresent("calib", NONLINEARITY_COEFF_F1) && configFile.isPresent("calib", NONLINEARITY_COEFF_F2) &&
+    configFile.isPresent("calib", NONLINEARITY_PHASE_PERIOD))
+  {
+    Vector<uint> nlCoeff1, nlCoeff2;
+    
+    nlCoeff1.reserve(16);
+    nlCoeff2.reserve(16);
+    
+    {
+      std::istringstream ss(configFile.get("calib", NONLINEARITY_COEFF_F1));
+      
+      std::copy(std::istream_iterator<uint>(ss),
+                std::istream_iterator<uint>(),
+                std::back_inserter(nlCoeff1));
+    }
+    
+    {
+      std::istringstream ss(configFile.get("calib", NONLINEARITY_COEFF_F2));
+      
+      std::copy(std::istream_iterator<uint>(ss),
+                std::istream_iterator<uint>(),
+                std::back_inserter(nlCoeff2));
+    }
+    
+    if(nlCoeff1.size() != 16 || nlCoeff2.size() != 16)
+      return false;
+    
+    int phasePeriod = configFile.getInteger("calib", NONLINEARITY_PHASE_PERIOD);
+    
+    String n1 = NONLINEARITY_COEFF_F1, n2 = NONLINEARITY_COEFF_F2;
+    
+    for(auto i = 0; i < 16; i++)
+      if(!set(n1 + "_" + std::to_string(i), nlCoeff1[i]) || !set(n2 + "_" + std::to_string(i), nlCoeff2[i]))
+        return false;
+      
+    if(!set(NONLINEARITY_PHASE_PERIOD, phasePeriod) || !set(NONLINEARITY_ENABLE, true))
+      return false;
+  }
+  
   return true;
 }
  
