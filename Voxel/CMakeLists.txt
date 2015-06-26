@@ -12,7 +12,7 @@ add_library(voxel SHARED
   Device.cpp
   Common.cpp
   Downloader.cpp
-  FFT.cpp
+  DFT.cpp
   Data2DCodec.cpp
   Parameter.cpp
   RegisterProgrammer.cpp
@@ -79,7 +79,7 @@ install(FILES
   Downloader.h
   Frame.h
   Convolve2D.h
-  FFT.h
+  DFT.h
   Data2DCodec.h
   FrameStream.h
   FrameGenerator.h
