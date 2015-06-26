@@ -7076,14 +7076,14 @@
 						<group desc="" name="SpatialFilter">
 							<propertyList>
 								<property desc="" name="filt_en" propertyId="9981"/>
-								<property desc="" name="filt_coef_y_re_f1" propertyId="9982"/>
-								<property desc="" name="filt_coef_y_im_f1" propertyId="9983"/>
-								<property desc="" name="filt_coef_x_re_f1" propertyId="9984"/>
-								<property desc="" name="filt_coef_x_im_f1" propertyId="9985"/>
-								<property desc="" name="filt_coef_y_re_f2" propertyId="10017"/>
-								<property desc="" name="filt_coef_y_im_f2" propertyId="10016"/>
-								<property desc="" name="filt_coef_x_re_f2" propertyId="10015"/>
-								<property desc="" name="filt_coef_x_im_f2" propertyId="10014"/>
+								<property desc="" name="filt_coeff_y_re_f1" propertyId="9982"/>
+								<property desc="" name="filt_coeff_y_im_f1" propertyId="9983"/>
+								<property desc="" name="filt_coeff_x_re_f1" propertyId="9984"/>
+								<property desc="" name="filt_coeff_x_im_f1" propertyId="9985"/>
+								<property desc="" name="filt_coeff_y_re_f2" propertyId="10017"/>
+								<property desc="" name="filt_coeff_y_im_f2" propertyId="10016"/>
+								<property desc="" name="filt_coeff_x_re_f2" propertyId="10015"/>
+								<property desc="" name="filt_coeff_x_im_f2" propertyId="10014"/>
 								<property desc="" name="filt_scale" propertyId="9986"/>
 							</propertyList>
 						</group>
