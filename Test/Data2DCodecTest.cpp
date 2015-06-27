@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   
   String phaseOffsetFileName, outputFileName;
   
-  uint rows = 0, columns = 0;
+  uint16_t rows = 0, columns = 0;
   
   char *endptr;
   
@@ -111,10 +111,12 @@ int main(int argc, char *argv[])
   
   
   Data2DCodec::Array2D phaseOffsets;
+  Data2DCodec::ArrayBool2D invalidPixels;
   
   size_t size = p.tellg();
   
-  phaseOffsets.resize(size/2); // int16_t data
+  phaseOffsets.resize(size/3); // int16_t data
+  invalidPixels.resize(size/3);
   
   p.seekg(0, std::ios::beg);
   p.clear();
@@ -122,7 +124,8 @@ int main(int argc, char *argv[])
   if(!p.good())
     return -1;
   
-  p.read((char *)phaseOffsets.data(), size);
+  p.read((char *)phaseOffsets.data(), (size*2)/3);
+  p.read((char *)invalidPixels.data(), size/3);
   
   p.close();
   
@@ -130,7 +133,7 @@ int main(int argc, char *argv[])
   
   Data2DCodec::ByteArray output;
   
-  if(!dc.compress(phaseOffsets, rows, columns, output))
+  if(!dc.compress(phaseOffsets, invalidPixels, rows, columns, output))
   {
     logger(LOG_ERROR) << "Failed to compress phase offset data" << std::endl;
     return -1;
@@ -149,6 +152,12 @@ int main(int argc, char *argv[])
   out.write((const char *)output.data(), output.size());
   
   out.close();
+  
+  if(!dc.decompress(output, rows, columns, phaseOffsets))
+  {
+    logger(LOG_ERROR) << "Failed to decompress phase offset data" << std::endl;
+    return -1;
+  }
   
   return 0;
 }

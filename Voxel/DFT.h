@@ -10,6 +10,9 @@
  * 
  */
 
+#ifndef VOXEL_DFT_H
+#define VOXEL_DFT_H
+
 #include <Common.h>
 
 namespace Voxel
@@ -82,3 +85,5 @@ public:
 
   
 }
+
+#endif
