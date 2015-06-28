@@ -19,6 +19,7 @@
 
 #define PARAM_TOF_FRAME_TYPE "tofFrameType"
 #define PARAM_PHASE_OFFSETS_FILE "phaseOffsetsFile"
+#define PARAM_PHASE_OFFSETS "phaseOffsets"
 #define PARAM_CROSS_TALK_COEFF "crossTalkCoefficients"
 #define PARAM_BYTES_PER_PIXEL "bytesPerPixel"
 #define PARAM_DATA_ARRANGE_MODE "dataArrangeMode"
@@ -46,7 +47,7 @@ namespace TI
 {
   
 ToFFrameGenerator::ToFFrameGenerator(): 
-  FrameGenerator((TI_VENDOR_ID << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0, 3),
+  FrameGenerator((TI_VENDOR_ID << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0, 4),
 _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
 {
   _frameGeneratorParameters[PARAM_BYTES_PER_PIXEL] = SerializablePtr(new SerializableUnsignedInt());
@@ -66,6 +67,7 @@ _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
   _frameGeneratorParameters[PARAM_QUAD_COUNT] = SerializablePtr(new SerializableUnsignedInt());
   
   _frameGeneratorParameters[PARAM_PHASE_OFFSETS_FILE] = SerializablePtr(new SerializableString());
+  _frameGeneratorParameters[PARAM_PHASE_OFFSETS] = SerializablePtr(new SerializableString());
   _frameGeneratorParameters[PARAM_CROSS_TALK_COEFF] = SerializablePtr(new SerializableString());
   
   _frameGeneratorParameters[PARAM_DEALIASED_16BIT_MODE] = SerializablePtr(new SerializableUnsignedInt());
@@ -88,7 +90,6 @@ bool ToFFrameGenerator::_onReadConfiguration()
     !get(PARAM_ROI_Y, _roi.y) ||
     !get(PARAM_ROI_WIDTH, _roi.width) ||
     !get(PARAM_ROI_HEIGHT, _roi.height) ||
-    !get(PARAM_PHASE_OFFSETS_FILE, _phaseOffsetFileName) ||
     !get(PARAM_CROSS_TALK_COEFF, _crossTalkCoefficients) ||
     !get(PARAM_HISTOGRAM_ENABLED, _histogramEnabled) ||
     !get(PARAM_MAX_FRAME_WIDTH, _maxFrameSize.width) ||
@@ -128,12 +129,27 @@ bool ToFFrameGenerator::_onReadConfiguration()
   
   _frameType = (ToFFrameType)frameType;
   
-  if(!_readPhaseOffsetCorrection() || !_createCrossTalkFilter())
+  if(_majorVersion == 0 && _minorVersion < 4)
+  {
+    if(!get(PARAM_PHASE_OFFSETS_FILE, _phaseOffsetFileName) || !_readPhaseOffsetCorrection())
+      return false;
+  }
+  else
+  {
+    String p;
+    if(!get(PARAM_PHASE_OFFSETS, p))
+      return false;
+    
+    _phaseOffsetCorrectionData.resize((p.size() + 1)/2);
+    memcpy(_phaseOffsetCorrectionData.data(), p.data(), p.size());
+  }
+  
+  if(!_createCrossTalkFilter())
     return false;
   return true;
 }
 
-bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_t bytesPerPixel, 
+bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const Vector<int16_t> &phaseOffsets, uint32_t bytesPerPixel, 
                                       uint32_t dataArrangeMode, 
                                       const RegionOfInterest &roi, const FrameSize &maxFrameSize, 
                                       const FrameSize &frameSize,
@@ -154,9 +170,15 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
     return true;
   
   _phaseOffsetFileName = phaseOffsetFileName;
+  _phaseOffsetCorrectionData = phaseOffsets;
   
-  if(!_readPhaseOffsetCorrection())
-    return false;
+  String phaseOffsetsString;
+  
+  if(phaseOffsets.size() > 0)
+  {
+    phaseOffsetsString.resize(phaseOffsets.size()*2);
+    memcpy(&phaseOffsetsString[0], phaseOffsets.data(), phaseOffsetsString.size());
+  }
   
   _bytesPerPixel = bytesPerPixel;
   _dataArrangeMode = dataArrangeMode;
@@ -222,6 +244,7 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, uint32_
     !_set(PARAM_ROI_WIDTH, _roi.width) ||
     !_set(PARAM_ROI_HEIGHT, _roi.height) ||
     !_set(PARAM_PHASE_OFFSETS_FILE, _phaseOffsetFileName) ||
+    !_set(PARAM_PHASE_OFFSETS, phaseOffsetsString) ||
     !_set(PARAM_CROSS_TALK_COEFF, _crossTalkCoefficients) ||
     !_set(PARAM_HISTOGRAM_ENABLED, _histogramEnabled) ||
     !_set(PARAM_MAX_FRAME_WIDTH, _maxFrameSize.width) ||

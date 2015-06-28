@@ -22,7 +22,7 @@ _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _poi
 _parameterInit(true), _running(false),
 _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers), _depthFilters(_depthFrameBuffers),
 _pointCloudFrameGenerator(new PointCloudFrameGenerator()),
-configFile(name)
+configFile(name, "")
 {
   _frameGenerators[2] = std::dynamic_pointer_cast<FrameGenerator>(_pointCloudFrameGenerator);
   _makeID();

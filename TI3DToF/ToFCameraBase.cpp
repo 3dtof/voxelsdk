@@ -60,17 +60,6 @@ bool ToFCameraBase::_captureRawUnprocessedFrame(RawFramePtr &rawFrame)
 
 bool ToFCameraBase::_convertToDepthFrame(const RawFramePtr &rawFrame, DepthFramePtr &depthFrame)
 {
-  float amplitudeNormalizingFactor, depthScalingFactor;
-  
-  if(!_getAmplitudeNormalizingFactor(amplitudeNormalizingFactor) || !_getDepthScalingFactor(depthScalingFactor))
-    return false;
-  
-  if(!_tofDepthFrameGenerator->setParameters(amplitudeNormalizingFactor, depthScalingFactor))
-  {
-    logger(LOG_ERROR) << "ToFCameraBase: Could not set parameters to ToFDepthFrameGenerator" << std::endl;
-    return false;
-  }
-  
   FramePtr p1 = std::dynamic_pointer_cast<Frame>(rawFrame);
   FramePtr p2 = std::dynamic_pointer_cast<Frame>(depthFrame);
   
@@ -112,6 +101,23 @@ bool ToFCameraBase::_start()
   // Start stream
   return _streamer->start();
 }
+
+bool ToFCameraBase::_initStartParams()
+{
+  float amplitudeNormalizingFactor, depthScalingFactor;
+  
+  if(!_getAmplitudeNormalizingFactor(amplitudeNormalizingFactor) || !_getDepthScalingFactor(depthScalingFactor))
+    return false;
+  
+  if(!_tofDepthFrameGenerator->setParameters(amplitudeNormalizingFactor, depthScalingFactor))
+  {
+    logger(LOG_ERROR) << "ToFCameraBase: Could not set parameters to ToFDepthFrameGenerator" << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
 
 bool ToFCameraBase::_stop()
 {

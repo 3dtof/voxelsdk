@@ -114,52 +114,6 @@ bool FrameStreamWriter::close()
   return !_stream.fail();
 }
 
-
-bool FrameStreamPacket::write(OutputFileStream &out)
-{
-  if(!out.good())
-    return false;
-  
-  out.write(magic, 5);
-  out.write((const char *)&type, sizeof(type));
-  out.write((const char *)&size, sizeof(size));
-  out.write((const char *)object.getBytes().data(), size);
-  
-  if(out.fail() | out.bad())
-    return false;
-  
-  return true;
-}
-
-bool FrameStreamPacket::read(InputFileStream &in)
-{
-  if(!readHeader(in))
-    return false;
-  
-  object.resize(size);
-  in.read((char *)object.getBytes().data(), size);
-  
-  if(in.fail() | in.bad())
-    return false;
-  
-  return true;
-}
-
-bool FrameStreamPacket::readHeader(InputFileStream &in)
-{
-  if(!in.good())
-    return false;
-  
-  in.read(magic, 5);
-  in.read((char *)&type, sizeof(type));
-  in.read((char *)&size, sizeof(size));
-  
-  if(in.fail() | in.bad())
-    return false;
-  
-  return true;
-}
-
 bool GeneratorConfigurationSubPacket::read(SerializedObject &object)
 {
   if(object.size() < sizeof(size) + sizeof(frameType))

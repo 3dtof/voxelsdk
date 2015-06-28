@@ -243,6 +243,7 @@ public:
   int addCameraProfile(const String &profileName, const int parentID);
   bool setCameraProfile(const int id, bool softApply = false);
   bool removeCameraProfile(const int id);
+  //virtual bool saveCameraProfileInHardware(const int id) = 0; // This is used to save camera profile to device
   
   bool close();
   virtual ~DepthCamera();

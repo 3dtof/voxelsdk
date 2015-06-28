@@ -8,6 +8,8 @@
 #define VOXEL_CONFIGURATION_H
 
 #include "Common.h"
+#include "Serializable.h"
+#include "DataPacket.h"
 
 namespace Voxel
 {
@@ -84,6 +86,17 @@ public:
   friend class ConfigurationFile;
 };
 
+struct ConfigDataPacket: public DataPacket
+{
+  enum PacketType
+  {
+    PACKET_CONFIG = 0,
+    PACKET_2D_DATA_FILE = 1
+  };
+  
+  ConfigDataPacket(): DataPacket() {}
+};
+
 class MainConfigurationFile;
 
 class VOXEL_EXPORT ConfigurationFile
@@ -94,6 +107,8 @@ protected:
   
   String _fileName;
   
+  Map<String, Vector<ByteType>> _dataFiles;
+  
   MainConfigurationFile *_mainConfigurationFile;
   
   int _id, _parentID;
@@ -101,18 +116,46 @@ protected:
   
   mutable Mutex _mutex;
   
+  bool _getAllDataFiles();
+  
 public:
   typedef Map<String, ConfigSet> ConfigSetMap;
   
+  enum Location
+  {
+    IN_HOST = 0,
+    IN_CAMERA = 1
+  };
+  
+protected:
+  Location _location;
+  
+public:
   ConfigSetMap configs;
+  
+  inline Location getLocation() const { return _location; }
   
   virtual bool isPresent(const String &section, const String &name) const;
   virtual String get(const String &section, const String &name) const;
+  
+  template <typename T>
+  bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
+  
+  template <typename T>
+  bool _getData(const String &fileName, Vector<T> &data);
+  
   int getInteger(const String &section, const String &name) const;
   float getFloat(const String &section, const String &name) const;
   bool getBoolean(const String &section, const String &name) const;
   
   virtual bool set(const String &section, const String &name, const String &value);
+  
+  template <typename T>
+  bool setFile(const String &section, const String &name, const String &fileName, const Vector<T> &data);
+  
+  template <typename T>
+  bool _setData(const String &fileName, const Vector<T> &data);
+  
   bool setInteger(const String &section, const String &name, int value);
   bool setFloat(const String &section, const String &name, float value);
   bool setBoolean(const String &section, const String &name, bool value);
@@ -127,6 +170,8 @@ public:
   virtual bool write(const String &configFile = "");
   virtual bool write(OutputStream &out);
   
+  bool isValidCameraProfile();
+  
   virtual bool removeFile();
   
   inline void clear() { Lock<Mutex> _(_mutex); configs.clear(); }
@@ -135,7 +180,7 @@ public:
   
   ConfigurationFile(): ConfigurationFile(0) {}
   ConfigurationFile(MainConfigurationFile *mainConfigurationFile): 
-  _mainConfigurationFile(mainConfigurationFile), _id(-1), _parentID(-1) {}
+  _mainConfigurationFile(mainConfigurationFile), _id(-1), _parentID(-1), _location(IN_HOST) {}
   
   ConfigurationFile(const ConfigurationFile &other)
   {
@@ -158,8 +203,110 @@ public:
   friend class MainConfigurationFile;
 };
 
+template <typename T>
+bool ConfigurationFile::getFile(const String &section, const String &name, String &fileName, Vector<T> &data)
+{
+  String v = get(section, name);
+  
+  if(v.compare(0, 5, "file:") != 0 || v.size() <= 5)
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: section = " << section << ", name = " << name << ", is not a file type." << std::endl;
+    return false;
+  }
+  
+  fileName = v.substr(5);
+  
+  return _getData(fileName, data);
+}
+
+template <typename T>
+bool ConfigurationFile::setFile(const String &section, const String &name, const String &fileName, const Vector<T> &data)
+{
+  return _setData(fileName, data) && set(section, name, "file:" + fileName);
+}
+
+template <typename T>
+bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
+{
+  if(_dataFiles.find(fileName) == _dataFiles.end())
+  {
+    Configuration c;
+    
+    String f = fileName;
+    if(!c.getConfFile(f))
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Could not locate file '" << fileName << "'" << std::endl;
+      return false;
+    }
+    
+    InputFileStream fs(f, std::ios::in | std::ios::binary | std::ios::ate);
+    
+    if(!fs.good())
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Could not open file '" << fileName << "'" << std::endl;
+      return false;
+    }
+    
+    int size = fs.tellg();
+    
+    if(size == 0)
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Null config data '" << f << "'" << std::endl;
+      return false;
+    }
+    
+    Vector<ByteType> &d = _dataFiles[fileName];
+    
+    d.resize(size);
+    fs.seekg(std::ios::beg);
+    fs.clear();
+    fs.read((char *)d.data(), size);
+  }
+  
+  Vector<ByteType> &d = _dataFiles[fileName];
+  
+  data.resize((d.size() + sizeof(T)/2)/sizeof(T));
+  
+  memcpy(data.data(), d.data(), d.size());
+  
+  return true;
+}
+
+template <typename T>
+bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
+{
+  Configuration c;
+  
+  String f = fileName;
+  if(!c.getConfFile(f))
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Could not locate file '" << fileName << "'" << std::endl;
+    return false;
+  }
+  
+  OutputFileStream fs(f, std::ios::out | std::ios::binary);
+  
+  if(!fs.good())
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Could not open file '" << fileName << "'" << std::endl;
+    return false;
+  }
+  
+  fs.write(data.data(), data.size()*sizeof(T));
+  
+  fs.close();
+  
+  _dataFiles[fileName].resize(data.size()*sizeof(T));
+  
+  memcpy(_dataFiles[fileName].data(), data.data(), data.size()*sizeof(T));
+  
+  return true;
+}
+
+
 class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
 {
+protected:
   Map<int, ConfigurationFile> _cameraProfiles;
   Map<int, String> _cameraProfileNames;
   int _defaultCameraProfileID;
@@ -168,11 +315,22 @@ class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
 
   bool _updateCameraProfileList();
   
-  String _mainConfigName;
+  String _mainConfigName, _hardwareID;
+  
 public:
-  MainConfigurationFile(const String &name): _currentCameraProfile(0), _mainConfigName(name) {}
+  typedef Function<bool(SerializedObject &)> HardwareSerializer;
+  
+protected:
+  HardwareSerializer _hardwareReader, _hardwareWriter;
+  
+public:
+  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = 0, HardwareSerializer hardwareWriter = 0): 
+  _currentCameraProfile(0), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
   
   virtual bool read(const String &configFile);
+  
+  bool readFromHardware();
+  bool writeToHardware();
   
   virtual String get(const String &section, const String &name) const;
   virtual bool isPresent(const String &section, const String &name) const;
@@ -180,6 +338,7 @@ public:
   int addCameraProfile(const String &profileName, const int parentID);
   bool setCurrentCameraProfile(const int id);
   bool removeCameraProfile(const int id);
+  bool saveCameraProfileToHardware(const int id);
   
   ConfigurationFile *getDefaultCameraProfile();
   ConfigurationFile *getCameraProfile(const int id);

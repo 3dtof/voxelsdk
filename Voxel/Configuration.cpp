@@ -478,6 +478,11 @@ bool ConfigurationFile::read(InputStream &in)
   return true;
 }
 
+bool ConfigurationFile::_getAllDataFiles()
+{
+  
+}
+
 bool ConfigurationFile::write(OutputStream &out)
 {
   Lock<Mutex> _(_mutex);
@@ -693,6 +698,31 @@ bool ConfigurationFile::removeFile()
   return true;
 }
 
+bool ConfigurationFile::isValidCameraProfile()
+{
+  if(!isPresent("global", "id"))
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Could not get ID of profile " << _fileName << std::endl;
+    return false;
+  }
+  
+  int id = getInteger("global", "id");
+  
+  if(_mainConfigurationFile->getCameraProfile(id) != 0)
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: A profile with ID = " << id << " already exists." << std::endl;
+    return false;
+  }
+  
+  if(!isPresent("global", "name"))
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Could not get name of profile in " << _fileName << std::endl;
+    return false;
+  }
+  
+  return true;
+}
+
 
 
 bool MainConfigurationFile::read(const String &configFile)
@@ -731,29 +761,15 @@ bool MainConfigurationFile::read(const String &configFile)
       return false;
     }
     
-    if(!cf.isPresent("global", "id"))
+    if(!cf.isValidCameraProfile())
     {
-      logger(LOG_ERROR) << "MainConfigurationFile: Could not get ID of profile " << profileConfigFile << std::endl;
+      logger(LOG_ERROR) << "MainConfigurationFile: '" << profileConfigFile << "' is not a valid camera profile." << std::endl;
       return false;
     }
     
     id = cf.getInteger("global", "id");
     
-    if(_cameraProfiles.find(id) != _cameraProfiles.end())
-    {
-      logger(LOG_ERROR) << "MainConfigurationFile: A profile with ID = " << id << " already exists." << std::endl;
-      return false;
-    }
-    
-    String cameraProfileName;
-    
-    if(!cf.isPresent("global", "name"))
-    {
-      logger(LOG_ERROR) << "MainConfigurationFile: Could not get name of profile in " << profileConfigFile << std::endl;
-      return false;
-    }
-    
-    cameraProfileName = cf.get("global", "name");
+    String cameraProfileName = cf.get("global", "name");
     
     _cameraProfiles[id] = cf;
     _cameraProfileNames[id] = cameraProfileName;
@@ -936,6 +952,140 @@ bool MainConfigurationFile::getCameraProfileName(const int id, String &cameraPro
   return false; 
 }
 
+bool MainConfigurationFile::readFromHardware()
+{
+  if(!_hardwareReader)
+    return true;
+  
+  SerializedObject so;
+  if(!_hardwareReader(so))
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
+    
+    Configuration c;
+    
+    String f = _hardwareID + ".bin";
+    
+    if(!c.getConfFile(f))
+      return false;
+    
+    InputFileStream fs(f, std::ios::in | std::ios::binary | std::ios::ate);
+    
+    if(!fs.good())
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
+      return false;
+    }
+    
+    int size = fs.tellg();
+    
+    if(size == 0)
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: Null config data '" << f << "'" << std::endl;
+      return false;
+    }
+    
+    so.resize(size);
+    fs.seekg(std::ios::beg);
+    fs.clear();
+    fs.read((char *)so.getBytes().data(), size);
+  }
+  
+  uint8_t defaultProfileID;
+  
+  if(so.get((char *)&defaultProfileID, sizeof(defaultProfileID)) != sizeof(defaultProfileID))
+    return false;
+  
+  while(so.size() > so.currentGetOffset())
+  {
+    ConfigDataPacket p;
+    if(!p.read(so))
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: Failed to read configuration packet." << std::endl;
+      return false;
+    }
+    
+    if(p.type == ConfigDataPacket::PACKET_CONFIG)
+    {
+      ConfigurationFile cf(this);
+      int id;
+      
+      InputStringStream ss(String(p.object.getBytes().data(), p.object.size()));
+      
+      if(!cf.read(ss))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Could not read profile from hardware" << std::endl;
+        return false;
+      }
+      
+      if(!cf.isValidCameraProfile())
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Profile read from hardware, is not a valid camera profile." << std::endl;
+        return false;
+      }
+      
+      id = cf.getInteger("global", "id");
+      
+      String cameraProfileName = cf.get("global", "name");
+      
+      _cameraProfiles[id] = cf;
+      _cameraProfileNames[id] = cameraProfileName;
+    }
+    else if(p.type == ConfigDataPacket::PACKET_2D_DATA_FILE)
+    {
+      uint8_t id;
+      
+      if(p.object.get((char *)&id, sizeof(id)) != sizeof(id))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Could not read 2D data file from hardware" << std::endl;
+        return false;
+      }
+      
+      ConfigurationFile *config = getCameraProfile(id);
+      
+      if(!config)
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Invalid camera profile with id = '" << id << "' found for 2D data file from hardware" << std::endl;
+        return false;
+      }
+      
+      SerializableString s;
+      
+      if(!s.read(p.object))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Could not read section name for 2D data file from hardware" << std::endl;
+        return false;
+      }
+      
+      String section = s;
+      
+      if(!s.read(p.object))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Could not read field name for 2D data file from hardware" << std::endl;
+        return false;
+      }
+      
+      String field = s;
+      
+      if(!config->isPresent(section, field))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Configuration with id = " << id 
+          << ", does not contain section = " << section << ", field = " << field << std::endl;
+        return false;
+      }
+    }
+  }
+}
+
+bool MainConfigurationFile::writeToHardware()
+{
+
+}
+
+bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
+{
+
+}
 
 
 
