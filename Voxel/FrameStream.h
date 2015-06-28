@@ -10,6 +10,7 @@
 #include <Frame.h>
 #include <SerializedObject.h>
 #include <FrameGenerator.h>
+#include "DataPacket.h"
 
 namespace Voxel
 {
@@ -22,30 +23,15 @@ struct VOXEL_EXPORT FrameStreamHeader
   GeneratorIDType generatorIDs[3]; // For raw (processed), depth and point cloud, in that order
 };
 
-struct VOXEL_EXPORT FrameStreamPacket
+struct VOXEL_EXPORT FrameStreamPacket: public DataPacket
 {
-  char magic[6]; // supposed to be VOXEL
-  
   enum PacketType
   {
     PACKET_DATA = 0,
     PACKET_GENERATOR_CONFIG = 1
   };
   
-  uint8_t type; // PacketType
-  
-  uint32_t size;
-  
-  SerializedObject object;
-
-  FrameStreamPacket() { strcpy(magic, "VOXEL"); }
-  
-  bool readHeader(InputFileStream &in);
-  bool read(InputFileStream &in);
-  
-  bool write(OutputFileStream &out);
-  
-  inline bool verifyMagic() { return magic[0] == 'V' && magic[1] == 'O' && magic[2] == 'X' && magic[3] == 'E' && magic[4] == 'L'; }
+  FrameStreamPacket(): DataPacket() {}
 };
 
 struct VOXEL_EXPORT GeneratorConfigurationSubPacket

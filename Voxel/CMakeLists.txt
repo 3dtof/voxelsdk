@@ -11,6 +11,7 @@ ENDIF()
 add_library(voxel SHARED
   Device.cpp
   Common.cpp
+  DataPacket.cpp
   Downloader.cpp
   DFT.cpp
   Data2DCodec.cpp
@@ -86,6 +87,7 @@ install(FILES
   PointCloudFrameGenerator.h
   SerializedObject.h
   Serializable.h
+  DataPacket.h
   FrameBuffer.h
   Logger.h
   Parameter.h

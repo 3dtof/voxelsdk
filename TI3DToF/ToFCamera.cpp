@@ -350,40 +350,6 @@ bool ToFCamera::_is16BitModeEnabled(bool &mode16Bit)
 
 bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
 {
-  RegionOfInterest roi;
-  uint rowsToMerge, columnsToMerge;
-  FrameSize maxFrameSize, frameSize;
-  
-  if(!getMaximumFrameSize(maxFrameSize) || !getFrameSize(frameSize) || !getROI(roi) || !_getBinning(rowsToMerge, columnsToMerge))
-  {
-    logger(LOG_ERROR) << "ToFCamera: Could not get frame related parameters. Cannot convert raw data to ToF data" << std::endl;
-    return false;
-  }
-  
-  uint bytesPerPixel;
-  int dataArrangeMode;
-  int quadCount;
-  ToFFrameType type;
-  
-  bool dealiased16BitMode;
-  if(!_getBytesPerPixel(bytesPerPixel) || !_getOpDataArrangeMode(dataArrangeMode) || !_getToFFrameType(type) ||
-    !_is16BitModeEnabled(dealiased16BitMode) || !get(QUAD_CNT_MAX, quadCount))
-  {
-    logger(LOG_ERROR) << "ToFCamera: Failed to read " << PIXEL_DATA_SIZE << " or " 
-      << OP_DATA_ARRANGE_MODE << " or " << type << std::endl;
-    return false;
-  }
-  
-  if(!_tofFrameGenerator->setParameters(configFile.get("calib", "phasecorrection"), bytesPerPixel, 
-                                    dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
-                                    configFile.get("calib", "cross_talk_coeff"),
-                                    type, (uint32_t) quadCount, dealiased16BitMode
-                                   ))
-  {
-    logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;
-    return false;
-  }
-  
   FramePtr p1 = std::dynamic_pointer_cast<Frame>(rawFrameInput);
   FramePtr p2 = std::dynamic_pointer_cast<Frame>(rawFrameOutput);
   
@@ -425,7 +391,48 @@ bool ToFCamera::_initStartParams()
     return false;
   }
   
-  if(!_applyCalibrationParams())
+  FrameSize maxFrameSize, frameSize;
+  
+  if(!getMaximumFrameSize(maxFrameSize) || !getFrameSize(frameSize))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not get frame related parameters. Cannot convert raw data to ToF data" << std::endl;
+    return false;
+  }
+  
+  uint bytesPerPixel;
+  int dataArrangeMode;
+  int quadCount;
+  ToFFrameType type;
+  
+  bool dealiased16BitMode;
+  if(!_getBytesPerPixel(bytesPerPixel) || !_getOpDataArrangeMode(dataArrangeMode) || !_getToFFrameType(type) ||
+    !_is16BitModeEnabled(dealiased16BitMode) || !get(QUAD_CNT_MAX, quadCount))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Failed to read " << PIXEL_DATA_SIZE << " or " 
+    << OP_DATA_ARRANGE_MODE << " or " << type << std::endl;
+    return false;
+  }
+  
+  Vector<int16_t> phaseOffsets;
+  String phaseOffsetFileName;
+  
+  if(configFile.isPresent("calib", "phasecorrection") && !configFile.getFile<int16_t>("calib", "phasecorrection", phaseOffsetFileName, phaseOffsets))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not read phase offset correction file" << std::endl;
+    return false;
+  }
+  
+  if(!_tofFrameGenerator->setParameters(phaseOffsetFileName, phaseOffsets, bytesPerPixel, 
+    dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
+                                        configFile.get("calib", "cross_talk_coeff"),
+                                        type, (uint32_t) quadCount, dealiased16BitMode
+  ))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;
+    return false;
+  }
+  
+  if(!_applyCalibrationParams() || !ToFCameraBase::_initStartParams())
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set calibration parameters" << std::endl;
     return false;

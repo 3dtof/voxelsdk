@@ -103,6 +103,7 @@ typedef std::ofstream OutputFileStream;
 typedef std::istream InputStream;
 typedef std::ostream OutputStream;
 typedef std::ostringstream OutputStringStream;
+typedef std::istringstream InputStringStream;
 
 /// String functions
 String VOXEL_EXPORT getHex(uint16_t value);

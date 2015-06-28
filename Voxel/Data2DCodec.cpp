@@ -379,7 +379,7 @@ bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &colu
     }
   }
   
-  writeGrayBMPImage("trialI0.bmp", out, rows, columns);
+  //writeGrayBMPImage("trialI0.bmp", out, rows, columns);
   
   Vector<uint8_t> fourBitOffsets;
   fourBitOffsets.resize(rows*columns/2);
@@ -435,7 +435,7 @@ bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &colu
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentGetOffset() << std::endl;
   
-  writeGrayBMPImage("trialI1.bmp", out, rows, columns);
+  //writeGrayBMPImage("trialI1.bmp", out, rows, columns);
   
   uint32_t totalOffsetCount;
   so.get((char *)&totalOffsetCount, sizeof(totalOffsetCount));

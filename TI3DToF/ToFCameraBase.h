@@ -29,7 +29,7 @@ protected:
   virtual bool _start();
   virtual bool _stop();
   
-  virtual bool _initStartParams() = 0;
+  virtual bool _initStartParams();
   
   virtual bool _getAmplitudeNormalizingFactor(float &factor) = 0;
   virtual bool _getDepthScalingFactor(float &factor) = 0;

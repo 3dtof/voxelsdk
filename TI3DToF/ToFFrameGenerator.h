@@ -60,7 +60,7 @@ public:
   virtual bool generate(const ToFRawIQFramePtr &in, FramePtr &out); // Convert IQ to amplitude-phase
   virtual bool generate(const FramePtr &in, FramePtr &out);
   
-  bool setParameters(const String &phaseOffsetFileName, uint32_t bytesPerPixel, 
+  bool setParameters(const String &phaseOffsetFileName, const Vector<int16_t> &phaseOffsets, uint32_t bytesPerPixel, 
                      uint32_t dataArrangeMode,
                      const RegionOfInterest &roi, const FrameSize &maxFrameSize,
                      const FrameSize &frameSize, 
