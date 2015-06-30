@@ -44,6 +44,11 @@ protected:
   
   virtual bool _initStartParams();
   
+  virtual bool _readConfigFromHardware(SerializedObject &so);
+  virtual bool _writeConfigFromHardware(SerializedObject &so);
+  
+  virtual bool _getEEPROMSize(uint32_t &size);
+  
 public:
   TintinCDKCamera(DevicePtr device);
   

@@ -352,6 +352,9 @@ public:
   bool readFromHardware();
   bool writeToHardware();
   
+  inline void setHardwareReader(HardwareSerializer hardwareReader) { _hardwareReader = hardwareReader; }
+  inline void setHardwareWriter(HardwareSerializer hardwareWriter) { _hardwareWriter = hardwareWriter; }
+  
   virtual String get(const String &section, const String &name) const;
   virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   

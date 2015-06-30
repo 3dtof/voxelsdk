@@ -14,6 +14,10 @@
 #include <Parameter.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+#define REQUEST_EEPROM_SIZE 0x31
+#define REQUEST_EEPROM_DATA 0x33
+
 namespace Voxel
 {
   
@@ -339,6 +343,9 @@ bool TintinCDKCamera::_init()
     !_programmer->writeRegister(0x4E05, 0x4F1B)
   )
     return false;
+    
+  configFile.setHardwareReader(std::bind(&TintinCDKCamera::_readConfigFromHardware, this, std::placeholders::_1));
+  configFile.setHardwareWriter(std::bind(&TintinCDKCamera::_writeConfigFromHardware, this, std::placeholders::_1));
   
   if(!ToFTintinCamera::_init())
     return false;
@@ -500,6 +507,189 @@ bool TintinCDKCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize
   
 }
 
+bool TintinCDKCamera::_getEEPROMSize(uint32_t &size)
+{
+  VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
+  
+  if(p)
+  {
+    USBIOPtr usbIO = p->getUSBIO();
+    
+    uint8_t data[4];
+    uint16_t length = 4;
+    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
+      REQUEST_EEPROM_SIZE, 0, 0, data, length))
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Failed to read available size in EEPROM." << std::endl;
+      return false;
+    }
+    
+    size = *(uint32_t *)&data[0]/8;
+    
+    return true;
+  }
+  else
+    return false;
+}
+
+
+bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
+{
+  VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
+  
+  if(p)
+  {
+    USBIOPtr usbIO = p->getUSBIO();
+    
+    uint8_t data[9];
+    uint16_t l = 9;
+    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, REQUEST_EEPROM_DATA, 0, 0, data, l))
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config size in EEPROM." << std::endl;
+      return false;
+    }
+    
+    std::cout << "l = " << l << ", length = " << *(uint32_t *)&data[5] << std::endl;
+    
+    if(data[0] != 'V' || data[1] != 'O' || data[2] != 'X' || data[3] != 'E' || data[4] != 'L')
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Invalid config data in EEPROM." << std::endl;
+      return false;
+    }
+    
+    int32_t length = *(uint32_t *)&data[5];
+    
+    uint32_t totalSize;
+    
+    if(!_getEEPROMSize(totalSize))
+      return false;
+    
+    if(length > totalSize)
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Length of config data is greater than available size in EEPROM. (" 
+        << length << " > " << totalSize << ")" << std::endl;
+      return false;
+    }
+    
+    so.resize(length);
+    
+    uint32_t offset = 9, localOffset = 0;
+    
+    while(length > 0)
+    {
+      uint16_t l = (offset + length) % 64;
+      
+      if(l == 0) l = 64;
+      
+      uint16_t offsetLower = (offset & 0xFFFF);
+      uint16_t offsetUpper = (offset >> 16);
+      
+      if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
+        REQUEST_EEPROM_DATA, offsetUpper, offsetLower, (uint8_t *)so.getBytes().data() + localOffset, l))
+      {
+        logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config data from EEPROM." << std::endl;
+        return false;
+      }
+      
+      length -= l;
+      offset += l;
+      localOffset += l;
+    }
+    return true;
+  }
+  else
+    return false;
+}
+
+bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
+{
+  VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
+  
+  if(p)
+  {
+    USBIOPtr usbIO = p->getUSBIO();
+    
+    int32_t length = so.size();
+    uint32_t totalSize;
+    
+    if(!_getEEPROMSize(totalSize))
+      return false;
+    
+    logger(LOG_INFO) << "total size = " << totalSize << std::endl;
+    
+    if(length + 9 > totalSize)
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Length of config data is greater than available size in EEPROM. (" 
+      << length + 9 << " > " << totalSize << ")" << std::endl;
+      return false;
+    }
+    
+    logger(LOG_INFO) << "TintinCDKCamera: Length of data to EEPROM = " << length << std::endl;
+    
+    uint8_t data[9];
+    
+    data[0] = 'V';
+    data[1] = 'O';
+    data[2] = 'X';
+    data[3] = 'E';
+    data[4] = 'L';
+    
+    *(uint32_t *)&data[5] = so.size();
+    
+    uint16_t l = 9;
+    if(!usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
+      REQUEST_EEPROM_DATA, 0, 0, data, l))
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config size in EEPROM." << std::endl;
+      return false;
+    }
+    
+    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
+      REQUEST_EEPROM_DATA, 0, 0, data, l))
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config size in EEPROM." << std::endl;
+      return false;
+    }
+    
+    std::cout << "l = " << l << ", length = " << *(uint32_t *)&data[5] << std::endl;
+    
+    if(data[0] != 'V' || data[1] != 'O' || data[2] != 'X' || data[3] != 'E' || data[4] != 'L')
+    {
+      logger(LOG_ERROR) << "TintinCDKCamera: Invalid config data in EEPROM." << std::endl;
+      return false;
+    }
+    
+    return true;
+    
+    uint32_t offset = 9, localOffset = 0;
+    
+    while(length > 0)
+    {
+      logger(LOG_INFO) << "TintinCDKCamera: Transferred till offset = " << offset << std::endl;
+      
+      uint16_t l = (offset + length) % 64;
+      
+      if(l == 0) l = 64;
+      
+      uint16_t offsetLower = (offset & 0xFFFF);
+      uint16_t offsetUpper = (offset >> 16);
+      
+      if(!usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
+        REQUEST_EEPROM_DATA, offsetUpper, offsetLower, (uint8_t *)so.getBytes().data() + localOffset, l, false, 1000))
+      {
+        logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config data from EEPROM." << std::endl;
+        return false;
+      }
+      
+      length -= l;
+      offset += l;
+      localOffset += l;
+    }
+    return true;
+  }
+  else
+    return true; // Falsely accept write
+}
 
   
 }
