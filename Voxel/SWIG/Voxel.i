@@ -61,6 +61,7 @@
 %include "../RegisterProgrammer.h"
 %include "../Parameter.h"
 %include "../FrameBuffer.h"
+%include "../DataPacket.h"
 %include "../FrameStream.h"
 %include "../FrameGenerator.h"
 %include "../Filter/FilterParameter.h"

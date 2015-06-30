@@ -1282,18 +1282,32 @@ bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
     _cameraProfileNames.erase(id);
     _cameraProfiles[newid] = *config;
     _cameraProfileNames[newid] = config->_profileName;
+    config->setID(id);
+    config->_location = wasInHost?ConfigurationFile::IN_HOST:ConfigurationFile::IN_CAMERA;
     
     if(_currentCameraProfileID == id)
       return setCurrentCameraProfile(newid);
-    
-    _cameraProfiles.erase(id);
   }
   return true;
 }
 
 bool MainConfigurationFile::setDefaultCameraProfile(const int id)
 {
-
+  ConfigurationFile *config = getCameraProfile(id);
+  
+  if(!config)
+    return false;
+  
+  if(config->getLocation() == ConfigurationFile::IN_CAMERA)
+  {
+    _defaultCameraProfileIDInHardware = id;
+    return writeToHardware();
+  }
+  else
+  {
+    _defaultCameraProfileID = id;
+    return write();
+  }
 }
 
 
