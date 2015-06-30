@@ -120,6 +120,14 @@ protected:
   
   bool _serializeAllDataFiles(OutputStream &out);
   
+  template <typename T>
+  bool _getData(const String &fileName, Vector<T> &data);
+  
+  template <typename T>
+  bool _setData(const String &fileName, const Vector<T> &data);  
+  
+  bool _copyFromParentIfNotPresent(ConfigurationFile *other);
+
 public:
   typedef Map<String, ConfigSet> ConfigSetMap;
   
@@ -137,16 +145,13 @@ public:
   
   inline Location getLocation() const { return _location; }
   
-  virtual bool isPresent(const String &section, const String &name) const;
+  virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   virtual String get(const String &section, const String &name) const;
   
   inline void setID(const int id) { _id = id; setInteger("global", "id", id); }
   
   template <typename T>
   bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
-  
-  template <typename T>
-  bool _getData(const String &fileName, Vector<T> &data);
   
   int getInteger(const String &section, const String &name) const;
   float getFloat(const String &section, const String &name) const;
@@ -156,9 +161,6 @@ public:
   
   template <typename T>
   bool setFile(const String &section, const String &name, const String &fileName, const Vector<T> &data);
-  
-  template <typename T>
-  bool _setData(const String &fileName, const Vector<T> &data);
   
   bool setInteger(const String &section, const String &name, int value);
   bool setFloat(const String &section, const String &name, float value);
@@ -202,6 +204,11 @@ public:
     _location = other._location;
     _dataFiles = other._dataFiles;
     return *this;
+  }
+  
+  inline bool mergeParentConfiguration()
+  {
+    return _copyFromParentIfNotPresent(this);
   }
   
   inline ConfigurationFile &copy(const ConfigurationFile &other)
@@ -346,7 +353,7 @@ public:
   bool writeToHardware();
   
   virtual String get(const String &section, const String &name) const;
-  virtual bool isPresent(const String &section, const String &name) const;
+  virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   
   int addCameraProfile(const String &profileName, const int parentID);
   bool setCurrentCameraProfile(const int id);

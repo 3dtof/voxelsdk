@@ -202,7 +202,7 @@ bool ConfigSet::isPresent(const String &name) const
 }
 
 
-bool ConfigurationFile::isPresent(const String &section, const String &name) const
+bool ConfigurationFile::isPresent(const String &section, const String &name, bool includeParent) const
 {
   bool checkParent = false;
   
@@ -218,7 +218,7 @@ bool ConfigurationFile::isPresent(const String &section, const String &name) con
       return true;
   }
   
-  if(checkParent)
+  if(checkParent && includeParent)
   {
     if(section != "global" && _mainConfigurationFile && _parentID >= 0)
     {
@@ -770,6 +770,29 @@ bool ConfigurationFile::isValidCameraProfile()
   return true;
 }
 
+bool ConfigurationFile::_copyFromParentIfNotPresent(ConfigurationFile *to)
+{
+  if(!_mainConfigurationFile)
+    return true;
+  
+  ConfigurationFile *parent = _mainConfigurationFile->getCameraProfile(_parentID);
+  
+  if(!parent)
+    return true;
+  
+  for(auto c = parent->configs.begin(); c != parent->configs.end(); c++)
+  {
+    for(auto i = c->second.params.begin(); i != c->second.params.end(); i++)
+    {
+      if(to->isPresent(c->first, i->first, false))
+        continue;
+      
+      to->set(c->first, i->first, i->second);
+    }
+  }
+  
+  return parent->_copyFromParentIfNotPresent(to);
+}
 
 
 bool MainConfigurationFile::read(const String &configFile)
@@ -990,12 +1013,12 @@ String MainConfigurationFile::get(const String &section, const String &name) con
   return "";
 }
 
-bool MainConfigurationFile::isPresent(const String &section, const String &name) const
+bool MainConfigurationFile::isPresent(const Voxel::String &section, const Voxel::String &name, bool includeParent) const
 {
-  if(_currentCameraProfile && _currentCameraProfile->isPresent(section, name))
+  if(_currentCameraProfile && _currentCameraProfile->isPresent(section, name, includeParent))
     return true;
   
-  if(ConfigurationFile::isPresent(section, name))
+  if(ConfigurationFile::isPresent(section, name, includeParent))
     return true;
   
   return false;
@@ -1251,43 +1274,51 @@ bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
   if(!config)
     return false;
   
-  ConfigurationFile *parent = getCameraProfile(config->_parentID);
-  
-  if(parent && parent->getLocation() == ConfigurationFile::IN_HOST)
-  {
-    // Copy all fields from parent to config, and remove parent reference
-    // config->_parentID = -1;
-  }
-  
   int newid = id;
-  bool wasInHost = false;
   
   if(config->getLocation() == ConfigurationFile::IN_HOST) // Was it in camera earlier?
   {
-    wasInHost = true;
     newid = _getNewCameraProfileID(false); // Get new ID for camera
   }
-    
-  config->setID(newid);
-  config->_location = ConfigurationFile::IN_CAMERA;
   
-  if(!writeToHardware()) // Revert to earlier setup if failed to write to hardware
+  ConfigurationFile oldconfig(*config);
+  ConfigurationFile newconfig(*config);
+    
+  newconfig.setID(newid);
+  newconfig._location = ConfigurationFile::IN_CAMERA;
+  
+  ConfigurationFile *parent = getCameraProfile(newconfig._parentID);
+  
+  if(parent && parent->getLocation() == ConfigurationFile::IN_HOST)
+    if(!newconfig.mergeParentConfiguration())
+    {
+      logger(LOG_ERROR) << "MainConfigurationFile: Failed to merge data from parents" << std::endl;
+      return false;
+    }
+  
+  _cameraProfiles[newid] = newconfig;
+  _cameraProfileNames[newid] = newconfig._profileName;
+  
+  if(writeToHardware())
   {
-    config->setID(id);
-    config->_location = wasInHost?ConfigurationFile::IN_HOST:ConfigurationFile::IN_CAMERA;
-    return false;
+    if(_currentCameraProfileID == id)
+      return setCurrentCameraProfile(newid);
+    return true;
   }
   else
   {
-    _cameraProfiles[newid] = *config;
-    _cameraProfileNames[newid] = config->_profileName;
-    config->setID(id);
-    config->_location = wasInHost?ConfigurationFile::IN_HOST:ConfigurationFile::IN_CAMERA;
-    
-    if(_currentCameraProfileID == id)
-      return setCurrentCameraProfile(newid);
+    if(newid == id)
+    {
+      _cameraProfiles[newid] = oldconfig;
+      _cameraProfileNames[newid] = oldconfig._profileName;
+    }
+    else
+    {
+      _cameraProfileNames.erase(newid);
+      _cameraProfiles.erase(newid);
+    }
+    return false;
   }
-  return true;
 }
 
 bool MainConfigurationFile::setDefaultCameraProfile(const int id)
