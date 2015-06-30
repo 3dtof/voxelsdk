@@ -1279,7 +1279,6 @@ bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
   }
   else
   {
-    _cameraProfileNames.erase(id);
     _cameraProfiles[newid] = *config;
     _cameraProfileNames[newid] = config->_profileName;
     config->setID(id);
