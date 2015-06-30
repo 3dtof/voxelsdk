@@ -18,6 +18,8 @@
 #include "DFT.h"
 
 #include "Logger.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 namespace Voxel
 {
