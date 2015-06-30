@@ -18,16 +18,12 @@ using namespace Voxel;
 enum Options
 {
   PHASE_OFFSET_FILE_NAME = 0,
-  ROWS = 1,
-  COLUMNS = 2,
   OUTPUT_FILE_NAME = 3
 };
 
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { PHASE_OFFSET_FILE_NAME,  "-p", SO_REQ_SEP, "Phase offset input file name"}, 
-  { ROWS,                    "-r", SO_REQ_SEP, "Number of rows"},
-  { COLUMNS,                 "-c", SO_REQ_SEP, "Number of columns"},
   { OUTPUT_FILE_NAME,        "-o", SO_REQ_SEP, "Output file name"},
   SO_END_OF_OPTIONS
 };
@@ -72,14 +68,6 @@ int main(int argc, char *argv[])
     Vector<String> splits;
     switch (s.OptionId())
     {
-      case ROWS:
-        rows = (uint16_t)strtol(s.OptionArg(), &endptr, 10);
-        break;
-        
-      case COLUMNS:
-        columns = (uint16_t)strtol(s.OptionArg(), &endptr, 10);
-        break;
-        
       case PHASE_OFFSET_FILE_NAME:
         phaseOffsetFileName = s.OptionArg();
         break;
@@ -94,7 +82,7 @@ int main(int argc, char *argv[])
     };
   }
   
-  if(phaseOffsetFileName.size() == 0 || outputFileName.size() == 0 || rows == 0 || columns == 0)
+  if(phaseOffsetFileName.size() == 0 || outputFileName.size() == 0)
   {
     logger(LOG_ERROR) << "Required argument missing." << std::endl;
     help();
@@ -115,8 +103,7 @@ int main(int argc, char *argv[])
   
   size_t size = p.tellg();
   
-  phaseOffsets.resize(size/3); // int16_t data
-  invalidPixels.resize(size/3);
+  size -= 4; // for uint16_t row, column
   
   p.seekg(0, std::ios::beg);
   p.clear();
@@ -124,8 +111,24 @@ int main(int argc, char *argv[])
   if(!p.good())
     return -1;
   
-  p.read((char *)phaseOffsets.data(), (size*2)/3);
-  p.read((char *)invalidPixels.data(), size/3);
+  p.read((char *)&rows, sizeof(uint16_t));
+  p.read((char *)&columns, sizeof(uint16_t));
+  
+  p.seekg(0, std::ios::beg);
+  p.clear();
+  
+  if(size == rows*columns*2)
+  {
+    phaseOffsets.resize(size/2 + 2); // int16_t data
+    p.read((char *)phaseOffsets.data(), size + 4);
+  }
+  else if(size = rows*columns*3) // including invalid pixel boolean 2D array?
+  {
+    phaseOffsets.resize(size/3 + 2); // int16_t data
+    invalidPixels.resize(size/3);
+    p.read((char *)phaseOffsets.data(), (size*2)/3 + 4);
+    p.read((char *)invalidPixels.data(), size/3);
+  }
   
   p.close();
   
@@ -133,7 +136,7 @@ int main(int argc, char *argv[])
   
   Data2DCodec::ByteArray output;
   
-  if(!dc.compress(phaseOffsets, invalidPixels, rows, columns, output))
+  if(!dc.compress(phaseOffsets, invalidPixels, output))
   {
     logger(LOG_ERROR) << "Failed to compress phase offset data" << std::endl;
     return -1;
@@ -153,7 +156,7 @@ int main(int argc, char *argv[])
   
   out.close();
   
-  if(!dc.decompress(output, rows, columns, phaseOffsets))
+  if(!dc.decompress(output, phaseOffsets))
   {
     logger(LOG_ERROR) << "Failed to decompress phase offset data" << std::endl;
     return -1;

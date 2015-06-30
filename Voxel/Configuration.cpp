@@ -6,6 +6,7 @@
 
 #include "Configuration.h"
 #include "Logger.h"
+#include "Data2DCodec.h"
 
 #include <stdlib.h>
 #include <fstream>
@@ -478,9 +479,55 @@ bool ConfigurationFile::read(InputStream &in)
   return true;
 }
 
-bool ConfigurationFile::_getAllDataFiles()
+bool ConfigurationFile::_serializeAllDataFiles(OutputStream &out)
 {
-  
+  for(auto c = configs.begin(); c != configs.end(); c++)
+  {
+    for(auto i = c->second.params.begin(); i != c->second.params.end(); i++)
+    {
+      if(i->second.compare(0, sizeof(FILE_PREFIX) - 1, FILE_PREFIX) == 0)
+      {
+        String f;
+        Vector<uint8_t> d;
+        
+        if(!getFile<uint8_t>(c->first, i->first, f, d))
+          return false;
+        
+        ConfigDataPacket cp;
+        cp.type = ConfigDataPacket::PACKET_2D_DATA_FILE;
+        
+        Data2DCodec codec;
+        
+        Data2DCodec::Array2D in;
+        Data2DCodec::ArrayBool2D invalidPixels; // Just empty array
+        Data2DCodec::ByteArray dout;
+        
+        in.resize(d.size()/sizeof(Data2DCodec::Array2DElementType));
+        memcpy(in.data(), d.data(), d.size());
+        
+        if(!codec.compress(in, invalidPixels, dout))
+        {
+          logger(LOG_ERROR) << "ConfigurationFile: Failed to compress data file '" << f << "'" << std::endl;
+          return false;
+        }
+        
+        uint8_t id = _id;
+        
+        SerializableString section = c->first;
+        SerializableString field = i->first;
+        
+        cp.object.resize(1 + section.serializedSize() + field.serializedSize() + dout.size());
+        
+        cp.object.put((const char *)&id, sizeof(id));
+        section.write(cp.object);
+        field.write(cp.object);
+        cp.object.put((const char *)dout.data(), dout.size());
+        cp.size = cp.object.size();
+        cp.write(out);
+      }
+    }
+  }
+  return true;
 }
 
 bool ConfigurationFile::write(OutputStream &out)
@@ -824,21 +871,31 @@ bool MainConfigurationFile::setCurrentCameraProfile(const int id)
   return false;
 }
 
+int MainConfigurationFile::_getNewCameraProfileID(bool inHost)
+{
+  int maxID = 0;
+  for(auto c = _cameraProfiles.begin(); c != _cameraProfiles.end(); c++)
+  {
+    if((inHost && c->second.getLocation() == ConfigurationFile::IN_CAMERA) || (!inHost && c->second.getLocation() == ConfigurationFile::IN_HOST))
+      continue;
+    
+    maxID = std::max(maxID, c->first);
+  }
+  
+  if(inHost && maxID == 0)
+    maxID = 128;
+  
+  return maxID + 1;
+}
+
+
 int MainConfigurationFile::addCameraProfile(const String &profileName, const int parentID)
 {
   if(_cameraProfiles.find(parentID) == _cameraProfiles.end())
     return -1;
   
-  int maxID = 0;
-  for(auto c = _cameraProfileNames.begin(); c != _cameraProfileNames.end(); c++)
-  {
-    maxID = std::max(maxID, c->first);
-    
-    if(c->second == profileName)
-      return -1;
-  }
+  int id = _getNewCameraProfileID();
   
-  int id = maxID + 1;
   _cameraProfiles[id] = ConfigurationFile(this);
   _cameraProfiles[id].setInteger("global", "id", id);
   _cameraProfiles[id].setInteger("global", "parent", parentID);
@@ -872,12 +929,15 @@ bool MainConfigurationFile::_updateCameraProfileList()
   
   for(auto c = _cameraProfiles.begin(); c != _cameraProfiles.end(); c++)
   {
+    if(c->second.getLocation() == ConfigurationFile::IN_CAMERA)
+      continue;
+    
     if(!first)
       n += ", ";
     
     first = false;
     
-    n += c->second.getConfigFileName();
+    n += basename(c->second.getConfigFileName());
   }
   
   if(!set("core", "camera_profiles", n))
@@ -954,11 +1014,9 @@ bool MainConfigurationFile::getCameraProfileName(const int id, String &cameraPro
 
 bool MainConfigurationFile::readFromHardware()
 {
-  if(!_hardwareReader)
-    return true;
-  
   SerializedObject so;
-  if(!_hardwareReader(so))
+  
+  if(!_hardwareReader || !_hardwareReader(so))
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
     
@@ -1018,11 +1076,15 @@ bool MainConfigurationFile::readFromHardware()
         return false;
       }
       
+      cf._fileName = _hardwareID + "-" + cf._profileName + ".conf";
+      
       if(!cf.isValidCameraProfile())
       {
         logger(LOG_ERROR) << "MainConfigurationFile: Profile read from hardware, is not a valid camera profile." << std::endl;
         return false;
       }
+      
+      cf._location = ConfigurationFile::IN_CAMERA;
       
       id = cf.getInteger("global", "id");
       
@@ -1045,7 +1107,7 @@ bool MainConfigurationFile::readFromHardware()
       
       if(!config)
       {
-        logger(LOG_ERROR) << "MainConfigurationFile: Invalid camera profile with id = '" << id << "' found for 2D data file from hardware" << std::endl;
+        logger(LOG_ERROR) << "MainConfigurationFile: Invalid camera profile with id = '" << (uint)id << "' found for 2D data file from hardware" << std::endl;
         return false;
       }
       
@@ -1073,20 +1135,166 @@ bool MainConfigurationFile::readFromHardware()
           << ", does not contain section = " << section << ", field = " << field << std::endl;
         return false;
       }
+      
+      String name = config->get(section, field);
+      
+      if(name.compare(0, sizeof(FILE_PREFIX) - 1, FILE_PREFIX) != 0)
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Value at section = " << section << ", field = " << field 
+          << ", in configuration with id = " << id << ", is invalid. Value = " << name << std::endl;
+        return false;
+      }
+      
+      name = name.substr(sizeof(FILE_PREFIX) - 1);
+      
+      Data2DCodec codec; 
+      
+      Data2DCodec::ByteArray in;
+      Data2DCodec::Array2D out;
+      
+      in.resize(p.object.size() - p.object.currentGetOffset());
+      p.object.get((char *)in.data(), in.size());
+      
+      if(!codec.decompress(in, out))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Could not decompress data at section = " << section << ", field = " << field 
+          << ", in configuration with id = " << id << std::endl;
+        return false;
+      }
+      
+      config->_dataFiles[name].resize(out.size()*sizeof(out[0]));
+      memcpy(config->_dataFiles[name].data(), out.data(), out.size()*sizeof(out[0]));
     }
   }
+  
+  if(getCameraProfile(defaultProfileID) != 0)
+    _defaultCameraProfileIDInHardware = defaultProfileID;
+  
+  return true;
 }
 
 bool MainConfigurationFile::writeToHardware()
 {
-
+  OutputStringStream ss;
+  
+  uint8_t defaultProfileID = _defaultCameraProfileIDInHardware;
+  
+  ss.write((char *)&defaultProfileID, sizeof(defaultProfileID));
+  
+  for(auto c = _cameraProfiles.begin(); c != _cameraProfiles.end(); c++)
+  {
+    if(c->second.getLocation() == ConfigurationFile::IN_HOST)
+      continue;
+    
+    ConfigDataPacket cp;
+    
+    cp.type = ConfigDataPacket::PACKET_CONFIG;
+    
+    OutputStringStream oss;
+    
+    if(!c->second.write(oss))
+      return false;
+    
+    String s = oss.str();
+    
+    cp.size = s.size();
+    cp.object.resize(s.size());
+    cp.object.put((const char *)&s[0], s.size());
+    
+    if(!cp.write(ss))
+      return false;
+    
+    if(!c->second._serializeAllDataFiles(ss))
+      return false;
+  }
+  
+  SerializedObject so;
+  
+  String out = ss.str();
+  
+  so.resize(out.size());
+  memcpy(so.getBytes().data(), &out[0], so.size());
+  
+  if(_hardwareWriter && !_hardwareWriter(so))
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to write configuration from hardware." << std::endl;
+    return false;
+  }
+  
+  Configuration c;
+  
+  String f = _hardwareID + ".bin", path;
+  
+  if(!c.getLocalConfPath(path))
+    return false;
+  
+  f = path + DIR_SEP + f;
+  
+  OutputFileStream fs(f, std::ios::out | std::ios::binary);
+  
+  if(!fs.good())
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
+    return false;
+  }
+  
+  fs.write((const char *)so.getBytes().data(), so.size());
+  
+  fs.close();
+  return true;
 }
 
 bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
 {
-
+  ConfigurationFile *config = getCameraProfile(id);
+  
+  if(!config)
+    return false;
+  
+  ConfigurationFile *parent = getCameraProfile(config->_parentID);
+  
+  if(parent && parent->getLocation() == ConfigurationFile::IN_HOST)
+  {
+    // Copy all fields from parent to config, and remove parent reference
+    // config->_parentID = -1;
+  }
+  
+  int newid = id;
+  bool wasInHost = false;
+  
+  if(config->getLocation() == ConfigurationFile::IN_HOST) // Was it in camera earlier?
+  {
+    wasInHost = true;
+    newid = _getNewCameraProfileID(false); // Get new ID for camera
+  }
+    
+  config->setID(newid);
+  config->_location = ConfigurationFile::IN_CAMERA;
+  
+  if(!writeToHardware()) // Revert to earlier setup if failed to write to hardware
+  {
+    config->setID(id);
+    config->_location = wasInHost?ConfigurationFile::IN_HOST:ConfigurationFile::IN_CAMERA;
+    return false;
+  }
+  else
+  {
+    _cameraProfileNames.erase(id);
+    _cameraProfiles[newid] = *config;
+    _cameraProfileNames[newid] = config->_profileName;
+    
+    if(_currentCameraProfileID == id)
+      return setCurrentCameraProfile(newid);
+    
+    _cameraProfiles.erase(id);
+  }
+  return true;
 }
 
+bool MainConfigurationFile::setDefaultCameraProfile(const int id)
+{
+
+}
 
 
 }
