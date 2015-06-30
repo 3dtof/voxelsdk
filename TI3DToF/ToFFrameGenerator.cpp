@@ -172,6 +172,11 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
   _phaseOffsetFileName = phaseOffsetFileName;
   _phaseOffsetCorrectionData = phaseOffsets;
   
+  if(phaseOffsets.size() == maxFrameSize.width*maxFrameSize.height + 2) // Ignore the first two elements if present
+  {
+    Vector<int16_t>(_phaseOffsetCorrectionData.begin() + 2, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
+  }
+  
   String phaseOffsetsString;
   
   if(phaseOffsets.size() > 0)
