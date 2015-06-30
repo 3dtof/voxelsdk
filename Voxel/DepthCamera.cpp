@@ -28,7 +28,10 @@ configFile(name, "")
   _makeID();
   
   configFile.read(name + ".conf"); // Read and keep the configuration ready for use. The file must be in VOXEL_CONF_PATH
-  
+}
+
+bool DepthCamera::_init()
+{
   String serialNumber; 
   
   if(getSerialNumber(serialNumber))
@@ -36,10 +39,7 @@ configFile(name, "")
     configFile.setHardwareID(serialNumber);
     configFile.readFromHardware();
   }
-}
-
-bool DepthCamera::_init()
-{
+  
   int currentID = -1;
   if(_getCurrentProfileID(currentID) && currentID >= 0)
   {
