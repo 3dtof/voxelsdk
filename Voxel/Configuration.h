@@ -204,6 +204,11 @@ public:
     return *this;
   }
   
+  inline ConfigurationFile &copy(const ConfigurationFile &other)
+  {
+    return operator =(other);
+  }
+  
   virtual ~ConfigurationFile() {}
   
   friend class MainConfigurationFile;
