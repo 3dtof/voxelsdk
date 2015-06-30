@@ -324,15 +324,23 @@ bool ToFFrameGenerator::_applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData)
   if(!_phaseOffsetCorrectionData.size())
     return true; // Nothing to do
     
-  if(_phaseOffsetCorrectionData.size() != _maxFrameSize.height*_maxFrameSize.width ||
-    phaseData.size() != (_size.width)*(_size.height))
+  int16_t *_phaseOffsetCorrection;
+    
+  if(_phaseOffsetCorrectionData.size() == _maxFrameSize.height*_maxFrameSize.width)
+    _phaseOffsetCorrection = _phaseOffsetCorrectionData.data();
+  else if(_phaseOffsetCorrectionData.size() == _maxFrameSize.height*_maxFrameSize.width + 2) // contains rows and columns information?
+    _phaseOffsetCorrection = _phaseOffsetCorrectionData.data() + 2;
+  else
+    return false;
+  
+  if(phaseData.size() != (_size.width)*(_size.height))
     return false;
   
   int i = _size.height, j;
   
   int16_t v;
   uint16_t *d = phaseData.data();
-  int16_t *o = _phaseOffsetCorrectionData.data() + _roi.x + _roi.y*_maxFrameSize.width, *o1;
+  int16_t *o = _phaseOffsetCorrection + _roi.x + _roi.y*_maxFrameSize.width, *o1;
   o1 = o;
   
   

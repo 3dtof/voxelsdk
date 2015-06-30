@@ -9,7 +9,7 @@
 namespace Voxel
 {
 
-bool DataPacket::write(OutputFileStream &out)
+bool DataPacket::write(OutputStream &out)
 {
   if(!out.good())
     return false;
@@ -39,7 +39,7 @@ bool DataPacket::write(SerializedObject &out)
 }
 
 
-bool DataPacket::read(InputFileStream &in)
+bool DataPacket::read(InputStream &in)
 {
   if(!readHeader(in))
     return false;
@@ -68,7 +68,7 @@ bool DataPacket::read(SerializedObject &in)
 }
 
 
-bool DataPacket::readHeader(InputFileStream &in)
+bool DataPacket::readHeader(InputStream &in)
 {
   if(!in.good())
     return false;

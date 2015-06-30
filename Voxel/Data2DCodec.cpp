@@ -139,7 +139,7 @@ public:
   {
     int i;
     
-    if(data.size() != rows*columns)
+    if(data.size() != rows*columns + 2)
     {
       logger(LOG_ERROR) << "Data2DCodecTest: Expected data size to be " << rows*columns << "bytes, got " << data.size() << " bytes." << std::endl; 
       return false;
@@ -171,19 +171,21 @@ public:
     
     Vector<unsigned char> d;
     d.resize(size*3);
+    
+    const int16_t *dat = &data[2];
       
     for(i = 0; i < size; i++)
     {
       unsigned char c;
       
-      c = abs(data[i]);
+      c = abs(dat[i]);
       
       d[3*i] = c;
       d[3*i + 1] = c;
       d[3*i + 2] = c;
     }
     
-    f.write((const char *)d.data(), sizeof(unsigned char)*size*3); // read the rest of the data at once
+    f.write((const char *)d.data(), sizeof(unsigned char)*size*3);
     f.close();
     
     return true;
@@ -191,12 +193,22 @@ public:
 };
 
 
-bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, const uint16_t rows, const uint16_t columns, ByteArray &out)
+bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, ByteArray &out)
 {
-  if(in.size() != rows*columns || invalidPixels.size() != rows*columns)
+  uint16_t rows = *(uint16_t *)&in[0];
+  uint16_t columns = *(uint16_t *)&in[1];
+  
+  const int16_t *inData = &in[2];
+  
+  logger(LOG_DEBUG) << "Data2DCodec: rows = " << rows << ", columns = " << columns << std::endl;
+  
+  bool noInvalidPixels = (invalidPixels.size() == 0);
+    
+  
+  if(in.size() != rows*columns + 2 || (!noInvalidPixels && invalidPixels.size() != rows*columns))
   {
-    logger(LOG_ERROR) << "Data2DCodec: Invalid input data size. Expected " << rows*columns 
-    << " bytes, got " << in.size() << " bytes" << std::endl;
+    logger(LOG_ERROR) << "Data2DCodec: Invalid input data size. Expected " << rows*columns*2
+    << " bytes, got " << in.size()*2 << " bytes" << std::endl;
     return false;
   }
   
@@ -229,7 +241,7 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   
   for(auto i = 0; i < rows; i++)
     for(auto j = 0; j < columns; j++)
-      averages[i/8*columns/8 + j/8] += in[i*columns + j];
+      averages[i/8*columns/8 + j/8] += inData[i*columns + j];
   
   for(auto i = 0; i < averages.size(); i++)
   {
@@ -248,9 +260,9 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
     {
       int index = i/8*columns/8 + j/8;
       
-      int16_t v = (in[i*columns + j] - averages[index])/QUANTIZATION;
+      int16_t v = (inData[i*columns + j] - averages[index])/QUANTIZATION;
       
-      if(invalidPixels[i*columns + j])
+      if(!noInvalidPixels && invalidPixels[i*columns + j])
       {
         invalidPixelCount++;
         v = 0;
@@ -342,7 +354,7 @@ bool Data2DCodec::writeGrayBMPImage(const String &fileName, const Array2D &a, co
 
 
 
-bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &columns, Array2D &out)
+bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
 {
   SerializedObject so;
   so.resize(in.size()); // Maximum size needed
@@ -350,6 +362,8 @@ bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &colu
   
   uint16_t version;
   so.get((char *)&version, sizeof(version));
+  
+  uint16_t rows, columns;
   
   so.get((char *)&rows, sizeof(rows));
   so.get((char *)&columns, sizeof(columns));
@@ -370,12 +384,18 @@ bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &colu
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentGetOffset() << std::endl;
   
-  out.resize(rows*columns);
+  out.resize(rows*columns + 2);
+  
+  *(uint16_t *)&out[0] = rows;
+  *(uint16_t *)&out[1] = columns;
+  
+  int16_t *outData = &out[2];
+  
   for(auto i = 0; i < rows; i++)
   {
     for(auto j = 0; j < columns; j++)
     {
-      out[i*columns + j] = averages[i/8*columns/8 + j/8];
+      outData[i*columns + j] = averages[i/8*columns/8 + j/8];
     }
   }
   
@@ -402,14 +422,14 @@ bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &colu
       {
         if(d1 > 8)
           d1 = d1 - 16;
-        out[i*columns + j] += d1*QUANTIZATION;
+        outData[i*columns + j] += d1*QUANTIZATION;
       }
       else
       {
         int8_t o;
         so.get((char *)&o, sizeof(o));
         
-        out[i*columns + j] += o;
+        outData[i*columns + j] += o;
         
         offsetCount++;
       }
@@ -420,14 +440,14 @@ bool Data2DCodec::decompress(const ByteArray &in, uint16_t &rows, uint16_t &colu
       {
         if(d2 > 8)
           d2 = d2 - 16;
-        out[i*columns + j + 1] += d2*QUANTIZATION;
+        outData[i*columns + j + 1] += d2*QUANTIZATION;
       }
       else
       {
         int8_t o;
         so.get((char *)&o, sizeof(o));
         
-        out[i*columns + j + 1] += o*QUANTIZATION;
+        outData[i*columns + j + 1] += o*QUANTIZATION;
         offsetCount++;
       }
     }

@@ -11,6 +11,8 @@
 #include "Serializable.h"
 #include "DataPacket.h"
 
+#define FILE_PREFIX "file:"
+
 namespace Voxel
 {
 
@@ -116,7 +118,7 @@ protected:
   
   mutable Mutex _mutex;
   
-  bool _getAllDataFiles();
+  bool _serializeAllDataFiles(OutputStream &out);
   
 public:
   typedef Map<String, ConfigSet> ConfigSetMap;
@@ -137,6 +139,8 @@ public:
   
   virtual bool isPresent(const String &section, const String &name) const;
   virtual String get(const String &section, const String &name) const;
+  
+  inline void setID(const int id) { _id = id; setInteger("global", "id", id); }
   
   template <typename T>
   bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
@@ -195,6 +199,8 @@ public:
     _id = other._id;
     _profileName = other._profileName;
     _parentID = other._parentID;
+    _location = other._location;
+    _dataFiles = other._dataFiles;
     return *this;
   }
   
@@ -208,13 +214,13 @@ bool ConfigurationFile::getFile(const String &section, const String &name, Strin
 {
   String v = get(section, name);
   
-  if(v.compare(0, 5, "file:") != 0 || v.size() <= 5)
+  if(v.compare(0, sizeof(FILE_PREFIX) - 1, FILE_PREFIX) != 0 || v.size() <= sizeof(FILE_PREFIX) - 1)
   {
     logger(LOG_ERROR) << "ConfigurationFile: section = " << section << ", name = " << name << ", is not a file type." << std::endl;
     return false;
   }
   
-  fileName = v.substr(5);
+  fileName = v.substr(sizeof(FILE_PREFIX) - 1);
   
   return _getData(fileName, data);
 }
@@ -309,7 +315,7 @@ class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
 protected:
   Map<int, ConfigurationFile> _cameraProfiles;
   Map<int, String> _cameraProfileNames;
-  int _defaultCameraProfileID;
+  int _defaultCameraProfileID, _defaultCameraProfileIDInHardware;
   int _currentCameraProfileID;
   ConfigurationFile *_currentCameraProfile;
 
@@ -317,15 +323,17 @@ protected:
   
   String _mainConfigName, _hardwareID;
   
+  int _getNewCameraProfileID(bool inHost = true);
+  
 public:
   typedef Function<bool(SerializedObject &)> HardwareSerializer;
   
 protected:
   HardwareSerializer _hardwareReader, _hardwareWriter;
-  
+    
 public:
   MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = 0, HardwareSerializer hardwareWriter = 0): 
-  _currentCameraProfile(0), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
+  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
   
   virtual bool read(const String &configFile);
   
@@ -343,15 +351,38 @@ public:
   ConfigurationFile *getDefaultCameraProfile();
   ConfigurationFile *getCameraProfile(const int id);
   
-  int getDefaultCameraProfileID() { return _defaultCameraProfileID; }
+  template <typename T>
+  bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
+  
+  int getDefaultCameraProfileID() 
+  { 
+    if(_defaultCameraProfileIDInHardware >= 0) 
+      return _defaultCameraProfileIDInHardware;
+    else
+      return _defaultCameraProfileID; 
+  }
+  
+  bool setDefaultCameraProfile(const int id);
+  
+  inline void setHardwareID(const String &hwID) { _hardwareID = hwID; }
+  
   int getCurrentProfileID() { return _currentCameraProfileID; }
   
   bool getCameraProfileName(const int id, String &cameraProfileName);
   
   const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
-  
+ 
   virtual ~MainConfigurationFile() {}
 };
+
+template <typename T>
+bool MainConfigurationFile::getFile(const String &section, const String &name, String &fileName, Vector<T> &data)
+{
+  if(!_currentCameraProfile || !_currentCameraProfile->getFile(section, name, fileName, data))
+    return ConfigurationFile::getFile(section, name, fileName, data);
+  else
+    return true;
+}
 
 
 }
