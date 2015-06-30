@@ -40,6 +40,7 @@ SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `voxel14.dll`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `voxeld.dll`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `tintincdk.dll`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\lib` `rts5825camera.dll`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `HaddockCDKCamera.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `HaddockCDKCameraNormal.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `Voxel14Camera.conf`\n
@@ -55,6 +56,9 @@ SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraNoCalibration.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraLongRange.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraPhaseOffset.bin`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `RTS5825Camera.conf`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `RTS5825CameraNormal.conf`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `RTS5825CameraNoCalibration.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `OPT9220.dml`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\fw` `OPT9220_0v27.tip`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `OPT9221.dml`\n
