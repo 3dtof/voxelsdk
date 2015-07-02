@@ -17,6 +17,9 @@
 #define PVDD "pvdd" // Illumination voltage
 #define MIX_VOLTAGE "mix_volt" // Mixing voltage
 #define TILLUM_SLAVE_ADDR "tillum_slv_addr"
+#define LUMPED_DEAD_TIME "lumped_dead_time"
+#define ILLUM_DC_CORR "illum_dc_corr"
+#define ILLUM_DC_CORR_DIR "illum_dc_corr_dir"
 
 #define TINTIN_CDK_USBIO_BOARD_REVISION 0x30
 
