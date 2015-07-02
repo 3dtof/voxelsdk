@@ -342,6 +342,9 @@ public:
   virtual const T lowerLimit() const { return _lowerLimit; }
   virtual const T upperLimit() const { return _upperLimit; }
   
+  virtual void setLowerLimit(T lowerLimit) { _lowerLimit = lowerLimit; }
+  virtual void setUpperLimit(T upperLimit) { _upperLimit = upperLimit; }
+  
   virtual bool validate(const T &value) const
   {
     return !(value < _lowerLimit || value > _upperLimit); 

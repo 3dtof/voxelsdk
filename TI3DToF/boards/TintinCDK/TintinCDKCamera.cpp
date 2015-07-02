@@ -350,6 +350,13 @@ bool TintinCDKCamera::_init()
   if(!ToFTintinCamera::_init())
     return false;
   
+  Ptr<UnsignedIntegerParameter> pixCntMax = std::dynamic_pointer_cast<UnsignedIntegerParameter>(getParam(PIX_CNT_MAX));
+  
+  if(pixCntMax)
+    pixCntMax->setLowerLimit(50000);
+  
+  _parameters.erase("lumped_dead_time");
+  
   return true;
 }
 
