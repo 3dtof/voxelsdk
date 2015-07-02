@@ -270,7 +270,7 @@ public:
       float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
       vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS2), vco->upperLimit()*ma/mb);
       
-      float s = (96.0f/15)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
+      float s = (96.0f/ma)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
       
       int phaseMask = 0;
       int sign = 1;
@@ -305,8 +305,8 @@ public:
       else
         vcoFreq = s;
       
-      // delayFBCoeff1 = modFreq2*(1 << 10)/24
-      delayFBCoeff1 = (vcoFreq*mb/ma/6/(1 + modPS2))*(1 << 10)/24;
+      // delayFBCoeff1 = modFreq1*(1 << 10)/24
+      delayFBCoeff1 = (vcoFreq/6/(1 + modPS1))*(1 << 10)/24;
       
       if(!_depthCamera._set(MOD_PLL_UPDATE, true))
         return false;
@@ -315,7 +315,7 @@ public:
       { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
       
       if(!_depthCamera._set(VCO_FREQ1, vcoFreq) ||
-        !_depthCamera._set(VCO_FREQ2, vcoFreq*mb/ma) ||
+        !_depthCamera._set(VCO_FREQ2, vcoFreq*mb/ma*(1+modPS2)/(1+modPS1)) ||
         !_depthCamera._set(MOD_PS1, modPS1) ||
         !_depthCamera._set(MOD_PS2, modPS2) ||
         !_depthCamera._set(MA, ma) || 
