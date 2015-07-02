@@ -344,7 +344,7 @@ protected:
   HardwareSerializer _hardwareReader, _hardwareWriter;
     
 public:
-  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = 0, HardwareSerializer hardwareWriter = 0): 
+  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = nullptr, HardwareSerializer hardwareWriter = nullptr): 
   _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
   
   virtual bool read(const String &configFile);
