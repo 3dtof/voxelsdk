@@ -393,24 +393,47 @@ bool ToFHaddockCamera::_init()
 
 bool ToFHaddockCamera::_applyCalibrationParams()
 {
-  if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
-  !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
-  !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
-  !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
-  !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)) ||
-  !set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)))
-    return false;
+  bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_COMMON_PHASE) == 0;
+  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_TEMPERATURE) == 0;
   
-  int factor = 1;
+  if(commonPhaseCalibEnable)
+  {
+    if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
+    !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
+    !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
+    !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
+    !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)))
+      return false;
+  }
+  else
+  {
+    if(!set(DISABLE_OFFSET_CORR, true))
+      return false;
+  }
   
-  if(configFile.isPresent("calib", CALIB_PREC))
-    factor = (configFile.getInteger("calib", CALIB_PREC) == 0)?16:256;
+  if(temperatureCalibEnable)
+  {
+    if(!set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)))
+      return false;
   
-  return
-  set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)/factor) &&
-  set(COEFF_ILLUM_2, configFile.getInteger("calib", COEFF_ILLUM_2)/factor) &&
-  set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)/factor) &&
-  set(COEFF_SENSOR_2, configFile.getInteger("calib", COEFF_SENSOR_2)/factor);
+    int factor = 1;
+    
+    if(configFile.isPresent("calib", CALIB_PREC))
+      factor = (configFile.getInteger("calib", CALIB_PREC) == 0)?16:256;
+    
+    return
+    set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)/factor) &&
+    set(COEFF_ILLUM_2, configFile.getInteger("calib", COEFF_ILLUM_2)/factor) &&
+    set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)/factor) &&
+    set(COEFF_SENSOR_2, configFile.getInteger("calib", COEFF_SENSOR_2)/factor);
+  }
+  else
+  {
+    if(!set(DISABLE_TEMP_CORR, true))
+      return false;
+  }
+  
+  return true;
 }
 
 

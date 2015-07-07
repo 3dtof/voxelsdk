@@ -13,6 +13,15 @@
 
 #define FILE_PREFIX "file:"
 
+#define CALIB_SECT_LENS             0x01
+#define CALIB_SECT_FREQUENCY        0x02
+#define CALIB_SECT_CROSS_TALK       0x04
+#define CALIB_SECT_NON_LINEARITY    0x08
+#define CALIB_SECT_TEMPERATURE      0x10
+#define CALIB_SECT_COMMON_PHASE     0x20
+#define CALIB_SECT_PIXELWISE_OFFSET 0x40
+#define CALIB_DISABLE "calib_disable"
+
 namespace Voxel
 {
 

@@ -537,18 +537,41 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
 
 bool ToFTintinCamera::_applyCalibrationParams()
 {
-  if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
-    !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
-    !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
-    !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
-    !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)) ||
-    !set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) ||
-    !set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) ||
-    !set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)) ||
-    !set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)))
-    return false;
+  bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_COMMON_PHASE) == 0;
+  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_TEMPERATURE) == 0;
+  bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_CROSS_TALK) == 0;
+  bool nonlinearityCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_NON_LINEARITY) == 0;
   
-  if(configFile.isPresent("calib", X_CROSS_TALK_COEFF_F1) && configFile.isPresent("calib", Y_CROSS_TALK_COEFF_F1) &&
+  if(commonPhaseCalibEnable)
+  {
+    if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
+      !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
+      !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
+      !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
+      !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)))
+      return false;
+  }
+  else
+  {
+    if(!set(DISABLE_OFFSET_CORR, true))
+      return false;
+  }
+  
+  if(temperatureCalibEnable)
+  {
+    if(!set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) ||
+      !set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) ||
+      !set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)) ||
+      !set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)))
+      return false;
+  }
+  else
+  {
+    if(!set(DISABLE_TEMP_CORR, true))
+      return false;
+  }
+  
+  if(crossTalkCalibEnable && configFile.isPresent("calib", X_CROSS_TALK_COEFF_F1) && configFile.isPresent("calib", Y_CROSS_TALK_COEFF_F1) &&
     configFile.isPresent("calib", X_CROSS_TALK_COEFF_F2) && configFile.isPresent("calib", Y_CROSS_TALK_COEFF_F2))
   {
   
@@ -611,8 +634,13 @@ bool ToFTintinCamera::_applyCalibrationParams()
       !set(CROSS_TALK_EN, true))
       return false;
   }
+  else
+  {
+    if(!set(CROSS_TALK_EN, false))
+      return false;
+  }
   
-  if(configFile.isPresent("calib", NONLINEARITY_COEFF_F1) && configFile.isPresent("calib", NONLINEARITY_COEFF_F2) &&
+  if(nonlinearityCalibEnable && configFile.isPresent("calib", NONLINEARITY_COEFF_F1) && configFile.isPresent("calib", NONLINEARITY_COEFF_F2) &&
     configFile.isPresent("calib", NONLINEARITY_PHASE_PERIOD))
   {
     Vector<uint> nlCoeff1, nlCoeff2;
@@ -648,6 +676,11 @@ bool ToFTintinCamera::_applyCalibrationParams()
         return false;
       
     if(!set(NONLINEARITY_PHASE_PERIOD, phasePeriod) || !set(NONLINEARITY_ENABLE, true))
+      return false;
+  }
+  else
+  {
+    if(!set(NONLINEARITY_ENABLE, false))
       return false;
   }
   

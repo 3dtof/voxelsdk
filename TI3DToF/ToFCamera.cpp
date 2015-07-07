@@ -373,18 +373,20 @@ bool ToFCamera::_initStartParams()
     !getROI(roi))
     return false;
   
+  int lensCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_LENS) == 0;
+  
   if(!_pointCloudFrameGenerator->setParameters(
     roi.x, roi.y, roi.width, roi.height,
     rowsToMerge, columnsToMerge,
-    configFile.getFloat("calib", "fx"), // fx
-    configFile.getFloat("calib", "fy"), // fy
-    configFile.getFloat("calib", "cx"),// cx
-    configFile.getFloat("calib", "cy"),// cy
-    configFile.getFloat("calib", "k1"),// k1
-    configFile.getFloat("calib", "k2"),// k2
-    configFile.getFloat("calib", "k3"),// k3
-    configFile.getFloat("calib", "p1"),// p1
-    configFile.getFloat("calib", "p2") // p2
+    configFile.getFloat("calib", "fx")*lensCalibEnable, // fx
+    configFile.getFloat("calib", "fy")*lensCalibEnable, // fy
+    configFile.getFloat("calib", "cx")*lensCalibEnable,// cx
+    configFile.getFloat("calib", "cy")*lensCalibEnable,// cy
+    configFile.getFloat("calib", "k1")*lensCalibEnable,// k1
+    configFile.getFloat("calib", "k2")*lensCalibEnable,// k2
+    configFile.getFloat("calib", "k3")*lensCalibEnable,// k3
+    configFile.getFloat("calib", "p1")*lensCalibEnable,// p1
+    configFile.getFloat("calib", "p2")*lensCalibEnable // p2
   ))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to PointCloudFrameGenerator" << std::endl;
@@ -416,7 +418,12 @@ bool ToFCamera::_initStartParams()
   Vector<int16_t> phaseOffsets;
   String phaseOffsetFileName;
   
-  if(configFile.isPresent("calib", "phasecorrection") && !configFile.getFile<int16_t>("calib", "phasecorrection", phaseOffsetFileName, phaseOffsets))
+  bool pixelwiseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_PIXELWISE_OFFSET) == 0;
+  bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_CROSS_TALK) == 0;
+  
+  std::cout << "pixel-wise phase offset active = " << pixelwiseCalibEnable << std::endl;
+  
+  if(pixelwiseCalibEnable && configFile.isPresent("calib", "phasecorrection") && !configFile.getFile<int16_t>("calib", "phasecorrection", phaseOffsetFileName, phaseOffsets))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not read phase offset correction file" << std::endl;
     return false;
@@ -424,7 +431,7 @@ bool ToFCamera::_initStartParams()
   
   if(!_tofFrameGenerator->setParameters(phaseOffsetFileName, phaseOffsets, bytesPerPixel, 
     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
-                                        configFile.get("calib", "cross_talk_coeff"),
+                                        crossTalkCalibEnable?configFile.get("calib", "cross_talk_coeff"):"",
                                         type, (uint32_t) quadCount, dealiased16BitMode
   ))
   {
@@ -505,7 +512,9 @@ bool ToFCamera::_getDepthScalingFactor(float& factor)
   bool frequencyCorrectionPresent = false;
   float frequencyCorrection = 1.0f;
   
-  if(configFile.isPresent("calib", "freq_corr"))
+  bool frequencyCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_FREQUENCY) == 0;
+  
+  if(frequencyCalibEnable && configFile.isPresent("calib", "freq_corr"))
   {
     frequencyCorrection = configFile.getFloat("calib", "freq_corr");
     
