@@ -1274,18 +1274,17 @@ bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
   if(!config)
     return false;
   
+  ConfigurationFile oldconfig(*config);
+  ConfigurationFile newconfig(*config);
+  
   int newid = id;
   
   if(config->getLocation() == ConfigurationFile::IN_HOST) // Was it in camera earlier?
   {
     newid = _getNewCameraProfileID(false); // Get new ID for camera
+    newconfig.setID(newid);
+    newconfig._location = ConfigurationFile::IN_CAMERA;
   }
-  
-  ConfigurationFile oldconfig(*config);
-  ConfigurationFile newconfig(*config);
-    
-  newconfig.setID(newid);
-  newconfig._location = ConfigurationFile::IN_CAMERA;
   
   ConfigurationFile *parent = getCameraProfile(newconfig._parentID);
   

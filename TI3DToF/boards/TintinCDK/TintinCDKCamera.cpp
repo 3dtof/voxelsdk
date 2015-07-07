@@ -543,7 +543,7 @@ bool TintinCDKCamera::_getEEPROMSize(uint32_t &size)
       return false;
     }
     
-    size = *(uint32_t *)&data[0]/8;
+    size = *(uint32_t *)&data[0];
     
     return true;
   }
@@ -558,6 +558,9 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
   
   if(p)
   {
+    Timer t;
+    TimeStampType d = t.getCurentRealTime();
+    
     USBIOPtr usbIO = p->getUSBIO();
     
     uint8_t data[9];
@@ -567,8 +570,6 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
       logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config size in EEPROM." << std::endl;
       return false;
     }
-    
-    std::cout << "l = " << l << ", length = " << *(uint32_t *)&data[5] << std::endl;
     
     if(data[0] != 'V' || data[1] != 'O' || data[2] != 'X' || data[3] != 'E' || data[4] != 'L')
     {
@@ -594,17 +595,21 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
     
     uint32_t offset = 9, localOffset = 0;
     
+    const uint32_t maxTransferLength = 4096;
+    
     while(length > 0)
     {
-      uint16_t l = (offset + length) % 64;
+      l = length;
       
-      if(l == 0) l = 64;
+      if(l > maxTransferLength) l = maxTransferLength;
+      
+      //std::cout << "l = " << l << std::endl;
       
       uint16_t offsetLower = (offset & 0xFFFF);
       uint16_t offsetUpper = (offset >> 16);
       
       if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-        REQUEST_EEPROM_DATA, offsetUpper, offsetLower, (uint8_t *)so.getBytes().data() + localOffset, l))
+        REQUEST_EEPROM_DATA, offsetUpper, offsetLower, (uint8_t *)so.getBytes().data() + localOffset, l) || l == 0)
       {
         logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config data from EEPROM." << std::endl;
         return false;
@@ -614,6 +619,9 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
       offset += l;
       localOffset += l;
     }
+    
+    logger(LOG_INFO) << "TintinCDKCamera: Received " << so.size() << " bytes from EEPROM in " << (t.getCurentRealTime() - d)*1E-6 << " s" << std::endl;
+    
     return true;
   }
   else
@@ -626,6 +634,9 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
   
   if(p)
   {
+    Timer t;
+    TimeStampType d = t.getCurentRealTime();
+    
     USBIOPtr usbIO = p->getUSBIO();
     
     int32_t length = so.size();
@@ -663,32 +674,15 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
       return false;
     }
     
-    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      REQUEST_EEPROM_DATA, 0, 0, data, l))
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config size in EEPROM." << std::endl;
-      return false;
-    }
-    
-    std::cout << "l = " << l << ", length = " << *(uint32_t *)&data[5] << std::endl;
-    
-    if(data[0] != 'V' || data[1] != 'O' || data[2] != 'X' || data[3] != 'E' || data[4] != 'L')
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Invalid config data in EEPROM." << std::endl;
-      return false;
-    }
-    
-    return true;
-    
     uint32_t offset = 9, localOffset = 0;
     
     while(length > 0)
     {
-      logger(LOG_INFO) << "TintinCDKCamera: Transferred till offset = " << offset << std::endl;
+      logger(LOG_DEBUG) << "TintinCDKCamera: Transferred till offset = " << offset << std::endl;
       
-      uint16_t l = (offset + length) % 64;
+      l = 64 - (offset % 64);
       
-      if(l == 0) l = 64;
+      if(l > length) l = length;
       
       uint16_t offsetLower = (offset & 0xFFFF);
       uint16_t offsetUpper = (offset >> 16);
@@ -704,6 +698,9 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
       offset += l;
       localOffset += l;
     }
+    
+    logger(LOG_INFO) << "TintinCDKCamera: Transferred " << so.size() << " bytes to EEPROM in " << (t.getCurentRealTime() - d)*1E-6 << " s" << std::endl;
+    
     return true;
   }
   else
