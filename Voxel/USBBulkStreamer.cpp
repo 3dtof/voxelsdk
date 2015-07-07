@@ -35,7 +35,7 @@ public:
 
   uint8_t endpoint;
 
-  long timeout = 200;
+  long timeout = 2000;
 
   USBBulkStreamerPrivate(USBIOPtr &usbIO, DevicePtr device, uint8_t endpoint) : _rawBuffers(10), usbIO(usbIO), endpoint(endpoint), bufSize(0)
   {
