@@ -171,6 +171,15 @@ namespace std
     return b;
   }
   
+  bool saveCameraProfileToHardware(const int id)
+  {
+    bool b;
+    Py_BEGIN_ALLOW_THREADS
+    b = $self->saveCameraProfileToHardware(id);
+    Py_END_ALLOW_THREADS
+    return b;
+  }
+  
   void wait()
   {
     Py_BEGIN_ALLOW_THREADS
@@ -180,6 +189,7 @@ namespace std
 }
 %ignore Voxel::DepthCamera::stop();
 %ignore Voxel::DepthCamera::wait();
+%ignore Voxel::DepthCamera::saveCameraProfileToHardware();
 
 %include "../DepthCamera.h"
 %include "../DepthCameraFactory.h"
