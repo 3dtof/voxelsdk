@@ -355,7 +355,19 @@ bool TintinCDKCamera::_init()
   if(pixCntMax)
     pixCntMax->setLowerLimit(50000);
   
-  _parameters.erase("lumped_dead_time");
+  Ptr<UnsignedIntegerParameter> intgDutyCycle = std::dynamic_pointer_cast<UnsignedIntegerParameter>(getParam(INTG_DUTY_CYCLE));
+
+  if (intgDutyCycle)
+    intgDutyCycle->setUpperLimit(30);
+
+  Ptr<UnsignedIntegerParameter> intgTime = std::dynamic_pointer_cast<UnsignedIntegerParameter>(getParam(INTG_TIME));
+
+  if (intgTime)
+    intgTime->setUpperLimit(46);
+
+  _parameters.erase(LUMPED_DEAD_TIME);
+  _parameters.erase(ILLUM_DC_CORR);
+  _parameters.erase(ILLUM_DC_CORR_DIR);
   
   return true;
 }

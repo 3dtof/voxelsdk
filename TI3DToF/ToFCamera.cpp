@@ -39,7 +39,7 @@ public:
       return false;
     
     
-    uint v = (uint)((integrationDutyCycle*100.0)/63 + 0.5); // rounded value
+    uint v = (uint)((integrationDutyCycle*100.0)/64 + 0.5); // rounded value
     
     if(v > 100) v = 100;
     if(v < 0) v = 0;
@@ -53,7 +53,7 @@ public:
     if(!validate(value))
       return false;
     
-    uint integrationDutyCycle = (uint)((value*63.0/100) + 0.5); // rounded value
+    uint integrationDutyCycle = (uint)((value*64.0/100) + 0.5); // rounded value
     
     if(integrationDutyCycle > 63) integrationDutyCycle = 63;
     
