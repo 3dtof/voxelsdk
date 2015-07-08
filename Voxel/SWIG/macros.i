@@ -7,7 +7,9 @@
 %include "windows.i"
 
 // TODO: This needs to be set based on whether the architecture is 32-bit or 64-bit.
+#ifdef GNU
 #define SWIGWORDSIZE64 
+#endif
 
 %include "typemaps.i"
 %include "std_string.i"
