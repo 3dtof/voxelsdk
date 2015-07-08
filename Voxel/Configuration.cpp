@@ -98,8 +98,15 @@ bool Configuration::_getLocalPath(const String &type, String &path)
     
     s += DIR_SEP;
     s += ".Voxel";
+    
+    if(!isFilePresent(s) && !makeDirectory(s))
+      return false;
+    
     s += DIR_SEP;
     s += type;
+    
+    if(!isFilePresent(s) && !makeDirectory(s))
+      return false;
     
     path = s;
     return true;
@@ -114,8 +121,15 @@ bool Configuration::_getLocalPath(const String &type, String &path)
     
     s += DIR_SEP;
     s += ".Voxel";
+    
+    if(!isFilePresent(s) && !makeDirectory(s))
+      return false;
+    
     s += DIR_SEP;
     s += type;
+    
+    if(!isFilePresent(s) && !makeDirectory(s))
+      return false;
     
     path = s;
     return true;

@@ -25,6 +25,9 @@
 #pragma intrinsic(_BitScanReverse)
 #endif
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 namespace Voxel
 {
 
@@ -203,6 +206,38 @@ String basename(const String &filename)
   }
   s.erase(s.begin(), std::find(s.rbegin(), s.rend(), DIR_SEP).base());
   return s;
+}
+
+bool isFilePresent(const String &filename)
+{
+  struct stat info;
+  
+  if(stat(filename.c_str(), &info) != 0)
+    return false;
+  else
+    return true;
+}
+
+
+bool isDirectory(const String &filename)
+{
+  struct stat info;
+  
+  if(stat(filename.c_str(), &info ) != 0)
+    return false;
+  else if(info.st_mode & S_IFDIR)  // S_ISDIR() doesn't exist on my windows 
+    return true;
+  else
+    return false;
+}
+
+bool makeDirectory(const String &filename)
+{
+#ifdef WINDOWS
+  return CreateDirectory(filename.c_str(), NULL);
+#elif defined(LINUX)
+  return mkdir(filename.c_str(), 0755) == 0;
+#endif
 }
 
 

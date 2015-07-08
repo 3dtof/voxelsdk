@@ -125,9 +125,6 @@ Ptr<T> byteAlloc(unsigned long sizeInBytes)
   return Ptr<T>((T *)new uint8_t[sizeInBytes], [](T *d) { delete[]((uint8_t *)d);  });
 }
 
-/// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
-int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<String> &files);
-
 uint VOXEL_EXPORT gcd(uint n, uint m);
 
 // This returns nearest 'n = 2^m' such that 2^(m - 1) < value < 2^m
@@ -186,8 +183,15 @@ inline String& trim(String& s) {
   return ltrim(rtrim(s));
 }
 
+/// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
+int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<String> &files);
+
+bool VOXEL_EXPORT isFilePresent(const String &filename);
+bool VOXEL_EXPORT isDirectory(const String &filename);
+bool VOXEL_EXPORT makeDirectory(const String &filename);
 String VOXEL_EXPORT dirname(const String &filename);
 String VOXEL_EXPORT basename(const String &filename);
+
 
 /**
  * @}
