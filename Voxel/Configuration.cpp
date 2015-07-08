@@ -8,6 +8,8 @@
 #include "Logger.h"
 #include "Data2DCodec.h"
 
+#include "Timer.h"
+
 #include <stdlib.h>
 #include <fstream>
 
@@ -24,6 +26,9 @@
 
 
 #define CAMERA_PROFILES "camera_profiles"
+
+#define CONFIG_VERSION_MAJOR 0
+#define CONFIG_VERSION_MINOR 1
 
 namespace Voxel
 {
@@ -1053,18 +1058,33 @@ bool MainConfigurationFile::readFromHardware()
 {
   SerializedObject so;
   
-  if(!_hardwareReader || !_hardwareReader(so))
+  ConfigSerialNumberType serialNumber;
+  TimeStampType timestamp = 0;
+  
+  Configuration c;
+  
+  String f = _hardwareID + ".bin";
+  
+  if(!c.getConfFile(f))
+    return false;
+  
+  InputFileStream fs(f, std::ios::in | std::ios::binary);
+  
+  if(fs.good())
   {
-    logger(LOG_ERROR) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
-    
-    Configuration c;
-    
-    String f = _hardwareID + ".bin";
-    
-    if(!c.getConfFile(f))
-      return false;
-    
-    InputFileStream fs(f, std::ios::in | std::ios::binary | std::ios::ate);
+    fs.read((char *)&serialNumber, sizeof(serialNumber));
+    fs.read((char *)&timestamp, sizeof(timestamp));
+  }
+  
+  bool ret = false;
+  if(!_hardwareReader || !(ret = _hardwareReader(serialNumber, timestamp, so)) || so.size() == 0) 
+    // Last condition is when the data in hardware and backup file in host are the same...
+  {
+    if(!ret)
+      logger(LOG_ERROR) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
+    else if(_hardwareReader && so.size() == 0)
+      logger(LOG_INFO) << "MainConfigurationFile: Reading from local copy of hardware configuration data" << std::endl;
+      
     
     if(!fs.good())
     {
@@ -1072,7 +1092,9 @@ bool MainConfigurationFile::readFromHardware()
       return false;
     }
     
-    int size = fs.tellg();
+    fs.seekg(0, std::ios::end);
+    
+    int size = (int)fs.tellg() - sizeof(timestamp) - sizeof(serialNumber);
     
     if(size == 0)
     {
@@ -1081,7 +1103,7 @@ bool MainConfigurationFile::readFromHardware()
     }
     
     so.resize(size);
-    fs.seekg(std::ios::beg);
+    fs.seekg(sizeof(timestamp) + sizeof(serialNumber), std::ios::beg);
     fs.clear();
     fs.read((char *)so.getBytes().data(), size);
   }
@@ -1252,7 +1274,14 @@ bool MainConfigurationFile::writeToHardware()
   so.resize(out.size());
   memcpy(so.getBytes().data(), &out[0], so.size());
   
-  if(_hardwareWriter && !_hardwareWriter(so))
+  ConfigSerialNumberType serialNumber;
+  serialNumber.major = CONFIG_VERSION_MAJOR;
+  serialNumber.minor = CONFIG_VERSION_MINOR;
+  
+  Timer t;
+  TimeStampType timestamp = t.getCurentRealTime();
+  
+  if(_hardwareWriter && !_hardwareWriter(serialNumber, timestamp, so))
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to write configuration from hardware." << std::endl;
     return false;
@@ -1275,6 +1304,8 @@ bool MainConfigurationFile::writeToHardware()
     return false;
   }
   
+  fs.write((const char *)&serialNumber, sizeof(serialNumber));
+  fs.write((const char *)&timestamp, sizeof(timestamp));
   fs.write((const char *)so.getBytes().data(), so.size());
   
   fs.close();

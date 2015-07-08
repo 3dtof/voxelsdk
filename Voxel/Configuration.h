@@ -347,7 +347,8 @@ protected:
   int _getNewCameraProfileID(bool inHost = true);
   
 public:
-  typedef Function<bool(SerializedObject &)> HardwareSerializer;
+  struct ConfigSerialNumberType { uint8_t major, minor; };
+  typedef Function<bool(ConfigSerialNumberType &, TimeStampType &, SerializedObject &)> HardwareSerializer;
   
 protected:
   HardwareSerializer _hardwareReader, _hardwareWriter;

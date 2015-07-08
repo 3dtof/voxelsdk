@@ -6,6 +6,9 @@
 
 %include "windows.i"
 
+// TODO: This needs to be set based on whether the architecture is 32-bit or 64-bit.
+#define SWIGWORDSIZE64 
+
 %include "typemaps.i"
 %include "std_string.i"
 %include "std_vector.i"
