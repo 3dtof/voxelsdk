@@ -344,8 +344,8 @@ bool TintinCDKCamera::_init()
   )
     return false;
     
-  configFile.setHardwareReader(std::bind(&TintinCDKCamera::_readConfigFromHardware, this, std::placeholders::_1));
-  configFile.setHardwareWriter(std::bind(&TintinCDKCamera::_writeConfigFromHardware, this, std::placeholders::_1));
+  configFile.setHardwareReader(std::bind(&TintinCDKCamera::_readConfigFromHardware, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+  configFile.setHardwareWriter(std::bind(&TintinCDKCamera::_writeConfigFromHardware, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
   
   if(!ToFTintinCamera::_init())
     return false;
@@ -540,7 +540,7 @@ bool TintinCDKCamera::_getEEPROMSize(uint32_t &size)
 }
 
 
-bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
+bool TintinCDKCamera::_readConfigFromHardware(MainConfigurationFile::ConfigSerialNumberType &serialNumber, TimeStampType &knownTimestamp, SerializedObject &so)
 {
   VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
   
@@ -551,8 +551,10 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
     
     USBIOPtr usbIO = p->getUSBIO();
     
-    uint8_t data[9];
-    uint16_t l = 9;
+    uint8_t data[9 + 2 + sizeof(TimeStampType)];
+    
+    uint16_t l = sizeof(data);
+    
     if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, REQUEST_EEPROM_DATA, 0, 0, data, l))
     {
       logger(LOG_ERROR) << "TintinCDKCamera: Failed to read config size in EEPROM." << std::endl;
@@ -565,7 +567,17 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
       return false;
     }
     
-    int32_t length = *(uint32_t *)&data[5];
+    // Ignoring the version info for now
+    
+    //std::cout << "Timestamp in hardware = " << *(TimeStampType *)&data[7] << ", expected = " << knownTimestamp << std::endl;
+    
+    if(*(TimeStampType *)&data[7] == knownTimestamp)
+    {
+      so.resize(0);
+      return true;
+    }
+    
+    int32_t length = *(uint32_t *)&data[7 + sizeof(TimeStampType)];
     
     uint32_t totalSize;
     
@@ -581,7 +593,7 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
     
     so.resize(length);
     
-    uint32_t offset = 9, localOffset = 0;
+    uint32_t offset = l, localOffset = 0;
     
     const uint32_t maxTransferLength = 4096;
     
@@ -616,7 +628,7 @@ bool TintinCDKCamera::_readConfigFromHardware(SerializedObject &so)
     return false;
 }
 
-bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
+bool TintinCDKCamera::_writeConfigFromHardware(MainConfigurationFile::ConfigSerialNumberType &serialNumber, Voxel::TimeStampType &timestamp, Voxel::SerializedObject &so)
 {
   VoxelUSBProgrammer *p = dynamic_cast<VoxelUSBProgrammer *>(&*_programmer);
   
@@ -633,8 +645,6 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
     if(!_getEEPROMSize(totalSize))
       return false;
     
-    logger(LOG_INFO) << "total size = " << totalSize << std::endl;
-    
     if(length + 9 > totalSize)
     {
       logger(LOG_ERROR) << "TintinCDKCamera: Length of config data is greater than available size in EEPROM. (" 
@@ -644,7 +654,7 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
     
     logger(LOG_INFO) << "TintinCDKCamera: Length of data to EEPROM = " << length << std::endl;
     
-    uint8_t data[9];
+    uint8_t data[9 + 2 + sizeof(TimeStampType)];
     
     data[0] = 'V';
     data[1] = 'O';
@@ -652,9 +662,14 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
     data[3] = 'E';
     data[4] = 'L';
     
-    *(uint32_t *)&data[5] = so.size();
+    data[5] = serialNumber.major;
+    data[6] = serialNumber.minor;
     
-    uint16_t l = 9;
+    *(TimeStampType *)&data[7] = timestamp;
+    
+    *(uint32_t *)&data[7 + sizeof(TimeStampType)] = so.size();
+    
+    uint16_t l = sizeof(data);
     if(!usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
       REQUEST_EEPROM_DATA, 0, 0, data, l))
     {
@@ -662,7 +677,7 @@ bool TintinCDKCamera::_writeConfigFromHardware(SerializedObject &so)
       return false;
     }
     
-    uint32_t offset = 9, localOffset = 0;
+    uint32_t offset = l, localOffset = 0;
     
     while(length > 0)
     {

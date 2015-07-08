@@ -32,7 +32,14 @@ public:
   const Vector<char> &getBytes() const { return _bytes; }
   Vector<char> &getBytes() { return _bytes; }
   
-  inline void resize(size_t size) { _bytes.resize(size); rewind(); }
+  inline void resize(size_t size) 
+  { 
+    if(size > 0) 
+      _bytes.resize(size); 
+    else 
+      _bytes.clear(); 
+    rewind();
+  }
   
   inline size_t size() const { return _bytes.size(); }
   

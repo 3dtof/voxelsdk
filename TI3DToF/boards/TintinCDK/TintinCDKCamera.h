@@ -44,8 +44,8 @@ protected:
   
   virtual bool _initStartParams();
   
-  virtual bool _readConfigFromHardware(SerializedObject &so);
-  virtual bool _writeConfigFromHardware(SerializedObject &so);
+  virtual bool _readConfigFromHardware(MainConfigurationFile::ConfigSerialNumberType &serialNumber, TimeStampType& knownTimestamp, Voxel::SerializedObject& so);
+  virtual bool _writeConfigFromHardware(MainConfigurationFile::ConfigSerialNumberType &serialNumber, TimeStampType& timestamp, SerializedObject &so);
   
   virtual bool _getEEPROMSize(uint32_t &size);
   
