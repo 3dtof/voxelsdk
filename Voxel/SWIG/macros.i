@@ -6,8 +6,7 @@
 
 %include "windows.i"
 
-// TODO: This needs to be set based on whether the architecture is 32-bit or 64-bit.
-#ifdef GNU
+#if defined(LINUX) && (defined(x86_64) || defined(amd64) || defined(AMD64))
 #define SWIGWORDSIZE64 
 #endif
 
