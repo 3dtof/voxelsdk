@@ -508,6 +508,7 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
   uint modulationPS1, modulationPS2, systemClockFrequency;
   
   uint modM1, modM2, modN1, modN2;
+  int quadCount;
   
   if(!get(DEALIAS_EN, dealiasingEnabled))
     return false;
@@ -515,6 +516,7 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
   if(dealiasingEnabled)
   {
     if(!_getSystemClockFrequency(systemClockFrequency) || !get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2) ||
+      !get(QUAD_CNT_MAX, quadCount) ||
       !get(MOD_M1, modM1) || !get(MOD_M2, modM2) ||
       !get(MOD_N1, modN1) || !get(MOD_N2, modN2))
       return false;
@@ -522,7 +524,8 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
     modulationPS1 ++;
     modulationPS2 ++;
     
-    frequency = systemClockFrequency*gcd(modM1*modN2*modulationPS2, modM2*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2);
+    /* TODO: Handle the case for fractional modulation frequencies */
+    frequency = systemClockFrequency*gcd(modM1*modN2*modulationPS2, modM2*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2*quadCount);
     
     return true;
   }
