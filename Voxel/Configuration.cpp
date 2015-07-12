@@ -202,8 +202,6 @@ bool Configuration::_get(const String &type, String &name)
   {
     String n = (p.size() > 0)?(p + DIR_SEP + name):name;
     
-    std::cout << n << std::endl;
-    
     std::ifstream f(n, std::ios::binary);
     
     if(f.good())
