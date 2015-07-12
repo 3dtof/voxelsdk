@@ -135,7 +135,7 @@ protected:
   template <typename T>
   bool _setData(const String &fileName, const Vector<T> &data);  
   
-  bool _copyFromParentIfNotPresent(ConfigurationFile *other);
+  bool _copyFromParentIfNotPresent(ConfigurationFile *other, bool recurse = true);
 
 public:
   typedef Map<String, ConfigSet> ConfigSetMap;

@@ -789,7 +789,7 @@ bool ConfigurationFile::isValidCameraProfile()
   return true;
 }
 
-bool ConfigurationFile::_copyFromParentIfNotPresent(ConfigurationFile *to)
+bool ConfigurationFile::_copyFromParentIfNotPresent(ConfigurationFile *to, bool recurse)
 {
   if(!_mainConfigurationFile)
     return true;
@@ -810,7 +810,10 @@ bool ConfigurationFile::_copyFromParentIfNotPresent(ConfigurationFile *to)
     }
   }
   
-  return parent->_copyFromParentIfNotPresent(to);
+  if(recurse)
+    return parent->_copyFromParentIfNotPresent(to, recurse);
+  else
+    return true;
 }
 
 
@@ -998,6 +1001,10 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
     return false;
   
   ConfigurationFile *c = &_cameraProfiles.at(id);
+  ConfigurationFile *parent = 0;
+  
+  if(_cameraProfiles.find(c->_parentID) != _cameraProfiles.end())
+    parent = &_cameraProfiles.at(c->_parentID);
   
   bool refreshHardware = false;
   
@@ -1009,12 +1016,42 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
   else
     refreshHardware = true;
   
+  // Update all those profiles which have this profile as its parent.
+  for(auto config = _cameraProfiles.begin(); config != _cameraProfiles.end(); config++)
+  {
+    if(config->second._parentID == id)
+    {
+      if(!config->second._copyFromParentIfNotPresent(&config->second, false))
+      {
+        return false;
+      }
+      
+      if(parent)
+      {
+        config->second.setInteger("global", "parent", c->_parentID);
+        config->second._parentID = c->_parentID;
+      }
+      
+      if(config->second.getLocation() == IN_HOST)
+      {
+        if(!config->second.write())
+        {
+          return false;
+        }
+      }
+      else
+      {
+        refreshHardware = true;
+      }
+    }
+  }
+  
   _cameraProfiles.erase(_cameraProfiles.find(id));
   
   if(_cameraProfileNames.find(id) != _cameraProfileNames.end())
     _cameraProfileNames.erase(_cameraProfileNames.find(id));
   
-  if(refreshHardware && !writeToHardware())
+  if(refreshHardware && id != _defaultCameraProfileIDInHardware && !writeToHardware())
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to update hardware data after removing profile with id = " << id << std::endl;
     return false;
@@ -1023,6 +1060,21 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
   if(!_updateCameraProfileList())
   {
     logger(LOG_WARNING) << "MainConfigurationFile: Could not update profile list in main configuration file '" << _fileName << "'." << std::endl;
+  }
+  
+  if(id == _defaultCameraProfileID)
+  {
+    for(auto config = _cameraProfiles.begin(); config != _cameraProfiles.end(); config++)
+      if(config->second.getLocation() == IN_HOST)
+        if(!setDefaultCameraProfile(_cameraProfiles.begin()->first))
+          return false;
+  }
+  else if(id == _defaultCameraProfileIDInHardware)
+  {
+    for(auto config = _cameraProfiles.begin(); config != _cameraProfiles.end(); config++)
+      if(config->second.getLocation() == IN_CAMERA)
+        if(!setDefaultCameraProfile(_cameraProfiles.begin()->first))
+          return false;
   }
   
   if(id == _currentCameraProfileID)
