@@ -94,7 +94,7 @@ public:
   FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, 48, "Modulation frequency", "Frequency used for modulation of illumination", 
                  Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
                  
-  virtual const float getOptimalMaximum() const { return 80; }
+  virtual const float getOptimalMaximum() const { return 60; }
   virtual const float getOptimalMinimum() const { return 39; }
                  
   virtual const float lowerLimit() const 
@@ -263,14 +263,14 @@ public:
         !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
         return false;
       
-      uint ma = 7, mb = 8, ka = 7, kb = 6, modPS1 = 0, modPS2 = 0;
+      uint ma = 2, mb = 3, ka = 2, kb = 1, modPS1 = 1, modPS2 = 0;
       
       uint freqRatio = ma*(1 << 12)/mb;
       
-      float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS2), vco->lowerLimit()), 
-      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS2), vco->upperLimit()*ma/mb);
+      float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS1), vco->lowerLimit()), 
+      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS1), vco->upperLimit());
       
-      float s = (96.0f/15)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
+      float s = (96.0f/ma)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
       
       int phaseMask = 0;
       int sign = 1;
@@ -305,8 +305,8 @@ public:
       else
         vcoFreq = s;
       
-      // delayFBCoeff1 = modFreq2*(1 << 10)/24
-      delayFBCoeff1 = (vcoFreq*mb/ma/6/(1 + modPS2))*(1 << 10)/24;
+      // delayFBCoeff1 = modFreq1*(1 << 10)/24
+      delayFBCoeff1 = (vcoFreq/6/(1 + modPS1))*(1 << 10)/24;
       
       if(!_depthCamera._set(MOD_PLL_UPDATE, true))
         return false;
@@ -315,7 +315,7 @@ public:
       { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
       
       if(!_depthCamera._set(VCO_FREQ1, vcoFreq) ||
-        !_depthCamera._set(VCO_FREQ2, vcoFreq*mb/ma) ||
+        !_depthCamera._set(VCO_FREQ2, vcoFreq*mb/ma*(1+modPS2)/(1+modPS1)) ||
         !_depthCamera._set(MOD_PS1, modPS1) ||
         !_depthCamera._set(MOD_PS2, modPS2) ||
         !_depthCamera._set(MA, ma) || 
@@ -508,6 +508,7 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
   uint modulationPS1, modulationPS2, systemClockFrequency;
   
   uint modM1, modM2, modN1, modN2;
+  int quadCount;
   
   if(!get(DEALIAS_EN, dealiasingEnabled))
     return false;
@@ -515,6 +516,7 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
   if(dealiasingEnabled)
   {
     if(!_getSystemClockFrequency(systemClockFrequency) || !get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2) ||
+      !get(QUAD_CNT_MAX, quadCount) ||
       !get(MOD_M1, modM1) || !get(MOD_M2, modM2) ||
       !get(MOD_N1, modN1) || !get(MOD_N2, modN2))
       return false;
@@ -522,7 +524,8 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
     modulationPS1 ++;
     modulationPS2 ++;
     
-    frequency = systemClockFrequency*gcd(modM1*modN2*modulationPS2, modM2*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2);
+    /* TODO: Handle the case for fractional modulation frequencies */
+    frequency = systemClockFrequency*gcd(modM1*modN2*modulationPS2, modM2*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2*quadCount);
     
     return true;
   }
