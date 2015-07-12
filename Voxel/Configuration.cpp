@@ -999,17 +999,38 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
   
   ConfigurationFile *c = &_cameraProfiles.at(id);
   
-  if(!c->removeFile())
-    return false;
+  bool refreshHardware = false;
+  
+  if(c->getLocation() == IN_HOST)
+  {
+    if(!c->removeFile())
+      return false;
+  }
+  else
+    refreshHardware = true;
   
   _cameraProfiles.erase(_cameraProfiles.find(id));
   
   if(_cameraProfileNames.find(id) != _cameraProfileNames.end())
     _cameraProfileNames.erase(_cameraProfileNames.find(id));
   
+  if(refreshHardware && !writeToHardware())
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to update hardware data after removing profile with id = " << id << std::endl;
+    return false;
+  }
+  
   if(!_updateCameraProfileList())
   {
     logger(LOG_WARNING) << "MainConfigurationFile: Could not update profile list in main configuration file '" << _fileName << "'." << std::endl;
+  }
+  
+  if(id == _currentCameraProfileID)
+  {
+    if(id != _defaultCameraProfileID)
+      return setCurrentCameraProfile(_defaultCameraProfileID);
+    else if(_cameraProfiles.size() > 0)
+      return setCurrentCameraProfile(_cameraProfiles.begin()->first);
   }
   
   return true;
@@ -1372,6 +1393,8 @@ bool MainConfigurationFile::setDefaultCameraProfile(const int id)
   if(!config)
     return false;
   
+  logger(LOG_INFO) << "MainConfigurationFile: Setting id = " << id << ", as default camera profile." << std::endl;
+  
   if(config->getLocation() == ConfigurationFile::IN_CAMERA)
   {
     _defaultCameraProfileIDInHardware = id;
@@ -1380,6 +1403,10 @@ bool MainConfigurationFile::setDefaultCameraProfile(const int id)
   else
   {
     _defaultCameraProfileID = id;
+    
+    if(!setInteger("core", "default_profile", id))
+      return false;
+    
     return write();
   }
 }
