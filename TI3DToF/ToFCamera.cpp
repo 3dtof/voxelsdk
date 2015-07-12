@@ -616,9 +616,9 @@ bool ToFCamera::_reset()
 
 bool ToFCamera::setSerialNumber(const String &serialNumber)
 {
-  if(serialNumber.size() != TI_SERIAL_NUMBER_SIZE)
+  if(serialNumber.size() > TI_SERIAL_NUMBER_SIZE)
   {
-    logger(LOG_ERROR) << "ToFCamera: Please specify serial number with '" << TI_SERIAL_NUMBER_SIZE << "' bytes." << std::endl;
+    logger(LOG_ERROR) << "ToFCamera: Please specify serial number with at most '" << TI_SERIAL_NUMBER_SIZE << "' bytes." << std::endl;
     return false;
   }
   
