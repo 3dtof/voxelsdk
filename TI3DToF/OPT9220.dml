@@ -3200,9 +3200,9 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="2072" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="2072" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
-						<range address="120" bankId="3" lsb="8" msb="11"/>
+						<range address="120" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
@@ -3969,6 +3969,10 @@
 					<rangeList/>
 					<valueList/>
 				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="6413" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
+					<valueList/>
+				</property>
 			</propertyList>
 		</propertyView>
 	</propertyViewList>
@@ -4239,6 +4243,11 @@
 								<property desc="" name="ramp_pat" propertyId="1974"/>
 								<property desc="" name="amplitude_scale" propertyId="1973"/>
 								<property desc="" name="frequency_scale" propertyId="1975"/>
+							</propertyList>
+						</group>
+						<group desc="" name="scratch">
+							<propertyList>
+								<property desc="" name="scratch2" propertyId="2072"/>
 							</propertyList>
 						</group>
 					</groupList>
