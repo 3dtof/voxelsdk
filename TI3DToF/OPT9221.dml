@@ -4336,7 +4336,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="7556" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="7556" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="49" bankId="0" lsb="19" msb="19"/>
 					</rangeList>
@@ -6188,7 +6188,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="8664" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="1" default="1" desc="" function="" fuseId="-1" id="8664" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="2" msb="2"/>
 					</rangeList>
@@ -6444,7 +6444,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="9926" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="9926" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="58" bankId="0" lsb="9" msb="9"/>
 					</rangeList>
@@ -6954,13 +6954,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10036" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="100" desc="" function="" fuseId="-1" id="10036" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="176" bankId="3" lsb="0" msb="7"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10037" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="90" desc="" function="" fuseId="-1" id="10037" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="176" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
@@ -7064,14 +7064,14 @@
 						<group desc="" name="SpatialFilter">
 							<propertyList>
 								<property desc="" name="filt_en" propertyId="9981"/>
-								<property desc="" name="filt_coef_y_re_f1" propertyId="9982"/>
-								<property desc="" name="filt_coef_y_im_f1" propertyId="9983"/>
-								<property desc="" name="filt_coef_x_re_f1" propertyId="9984"/>
-								<property desc="" name="filt_coef_x_im_f1" propertyId="9985"/>
-								<property desc="" name="filt_coef_y_re_f2" propertyId="10017"/>
-								<property desc="" name="filt_coef_y_im_f2" propertyId="10016"/>
-								<property desc="" name="filt_coef_x_re_f2" propertyId="10015"/>
-								<property desc="" name="filt_coef_x_im_f2" propertyId="10014"/>
+								<property desc="" name="filt_coeff_y_re_f1" propertyId="9982"/>
+								<property desc="" name="filt_coeff_y_im_f1" propertyId="9983"/>
+								<property desc="" name="filt_coeff_x_re_f1" propertyId="9984"/>
+								<property desc="" name="filt_coeff_x_im_f1" propertyId="9985"/>
+								<property desc="" name="filt_coeff_y_re_f2" propertyId="10017"/>
+								<property desc="" name="filt_coeff_y_im_f2" propertyId="10016"/>
+								<property desc="" name="filt_coeff_x_re_f2" propertyId="10015"/>
+								<property desc="" name="filt_coeff_x_im_f2" propertyId="10014"/>
 								<property desc="" name="filt_scale" propertyId="9986"/>
 							</propertyList>
 						</group>
