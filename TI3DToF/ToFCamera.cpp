@@ -10,7 +10,7 @@
 #include <ParameterDMLParser.h>
 
 #define TI_USBIO_SERIAL_NUMBER 0x32
-#define TI_SERIAL_NUMBER_SIZE 22
+#define TI_SERIAL_NUMBER_SIZE 29
 
 namespace Voxel
 {
