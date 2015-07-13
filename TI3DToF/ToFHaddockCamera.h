@@ -9,7 +9,7 @@
 
 #include <ToFCamera.h>
 
-#define CURRENT_PROFILE "sys_clk_freq" //sys_clk_freq used as scratch register
+#define CURRENT_PROFILE "scratch2" //sys_clk_freq used as scratch register
 
 namespace Voxel
 {
