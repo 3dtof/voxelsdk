@@ -52,7 +52,7 @@ public:
   inline bool getConfPaths(Vector<String> &paths) { return _getPaths("conf", paths); }
   inline bool getLibPaths(Vector<String> &paths) { return _getPaths("lib", paths); }
 
-  inline static bool addFirmwarePath(const String &path) { return _addPath("firmware", path); }
+  inline static bool addFirmwarePath(const String &path) { return _addPath("fw", path); }
   inline static bool addConfPath(const String &path) { return _addPath("conf", path); }
   inline static bool addLibPath(const String &path) { return _addPath("lib", path); }
   
@@ -62,7 +62,7 @@ public:
   
   /// Updates "name" to full path
   inline bool getConfFile(String &name) { return _get("conf", name); }
-  inline bool getFirmwareFile(String &name) { return _get("firmware", name); }
+  inline bool getFirmwareFile(String &name) { return _get("fw", name); }
   inline bool geLibFile(String &name) { return _get("lib", name); }
   
 };
