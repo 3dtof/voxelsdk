@@ -312,7 +312,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="4" desc="This indicates the total number of quads in each subframe." function="" fuseId="-1" id="82" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="1" default="4" desc="This indicates the total number of quads in each subframe. Only values of 4 and 6 are valid. The behavior is unpredicatable when set to other values." function="" fuseId="-1" id="82" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="131" bankId="0" lsb="0" msb="3"/>
 					</rangeList>
@@ -818,13 +818,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="165" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="1" default="10323" desc="" function="" fuseId="-1" id="165" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="179" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="166" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="1" default="10324" desc="" function="" fuseId="-1" id="166" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="180" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
@@ -1232,7 +1232,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="If set '1', shutter functionality is disabled. If shutter functionality is disabled, the pixel charge continues to transfer to the storage node during the sensor readout." function="" fuseId="-1" id="234" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="1" default="0" desc="If set to '1', shutter functionality is disabled. If shutter functionality is disabled, the pixel charge continues to transfer to the storage node during the sensor readout." function="" fuseId="-1" id="234" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="204" bankId="0" lsb="23" msb="23"/>
 					</rangeList>
@@ -1364,7 +1364,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="'0' : TFC stops all processing.$Streaming comes to a halt. The sensor operation is also halted. $$'1' : TFC is in normal operation.$" function="" fuseId="-1" id="256" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="1" default="1" desc="'1' : TFC stops all processing.$Streaming comes to a halt. The sensor operation is also halted. $$'0' : TFC is in normal operation.$" function="" fuseId="-1" id="256" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="128" bankId="0" lsb="0" msb="0"/>
 					</rangeList>
@@ -1819,7 +1819,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="1" desc="Used for mirroring the image along vertical axis(left-right mirroring)" function="" fuseId="-1" id="901" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="1" desc="Used for mirroring the image along vertical axis (left-right mirroring)" function="" fuseId="-1" id="901" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="34" bankId="0" lsb="16" msb="16"/>
 					</rangeList>
@@ -1856,7 +1856,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="6" desc="If no scaling is used,$Integration time = intg_duty_cycle * 100/63.0." function="" fuseId="-1" id="907" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
+				<property aid_0="0" default="6" desc="If no scaling is used,$Integration time = intg_duty_cycle * 100/64.0." function="" fuseId="-1" id="907" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
 					<rangeList>
 						<range address="76" bankId="3" lsb="0" msb="5"/>
 					</rangeList>
@@ -2037,73 +2037,73 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="sin(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1004" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="0" desc="sin(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1004" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="16" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="28377" desc="sin(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1005" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="28377" desc="sin(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1005" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="17" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="-28377" desc="sin(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1006" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="-28377" desc="sin(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1006" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="18" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="sin(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1007" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="0" desc="sin(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1007" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="19" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="28377" desc="sin(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1008" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="28377" desc="sin(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1008" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="20" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="-28377" desc="sin(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1009" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="-28377" desc="sin(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1009" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="21" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="32767" desc="cos(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1010" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="32767" desc="cos(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1010" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="22" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="-16384" desc="cos(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1011" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="-16384" desc="cos(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1011" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="23" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="-16384" desc="cos(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1012" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="-16384" desc="cos(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1012" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="24" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="32767" desc="cos(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1013" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="32767" desc="cos(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1013" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="25" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="-16384" desc="cos(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1014" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="-16384" desc="cos(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1014" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="26" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="-16384" desc="cos(quadcount*2*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1015" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
+				<property aid_0="2" default="-16384" desc="cos(quadcount*2*pi/quad_cnt_max)" function="" fuseId="-1" id="1015" max="32767" min="-32768" readonly="0" signed="1" strobe="0" totalBits="16" units="">
 					<rangeList>
 						<range address="27" bankId="3" lsb="0" msb="15"/>
 					</rangeList>
@@ -2433,16 +2433,15 @@
 						<value desc="12 bits phase, 4 bits amplitude." meaning="2 byte mode" value="2"/>
 						<value desc="reserved" meaning="reserved" value="3"/>
 						<value desc="12 bit phase, 12 bit amplitude, 4 bit ambient and 4 bit flags" meaning="4 bytes" value="4"/>
-						<value desc="I1, Q1, I2, Q2 16 bits each" meaning="8 bytes" value="8"/>
 					</valueList>
 				</property>
-				<property aid_0="2" default="0" desc="Useful for debugging. Outputs an 8-bit ramp. 0,0,1,2,3.....255,0,0,1,2,.." function="" fuseId="-1" id="1069" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="0" desc="Useful for debugging. Outputs an 8-bit ramp. 0,0,1,2,3.....255,0,1,2,.." function="" fuseId="-1" id="1069" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="41" bankId="3" lsb="1" msb="1"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="1071" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="2" default="2" desc="" function="" fuseId="-1" id="1071" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="41" bankId="3" lsb="5" msb="7"/>
 					</rangeList>
@@ -2755,7 +2754,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="8" desc="Firmware version minor number$" function="" fuseId="-1" id="1979" max="31" min="0" readonly="0" signed="0" strobe="0" totalBits="5" units="">
+				<property aid_0="0" default="17" desc="Firmware version minor number$" function="" fuseId="-1" id="1979" max="31" min="0" readonly="0" signed="0" strobe="0" totalBits="5" units="">
 					<rangeList>
 						<range address="1" bankId="3" lsb="0" msb="4"/>
 					</rangeList>
@@ -2782,7 +2781,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="Selects the system input clock frequency. Programs the PLL accordingly to generate 48Mhz system clock." function="" fuseId="-1" id="1984" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="MHz">
+				<property aid_0="2" default="0" desc="Selects the system input clock frequency. Programs the PLL accordingly to generate 48MHz system clock." function="" fuseId="-1" id="1984" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="MHz">
 					<rangeList>
 						<range address="51" bankId="3" lsb="16" msb="23"/>
 					</rangeList>
@@ -3025,13 +3024,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="controller initialization done flag" function="" fuseId="-1" id="2068" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="DDR controller initialization done flag" function="" fuseId="-1" id="2068" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="99" bankId="3" lsb="1" msb="1"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="LVDS pll lock flag" function="" fuseId="-1" id="2069" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="LVDS PLL lock flag" function="" fuseId="-1" id="2069" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="99" bankId="3" lsb="3" msb="3"/>
 					</rangeList>
@@ -3157,7 +3156,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="Phase correction for base frequency. This value is substracted from the obtained phase." function="" fuseId="-1" id="2091" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+				<property aid_0="0" default="0" desc="Phase correction for base frequency. This value is subtracted from the obtained phase." function="" fuseId="-1" id="2091" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="55" bankId="3" lsb="4" msb="15"/>
 					</rangeList>
@@ -3173,7 +3172,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="Phase correction for de-aliasing frequency. This value is substracted from the obtained phase." function="" fuseId="-1" id="2095" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+				<property aid_0="0" default="0" desc="Phase correction for de-aliasing frequency. This value is subtracted from the obtained phase." function="" fuseId="-1" id="2095" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="56" bankId="3" lsb="4" msb="15"/>
 					</rangeList>
@@ -3197,37 +3196,37 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is substracted from the phase output." function="" fuseId="-1" id="2100" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+				<property aid_0="0" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is subtracted from the phase output." function="" fuseId="-1" id="2100" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="71" bankId="3" lsb="0" msb="11"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is substracted from the phase output." function="" fuseId="-1" id="2101" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+				<property aid_0="0" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is subtracted from the phase output." function="" fuseId="-1" id="2101" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="72" bankId="3" lsb="0" msb="11"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is substracted from the phase output." function="" fuseId="-1" id="2102" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="0" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is subtracted from the phase output." function="" fuseId="-1" id="2102" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="81" bankId="3" lsb="0" msb="7"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is substracted from the phase output." function="" fuseId="-1" id="2103" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="0" desc="phase correction$= phase_offset + coeff_illum*(tillum-tillum_calib) + coeff_sensor*(tsensor-tsensor_calib)$$phase correction is subtracted from the phase output." function="" fuseId="-1" id="2103" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="81" bankId="3" lsb="8" msb="15"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Adjusts the precision of temperature correction. coefficients are scaled down by calib_prec.$$coeff = coeff / calib_prec" function="" fuseId="-1" id="2104" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="1" desc="Adjusts the precision of temperature correction. coefficients are scaled down by calib_prec.$$coeff = coeff / calib_prec" function="" fuseId="-1" id="2104" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="81" bankId="3" lsb="20" msb="20"/>
 					</rangeList>
 					<valueList>
-						<value desc="Divide by 16" meaning="16" value="0"/>
-						<value desc="Divide by 256" meaning="256" value="1"/>
+						<value desc="Scaling by 1" meaning="1" value="0"/>
+						<value desc="Scaling by 16" meaning="16" value="1"/>
 					</valueList>
 				</property>
 				<property aid_0="" default="1" desc="" function="" fuseId="-1" id="2105" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
@@ -3254,7 +3253,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the base frequency data. This value is substracted from the obtained phase." function="" fuseId="-1" id="2109" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the base frequency data. This value is subtracted from the obtained phase." function="" fuseId="-1" id="2109" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="58" bankId="3" lsb="4" msb="15"/>
 					</rangeList>
@@ -3727,7 +3726,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="6401" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="6401" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="76" bankId="3" lsb="19" msb="19"/>
 					</rangeList>
@@ -3943,7 +3942,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Hold the demodulation and modulatio n waveforms to a static state. " function="" fuseId="-1" id="7085" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Hold the demodulation and modulation waveforms to a static state. " function="" fuseId="-1" id="7085" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="15" bankId="0" lsb="18" msb="18"/>
 					</rangeList>
@@ -5748,7 +5747,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="7903" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="1" desc="" function="" fuseId="-1" id="7903" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="53" bankId="0" lsb="0" msb="0"/>
 					</rangeList>
@@ -5784,7 +5783,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="7909" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="7909" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="53" bankId="0" lsb="6" msb="6"/>
 					</rangeList>
@@ -5808,7 +5807,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="7913" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="7913" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="53" bankId="0" lsb="10" msb="10"/>
 					</rangeList>
@@ -6028,7 +6027,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="7959" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="0" default="3" desc="" function="" fuseId="-1" id="7959" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="1" bankId="0" lsb="1" msb="3"/>
 					</rangeList>
@@ -6426,7 +6425,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="9922" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="2" default="3" desc="" function="" fuseId="-1" id="9922" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="2" bankId="0" lsb="3" msb="6"/>
 					</rangeList>
@@ -6450,7 +6449,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="9927" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="9927" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="8" bankId="0" lsb="6" msb="6"/>
 					</rangeList>
@@ -6468,7 +6467,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="" function="" fuseId="-1" id="9930" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="2" default="1" desc="" function="" fuseId="-1" id="9930" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="53" bankId="0" lsb="22" msb="22"/>
 					</rangeList>
@@ -6520,8 +6519,8 @@
 						<range address="11" bankId="0" lsb="3" msb="3"/>
 					</rangeList>
 					<valueList>
-						<value desc="" meaning="inactive level is 1" value="0"/>
-						<value desc="" meaning="inactive level is 0" value="1"/>
+						<value desc="" meaning="Inactive level is 1" value="0"/>
+						<value desc="" meaning="Inactive level is 0" value="1"/>
 					</valueList>
 				</property>
 				<property aid_0="0" default="1" desc="" function="" fuseId="-1" id="9944" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
@@ -6666,7 +6665,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Enable scaling of integration times in alternate frames." function="" fuseId="-1" id="9973" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="9973" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="77" bankId="3" lsb="5" msb="5"/>
 					</rangeList>
@@ -6696,7 +6695,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Integration duty cycle is scaled by down this value.$Scaling is given by the formula : $integration time (scaled) = integration time &gt;&gt; normal_frm_intg_scale_scale" function="2**x" fuseId="-1" id="9980" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="0" default="0" desc="Integration duty cycle is scaled by down this value.$Scaling is given by the formula : $integration time (scaled) = integration time &gt;&gt; normal_frm_intg_scale" function="2**x" fuseId="-1" id="9980" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="77" bankId="3" lsb="6" msb="8"/>
 					</rangeList>
@@ -6768,7 +6767,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="9996" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="" default="2" desc="" function="" fuseId="-1" id="9996" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="177" bankId="3" lsb="1" msb="4"/>
 					</rangeList>
@@ -6780,7 +6779,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Invert reference signals before measurement$" function="" fuseId="-1" id="9998" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
+				<property aid_0="0" default="3" desc="Invert reference signals before measurement$" function="" fuseId="-1" id="9998" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="177" bankId="3" lsb="9" msb="10"/>
 					</rangeList>
@@ -6808,21 +6807,21 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Threshold for number of errors in measurements in 4096 cycles" function="" fuseId="-1" id="10003" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="" default="10" desc="Threshold for number of errors in measurements in 4096 cycles" function="" fuseId="-1" id="10003" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="177" bankId="3" lsb="11" msb="18"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="delay correction :$delay_fb_corr_1 = (delay_fb_corr_mode*delay_fb_coeff_1*(delay_fb_illum-delay_fb_comp)/256$$delay_fb_corr_1 = freq_ratio*delay_fb_corr_1" function="" fuseId="-1" id="10005" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="delay correction :$delay_fb_corr_1 = (delay_fb_corr_mode*delay_fb_coeff_1*(delay_fb_illum-delay_fb_comp)/256$$delay_fb_corr_2 = freq_ratio*delay_fb_corr_1" function="" fuseId="-1" id="10005" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
 					<rangeList>
-						<range address="177" bankId="3" lsb="21" msb="21"/>
+						<range address="177" bankId="3" lsb="21" msb="22"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="delay correction :$freq1 : delay_fb_dc_corr_1 = (delay_fb_dc_corr_mode*0.5*delay_fb_coeff_1*(dc_fb_illum-0.5))/256$$freq2 : delay_fb_dc_corr_2 = freq_ratio*delay_fb_dc_corr_1" function="" fuseId="-1" id="10009" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="delay correction :$freq1 : delay_fb_dc_corr_1 = (delay_fb_dc_corr_mode*0.5*delay_fb_coeff_1*(dc_fb_illum-0.5))/256$$freq2 : delay_fb_dc_corr_2 = freq_ratio*delay_fb_dc_corr_1" function="" fuseId="-1" id="10009" max="1" min="-2" readonly="0" signed="1" strobe="0" totalBits="2" units="">
 					<rangeList>
-						<range address="177" bankId="3" lsb="19" msb="19"/>
+						<range address="177" bankId="3" lsb="19" msb="20"/>
 					</rangeList>
 					<valueList/>
 				</property>
@@ -6864,25 +6863,19 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="freq_ratio = f2*4096/f1" function="" fuseId="-1" id="10018" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="freq_ratio = f1*4096/f2" function="" fuseId="-1" id="10018" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="178" bankId="3" lsb="0" msb="11"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="delay_fb_coeff_1=f1*1024/24MHz" function="" fuseId="-1" id="10019" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="2048" desc="delay_fb_coeff_1=f1*1024/24MHz" function="" fuseId="-1" id="10019" max="4095" min="0" readonly="0" signed="0" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="179" bankId="3" lsb="0" msb="11"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10020" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
-					<rangeList>
-						<range address="177" bankId="3" lsb="22" msb="22"/>
-					</rangeList>
-					<valueList/>
-				</property>
-				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the de-aliasing frequency data. This value is substracted from the obtained phase." function="" fuseId="-1" id="10021" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
+				<property aid_0="" default="0" desc="Phase correction to be applied in HDR frame on the de-aliasing frequency data. This value is subtracted from the obtained phase." function="" fuseId="-1" id="10021" max="2047" min="-2048" readonly="0" signed="1" strobe="0" totalBits="12" units="">
 					<rangeList>
 						<range address="59" bankId="3" lsb="4" msb="15"/>
 					</rangeList>
@@ -6994,12 +6987,6 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10043" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
-					<rangeList>
-						<range address="177" bankId="3" lsb="20" msb="20"/>
-					</rangeList>
-					<valueList/>
-				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="10044" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
 					<rangeList/>
 					<valueList/>
@@ -7037,7 +7024,6 @@
 								<property desc="" name="intg_duty_cycle_set_failed" propertyId="2124"/>
 								<property desc="" name="lumped_dead_time" propertyId="6366"/>
 								<property desc="" name="normal_frm_intg_scale" propertyId="9980"/>
-								<property desc="" name="hdr_en" propertyId="9973"/>
 								<property desc="" name="hdr_scale" propertyId="6377"/>
 							</propertyList>
 						</group>
@@ -7067,6 +7053,7 @@
 							<propertyList>
 								<property desc="" name="standby_pin_en" propertyId="2125"/>
 								<property desc="" name="standby_pin_pol" propertyId="6389"/>
+								<property desc="" name="standby" propertyId="6401"/>
 							</propertyList>
 						</group>
 					</groupList>
@@ -7126,8 +7113,8 @@
 								<property desc="" name="phase_corr_2" propertyId="2095"/>
 								<property desc="" name="disable_offset_corr" propertyId="2098"/>
 								<property desc="" name="disable_temp_corr" propertyId="2099"/>
-								<property desc="" name="coeff_illum_1" propertyId="2100"/>
-								<property desc="" name="coeff_sensor_1" propertyId="2101"/>
+								<property desc="" name="coeff_illum" propertyId="2100"/>
+								<property desc="" name="coeff_sensor" propertyId="2101"/>
 								<property desc="" name="tillum_calib" propertyId="2102"/>
 								<property desc="" name="tsensor_calib" propertyId="2103"/>
 								<property desc="" name="calib_prec" propertyId="2104"/>
@@ -7170,10 +7157,8 @@
 								<property desc="" name="illum_fb_error_cnt" propertyId="10000"/>
 								<property desc="" name="comp_fb_error_cnt" propertyId="10002"/>
 								<property desc="" name="fb_error_cnt_threshold" propertyId="10003"/>
-								<property desc="" name="delay_fb_corr_mode" propertyId="10020"/>
-								<property desc="" name="delay_fb_corr_en" propertyId="10005"/>
-								<property desc="" name="delay_fb_dc_corr_mode" propertyId="10043"/>
-								<property desc="" name="delay_fb_dc_corr_en" propertyId="10009"/>
+								<property desc="" name="delay_fb_corr_mode" propertyId="10005"/>
+								<property desc="" name="delay_fb_dc_corr_mode" propertyId="10009"/>
 								<property desc="" name="freq_ratio" propertyId="10018"/>
 								<property desc="" name="delay_fb_coeff_1" propertyId="10019"/>
 							</propertyList>
