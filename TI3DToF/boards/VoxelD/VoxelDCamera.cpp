@@ -80,6 +80,40 @@ public:
   virtual ~VoxelDIlluminationVoltageParameter() {}
 };
 
+class VoxelDIlluminationPolarityParameter: public BoolParameter
+{
+  VoxelDCamera &_voxelDCamera;
+  bool _value = false;
+public:
+  VoxelDIlluminationPolarityParameter(VoxelDCamera &depthCamera, RegisterProgrammer &programmer):
+  BoolParameter(programmer, ILLUM_EN_POL, 0x5C35, 24, 23, {"", ""}, {"", ""}, 0, "", "Invert the polarity of illum_en.", Parameter::IO_READ_WRITE, {}), _voxelDCamera(depthCamera) {}
+
+  virtual bool get(bool &value, bool refresh=false)
+  {
+    value = _value;
+    return true;
+  }
+
+  virtual bool set(const bool &value)
+  {
+    _value = value;
+    _voxelDCamera._setIllumPolarity(value);
+    return true;
+  }
+
+};
+
+bool VoxelDCamera::_setIllumPolarity(const bool value)
+{
+  if (value) {
+    _programmer->writeRegister(0x58A9, 0x8002D2);
+    _programmer->writeRegister(0x58AD, 0x000181);
+  } else {
+    _programmer->writeRegister(0x58A9, 0x4002D2);
+    _programmer->writeRegister(0x58AD, 0x000081);
+  }
+  return true;
+}
 
 bool VoxelDCamera::_init()
 {
@@ -133,6 +167,7 @@ bool VoxelDCamera::_init()
   if(!_addParameters({
     ParameterPtr(new VoxelDMixVoltageParameter(*_programmer)),
     ParameterPtr(new VoxelDIlluminationVoltageParameter(*_programmer)),
+    ParameterPtr(new VoxelDIlluminationPolarityParameter(*this, *_programmer))
     }))
   {
     return false;
@@ -147,15 +182,7 @@ bool VoxelDCamera::_init()
 
 bool VoxelDCamera::_initStartParams()
 {
-  /*
-   * The first two magic register writes are to invert the illum_en polarity
-   * They are required only for the first set of boards, and should not be done
-   * for the later revisions.
-   * TODO: Add these to named parameters instead of hardcoded register values
-   */
   return 
-    _programmer->writeRegister(0x58A9, 0x800202) &&
-    _programmer->writeRegister(0x58AD, 0x000181) &&
     set(ILLUM_VOLTAGE, 1800U) && 
     ToFTintinCamera::_initStartParams() &&
     set(MOD_FREQ1, 24.0f) &&

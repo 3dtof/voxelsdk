@@ -17,6 +17,7 @@
 #undef ILLUM_VOLTAGE
 #define ILLUM_VOLTAGE "illum_volt" // Illumination voltage
 #define MIX_VOLTAGE "mix_volt" // Mixing voltage
+#define ILLUM_EN_POL "illum_en_pol"
 
 namespace Voxel
 {
@@ -31,6 +32,7 @@ protected:
   
   bool _init();
   
+  bool _setIllumPolarity(const bool value);
   virtual bool _getFieldOfView(float &fovHalfAngle) const;
   virtual bool _getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const;
   virtual bool _setStreamerFrameSize(const FrameSize &s);
@@ -43,6 +45,8 @@ public:
   VoxelDCamera(DevicePtr device);
   
   virtual ~VoxelDCamera() {}
+
+  friend class VoxelDIlluminationPolarityParameter;
 };
 
 }
