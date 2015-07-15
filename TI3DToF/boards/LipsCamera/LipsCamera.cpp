@@ -110,6 +110,7 @@ public:
     m.frameRate.denominator = 1;
     UVCStreamer::setVideoMode(m);
     UVCStreamer::start();
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 
   virtual ~LipsCameraUVCStreamer()
@@ -135,7 +136,6 @@ bool LipsCamera::_init()
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
-#if 0
   if(!_addParameters({
     ParameterPtr(new LipsMixVoltageParameter(*_programmer)),
     ParameterPtr(new LipsIlluminationVoltageParameter(*_programmer)),
@@ -143,16 +143,7 @@ bool LipsCamera::_init()
   {
     return false;
   }
-#endif
   
-  VideoMode videoMode;
-  videoMode.frameSize.width = 320;
-  videoMode.frameSize.height = 240;
-  videoMode.frameRate.denominator = 1;
-  videoMode.frameRate.numerator = 25;
-  _streamer->setVideoMode(videoMode);
-  _streamer->start();
-  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   if(!ToFHaddockCamera::_init())
     return false;
   
@@ -162,6 +153,8 @@ bool LipsCamera::_init()
 
 bool LipsCamera::_initStartParams()
 {
+  if(!set(ILLUM_VOLTAGE, 1500U))
+    return false;
   return 
   //set(ILLUM_VOLTAGE, 1500U) && 
   //set(MIX_VOLTAGE, 1500U) &&
