@@ -265,6 +265,47 @@ public:
   virtual ~TintinCDKMainCurrentParameter() {}
 };
 
+class TintinCDKDummyDelayFBCorrModeParameter: public IntegerParameter
+{
+  int _value = 0;
+public:
+  TintinCDKDummyDelayFBCorrModeParameter(RegisterProgrammer &programmer):
+  IntegerParameter(programmer, DELAY_FB_CORR_MODE, "", 0x5CB1, 24, 22, 21, -2, 1, 0, "", "Dummy parameter for delay fb correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
+  virtual bool get(int &value, bool refresh = false)
+  {
+    value = _value;
+    return true;
+  }
+
+  virtual bool set(const int &value)
+  {
+    _value = value;
+    return true;
+  }
+
+  virtual ~TintinCDKDummyDelayFBCorrModeParameter() {}
+};
+
+class TintinCDKDummyDelayFBDCCorrModeParameter: public IntegerParameter
+{
+  int _value = 0;
+public:
+  TintinCDKDummyDelayFBDCCorrModeParameter(RegisterProgrammer &programmer):
+  IntegerParameter(programmer, DELAY_FB_DC_CORR_MODE, "", 0x5CB1, 24, 20, 19, -2, 1, 0, "", "Dummy parameter for delay fb duty cycle correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
+  virtual bool get(int &value, bool refresh = false)
+  {
+    value = _value;
+    return true;
+  }
+
+  virtual bool set(const int &value)
+  {
+    _value = value;
+    return true;
+  }
+
+  virtual ~TintinCDKDummyDelayFBDCCorrModeParameter() {}
+};
 
 bool TintinCDKCamera::_init()
 {
@@ -368,6 +409,22 @@ bool TintinCDKCamera::_init()
   _parameters.erase(LUMPED_DEAD_TIME);
   _parameters.erase(ILLUM_DC_CORR);
   _parameters.erase(ILLUM_DC_CORR_DIR);
+
+  /*
+   * On the first revision of boards, these two parameters should not be set;
+   * but we would like to keep a single set of calibration conf files for
+   * both revisions of the board.
+   * So use dummy parameters for now that mask the register writes till we find
+   * a more elegant solution.
+   */
+  if ((int) _boardRevision[0] == 1) {
+    _parameters.erase(DELAY_FB_CORR_MODE);
+    _parameters.erase(DELAY_FB_DC_CORR_MODE);
+    if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBCorrModeParameter(*_programmer)),}))
+      return false;
+    if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBDCCorrModeParameter(*_programmer)),}))
+      return false;
+  }
   
   return true;
 }

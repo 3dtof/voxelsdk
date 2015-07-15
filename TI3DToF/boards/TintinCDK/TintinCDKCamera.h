@@ -20,6 +20,8 @@
 #define LUMPED_DEAD_TIME "lumped_dead_time"
 #define ILLUM_DC_CORR "illum_dc_corr"
 #define ILLUM_DC_CORR_DIR "illum_dc_corr_dir"
+#define DELAY_FB_CORR_MODE "delay_fb_corr_mode"
+#define DELAY_FB_DC_CORR_MODE "delay_fb_dc_corr_mode"
 
 #define TINTIN_CDK_USBIO_BOARD_REVISION 0x30
 
