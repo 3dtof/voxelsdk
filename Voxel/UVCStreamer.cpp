@@ -84,6 +84,7 @@ class UVCStreamer::UVCStreamerPrivate
   : public ISampleGrabberCB
 #endif
 {
+  UVCStreamer &_uvcStreamer;
 public:
 #ifdef LINUX
   enum CaptureMode
@@ -129,10 +130,11 @@ public:
   bool initialized = true;
   Ptr<UVC> uvc;
 
-  UVCStreamerPrivate()
+  UVCStreamerPrivate(UVCStreamer &uvcStreamer)
 #ifdef WINDOWS
     : _rawBuffers(2)
 #endif
+    , _uvcStreamer(uvcStreamer)
   {
   }
 
@@ -182,6 +184,9 @@ public:
 
   STDMETHODIMP BufferCB(double timestamp, BYTE *buffer, long bufferLength)
   {
+    if (!_uvcStreamer.isRunning())
+      return S_OK;
+
     if (_sampleStart == 0)
     {
       _sampleStart = _timer.getCurentRealTime() - (TimeStampType)(timestamp*1E6); // in micro seconds
@@ -346,7 +351,7 @@ bool UVCStreamer::_uvcInit()
   if(_device->interfaceID() != Device::USB)
     return false;
   
-  _uvcStreamerPrivate = Ptr<UVCStreamerPrivate>(new UVCStreamerPrivate());
+  _uvcStreamerPrivate = Ptr<UVCStreamerPrivate>(new UVCStreamerPrivate(*this));
   _uvcStreamerPrivate->uvc = Ptr<UVC>(new UVC(_device));
   
 #ifdef WINDOWS
