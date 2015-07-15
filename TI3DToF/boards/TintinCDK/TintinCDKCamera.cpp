@@ -205,7 +205,7 @@ protected:
   
 public:
   TintinCDKIllumVrefParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, "comp_vref", "mV", 0x5400, 8, 7, 0, 0, 3300, 1200, "Comp Vref", 
+  UnsignedIntegerParameter(programmer, COMP_VREF, "mV", 0x5400, 8, 7, 0, 0, 3300, 905, "Comp Vref", 
                            "This voltage is the reference voltage used for comparing the laser voltage in the illumination delay compensation loop.", Parameter::IO_READ_WRITE, {})
   {}
   
@@ -425,6 +425,9 @@ bool TintinCDKCamera::_init()
     if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBDCCorrModeParameter(*_programmer)),}))
       return false;
   }
+  
+  if (!set(COMP_VREF, 905U))
+    return false;
   
   return true;
 }
