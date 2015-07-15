@@ -80,6 +80,46 @@ public:
   virtual ~LipsIlluminationVoltageParameter() {}
 };
 
+class LipsCameraUVCStreamer : public UVCStreamer
+{
+protected:
+  bool _isReallyRunning = false;
+public:
+  bool start()
+  {
+    return _isReallyRunning = true;
+  }
+
+  bool stop()
+  {
+    _isReallyRunning = false;
+    return true;
+  }
+
+  bool isRunning()
+  {
+    return _isReallyRunning;
+  }
+
+  LipsCameraUVCStreamer(DevicePtr device) : UVCStreamer(device)
+  {
+    VideoMode m;
+    m.frameSize.width = 320*2;
+    m.frameSize.height = 240;
+    m.frameRate.numerator = 25;
+    m.frameRate.denominator = 1;
+    UVCStreamer::setVideoMode(m);
+    UVCStreamer::start();
+  }
+
+  virtual ~LipsCameraUVCStreamer()
+  {
+    if (isInitialized() && isRunning())
+      stop();
+    UVCStreamer::stop();
+  }
+};
+
 
 bool LipsCamera::_init()
 {
@@ -90,7 +130,7 @@ bool LipsCamera::_init()
   _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(
     { {0x2D, 1}, {0x58, 3}, {0x5C, 3} },
     controlDevice));
-  _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
+  _streamer = Ptr<Streamer>(new LipsCameraUVCStreamer(controlDevice));
   
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
@@ -187,15 +227,15 @@ bool LipsCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVi
 {
   supportedVideoModes = Vector<SupportedVideoMode> {
     SupportedVideoMode(320,240,25,1,4),
-    SupportedVideoMode(160,240,50,1,4),
-    SupportedVideoMode(160,120,100,1,4),
-    SupportedVideoMode(80,120,200,1,4),
-    SupportedVideoMode(80,60,400,1,4),
-    SupportedVideoMode(320,240,50,1,2),
-    SupportedVideoMode(320,120,100,1,2),
-    SupportedVideoMode(160,120,200,1,2),
-    SupportedVideoMode(160,60,400,1,2),
-    SupportedVideoMode(80,60,400,1,2),
+    // SupportedVideoMode(160,240,50,1,4),
+    // SupportedVideoMode(160,120,100,1,4),
+    // SupportedVideoMode(80,120,200,1,4),
+    // SupportedVideoMode(80,60,400,1,4),
+    // SupportedVideoMode(320,240,50,1,2),
+    // SupportedVideoMode(320,120,100,1,2),
+    // SupportedVideoMode(160,120,200,1,2),
+    // SupportedVideoMode(160,60,400,1,2),
+    // SupportedVideoMode(80,60,400,1,2),
   };
   return true;
 }
