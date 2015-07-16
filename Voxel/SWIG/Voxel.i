@@ -171,7 +171,7 @@ namespace std
     return b;
   }
   
-  bool saveCameraProfileToHardware(const int id)
+  bool saveCameraProfileToHardware(int &id)
   {
     bool b;
     Py_BEGIN_ALLOW_THREADS
