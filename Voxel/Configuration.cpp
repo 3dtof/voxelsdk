@@ -937,15 +937,17 @@ int MainConfigurationFile::_getNewCameraProfileID(bool inHost)
 
 int MainConfigurationFile::addCameraProfile(const String &profileName, const int parentID)
 {
-  if(_cameraProfiles.find(parentID) == _cameraProfiles.end())
+  if(parentID >= 0 && _cameraProfiles.find(parentID) == _cameraProfiles.end())
     return -1;
   
   int id = _getNewCameraProfileID();
   
   _cameraProfiles[id] = ConfigurationFile(this);
   _cameraProfiles[id].setInteger("global", "id", id);
-  _cameraProfiles[id].setInteger("global", "parent", parentID);
   _cameraProfiles[id].set("global", "name", profileName);
+  
+  if(parentID >= 0)
+    _cameraProfiles[id].setInteger("global", "parent", parentID);
   
   _cameraProfileNames[id] = profileName;
   
@@ -1386,7 +1388,7 @@ bool MainConfigurationFile::writeToHardware()
   return true;
 }
 
-bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
+bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
 {
   ConfigurationFile *config = getCameraProfile(id);
   
@@ -1421,6 +1423,7 @@ bool MainConfigurationFile::saveCameraProfileToHardware(const int id)
   {
     if(_currentCameraProfileID == id)
       return setCurrentCameraProfile(newid);
+    id = newid;
     return true;
   }
   else

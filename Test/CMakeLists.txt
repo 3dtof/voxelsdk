@@ -12,6 +12,9 @@ target_link_libraries(UVCStreamerTest voxel)
 add_executable(CameraSystemTest CameraSystemTest.cpp)
 target_link_libraries(CameraSystemTest voxel)
 
+add_executable(CameraSystemConfigTest CameraSystemConfigTest.cpp)
+target_link_libraries(CameraSystemConfigTest voxel)
+
 add_executable(CameraSystemSaveStreamTest CameraSystemSaveStreamTest.cpp)
 target_link_libraries(CameraSystemSaveStreamTest voxel)
 

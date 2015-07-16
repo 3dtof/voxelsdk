@@ -368,10 +368,10 @@ public:
   virtual String get(const String &section, const String &name) const;
   virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   
-  int addCameraProfile(const String &profileName, const int parentID);
+  int addCameraProfile(const String &profileName, const int parentID = -1);
   bool setCurrentCameraProfile(const int id);
   bool removeCameraProfile(const int id);
-  bool saveCameraProfileToHardware(const int id);
+  bool saveCameraProfileToHardware(int &id);
   
   ConfigurationFile *getDefaultCameraProfile();
   ConfigurationFile *getCameraProfile(const int id);
