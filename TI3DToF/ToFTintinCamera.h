@@ -67,7 +67,9 @@
 #define NONLINEARITY_COEFF_F2 "phase_lin_coeff1"
 #define NONLINEARITY_ENABLE "phase_lin_corr_en"
 
+#undef COEFF_ILLUM_1
 #define COEFF_ILLUM_1 "coeff_illum"
+#undef COEFF_SENSOR_1
 #define COEFF_SENSOR_1 "coeff_sensor"
 
 namespace Voxel
