@@ -40,7 +40,7 @@ protected:
   
   static const Map<String, _Path> _pathTypes;
   
-  bool _getLocalPath(const String &type, String &path);
+  bool _getLocalFile(const String &type, String &path);
   bool _getPaths(const String &type, Vector<String> &paths);
   
   bool _get(const String &type, String &name);
@@ -56,9 +56,9 @@ public:
   inline static bool addConfPath(const String &path) { return _addPath("conf", path); }
   inline static bool addLibPath(const String &path) { return _addPath("lib", path); }
   
-  inline bool getLocalFirmwarePath(String &path) { return _getLocalPath("fw", path); }
-  inline bool getLocalConfPath(String &path) { return _getLocalPath("conf", path); }
-  inline bool getLocalLibPath(String &path) { return _getLocalPath("lib", path); }
+  inline bool getLocalFirmwareFile(String &name) { return _getLocalFile("fw", name); }
+  inline bool getLocalConfFile(String &name) { return _getLocalFile("conf", name); }
+  inline bool getLocalLibFile(String &name) { return _getLocalFile("lib", name); }
   
   /// Updates "name" to full path
   inline bool getConfFile(String &name) { return _get("conf", name); }
@@ -128,6 +128,7 @@ protected:
   mutable Mutex _mutex;
   
   bool _serializeAllDataFiles(OutputStream &out);
+  bool _saveAllDataFiles(const String &prefix);
   
   template <typename T>
   bool _getData(const String &fileName, Vector<T> &data);
@@ -153,6 +154,7 @@ public:
   ConfigSetMap configs;
   
   inline Location getLocation() const { return _location; }
+  inline const String &getFileName() const { return _fileName; }
   
   virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   virtual String get(const String &section, const String &name) const;
@@ -305,9 +307,9 @@ bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
   Configuration c;
   
   String f = fileName;
-  if(!c.getConfFile(f))
+  if(!c.getLocalConfFile(f))
   {
-    logger(LOG_ERROR) << "ConfigurationFile: Could not locate file '" << fileName << "'" << std::endl;
+    logger(LOG_ERROR) << "ConfigurationFile: Failed to locate file '" << fileName << "'" << std::endl;
     return false;
   }
   
@@ -319,7 +321,7 @@ bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
     return false;
   }
   
-  fs.write(data.data(), data.size()*sizeof(T));
+  fs.write((const char *)data.data(), data.size()*sizeof(T));
   
   fs.close();
   
@@ -345,12 +347,14 @@ protected:
   String _mainConfigName, _hardwareID;
   
   int _getNewCameraProfileID(bool inHost = true);
-  
+
 public:
   struct ConfigSerialNumberType { uint8_t major, minor; };
   typedef Function<bool(ConfigSerialNumberType &, TimeStampType &, SerializedObject &)> HardwareSerializer;
+
+protected:  
+  bool _saveHardwareImage(ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so);
   
-protected:
   HardwareSerializer _hardwareReader, _hardwareWriter;
     
 public:
@@ -398,6 +402,8 @@ public:
   const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
  
   virtual ~MainConfigurationFile() {}
+  
+  friend class ConfigurationFile;
 };
 
 template <typename T>

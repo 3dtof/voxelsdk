@@ -29,7 +29,8 @@ enum Options
   PARAM_VALUE = 8,
   LIST_PROFILES = 9,
   REMOVE_PROFILE = 10,
-  WRITE_TO_EEPROM = 11
+  WRITE_TO_EEPROM = 11,
+  SAVE_FILE_TO_HOST = 12,
 };
 
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
@@ -46,6 +47,7 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
   { LIST_PROFILES,    "-l", SO_NONE,    "List all profiles for this camera"},
   { REMOVE_PROFILE,   "-r", SO_NONE,    "Remove profile selected with -i option"},
   { WRITE_TO_EEPROM,  "-w", SO_NONE,    "Write to EEPROM, the profile selected with -i option"},
+  { SAVE_FILE_TO_HOST,"-z", SO_NONE,    "Save selected profile (present in EEPROM) to host"},
   SO_END_OF_OPTIONS
 };
 
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
   
   bool listProfiles = false;
   
-  bool createProfile = false, removeProfile = false, writeToEEPROM = false;
+  bool createProfile = false, removeProfile = false, writeToEEPROM = false, saveToHost = false;
   String profileName;
   int profileID = -1, parentProfileID = -1;
   
@@ -153,6 +155,10 @@ int main(int argc, char *argv[])
         
       case WRITE_TO_EEPROM:
         writeToEEPROM = true;
+        break;
+        
+      case SAVE_FILE_TO_HOST:
+        saveToHost = true;
         break;
         
       default:
@@ -318,6 +324,26 @@ int main(int argc, char *argv[])
     }
     
     std::cout << "Profile saved to hardware with id = " << id << std::endl;
+    return 0;
+  }
+  
+  if(saveToHost)
+  {
+    ConfigurationFile *config = depthCamera->configFile.getCameraProfile(id);
+    
+    if(!config)
+    {
+      logger(LOG_ERROR) << "Failed to get configuration for id = " << id << "." << std::endl;
+      return -1;
+    }
+    
+    if(!config->write())
+    {
+      logger(LOG_ERROR) << "Failed to save configuration with id = " << id << " on host." << std::endl;
+      return -1;
+    }
+    
+    std::cout << "Profile saved to host with id = " << id << " to file '" << config->getFileName() << "'" << std::endl;
     return 0;
   }
   
