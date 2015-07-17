@@ -90,7 +90,7 @@ bool Configuration::_addPath(const String &type, const String &path)
 #endif
 }
 
-bool Configuration::_getLocalPath(const String &type, String &path)
+bool Configuration::_getLocalFile(const String &type, String &name)
 {
   // Adding local path ~/.Voxel/<type>
   // Works typically for Windows
@@ -113,7 +113,7 @@ bool Configuration::_getLocalPath(const String &type, String &path)
     if(!isFilePresent(s) && !makeDirectory(s))
       return false;
     
-    path = s;
+    name = s + DIR_SEP + name;
     return true;
   }
   
@@ -136,7 +136,7 @@ bool Configuration::_getLocalPath(const String &type, String &path)
     if(!isFilePresent(s) && !makeDirectory(s))
       return false;
     
-    path = s;
+    name = s + DIR_SEP + name;
     return true;
   }
   
@@ -173,7 +173,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   
   String localPath;
   
-  if(_getLocalPath(type, localPath))
+  if(_getLocalFile(type, localPath))
     paths.insert(paths.begin(), localPath);
   
   paths.insert(paths.begin(), ""); // Empty path for absolute file paths and also relative file paths
@@ -549,6 +549,30 @@ bool ConfigurationFile::_serializeAllDataFiles(OutputStream &out)
   return true;
 }
 
+bool ConfigurationFile::_saveAllDataFiles(const String &prefix)
+{
+  for(auto c = configs.begin(); c != configs.end(); c++)
+  {
+    for(auto i = c->second.params.begin(); i != c->second.params.end(); i++)
+    {
+      if(i->second.compare(0, sizeof(FILE_PREFIX) - 1, FILE_PREFIX) == 0)
+      {
+        String f;
+        Vector<uint8_t> d;
+        
+        if(!getFile<uint8_t>(c->first, i->first, f, d))
+          return false;
+        
+        
+        if(!setFile<uint8_t>(c->first, i->first, prefix + f, d)) // save the file locally
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
+
 bool ConfigurationFile::write(OutputStream &out)
 {
   Lock<Mutex> _(_mutex);
@@ -569,23 +593,28 @@ bool ConfigurationFile::write(OutputStream &out)
 bool ConfigurationFile::write(const String &configFile)
 {
   Configuration c;
-  String path;
-  
-  if(!c.getLocalConfPath(path))
-  {
-    logger(LOG_ERROR) << "ConfigurationFile: Failed to get configuration local path." << std::endl;
-    return false;
-  }
   
   if(configFile != "") // Use new file name or old one itself?
   {
-    String f = configFile;
-    _fileName = path + DIR_SEP + basename(f);
+    String f = basename(configFile);
+    
+    if(!c.getLocalConfFile(f))
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Failed to get configuration local path." << std::endl;
+      return false;
+    }
+    
+    _fileName = f;
   }
   else
   {
-    if(_fileName.compare(0, path.size(), path) != 0)
-      _fileName = path + DIR_SEP + basename(_fileName);
+    String f = basename(_fileName);
+    if(!c.getLocalConfFile(f))
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Failed to get configuration local path." << std::endl;
+      return false;
+    }
+    _fileName = f;
   }
   
   OutputFileStream fout(_fileName, std::ios::binary | std::ios::out);
@@ -595,6 +624,11 @@ bool ConfigurationFile::write(const String &configFile)
     logger(LOG_ERROR) << "ConfigurationFile: Could not write file '" << configFile << "'" << std::endl;
     return false;
   }
+  
+  logger(LOG_INFO) << "ConfigurationFile: Saving profile to '" << _fileName << "'..." << std::endl;
+  
+  if(getLocation() == ConfigurationFile::IN_CAMERA && !_saveAllDataFiles(_mainConfigurationFile->_hardwareID + "-"))
+    return false;
   
   return write(fout);
 }
@@ -1134,22 +1168,26 @@ bool MainConfigurationFile::readFromHardware()
   SerializedObject so;
   
   ConfigSerialNumberType serialNumber;
+  serialNumber.major = serialNumber.minor = 0;
   TimeStampType timestamp = 0;
   
   Configuration c;
   
   String f = _hardwareID + ".bin";
   
-  if(!c.getConfFile(f))
-    return false;
+  InputFileStream fs;
   
-  InputFileStream fs(f, std::ios::in | std::ios::binary);
-  
-  if(fs.good())
+  if(c.getConfFile(f))
   {
-    fs.read((char *)&serialNumber, sizeof(serialNumber));
-    fs.read((char *)&timestamp, sizeof(timestamp));
+    fs.open(f, std::ios::in | std::ios::binary);
+  
+    if(fs.good())
+    {
+      fs.read((char *)&serialNumber, sizeof(serialNumber));
+      fs.read((char *)&timestamp, sizeof(timestamp));
+    }
   }
+    
   
   bool ret = false;
   if(!_hardwareReader || !(ret = _hardwareReader(serialNumber, timestamp, so)) || so.size() == 0) 
@@ -1181,6 +1219,13 @@ bool MainConfigurationFile::readFromHardware()
     fs.seekg(sizeof(timestamp) + sizeof(serialNumber), std::ios::beg);
     fs.clear();
     fs.read((char *)so.getBytes().data(), size);
+  }
+  else
+  {
+    if(!_saveHardwareImage(serialNumber, timestamp, so))
+    {
+      logger(LOG_WARNING) << "MainConfigurationFile: Failed to save locally the configuration image from hardware." << std::endl;
+    }
   }
   
   uint8_t defaultProfileID;
@@ -1307,6 +1352,32 @@ bool MainConfigurationFile::readFromHardware()
   return true;
 }
 
+bool MainConfigurationFile::_saveHardwareImage(MainConfigurationFile::ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so)
+{
+  Configuration c;
+  
+  String f = _hardwareID + ".bin", path;
+  
+  if(!c.getLocalConfFile(f))
+    return false;
+  
+  OutputFileStream fs(f, std::ios::out | std::ios::binary);
+  
+  if(!fs.good())
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
+    return false;
+  }
+  
+  fs.write((const char *)&serialNumber, sizeof(serialNumber));
+  fs.write((const char *)&timestamp, sizeof(timestamp));
+  fs.write((const char *)so.getBytes().data(), so.size());
+  
+  fs.close();
+  return true;
+}
+
+
 bool MainConfigurationFile::writeToHardware()
 {
   OutputStringStream ss;
@@ -1362,28 +1433,12 @@ bool MainConfigurationFile::writeToHardware()
     return false;
   }
   
-  Configuration c;
-  
-  String f = _hardwareID + ".bin", path;
-  
-  if(!c.getLocalConfPath(path))
-    return false;
-  
-  f = path + DIR_SEP + f;
-  
-  OutputFileStream fs(f, std::ios::out | std::ios::binary);
-  
-  if(!fs.good())
+  if(!_saveHardwareImage(serialNumber, timestamp, so))
   {
-    logger(LOG_ERROR) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to save configuration image locally." << std::endl;
     return false;
   }
   
-  fs.write((const char *)&serialNumber, sizeof(serialNumber));
-  fs.write((const char *)&timestamp, sizeof(timestamp));
-  fs.write((const char *)so.getBytes().data(), so.size());
-  
-  fs.close();
   return true;
 }
 
