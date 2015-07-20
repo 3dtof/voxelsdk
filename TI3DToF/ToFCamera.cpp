@@ -348,6 +348,11 @@ bool ToFCamera::_is16BitModeEnabled(bool &mode16Bit)
   return get(DEALIAS_16BIT_OP_ENABLE, mode16Bit);
 }
 
+bool ToFCamera::_getDealiasedPhaseMask(int &dealiasedPhaseMask)
+{
+  return get(DEALIASED_PHASE_MASK, dealiasedPhaseMask);
+}
+
 bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
 {
   FramePtr p1 = std::dynamic_pointer_cast<Frame>(rawFrameInput);
@@ -407,8 +412,9 @@ bool ToFCamera::_initStartParams()
   ToFFrameType type;
   
   bool dealiased16BitMode;
+  int dealiasedPhaseMask;
   if(!_getBytesPerPixel(bytesPerPixel) || !_getOpDataArrangeMode(dataArrangeMode) || !_getToFFrameType(type) ||
-    !_is16BitModeEnabled(dealiased16BitMode) || !get(QUAD_CNT_MAX, quadCount))
+    !_is16BitModeEnabled(dealiased16BitMode) || !_getDealiasedPhaseMask(dealiasedPhaseMask) || !get(QUAD_CNT_MAX, quadCount))
   {
     logger(LOG_ERROR) << "ToFCamera: Failed to read " << PIXEL_DATA_SIZE << " or " 
     << OP_DATA_ARRANGE_MODE << " or " << type << std::endl;
@@ -421,8 +427,6 @@ bool ToFCamera::_initStartParams()
   bool pixelwiseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_PIXELWISE_OFFSET) == 0;
   bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_CROSS_TALK) == 0;
   
-  std::cout << "pixel-wise phase offset active = " << pixelwiseCalibEnable << std::endl;
-  
   if(pixelwiseCalibEnable && configFile.isPresent("calib", "phasecorrection") && !configFile.getFile<int16_t>("calib", "phasecorrection", phaseOffsetFileName, phaseOffsets))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not read phase offset correction file" << std::endl;
@@ -432,8 +436,7 @@ bool ToFCamera::_initStartParams()
   if(!_tofFrameGenerator->setParameters(phaseOffsetFileName, phaseOffsets, bytesPerPixel, 
     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
                                         crossTalkCalibEnable?configFile.get("calib", "cross_talk_coeff"):"",
-                                        type, (uint32_t) quadCount, dealiased16BitMode
-  ))
+                                        type, (uint32_t)quadCount, dealiased16BitMode, dealiasedPhaseMask))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;
     return false;

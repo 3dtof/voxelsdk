@@ -157,7 +157,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
                                       uint8_t histogramEnabled, const String &crossTalkCoefficients,
                                       ToFFrameType type, 
                                       uint32_t quadCount,
-                                      bool dealiased16BitMode)
+                                      bool dealiased16BitMode,
+                                      int dealiasedPhaseMask)
 {
   if(_phaseOffsetFileName == phaseOffsetFileName && bytesPerPixel == _bytesPerPixel && 
     _dataArrangeMode == dataArrangeMode && 
@@ -166,23 +167,52 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
     && _histogramEnabled == histogramEnabled &&
     _crossTalkCoefficients == crossTalkCoefficients && 
     _frameType == type && _quadCount == quadCount &&
-  _dealiased16BitMode == dealiased16BitMode)
+  _dealiased16BitMode == dealiased16BitMode && _dealiasedPhaseMask == dealiasedPhaseMask)
     return true;
   
   _phaseOffsetFileName = phaseOffsetFileName;
   _phaseOffsetCorrectionData = phaseOffsets;
+  _dealiasedPhaseMask = dealiasedPhaseMask;
   
   if(phaseOffsets.size() == maxFrameSize.width*maxFrameSize.height + 2) // Ignore the first two elements if present
   {
     Vector<int16_t>(_phaseOffsetCorrectionData.begin() + 2, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
+    _dealiasedPhaseMaskInPhaseOffset = 0;
   }
+  else if(phaseOffsets.size() == maxFrameSize.width*maxFrameSize.height + 3)
+  {
+    // Lower 4 bits
+    _dealiasedPhaseMaskInPhaseOffset = _phaseOffsetCorrectionData[2] & 0x000F;
+    
+    if(_dealiasedPhaseMaskInPhaseOffset > 7)
+      _dealiasedPhaseMaskInPhaseOffset = _dealiasedPhaseMaskInPhaseOffset - 16;
+    
+    Vector<int16_t>(_phaseOffsetCorrectionData.begin() + 3, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
+  }
+  else
+    _dealiasedPhaseMaskInPhaseOffset = _dealiasedPhaseMask;
+  
+  std::cout << "_dealiasedPhaseMask = " << _dealiasedPhaseMask 
+    << ", _dealiasedPhaseMaskInPhaseOffset = " << _dealiasedPhaseMaskInPhaseOffset << std::endl;
+  
+  if(_dealiasedPhaseMask > _dealiasedPhaseMaskInPhaseOffset)
+  {
+    for(auto i = 0; i < _phaseOffsetCorrectionData.size(); i++)
+      _phaseOffsetCorrectionData[i] <<= (_dealiasedPhaseMask - _dealiasedPhaseMaskInPhaseOffset);
+  }
+  else
+  {
+    for(auto i = 0; i < _phaseOffsetCorrectionData.size(); i++)
+      _phaseOffsetCorrectionData[i] >>= (_dealiasedPhaseMaskInPhaseOffset - _dealiasedPhaseMask);
+  }
+  
   
   String phaseOffsetsString;
   
   if(phaseOffsets.size() > 0)
   {
-    phaseOffsetsString.resize(phaseOffsets.size()*2);
-    memcpy(&phaseOffsetsString[0], phaseOffsets.data(), phaseOffsetsString.size());
+    phaseOffsetsString.resize(_phaseOffsetCorrectionData.size()*2);
+    memcpy(&phaseOffsetsString[0], _phaseOffsetCorrectionData.data(), phaseOffsetsString.size());
   }
   
   _bytesPerPixel = bytesPerPixel;

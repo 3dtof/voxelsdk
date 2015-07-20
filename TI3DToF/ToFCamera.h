@@ -134,6 +134,7 @@ protected:
   virtual bool _getToFFrameType(ToFFrameType &frameType) const;
   
   virtual bool _is16BitModeEnabled(bool &mode16Bit);
+  virtual bool _getDealiasedPhaseMask(int &dealiasedPhaseMask);
   
   virtual bool _initStartParams();
   
