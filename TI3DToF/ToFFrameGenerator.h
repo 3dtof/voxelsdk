@@ -22,6 +22,7 @@ class TI3DTOF_EXPORT ToFFrameGenerator: public FrameGenerator
   uint32_t _bytesPerPixel, _dataArrangeMode;
   
   bool _dealiased16BitMode;
+  int _dealiasedPhaseMaskInPhaseOffset, _dealiasedPhaseMask;
   
   RegionOfInterest _roi;
   FrameSize _maxFrameSize, _frameSize, _size;
@@ -68,7 +69,8 @@ public:
                      uint8_t histogramEnabled, 
                      const String &crossTalkCoefficients, ToFFrameType type, 
                      uint32_t quadCount,
-                     bool dealiased16BitMode);
+                     bool dealiased16BitMode,
+                     int dealiasedPhaseMask);
   
   virtual ~ToFFrameGenerator() {}
 };
