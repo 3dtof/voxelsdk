@@ -415,8 +415,6 @@ bool ToFTintinCamera::_initStartParams()
 {
   if(
     !set(TG_DISABLE, true) ||
-    !_programmer->writeRegister(0x583A, 0x008000) ||
-    !_programmer->writeRegister(0x583A, 0x004000) ||
     !set(BLK_SIZE, 1024U) ||
     !set(BLK_HEADER_EN, true) ||
     !set(OP_CS_POL, true) ||
