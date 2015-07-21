@@ -57,7 +57,7 @@ SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `OPT9220.dml`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\fw` `OPT9220_0v27.tip`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `OPT9221.dml`\n
-  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\fw` `OPT9221_0v8.tip`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\fw` `OPT9221_0v20.tip`\n
   RMDir /REBOOTOK `C:\\\\Program Files\\\\VoxelCommon`\n
 
   !insertmacro un.getPythonPath
