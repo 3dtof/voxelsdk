@@ -52,6 +52,7 @@ SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `VoxelDCamera.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `VoxelDCameraNormal.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCamera.conf`\n
+  \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraHighAmbient.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraShortRange.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraNoCalibration.conf`\n
   \\\${FileRemove} `C:\\\\Program Files\\\\VoxelCommon\\\\conf` `TintinCDKCameraLongRange.conf`\n
