@@ -1199,7 +1199,7 @@ bool MainConfigurationFile::readFromHardware()
       logger(LOG_INFO) << "MainConfigurationFile: Reading from local copy of hardware configuration data" << std::endl;
       
     
-    if(!fs.good())
+    if(!fs.is_open() || !fs.good())
     {
       logger(LOG_ERROR) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
       return false;
