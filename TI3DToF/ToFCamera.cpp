@@ -435,7 +435,7 @@ bool ToFCamera::_initStartParams()
   
   if(!_tofFrameGenerator->setParameters(phaseOffsetFileName, phaseOffsets, bytesPerPixel, 
     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
-                                        crossTalkCalibEnable?configFile.get("calib", "cross_talk_coeff"):"",
+                                        crossTalkCalibEnable?configFile.get("calib", "soft_filt_coeff"):"",
                                         type, (uint32_t)quadCount, dealiased16BitMode, dealiasedPhaseMask))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;
