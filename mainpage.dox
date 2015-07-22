@@ -4,7 +4,7 @@
  * Voxel Library is meant to be a platform to 
  * interface one or more depth cameras, with a common higher-level API.
  * The higher level API is explained here. For installation instructions and overall documentation 
- * of Voxel library, see http://uda0393673.apr.dhcp.ti.com/wiki/Main_Page
+ * of Voxel library, see https://github.com/3dtof/voxelsdk/wiki.
  *
  * \section Conventions Coding Conventions
  * All public API elements are enclosed in namespace \ref Voxel. 
@@ -23,7 +23,9 @@
  * Two primary API classes which will be used by most of the users, are \ref Voxel::CameraSystem and \ref Voxel::DepthCamera.
  *
  * \section libti3dtof API structure of TI's Depth Camera Support Library
- * \ref Voxel::TI::ToFCamera is the main abstract class which partially implements \ref Voxel::DepthCamera. 
+ * \ref Voxel::TI::ToFCameraBase is the main abstract class which partially implements \ref Voxel::DepthCamera.
+ * \ref Voxel::TI::ToFCameraBase is not TI specific, but makes an assumption about ToF type depth cameras. \ref Voxel::TI::ToFCamera is the main abstract class which 
+ * is TI specific, and it is derived from \ref Voxel::TI::ToFCameraBase.
  * \ref Voxel::TI::ToFHaddockCamera is further derived from \ref Voxel::TI::ToFCamera and adds Haddock 
  * generation specific support including parameters. However, this does not have board-specific details.
  * \ref Voxel::TI::Voxel14Camera is an example of board-specific class for Voxel-14 board, inherited from
