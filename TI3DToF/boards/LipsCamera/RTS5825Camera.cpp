@@ -4,7 +4,7 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
-#include "LipsCamera.h"
+#include "RTS5825Camera.h"
 #include "VoxelXUProgrammer.h"
 #include <Logger.h>
 #include <UVCStreamer.h>
@@ -18,7 +18,7 @@ namespace Voxel
 namespace TI
 {
   
-LipsCamera::LipsCamera(Voxel::DevicePtr device): ToFHaddockCamera("LipsCamera", device)
+LipsCamera::LipsCamera(Voxel::DevicePtr device): ToFHaddockCamera("RTS5825Camera", device)
 {
   _init();
 }

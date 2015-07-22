@@ -4,10 +4,10 @@
  * Copyright (c) 2014 Texas Instruments Inc.
  */
 
-#include "LipsCameraFactory.h"
+#include "RTS5825CameraFactory.h"
 #include <Logger.h>
 
-#include "LipsCamera.h"
+#include "RTS5825Camera.h"
 
 #include "SymbolExports.h"
 
@@ -44,7 +44,7 @@ DepthCameraPtr LipsCameraFactory::getDepthCamera(DevicePtr device)
 
 extern "C" void SYMBOL_EXPORT getDepthCameraFactory(DepthCameraFactoryPtr &ptr)
 {
-  ptr = DepthCameraFactoryPtr(new LipsCameraFactory("LipsCamera"));
+  ptr = DepthCameraFactoryPtr(new LipsCameraFactory("RTS5825Camera"));
 }
 
 extern "C" int SYMBOL_EXPORT getABIVersion()
