@@ -1,7 +1,7 @@
 add_subdirectory(CalculusCDK)
 add_subdirectory(HaddockCDK)
 add_subdirectory(TintinCDK)
-add_subdirectory(LipsCamera)
+add_subdirectory(RTS5825Camera)
 add_subdirectory(VoxelD)
 add_subdirectory(Voxel14)
 
