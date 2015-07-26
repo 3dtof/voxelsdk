@@ -90,7 +90,7 @@ bool Configuration::_addPath(const String &type, const String &path)
 #endif
 }
 
-bool Configuration::_getLocalFile(const String &type, String &name)
+bool Configuration::getLocalPath(const String &type, String &path)
 {
   // Adding local path ~/.Voxel/<type>
   // Works typically for Windows
@@ -113,7 +113,7 @@ bool Configuration::_getLocalFile(const String &type, String &name)
     if(!isFilePresent(s) && !makeDirectory(s))
       return false;
     
-    name = s + DIR_SEP + name;
+    path = s;
     return true;
   }
   
@@ -136,11 +136,21 @@ bool Configuration::_getLocalFile(const String &type, String &name)
     if(!isFilePresent(s) && !makeDirectory(s))
       return false;
     
-    name = s + DIR_SEP + name;
+    path = s;
     return true;
   }
   
   return false;
+}
+
+bool Configuration::getLocalFile(const String &type, String &name)
+{
+  String path;
+  if(!getLocalPath(type, path))
+    return false;
+  
+  name = path + DIR_SEP + name;
+  return true;
 }
 
 
@@ -173,7 +183,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   
   String localPath;
   
-  if(_getLocalFile(type, localPath))
+  if(getLocalPath(type, localPath))
     paths.insert(paths.begin(), localPath);
   
   paths.insert(paths.begin(), ""); // Empty path for absolute file paths and also relative file paths

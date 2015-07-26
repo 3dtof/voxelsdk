@@ -84,6 +84,10 @@ namespace std
 %template(UnsignedIntegerVector) vector<uint>;
 %template(FrameVector) vector<Voxel::FramePtr>;
 
+%handle_reference(std::string);
+%apply string &INOUT { string &fileName };
+%apply string &OUTPUT { string &path };
+
 }
 
 %handle_reference(std::vector<Voxel::SupportedVideoMode>);
