@@ -40,7 +40,6 @@ protected:
   
   static const Map<String, _Path> _pathTypes;
   
-  bool _getLocalFile(const String &type, String &path);
   bool _getPaths(const String &type, Vector<String> &paths);
   
   bool _get(const String &type, String &name);
@@ -56,14 +55,20 @@ public:
   inline static bool addConfPath(const String &path) { return _addPath("conf", path); }
   inline static bool addLibPath(const String &path) { return _addPath("lib", path); }
   
-  inline bool getLocalFirmwareFile(String &name) { return _getLocalFile("fw", name); }
-  inline bool getLocalConfFile(String &name) { return _getLocalFile("conf", name); }
-  inline bool getLocalLibFile(String &name) { return _getLocalFile("lib", name); }
+  bool getLocalPath(const String &type, String &path);
+  inline bool getLocalFirmwarePath(String &path) { return getLocalPath("fw", path); }
+  inline bool getLocalConfPath(String &path) { return getLocalPath("conf", path); }
+  inline bool getLocalLibPath(String &path) { return getLocalPath("lib", path); }
+  
+  bool getLocalFile(const String &type, String &fileName);
+  inline bool getLocalFirmwareFile(String &fileName) { return getLocalFile("fw", fileName); }
+  inline bool getLocalConfFile(String &fileName) { return getLocalFile("conf", fileName); }
+  inline bool getLocalLibFile(String &fileName) { return getLocalFile("lib", fileName); }
   
   /// Updates "name" to full path
-  inline bool getConfFile(String &name) { return _get("conf", name); }
-  inline bool getFirmwareFile(String &name) { return _get("fw", name); }
-  inline bool geLibFile(String &name) { return _get("lib", name); }
+  inline bool getConfFile(String &fileName) { return _get("conf", fileName); }
+  inline bool getFirmwareFile(String &fileName) { return _get("fw", fileName); }
+  inline bool geLibFile(String &fileName) { return _get("lib", fileName); }
   
 };
 

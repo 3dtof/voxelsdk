@@ -29,16 +29,22 @@ typedef unsigned int uint;
 
 // Define reference handling for custom types. Also, make reference as an output argument
 %define %handle_reference(Type...)
-%typemap(in,numinputs=0) Type &OUTPUT ($*1_ltype temp)  { $1 = &temp; }
-
 %typemap(in) const Type &INPUT { swig::asptr<Type>($input, &$1); };
+
+%typemap(in,numinputs=0) Type &OUTPUT ($*1_ltype temp)  { $1 = &temp; }
 
 %define_swig_type(Type)
 
 %typemap(argout, fragment="t_output_helper") Type &OUTPUT { 
      // append
-     PyObject* o = swig::from(*$1); 
-     $result = t_output_helper( $result, o ); 
+     PyObject *o = swig::from(*$1); 
+     $result = t_output_helper($result, o); 
+}
+
+%typemap(argout, fragment="t_output_helper") Type &INOUT { 
+     // append
+     PyObject *o = swig::from(*$1); 
+     $result = t_output_helper($result, o); 
 }
 
 %typemap(argout) const Type &INPUT ""
