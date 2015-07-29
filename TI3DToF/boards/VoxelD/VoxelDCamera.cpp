@@ -176,17 +176,20 @@ bool VoxelDCamera::_init()
   if(!ToFTintinCamera::_init())
     return false;
   
+  if (
+      !set(ILLUM_VOLTAGE, 1800U) &&
+      !set(MOD_FREQ1, 24.0f) &&
+      !set(CONFIDENCE_THRESHOLD, 2U))
+    return false;
   
   return true;
 }
 
 bool VoxelDCamera::_initStartParams()
 {
-  return 
-    set(ILLUM_VOLTAGE, 1800U) && 
-    ToFTintinCamera::_initStartParams() &&
-    set(MOD_FREQ1, 24.0f) &&
-    set(CONFIDENCE_THRESHOLD, 2U);
+  if (!set(TG_DISABLE, false))
+    return false;
+  return ToFTintinCamera::_initStartParams();
 }
 
 

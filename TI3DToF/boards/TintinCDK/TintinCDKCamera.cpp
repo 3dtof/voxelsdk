@@ -429,6 +429,12 @@ bool TintinCDKCamera::_init()
   if (!set(COMP_VREF, 1405U))
     return false;
   
+  if (!set(TILLUM_SLAVE_ADDR, 0x72U))
+    return false;
+
+  if ((d.productID() == TINTIN_CDK_PRODUCT_BULK) && !set(BLK_HEADER_EN, false))
+    return false;
+
   return true;
 }
 
@@ -437,12 +443,6 @@ bool TintinCDKCamera::_initStartParams()
   USBDevice &d = (USBDevice &)*_device;
 
   if(!ToFTintinCamera::_initStartParams())
-    return false;
-
-  if (!set(TILLUM_SLAVE_ADDR, 0x72U))
-    return false;
-
-  if ((d.productID() == TINTIN_CDK_PRODUCT_BULK) && !set(BLK_HEADER_EN, false))
     return false;
 
   return true;
