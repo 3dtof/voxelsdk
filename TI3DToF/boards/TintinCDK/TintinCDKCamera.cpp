@@ -424,6 +424,11 @@ bool TintinCDKCamera::_init()
       return false;
     if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBDCCorrModeParameter(*_programmer)),}))
       return false;
+  } else {
+    if (
+      !set(DELAY_FB_CORR_MODE, 1) ||
+      !set(DELAY_FB_DC_CORR_MODE, 1))
+      return false;
   }
   
   if (!set(COMP_VREF, 1405U))
