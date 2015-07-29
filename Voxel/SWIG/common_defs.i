@@ -69,4 +69,5 @@
 %make_ptr(DepthFrameGenerator);
 
 %feature("python:slot", "tp_str", functype="reprfunc") *::__str__;
+%feature("autodoc", "3");
 
