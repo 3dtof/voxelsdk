@@ -54,6 +54,8 @@
 %apply unsigned int &OUTPUT { unsigned int &bpp };
 %apply unsigned int &INPUT { const unsigned int &bpp };
 
+%handle_reference(int);
+%apply int &INOUT { int &id };
 
 %include "../SerializedObject.h"
 %include "Frame.i"

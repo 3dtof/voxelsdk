@@ -197,17 +197,18 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
 {
   uint16_t rows = *(uint16_t *)&in[0];
   uint16_t columns = *(uint16_t *)&in[1];
+  uint16_t dealiasPhaseMask = *(uint16_t *)&in[2];
   
-  const int16_t *inData = &in[2];
+  const int16_t *inData = &in[3];
   
   logger(LOG_DEBUG) << "Data2DCodec: rows = " << rows << ", columns = " << columns << std::endl;
   
   bool noInvalidPixels = (invalidPixels.size() == 0);
     
   
-  if(in.size() != rows*columns + 2 || (!noInvalidPixels && invalidPixels.size() != rows*columns))
+  if(in.size() != rows*columns + 3 || (!noInvalidPixels && invalidPixels.size() != rows*columns))
   {
-    logger(LOG_ERROR) << "Data2DCodec: Invalid input data size. Expected " << rows*columns*2
+    logger(LOG_ERROR) << "Data2DCodec: Invalid input data size. Expected " << rows*columns*2 + 6
     << " bytes, got " << in.size()*2 << " bytes" << std::endl;
     return false;
   }
@@ -226,6 +227,7 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   
   so.put((const char *)&rows, sizeof(rows));
   so.put((const char *)&columns, sizeof(columns));
+  so.put((const char *)&dealiasPhaseMask, sizeof(dealiasPhaseMask));
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentPutOffset() << std::endl;
   
@@ -363,10 +365,11 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   uint16_t version;
   so.get((char *)&version, sizeof(version));
   
-  uint16_t rows, columns;
+  uint16_t rows, columns, dealiasPhaseMask;
   
   so.get((char *)&rows, sizeof(rows));
   so.get((char *)&columns, sizeof(columns));
+  so.get((char *)&dealiasPhaseMask, sizeof(dealiasPhaseMask));
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentGetOffset() << std::endl;
   
@@ -384,12 +387,13 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentGetOffset() << std::endl;
   
-  out.resize(rows*columns + 2);
+  out.resize(rows*columns + 3);
   
   *(uint16_t *)&out[0] = rows;
   *(uint16_t *)&out[1] = columns;
+  *(uint16_t *)&out[2] = dealiasPhaseMask;
   
-  int16_t *outData = &out[2];
+  int16_t *outData = &out[3];
   
   for(auto i = 0; i < rows; i++)
   {
