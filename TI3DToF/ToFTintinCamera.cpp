@@ -408,15 +408,8 @@ bool ToFTintinCamera::_init()
     return false;
   }
   
-  return true;
-}
-
-bool ToFTintinCamera::_initStartParams()
-{
   if(
     !set(TG_DISABLE, true) ||
-    !_programmer->writeRegister(0x583A, 0x008000) ||
-    !_programmer->writeRegister(0x583A, 0x004000) ||
     !set(BLK_SIZE, 1024U) ||
     !set(BLK_HEADER_EN, true) ||
     !set(OP_CS_POL, true) ||
@@ -427,7 +420,13 @@ bool ToFTintinCamera::_initStartParams()
     !set(MOD_PLL_UPDATE, true) ||
     !set(MOD_PLL_UPDATE, false))
       return false;
-      
+  return true;
+}
+
+bool ToFTintinCamera::_initStartParams()
+{
+  if (!set(TG_DISABLE, false))
+    return false;
   return ToFCamera::_initStartParams();
 }
 
