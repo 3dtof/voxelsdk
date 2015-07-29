@@ -71,6 +71,8 @@
 #define COEFF_ILLUM_1 "coeff_illum"
 #undef COEFF_SENSOR_1
 #define COEFF_SENSOR_1 "coeff_sensor"
+#define DELAY_FB_CORR_MODE "delay_fb_corr_mode"
+#define DELAY_FB_DC_CORR_MODE "delay_fb_dc_corr_mode"
 
 namespace Voxel
 {
