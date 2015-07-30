@@ -131,7 +131,15 @@ protected:
     float R = value*100.0/255; //Digipot resistance in kOhms for given register setting
     float Rlim = R*113.0/(R+113)+51.1; //Effective current limiting resistor in kOhms for the given digipot resistance
     float I = 118079.0e-3/Rlim; //Current limit implemented by the linear current limiting IC for the given limiting resistance. This has a small variation as compared to the datasheet. That assumption has been made for the purpose of simplification.
-    return 4*(I-0.2)*1100; //Subtracting the threshold current and multiplying by the power gain of the laser diode.
+    
+    uint retVal = uint(4*(I-0.2)*1100); //Subtracting the threshold current and multiplying by the power gain of the laser diode.
+
+    if (retVal < lowerLimit())
+      return lowerLimit();
+    else if (retVal > upperLimit())
+      return upperLimit();
+    else
+      return retVal;
   }
   
   virtual uint32_t _toRawValue(uint value) const
@@ -142,7 +150,7 @@ protected:
   
 public:
   TintinCDKIlluminationPowerParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x5401, 8, 7, 0, 4*1050, 4*2200, 4*1129, "Illumination Power", 
+  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x5401, 8, 7, 0, 4*1000, 4*2200, 4*1129, "Illumination Power", 
                            "These power numbers are approximate (+- 20%) and the actual power numbers are subject to component tolerances.", Parameter::IO_READ_WRITE, {})
   {}
   
