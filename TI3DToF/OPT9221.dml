@@ -2319,7 +2319,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="3" desc="" function="" fuseId="-1" id="1051" max="31" min="0" readonly="1" signed="0" strobe="0" totalBits="5" units="">
+				<property aid_0="2" default="3" desc="" function="" fuseId="-1" id="1051" max="31" min="0" readonly="0" signed="0" strobe="0" totalBits="5" units="">
 					<rangeList>
 						<range address="36" bankId="3" lsb="0" msb="4"/>
 					</rangeList>
@@ -7334,6 +7334,7 @@
 								<property desc="" name="ramp_pat" propertyId="1974"/>
 								<property desc="" name="amplitude_scale" propertyId="1973"/>
 								<property desc="" name="frequency_scale" propertyId="1975"/>
+								<property desc="" name="data_latency" propertyId="1051"/>
 							</propertyList>
 						</group>
 						<group desc="" name="scratch">
