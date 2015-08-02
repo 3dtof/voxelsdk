@@ -130,11 +130,11 @@ public:
   bool initialized = true;
   Ptr<UVC> uvc;
 
-  UVCStreamerPrivate(UVCStreamer &uvcStreamer)
+  UVCStreamerPrivate(UVCStreamer &uvcStreamer):
 #ifdef WINDOWS
-    : _rawBuffers(2)
+    _rawBuffers(2),
 #endif
-    , _uvcStreamer(uvcStreamer)
+    _uvcStreamer(uvcStreamer)
   {
   }
 
