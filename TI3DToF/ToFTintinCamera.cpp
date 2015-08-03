@@ -555,7 +555,10 @@ bool ToFTintinCamera::_applyCalibrationParams()
   }
   else
   {
-    if(!set(DISABLE_OFFSET_CORR, true))
+    if(!set(DISABLE_OFFSET_CORR, true) || 
+      !set(PHASE_CORR_1, 0) ||
+      !set(PHASE_CORR_2, 0)
+    )
       return false;
   }
   
@@ -563,8 +566,8 @@ bool ToFTintinCamera::_applyCalibrationParams()
   {
     if(!set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) ||
       !set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) ||
-      !set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)) ||
-      !set(COEFF_SENSOR_1, configFile.getInteger("calib", COEFF_SENSOR_1)))
+      !set(COEFF_ILLUM, configFile.getInteger("calib", COEFF_ILLUM_1)) ||
+      !set(COEFF_SENSOR, configFile.getInteger("calib", COEFF_SENSOR_1)))
       return false;
   }
   else

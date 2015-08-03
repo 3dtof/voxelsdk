@@ -408,7 +408,10 @@ bool ToFHaddockCamera::_applyCalibrationParams()
   }
   else
   {
-    if(!set(DISABLE_OFFSET_CORR, true))
+    if(!set(DISABLE_OFFSET_CORR, true) ||
+      !set(PHASE_CORR_1, 0) ||
+      !set(PHASE_CORR_2, 0)
+    )
       return false;
   }
   
@@ -420,7 +423,7 @@ bool ToFHaddockCamera::_applyCalibrationParams()
     int factor = 1;
     
     if(configFile.isPresent("calib", CALIB_PREC))
-      factor = (configFile.getInteger("calib", CALIB_PREC) == 0)?16:256;
+      factor = (configFile.getInteger("calib", CALIB_PREC) == 0)?1:16;
     
     return
     set(COEFF_ILLUM_1, configFile.getInteger("calib", COEFF_ILLUM_1)/factor) &&

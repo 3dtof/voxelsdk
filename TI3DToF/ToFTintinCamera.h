@@ -67,10 +67,8 @@
 #define NONLINEARITY_COEFF_F2 "phase_lin_coeff1"
 #define NONLINEARITY_ENABLE "phase_lin_corr_en"
 
-#undef COEFF_ILLUM_1
-#define COEFF_ILLUM_1 "coeff_illum"
-#undef COEFF_SENSOR_1
-#define COEFF_SENSOR_1 "coeff_sensor"
+#define COEFF_ILLUM "coeff_illum"
+#define COEFF_SENSOR "coeff_sensor"
 #define DELAY_FB_CORR_MODE "delay_fb_corr_mode"
 #define DELAY_FB_DC_CORR_MODE "delay_fb_dc_corr_mode"
 
