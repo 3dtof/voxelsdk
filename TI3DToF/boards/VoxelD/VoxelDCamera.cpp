@@ -176,6 +176,24 @@ bool VoxelDCamera::_init()
   if(!ToFTintinCamera::_init())
     return false;
   
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
+    Vector<String> params = {ILLUM_VOLTAGE, DELAY_FB_CORR_MODE, DELAY_FB_DC_CORR_MODE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    Vector<String> params = {ILLUM_VOLTAGE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
+    Vector<String> params = {ILLUM_VOLTAGE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
   if (
       !set(ILLUM_VOLTAGE, 1800U) &&
       !set(MOD_FREQ1, 24.0f) &&

@@ -164,7 +164,7 @@ protected:
   Ptr<ToFFrameGenerator> _tofFrameGenerator;
   
 public:
-  ToFCamera(const String &name, DevicePtr device);
+  ToFCamera(const String &name, const String &chipset, DevicePtr device);
   
   // NOTE: Not using the low-level API for getting serial number. USB's serial number is enough
   //virtual bool getSerialNumber(String& serialNumber) const;

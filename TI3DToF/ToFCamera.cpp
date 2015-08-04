@@ -71,7 +71,7 @@ public:
 };
   
 
-ToFCamera::ToFCamera(const String &name, DevicePtr device): ToFCameraBase(name, device),
+ToFCamera::ToFCamera(const String &name, const String &chipset, DevicePtr device): ToFCameraBase(name, chipset, device),
 _tofFrameGenerator(new ToFFrameGenerator())
 {
   _frameGenerators[0] = std::dynamic_pointer_cast<FrameGenerator>(_tofFrameGenerator);

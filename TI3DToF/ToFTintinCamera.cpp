@@ -341,7 +341,7 @@ public:
   }
 };
 
-ToFTintinCamera::ToFTintinCamera(const String &name, DevicePtr device): ToFCamera(name, device)
+ToFTintinCamera::ToFTintinCamera(const String &name, DevicePtr device): ToFCamera(name, "tintin.ti", device)
 {
 }
 

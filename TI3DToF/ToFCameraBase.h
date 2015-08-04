@@ -40,7 +40,7 @@ protected:
   Ptr<ToFDepthFrameGenerator> _tofDepthFrameGenerator;
   
 public:
-  ToFCameraBase(const String &name, DevicePtr device): DepthCamera(name, device), 
+  ToFCameraBase(const String &name, const String &chipset, DevicePtr device): DepthCamera(name, chipset, device), 
     _tofDepthFrameGenerator(new ToFDepthFrameGenerator()) 
     {
       _frameGenerators[1] = std::dynamic_pointer_cast<FrameGenerator>(_tofDepthFrameGenerator);

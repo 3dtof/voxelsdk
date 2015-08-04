@@ -242,7 +242,7 @@ public:
   }
 };
 
-ToFCalculusCamera::ToFCalculusCamera(const String &name, DevicePtr device): ToFCamera(name, device)
+ToFCalculusCamera::ToFCalculusCamera(const String &name, DevicePtr device): ToFCamera(name, "calculus.ti", device)
 {
 }
 

@@ -17,7 +17,7 @@
 namespace Voxel
 {
   
-DepthCamera::DepthCamera(const String &name, DevicePtr device): _device(device), _name(name),
+DepthCamera::DepthCamera(const String &name, const String &chipset, DevicePtr device): _device(device), _name(name), _chipset(chipset),
 _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
 _parameterInit(true), _running(false),
 _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers), _depthFilters(_depthFrameBuffers),
