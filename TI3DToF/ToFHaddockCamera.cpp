@@ -343,6 +343,12 @@ bool ToFHaddockCamera::_getMaximumFrameSize(FrameSize &s) const
   
 bool ToFHaddockCamera::_init()
 {
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    Vector<String> params = {"coeff_illum_1", "coeff_sensor_1", "coeff_illum_2", "coeff_sensor_2"};
+    calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end());
+  }
+  
   Configuration c;
   
   String name = configFile.get("core", "dml");
@@ -394,8 +400,8 @@ bool ToFHaddockCamera::_init()
 
 bool ToFHaddockCamera::_applyCalibrationParams()
 {
-  bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_COMMON_PHASE) == 0;
-  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_TEMPERATURE) == 0;
+  bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID)) == 0;
+  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_TEMPERATURE_ID)) == 0;
   
   if(commonPhaseCalibEnable)
   {

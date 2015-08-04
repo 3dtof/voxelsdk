@@ -81,6 +81,39 @@ _tofFrameGenerator(new ToFFrameGenerator())
   
 bool ToFCamera::_init()
 {
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_FREQUENCY];
+    calibInfo.name = ToF_CALIB_SECT_FREQUENCY;
+    calibInfo.id = ToF_CALIB_SECT_FREQUENCY_ID;
+    calibInfo.definingParameters = {};
+    calibInfo.calibrationParameters = {"freq_corr", "freq_corr_at"};
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    calibInfo.name = ToF_CALIB_SECT_TEMPERATURE;
+    calibInfo.id = ToF_CALIB_SECT_TEMPERATURE_ID;
+    calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
+    Vector<String> params = {"disable_temp_corr"};
+    calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end()); 
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
+    calibInfo.name = ToF_CALIB_SECT_COMMON_PHASE_OFFSET;
+    calibInfo.id = ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID;
+    calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
+    calibInfo.calibrationParameters = {"phase_corr_1", "phase_corr_2", "tillum_calib", "tsensor_calib", "actual_distance", "disable_phase_corr"};
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET];
+    calibInfo.name = ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET;
+    calibInfo.id = ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET_ID;
+    calibInfo.definingParameters = {"unambiguous_range", "mix_volt"};
+    calibInfo.calibrationParameters = {"phasecorrection"};
+  }
+  
   if(!_addParameters({
     ParameterPtr(new IntegrationTimeParameter(*this, *_programmer))
   }))
@@ -378,7 +411,7 @@ bool ToFCamera::_initStartParams()
     !getROI(roi))
     return false;
   
-  int lensCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_LENS) == 0;
+  int lensCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << CALIB_SECT_LENS_ID)) == 0;
   
   if(!_pointCloudFrameGenerator->setParameters(
     roi.x, roi.y, roi.width, roi.height,
@@ -424,8 +457,8 @@ bool ToFCamera::_initStartParams()
   Vector<int16_t> phaseOffsets;
   String phaseOffsetFileName;
   
-  bool pixelwiseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_PIXELWISE_OFFSET) == 0;
-  bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_CROSS_TALK) == 0;
+  bool pixelwiseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET_ID)) == 0;
+  bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_CROSS_TALK_ID)) == 0;
   
   if(pixelwiseCalibEnable && configFile.isPresent("calib", "phasecorrection") && !configFile.getFile<int16_t>("calib", "phasecorrection", phaseOffsetFileName, phaseOffsets))
   {
@@ -515,7 +548,7 @@ bool ToFCamera::_getDepthScalingFactor(float& factor)
   bool frequencyCorrectionPresent = false;
   float frequencyCorrection = 1.0f;
   
-  bool frequencyCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_FREQUENCY) == 0;
+  bool frequencyCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_FREQUENCY_ID)) == 0;
   
   if(frequencyCalibEnable && configFile.isPresent("calib", "freq_corr"))
   {

@@ -32,6 +32,14 @@ configFile(name, "")
 
 bool DepthCamera::_init()
 {
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[CALIB_SECT_LENS];
+    calibInfo.name = CALIB_SECT_LENS;
+    calibInfo.id = CALIB_SECT_LENS_ID;
+    calibInfo.definingParameters = {};
+    calibInfo.calibrationParameters = {"fx", "fy", "cx", "cy", "k1", "k2", "k3", "p1", "p2"};
+  }
+  
   String serialNumber; 
   
   if(getSerialNumber(serialNumber))

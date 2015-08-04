@@ -362,6 +362,28 @@ bool ToFTintinCamera::_getMaximumFrameSize(FrameSize &s) const
   
 bool ToFTintinCamera::_init()
 {
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    Vector<String> params = {"coeff_illum", "coeff_sensor", CALIB_PREC};
+    calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end());
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_CROSS_TALK];
+    calibInfo.name = ToF_CALIB_SECT_CROSS_TALK;
+    calibInfo.id = ToF_CALIB_SECT_CROSS_TALK_ID;
+    calibInfo.definingParameters = {"unambiguous_range", "mix_volt"};
+    calibInfo.calibrationParameters = {"x_filt_coeff_f1", "y_filt_coeff_f1", "x_filt_coeff_f2", "y_filt_coeff_f2"};
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
+    calibInfo.name = ToF_CALIB_SECT_NON_LINEARITY;
+    calibInfo.id = ToF_CALIB_SECT_NON_LINEARITY_ID;
+    calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
+    calibInfo.calibrationParameters = {"phase_lin_corr_period", "phase_lin_coeff0", "phase_lin_coeff1"};
+  }
+  
   Configuration c;
   
   String name = configFile.get("core", "dml");
@@ -539,10 +561,10 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
 
 bool ToFTintinCamera::_applyCalibrationParams()
 {
-  bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_COMMON_PHASE) == 0;
-  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_TEMPERATURE) == 0;
-  bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_CROSS_TALK) == 0;
-  bool nonlinearityCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & CALIB_SECT_NON_LINEARITY) == 0;
+  bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID)) == 0;
+  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_TEMPERATURE_ID)) == 0;
+  bool crossTalkCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_CROSS_TALK_ID)) == 0;
+  bool nonlinearityCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_NON_LINEARITY_ID)) == 0;
   
   if(commonPhaseCalibEnable)
   {
@@ -566,8 +588,8 @@ bool ToFTintinCamera::_applyCalibrationParams()
   {
     if(!set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) ||
       !set(CALIB_PREC, configFile.getBoolean("calib", CALIB_PREC)) ||
-      !set(COEFF_ILLUM, configFile.getInteger("calib", COEFF_ILLUM_1)) ||
-      !set(COEFF_SENSOR, configFile.getInteger("calib", COEFF_SENSOR_1)))
+      !set(COEFF_ILLUM, configFile.getInteger("calib", COEFF_ILLUM)) ||
+      !set(COEFF_SENSOR, configFile.getInteger("calib", COEFF_SENSOR)))
       return false;
   }
   else

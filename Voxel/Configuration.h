@@ -13,13 +13,6 @@
 
 #define FILE_PREFIX "file:"
 
-#define CALIB_SECT_LENS             0x01
-#define CALIB_SECT_FREQUENCY        0x02
-#define CALIB_SECT_CROSS_TALK       0x04
-#define CALIB_SECT_NON_LINEARITY    0x08
-#define CALIB_SECT_TEMPERATURE      0x10
-#define CALIB_SECT_COMMON_PHASE     0x20
-#define CALIB_SECT_PIXELWISE_OFFSET 0x40
 #define CALIB_DISABLE "calib_disable"
 
 namespace Voxel
@@ -290,6 +283,13 @@ bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
   return true;
 }
 
+struct CalibrationInformation
+{
+  String name;
+  int id;
+  Vector<String> definingParameters;
+  Vector<String> calibrationParameters;
+};
 
 class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
 {
@@ -309,11 +309,13 @@ protected:
 public:
   struct ConfigSerialNumberType { uint8_t major, minor; };
   typedef Function<bool(ConfigSerialNumberType &, TimeStampType &, SerializedObject &)> HardwareSerializer;
-
+  
 protected:  
   bool _saveHardwareImage(ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so);
   
   HardwareSerializer _hardwareReader, _hardwareWriter;
+  
+  Map<String, CalibrationInformation> _calibrationInformation;
     
 public:
   MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = nullptr, HardwareSerializer hardwareWriter = nullptr): 
@@ -353,15 +355,18 @@ public:
   
   inline void setHardwareID(const String &hwID) { _hardwareID = hwID; }
   
-  int getCurrentProfileID() { return _currentCameraProfileID; }
+  inline int getCurrentProfileID() { return _currentCameraProfileID; }
   
   bool getCameraProfileName(const int id, String &cameraProfileName);
   
-  const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
+  inline const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
+  
+  inline const Map<String, CalibrationInformation> &getCalibrationInformation() const { return _calibrationInformation; }
  
   virtual ~MainConfigurationFile() {}
   
   friend class ConfigurationFile;
+  friend class DepthCamera;
 };
 
 template <typename T>

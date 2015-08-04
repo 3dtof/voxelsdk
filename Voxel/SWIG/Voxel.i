@@ -77,6 +77,7 @@ namespace std
 %template(IntStringMap) unordered_map<int, string>;
 %template(ParamMap) unordered_map<string, Voxel::Ptr<Voxel::Parameter>>;
 %template(FilterParamMap) unordered_map<string, Voxel::Ptr<Voxel::FilterParameter>>;
+%template(CalibrationInformationMap) unordered_map<string, Voxel::CalibrationInformation>;
 %template(VideoModeVector) vector<Voxel::SupportedVideoMode>;
 %template(Uint16Vector) vector<uint16_t>;
 %template(Int16Vector) vector<int16_t>;
