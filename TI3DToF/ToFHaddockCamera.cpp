@@ -322,7 +322,7 @@ public:
   }
 };
 
-ToFHaddockCamera::ToFHaddockCamera(const String &name, DevicePtr device): ToFCamera(name, device)
+ToFHaddockCamera::ToFHaddockCamera(const String &name, DevicePtr device): ToFCamera(name, "haddock.ti", device)
 {
 }
 

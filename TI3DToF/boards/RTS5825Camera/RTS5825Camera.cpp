@@ -152,6 +152,17 @@ bool RTS5825Camera::_init()
   if(!ToFHaddockCamera::_init())
     return false;
   
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
+    Vector<String> params = {ILLUM_VOLTAGE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    Vector<String> params = {ILLUM_VOLTAGE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
   
   return true;
 }

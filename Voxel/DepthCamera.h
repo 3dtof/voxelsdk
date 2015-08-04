@@ -59,7 +59,7 @@ private:
 protected:
   DevicePtr _device;
   
-  String _name, _id;
+  String _name, _id, _chipset;
   
   Map<String, ParameterPtr> _parameters;
   
@@ -155,7 +155,7 @@ protected:
 public:
   MainConfigurationFile configFile; // This corresponds to camera specific configuration file
   
-  DepthCamera(const String &name, DevicePtr device);
+  DepthCamera(const String &name, const String &chipset, DevicePtr device);
   
   virtual bool isInitialized() const
   {
@@ -166,6 +166,8 @@ public:
   inline const String &name() const { return _name; }
   
   inline const String &id() const { return _id; }
+  
+  inline const String &chipset() const { return _chipset; }
   
   virtual bool getSerialNumber(String &serialNumber) const;
   virtual bool setSerialNumber(const String &serialNumber);

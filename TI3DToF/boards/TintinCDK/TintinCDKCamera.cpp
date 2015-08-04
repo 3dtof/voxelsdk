@@ -399,6 +399,24 @@ bool TintinCDKCamera::_init()
   if(!ToFTintinCamera::_init())
     return false;
   
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
+    Vector<String> params = {ILLUM_POWER_PERCENTAGE, DELAY_FB_CORR_MODE, DELAY_FB_DC_CORR_MODE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    Vector<String> params = {ILLUM_POWER_PERCENTAGE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
+    Vector<String> params = {ILLUM_POWER_PERCENTAGE};
+    calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
+  }
+  
   Ptr<UnsignedIntegerParameter> pixCntMax = std::dynamic_pointer_cast<UnsignedIntegerParameter>(getParam(PIX_CNT_MAX));
   
   if(pixCntMax)

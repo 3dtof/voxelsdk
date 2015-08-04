@@ -341,7 +341,7 @@ public:
   }
 };
 
-ToFTintinCamera::ToFTintinCamera(const String &name, DevicePtr device): ToFCamera(name, device)
+ToFTintinCamera::ToFTintinCamera(const String &name, DevicePtr device): ToFCamera(name, "tintin.ti", device)
 {
 }
 
@@ -380,7 +380,7 @@ bool ToFTintinCamera::_init()
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
     calibInfo.name = ToF_CALIB_SECT_NON_LINEARITY;
     calibInfo.id = ToF_CALIB_SECT_NON_LINEARITY_ID;
-    calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
+    calibInfo.definingParameters = {"op_clk_freq", "unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
     calibInfo.calibrationParameters = {"phase_lin_corr_period", "phase_lin_coeff0", "phase_lin_coeff1"};
   }
   
