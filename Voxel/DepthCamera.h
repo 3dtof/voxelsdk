@@ -24,6 +24,8 @@
 #include "PointCloudFrameGenerator.h"
 #include "Configuration.h"
 
+#define CALIB_SECT_LENS "lens"
+#define CALIB_SECT_LENS_ID 0
 
 namespace Voxel
 {
@@ -147,6 +149,8 @@ protected:
   virtual bool _getCurrentProfileID(int &id) = 0;
   
   bool _init();
+  
+  inline Map<String, CalibrationInformation> &_getCalibrationInformationStructure() { return configFile._calibrationInformation; }
   
 public:
   MainConfigurationFile configFile; // This corresponds to camera specific configuration file

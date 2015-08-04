@@ -13,13 +13,6 @@
 
 #define FILE_PREFIX "file:"
 
-#define CALIB_SECT_LENS             0x01
-#define CALIB_SECT_FREQUENCY        0x02
-#define CALIB_SECT_CROSS_TALK       0x04
-#define CALIB_SECT_NON_LINEARITY    0x08
-#define CALIB_SECT_TEMPERATURE      0x10
-#define CALIB_SECT_COMMON_PHASE     0x20
-#define CALIB_SECT_PIXELWISE_OFFSET 0x40
 #define CALIB_DISABLE "calib_disable"
 
 namespace Voxel
@@ -260,9 +253,143 @@ bool ConfigurationFile::setFile(const String &section, const String &name, const
 }
 
 template <typename T>
+bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
+{
+  Configuration c;
+  
+  String f = fileName;
+  if(!c.getLocalConfFile(f))
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Failed to locate file '" << fileName << "'" << std::endl;
+    return false;
+  }
+  
+  OutputFileStream fs(f, std::ios::out | std::ios::binary);
+  
+  if(!fs.good())
+  {
+    logger(LOG_ERROR) << "ConfigurationFile: Could not open file '" << fileName << "'" << std::endl;
+    return false;
+  }
+  
+  fs.write((const char *)data.data(), data.size()*sizeof(T));
+  
+  fs.close();
+  
+  _dataFiles[fileName].resize(data.size()*sizeof(T));
+  
+  memcpy(_dataFiles[fileName].data(), data.data(), data.size()*sizeof(T));
+  
+  return true;
+}
+
+struct CalibrationInformation
+{
+  String name;
+  int id;
+  Vector<String> definingParameters;
+  Vector<String> calibrationParameters;
+};
+
+class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
+{
+protected:
+  Map<int, ConfigurationFile> _cameraProfiles;
+  Map<int, String> _cameraProfileNames;
+  int _defaultCameraProfileID, _defaultCameraProfileIDInHardware;
+  int _currentCameraProfileID;
+  ConfigurationFile *_currentCameraProfile;
+
+  bool _updateCameraProfileList();
+  
+  String _mainConfigName, _hardwareID;
+  
+  int _getNewCameraProfileID(bool inHost = true);
+
+public:
+  struct ConfigSerialNumberType { uint8_t major, minor; };
+  typedef Function<bool(ConfigSerialNumberType &, TimeStampType &, SerializedObject &)> HardwareSerializer;
+  
+protected:  
+  bool _saveHardwareImage(ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so);
+  
+  HardwareSerializer _hardwareReader, _hardwareWriter;
+  
+  Map<String, CalibrationInformation> _calibrationInformation;
+    
+public:
+  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = nullptr, HardwareSerializer hardwareWriter = nullptr): 
+  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
+  
+  virtual bool read(const String &configFile);
+  
+  bool readFromHardware();
+  bool writeToHardware();
+  
+  inline void setHardwareReader(HardwareSerializer hardwareReader) { _hardwareReader = hardwareReader; }
+  inline void setHardwareWriter(HardwareSerializer hardwareWriter) { _hardwareWriter = hardwareWriter; }
+  
+  virtual String get(const String &section, const String &name) const;
+  virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
+  
+  int addCameraProfile(const String &profileName, const int parentID = -1);
+  bool setCurrentCameraProfile(const int id);
+  bool removeCameraProfile(const int id);
+  bool saveCameraProfileToHardware(int &id);
+  
+  ConfigurationFile *getDefaultCameraProfile();
+  ConfigurationFile *getCameraProfile(const int id);
+  
+  template <typename T>
+  bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
+  
+  int getDefaultCameraProfileID() 
+  { 
+    if(_defaultCameraProfileIDInHardware >= 0) 
+      return _defaultCameraProfileIDInHardware;
+    else
+      return _defaultCameraProfileID; 
+  }
+  
+  bool setDefaultCameraProfile(const int id);
+  
+  inline void setHardwareID(const String &hwID) { _hardwareID = hwID; }
+  
+  inline int getCurrentProfileID() { return _currentCameraProfileID; }
+  
+  bool getCameraProfileName(const int id, String &cameraProfileName);
+  
+  inline const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
+  
+  inline const Map<String, CalibrationInformation> &getCalibrationInformation() const { return _calibrationInformation; }
+ 
+  virtual ~MainConfigurationFile() {}
+  
+  friend class ConfigurationFile;
+  friend class DepthCamera;
+};
+
+template <typename T>
 bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
 {
+  bool loadFromFile = false;
   if(_dataFiles.find(fileName) == _dataFiles.end())
+  {
+    if(_mainConfigurationFile && _parentID >= 0)
+    {
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
+      
+      // TODO This does not handle circular references between profiles
+      if(parentConfig && parentConfig->_getData<T>(fileName, data))
+        return true;
+      else
+        loadFromFile = true;
+    }
+    else
+      loadFromFile = true;
+  }
+  
+  if(loadFromFile)
   {
     Configuration c;
     
@@ -305,111 +432,6 @@ bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
   
   return true;
 }
-
-template <typename T>
-bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
-{
-  Configuration c;
-  
-  String f = fileName;
-  if(!c.getLocalConfFile(f))
-  {
-    logger(LOG_ERROR) << "ConfigurationFile: Failed to locate file '" << fileName << "'" << std::endl;
-    return false;
-  }
-  
-  OutputFileStream fs(f, std::ios::out | std::ios::binary);
-  
-  if(!fs.good())
-  {
-    logger(LOG_ERROR) << "ConfigurationFile: Could not open file '" << fileName << "'" << std::endl;
-    return false;
-  }
-  
-  fs.write((const char *)data.data(), data.size()*sizeof(T));
-  
-  fs.close();
-  
-  _dataFiles[fileName].resize(data.size()*sizeof(T));
-  
-  memcpy(_dataFiles[fileName].data(), data.data(), data.size()*sizeof(T));
-  
-  return true;
-}
-
-
-class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
-{
-protected:
-  Map<int, ConfigurationFile> _cameraProfiles;
-  Map<int, String> _cameraProfileNames;
-  int _defaultCameraProfileID, _defaultCameraProfileIDInHardware;
-  int _currentCameraProfileID;
-  ConfigurationFile *_currentCameraProfile;
-
-  bool _updateCameraProfileList();
-  
-  String _mainConfigName, _hardwareID;
-  
-  int _getNewCameraProfileID(bool inHost = true);
-
-public:
-  struct ConfigSerialNumberType { uint8_t major, minor; };
-  typedef Function<bool(ConfigSerialNumberType &, TimeStampType &, SerializedObject &)> HardwareSerializer;
-
-protected:  
-  bool _saveHardwareImage(ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so);
-  
-  HardwareSerializer _hardwareReader, _hardwareWriter;
-    
-public:
-  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = nullptr, HardwareSerializer hardwareWriter = nullptr): 
-  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
-  
-  virtual bool read(const String &configFile);
-  
-  bool readFromHardware();
-  bool writeToHardware();
-  
-  inline void setHardwareReader(HardwareSerializer hardwareReader) { _hardwareReader = hardwareReader; }
-  inline void setHardwareWriter(HardwareSerializer hardwareWriter) { _hardwareWriter = hardwareWriter; }
-  
-  virtual String get(const String &section, const String &name) const;
-  virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
-  
-  int addCameraProfile(const String &profileName, const int parentID = -1);
-  bool setCurrentCameraProfile(const int id);
-  bool removeCameraProfile(const int id);
-  bool saveCameraProfileToHardware(int &id);
-  
-  ConfigurationFile *getDefaultCameraProfile();
-  ConfigurationFile *getCameraProfile(const int id);
-  
-  template <typename T>
-  bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
-  
-  int getDefaultCameraProfileID() 
-  { 
-    if(_defaultCameraProfileIDInHardware >= 0) 
-      return _defaultCameraProfileIDInHardware;
-    else
-      return _defaultCameraProfileID; 
-  }
-  
-  bool setDefaultCameraProfile(const int id);
-  
-  inline void setHardwareID(const String &hwID) { _hardwareID = hwID; }
-  
-  int getCurrentProfileID() { return _currentCameraProfileID; }
-  
-  bool getCameraProfileName(const int id, String &cameraProfileName);
-  
-  const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
- 
-  virtual ~MainConfigurationFile() {}
-  
-  friend class ConfigurationFile;
-};
 
 template <typename T>
 bool MainConfigurationFile::getFile(const String &section, const String &name, String &fileName, Vector<T> &data)

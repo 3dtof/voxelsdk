@@ -65,6 +65,21 @@
 #define DEALIAS_16BIT_OP_ENABLE "dealias_16bit_op_enable"
 #define DEALIASED_PHASE_MASK "dealiased_ph_mask"
 
+#define ToF_CALIB_SECT_FREQUENCY "frequency"
+#define ToF_CALIB_SECT_CROSS_TALK "cross_talk"
+#define ToF_CALIB_SECT_NON_LINEARITY "non_linearity"
+#define ToF_CALIB_SECT_TEMPERATURE "temperature"
+#define ToF_CALIB_SECT_COMMON_PHASE_OFFSET "common_phase_offset"
+#define ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET "pixelwise_phase_offset"
+
+#define ToF_CALIB_SECT_FREQUENCY_ID 1
+#define ToF_CALIB_SECT_CROSS_TALK_ID 2
+#define ToF_CALIB_SECT_NON_LINEARITY_ID 3
+#define ToF_CALIB_SECT_TEMPERATURE_ID 4
+#define ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID 5
+#define ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET_ID 6
+
+
 #define PHASE_CORR_1 "phase_corr_1"
 #define PHASE_CORR_2 "phase_corr_2"
 #define TILLUM_CALIB "tillum_calib"
