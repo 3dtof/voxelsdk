@@ -260,70 +260,6 @@ bool ConfigurationFile::setFile(const String &section, const String &name, const
 }
 
 template <typename T>
-bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
-{
-  bool loadFromFile = false;
-  if(_dataFiles.find(fileName) == _dataFiles.end())
-  {
-    if(_mainConfigurationFile && _parentID >= 0)
-    {
-      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
-      
-      // TODO This does not handle circular references between profiles
-      if(parentConfig && parentConfig->_getData<T>(fileName, data))
-        return true;
-      else
-        loadFromFile = true;
-    }
-    else
-      loadFromFile = true;
-  }
-  
-  if(loadFromFile)
-  {
-    Configuration c;
-    
-    String f = fileName;
-    if(!c.getConfFile(f))
-    {
-      logger(LOG_ERROR) << "ConfigurationFile: Could not locate file '" << fileName << "'" << std::endl;
-      return false;
-    }
-    
-    InputFileStream fs(f, std::ios::in | std::ios::binary | std::ios::ate);
-    
-    if(!fs.good())
-    {
-      logger(LOG_ERROR) << "ConfigurationFile: Could not open file '" << fileName << "'" << std::endl;
-      return false;
-    }
-    
-    int size = fs.tellg();
-    
-    if(size == 0)
-    {
-      logger(LOG_ERROR) << "ConfigurationFile: Null config data '" << f << "'" << std::endl;
-      return false;
-    }
-    
-    Vector<ByteType> &d = _dataFiles[fileName];
-    
-    d.resize(size);
-    fs.seekg(std::ios::beg);
-    fs.clear();
-    fs.read((char *)d.data(), size);
-  }
-  
-  Vector<ByteType> &d = _dataFiles[fileName];
-  
-  data.resize((d.size() + sizeof(T)/2)/sizeof(T));
-  
-  memcpy(data.data(), d.data(), d.size());
-  
-  return true;
-}
-
-template <typename T>
 bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
 {
   Configuration c;
@@ -427,6 +363,70 @@ public:
   
   friend class ConfigurationFile;
 };
+
+template <typename T>
+bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
+{
+  bool loadFromFile = false;
+  if(_dataFiles.find(fileName) == _dataFiles.end())
+  {
+    if(_mainConfigurationFile && _parentID >= 0)
+    {
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
+      
+      // TODO This does not handle circular references between profiles
+      if(parentConfig && parentConfig->_getData<T>(fileName, data))
+        return true;
+      else
+        loadFromFile = true;
+    }
+    else
+      loadFromFile = true;
+  }
+  
+  if(loadFromFile)
+  {
+    Configuration c;
+    
+    String f = fileName;
+    if(!c.getConfFile(f))
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Could not locate file '" << fileName << "'" << std::endl;
+      return false;
+    }
+    
+    InputFileStream fs(f, std::ios::in | std::ios::binary | std::ios::ate);
+    
+    if(!fs.good())
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Could not open file '" << fileName << "'" << std::endl;
+      return false;
+    }
+    
+    int size = fs.tellg();
+    
+    if(size == 0)
+    {
+      logger(LOG_ERROR) << "ConfigurationFile: Null config data '" << f << "'" << std::endl;
+      return false;
+    }
+    
+    Vector<ByteType> &d = _dataFiles[fileName];
+    
+    d.resize(size);
+    fs.seekg(std::ios::beg);
+    fs.clear();
+    fs.read((char *)d.data(), size);
+  }
+  
+  Vector<ByteType> &d = _dataFiles[fileName];
+  
+  data.resize((d.size() + sizeof(T)/2)/sizeof(T));
+  
+  memcpy(data.data(), d.data(), d.size());
+  
+  return true;
+}
 
 template <typename T>
 bool MainConfigurationFile::getFile(const String &section, const String &name, String &fileName, Vector<T> &data)
