@@ -262,7 +262,24 @@ bool ConfigurationFile::setFile(const String &section, const String &name, const
 template <typename T>
 bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
 {
+  bool loadFromFile = false;
   if(_dataFiles.find(fileName) == _dataFiles.end())
+  {
+    if(_mainConfigurationFile && _parentID >= 0)
+    {
+      ConfigurationFile *parentConfig = _mainConfigurationFile->getCameraProfile(_parentID);
+      
+      // TODO This does not handle circular references between profiles
+      if(parentConfig && parentConfig->_getData<T>(fileName, data))
+        return true;
+      else
+        loadFromFile = true;
+    }
+    else
+      loadFromFile = true;
+  }
+  
+  if(loadFromFile)
   {
     Configuration c;
     
