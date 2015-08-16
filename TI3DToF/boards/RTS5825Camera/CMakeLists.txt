@@ -1,6 +1,7 @@
 add_library(rts5825camera SHARED
   RTS5825Camera.cpp
   RTS5825CameraFactory.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(rts5825camera

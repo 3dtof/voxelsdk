@@ -46,6 +46,7 @@ add_library(voxel SHARED
   Filter/VoxelFilterFactory.cpp
   Convolve2D.cpp
   ${OS_CPP_FILES}
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(voxel

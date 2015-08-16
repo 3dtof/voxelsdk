@@ -1,6 +1,7 @@
 add_library(voxel14 SHARED
   Voxel14Camera.cpp
   Voxel14CameraFactory.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(voxel14

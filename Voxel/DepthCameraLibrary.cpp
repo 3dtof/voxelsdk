@@ -206,19 +206,36 @@ int DepthCameraLibrary::getABIVersion()
   
   return atoi(splits[splits.size() - 1].c_str());
 #elif defined(WINDOWS)
-  if (!isLoaded())
-    return -1;
-  
-  GetABIVersion g = (GetABIVersion)GetProcAddress(_libraryPrivate->handle, symbol);
-  
-  String error;
-  if(!g && (error = dynamicLoadError()).size())
+  DWORD  verHandle = NULL;
+  UINT   size = 0;
+  LPBYTE lpBuffer = NULL;
+  DWORD  verSize = GetFileVersionInfoSize(_libName.c_str(), &verHandle);
+
+  if (verSize != NULL)
   {
-    logger(LOG_DEBUG) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
-    return 0;
+    Vector<char> verData;
+    verData.resize(verSize);
+
+    if (GetFileVersionInfo(_libName.c_str(), verHandle, verSize, verData.data()))
+    {
+      if (VerQueryValue(verData.data(), "\\", (VOID FAR* FAR*)&lpBuffer, &size))
+      {
+        if (size)
+        {
+          VS_FIXEDFILEINFO *verInfo = (VS_FIXEDFILEINFO *)lpBuffer;
+          if (verInfo->dwSignature == 0xfeef04bd)
+          {
+            if ((verInfo->dwFileVersionMS & 0xFFFF) == 0 && verInfo->dwFileVersionLS == 0)
+              return (verInfo->dwFileVersionMS >> 16);
+            else
+              return 0;
+          }
+        }
+      }
+    }
   }
-  
-  return (*g)();
+
+  return 0;
 #endif
 }
 

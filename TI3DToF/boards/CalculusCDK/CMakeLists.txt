@@ -1,6 +1,7 @@
 add_library(calculuscdk SHARED
   CalculusCDKCamera.cpp
   CalculusCDKCameraFactory.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(calculuscdk
