@@ -60,15 +60,15 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
         
         DepthCameraLibraryPtr p(new DepthCameraLibrary(file));
         
-        if(!p->load())
-        {
-          logger(LOG_WARNING) << "CameraSystem: Failed to load library " << file << ". Ignoring it." << std::endl;
-          continue;
-        }
-        
         if (p->getABIVersion() != VOXEL_ABI_VERSION)
         {
           logger(LOG_WARNING) << "CameraSystem: Ignoring Voxel library " << file << " with ABI version = " << p->getABIVersion() << ". Expected ABI version = " << VOXEL_ABI_VERSION << std::endl;
+          continue;
+        }
+        
+        if(!p->load())
+        {
+          logger(LOG_WARNING) << "CameraSystem: Failed to load library " << file << ". Ignoring it." << std::endl;
           continue;
         }
         

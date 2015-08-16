@@ -9,6 +9,7 @@
 
 #ifdef LINUX
 #include <dlfcn.h>
+#include <elfio/elfio.hpp>
 #elif defined(WINDOWS)
 #include <windows.h>
 #endif
@@ -68,7 +69,7 @@ _libraryPrivate(Ptr<DepthCameraLibraryPrivate>(new DepthCameraLibraryPrivate()))
 bool DepthCameraLibrary::load()
 {
 #ifdef LINUX
-  _libraryPrivate->handle = dlopen(_libName.c_str(), RTLD_LAZY);
+  _libraryPrivate->handle = dlopen(_libName.c_str(), RTLD_LAZY | RTLD_LOCAL);
 #elif defined(WINDOWS)
   _libraryPrivate->handle = LoadLibrary(_libName.c_str());
 #endif
@@ -99,7 +100,7 @@ DepthCameraFactoryPtr DepthCameraLibrary::getDepthCameraFactory()
   String error;
   if (!g && (error = dynamicLoadError()).size())  
   {
-    logger(LOG_ERROR) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
+    logger(LOG_DEBUG) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
     return 0;
   }
   
@@ -163,31 +164,69 @@ DownloaderFactoryPtr DepthCameraLibrary::getDownloaderFactory()
 
 int DepthCameraLibrary::getABIVersion()
 {
+#ifdef LINUX
+  ELFIO::elfio reader;
+  
+  if(!reader.load(_libName))
+  {
+    logger(LOG_DEBUG) << "DepthCameraLibrary: Could not read library " << _libName << std::endl;
+    return 0;
+  }
+  
+  ELFIO::section *dynamicSection = 0;
+  
+  for(int i = 0; i < reader.sections.size(); i++)
+    if(reader.sections[i]->get_type() == SHT_DYNAMIC)
+    {
+      dynamicSection = reader.sections[i];
+      break;
+    }
+    
+  if(!dynamicSection)
+  {
+    logger(LOG_DEBUG) << "DepthCameraLibrary: Could not find dynamic section in " << _libName << std::endl;
+    return 0;
+  }
+  
+  ELFIO::dynamic_section_accessor d(reader, dynamicSection);
+    
+  ELFIO::Elf_Xword tag = DT_SONAME, value;
+    
+  String soName;
+    
+  if(!d.get_entry(0, tag, value, soName))
+  {
+    logger(LOG_DEBUG) << "DepthCameraLibrary: Could not find SONAME in " << _libName << std::endl;
+    return 0;
+  }
+    
+  Vector<String> splits;
+  
+  split(soName, '.', splits);
+  
+  return atoi(splits[splits.size() - 1].c_str());
+#elif defined(WINDOWS)
   if (!isLoaded())
     return -1;
-
-  char symbol[] = "getABIVersion";
-
-#ifdef LINUX
-  GetABIVersion g = (GetABIVersion)dlsym(_libraryPrivate->handle, symbol);
-#elif defined(WINDOWS)
+  
   GetABIVersion g = (GetABIVersion)GetProcAddress(_libraryPrivate->handle, symbol);
-#endif
-
+  
   String error;
   if(!g && (error = dynamicLoadError()).size())
   {
     logger(LOG_DEBUG) << "DepthCameraLibrary: Failed to load symbol " << symbol << " from library " << _libName << ". Error: " << error << std::endl;
     return 0;
   }
-
+  
   return (*g)();
+#endif
 }
 
 DepthCameraLibrary::~DepthCameraLibrary()
 {
   if(isLoaded())
   {
+    logger(LOG_DEBUG) << "Unloading library '" << _libName << "'..." << std::endl;
 #ifdef LINUX
     dlclose(_libraryPrivate->handle);
 #elif defined(WINDOWS)
