@@ -143,6 +143,12 @@ int main(int argc, char *argv[])
       case PARAM_VALUE:
         readParam = false;
         paramValue = s.OptionArg();
+        
+        if(paramValue.size() > 0 && 
+            ((paramValue[0] == '\'' && paramValue[paramValue.size() - 1] == '\'') ||
+            (paramValue[0] == '"' && paramValue[paramValue.size() - 1] == '"')))
+          paramValue = paramValue.substr(1, paramValue.size() - 2);
+        
         break;
         
       case LIST_PROFILES:
