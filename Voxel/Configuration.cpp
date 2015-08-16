@@ -178,7 +178,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
     split(p1, PATH_SEP, splits);
     
     paths.reserve(paths.size() + splits.size());
-    paths.insert(paths.begin(), splits.begin(), splits.end()); // Insert at the beginning to override standard path
+    paths.insert(paths.begin(), splits.begin(), splits.end()); // Insert at the beginning to prefer over standard path
   }
   
   String localPath;
@@ -188,7 +188,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   
   paths.insert(paths.begin(), ""); // Empty path for absolute file paths and also relative file paths
   
-  if(logger.getDefaultLogLevel() >= LOG_DEBUG) 
+  if(logger.getCurrentLogLevel() >= LOG_DEBUG) 
   {
     for(auto i = 0; i < paths.size(); i++)
     {
@@ -211,7 +211,7 @@ bool Configuration::_get(const String &type, String &name)
   for(auto &p: paths)
   {
     String n = (p.size() > 0)?(p + DIR_SEP + name):name;
-    
+
     std::ifstream f(n, std::ios::binary);
     
     if(f.good())
