@@ -38,12 +38,22 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   
   file(WRITE "${CMAKE_BINARY_DIR}/make_deb.sh" "for i in CPackConfig-*.cmake; do cpack -G DEB --config $i; done\n")
   
+  SET(COMMON_LIB_FILES)
+  
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(WINDOWS 1)
-  add_definitions(/fp:fast /arch:SSE2)
+  add_definitions(/fp:fast /W0 /bigobj)
   ADD_DEFINITIONS(-DWINDOWS /wd4251)
-  SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32)
+  SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32 Version)
   SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI/CyAPI.lib)
+  
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/dllversion.rc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/dllversion.rc
+    @ONLY)
+  
+  SET(COMMON_LIB_FILES ${CMAKE_CURRENT_BINARY_DIR}/dllversion.rc)
+  
 endif()
 
 include_directories(

@@ -10,6 +10,7 @@ add_library(ti3dtof SHARED
   ToFHaddockCamera.cpp
   ToFTintinCamera.cpp
   ToFCrossTalkFilter.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(ti3dtof

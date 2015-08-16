@@ -1,6 +1,7 @@
 add_library(voxeld SHARED
   VoxelDCamera.cpp
   VoxelDCameraFactory.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(voxeld

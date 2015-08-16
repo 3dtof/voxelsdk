@@ -3,6 +3,7 @@ add_library(tintincdk SHARED
   TintinCDKCameraFactory.cpp
   TintinCDKDownloaderFactory.cpp
   TintinEEPROMDownloader.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(tintincdk

@@ -1,6 +1,7 @@
 add_library(haddockcdk SHARED
   HaddockCDKCamera.cpp
   HaddockCDKCameraFactory.cpp
+  ${COMMON_LIB_FILES}
 )
 
 generate_export_header(haddockcdk
