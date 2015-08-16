@@ -29,6 +29,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(COMMON_INCLUDE
     ${COMMON_INCLUDE}
     /usr/include/libusb-1.0
+    Util/
   )
   
   if(ARCH STREQUAL "x86_64")
