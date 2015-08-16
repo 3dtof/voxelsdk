@@ -107,7 +107,15 @@ int getFiles(const String &dir, const String &matchString, Vector<String> &files
   closedir(dp);
 #elif defined(WINDOWS)
   WIN32_FIND_DATA ffd;
-  HANDLE hFind = FindFirstFile((dir + DIR_SEP + "*").c_str(), &ffd);
+
+  String basePath;
+
+  if (dir.size() == 0)
+    basePath = "";
+  else
+    basePath = dir + DIR_SEP;
+
+  HANDLE hFind = FindFirstFile((basePath + "*").c_str(), &ffd);
 
   if(INVALID_HANDLE_VALUE == hFind)
     return 0;
@@ -121,7 +129,7 @@ int getFiles(const String &dir, const String &matchString, Vector<String> &files
     String n = ffd.cFileName;
 
     if(n.find(matchString) != String::npos)
-      files.push_back(dir + DIR_SEP + n);
+      files.push_back(basePath + n);
 
   } while (FindNextFile(hFind, &ffd) != 0);
 
