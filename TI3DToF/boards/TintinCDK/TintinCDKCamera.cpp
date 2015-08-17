@@ -425,12 +425,12 @@ bool TintinCDKCamera::_init()
   Ptr<UnsignedIntegerParameter> intgDutyCycle = std::dynamic_pointer_cast<UnsignedIntegerParameter>(getParam(INTG_DUTY_CYCLE));
 
   if (intgDutyCycle)
-    intgDutyCycle->setUpperLimit(30);
+    intgDutyCycle->setUpperLimit(20);
 
   Ptr<UnsignedIntegerParameter> intgTime = std::dynamic_pointer_cast<UnsignedIntegerParameter>(getParam(INTG_TIME));
 
   if (intgTime)
-    intgTime->setUpperLimit(46);
+    intgTime->setUpperLimit(31);
 
   _parameters.erase(LUMPED_DEAD_TIME);
   _parameters.erase(ILLUM_DC_CORR);
@@ -449,6 +449,8 @@ bool TintinCDKCamera::_init()
     if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBCorrModeParameter(*_programmer)),}))
       return false;
     if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBDCCorrModeParameter(*_programmer)),}))
+      return false;
+    if (!set(DELAY_FB_COEFF1, 0U))
       return false;
   } else {
     if (
