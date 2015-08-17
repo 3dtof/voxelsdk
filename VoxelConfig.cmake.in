@@ -7,7 +7,8 @@
 get_filename_component(VOXEL_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 set(VOXEL_INCLUDE_DIRS @CONF_INCLUDE_DIRS@ @COMMON_INCLUDE@)
-MESSAGE(${VOXEL_INCLUDE_DIRS})
+
+set(VOXEL_ABI_VERSION @VOXEL_ABI_VERSION@)
  
 # Our library dependencies (contains definitions for IMPORTED targets)
 include("${VOXEL_CMAKE_DIR}/VoxelTargets.cmake")
