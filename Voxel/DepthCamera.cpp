@@ -19,7 +19,7 @@ namespace Voxel
   
 DepthCamera::DepthCamera(const String &name, const String &chipset, DevicePtr device): _device(device), _name(name), _chipset(chipset),
 _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _pointCloudBuffers(MAX_FRAME_BUFFERS),
-_parameterInit(true), _running(false),
+_parameterInit(true), _running(false), _isPaused(false),
 _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers), _depthFilters(_depthFrameBuffers),
 _pointCloudFrameGenerator(new PointCloudFrameGenerator()),
 configFile(name, "")
@@ -113,7 +113,7 @@ bool DepthCamera::registerCallback(FrameType type, CallbackType f)
 
 bool DepthCamera::_callbackAndContinue(uint32_t &callBackTypesToBeCalled, DepthCamera::FrameType type, const Frame &frame)
 {
-  if((callBackTypesToBeCalled | (1 << type)) && _callback[type])
+  if(!_isPaused && (callBackTypesToBeCalled | (1 << type)) && _callback[type])
   {
     _callback[type](*this, frame, type);
   }
@@ -161,7 +161,8 @@ void DepthCamera::_captureLoop()
           continue;
         }
         
-        _callback[FRAME_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**_frameBuffers.begin()), FRAME_RAW_FRAME_UNPROCESSED);
+        if(!_isPaused)
+          _callback[FRAME_RAW_FRAME_UNPROCESSED](*this, (Frame &)(**_frameBuffers.begin()), FRAME_RAW_FRAME_UNPROCESSED);
         
         _writeToFrameStream(**_frameBuffers.begin());
       }
@@ -325,6 +326,7 @@ bool DepthCamera::start()
     return false;
 
   _running = true;
+  _isPaused = false;
   //_captureThreadWrapper();
   _captureThread = ThreadPtr(new Thread(&DepthCamera::_captureThreadWrapper, this));
   
@@ -340,6 +342,7 @@ bool DepthCamera::stop()
   }
 
   _running = false;
+  _isPaused = false;
   wait();
   return true;
 }
@@ -365,6 +368,36 @@ bool DepthCamera::close()
   _parameters.clear();
   
   return true;
+}
+
+bool DepthCamera::pause()
+{
+  if(!_isPaused)
+  {
+    _isPaused = true;
+  
+    Lock<Mutex> _(_frameStreamWriterMutex);
+    if(_frameStreamWriter)
+      _frameStreamWriter->pause();
+    return true;
+  }
+  
+  return false;
+}
+
+bool DepthCamera::resume()
+{
+  if(_isPaused)
+  {
+    _isPaused = false;
+    
+    Lock<Mutex> _(_frameStreamWriterMutex);
+    if(_frameStreamWriter)
+      _frameStreamWriter->resume();
+    return true;
+  }
+  
+  return false;
 }
 
 
@@ -478,7 +511,8 @@ void DepthCamera::resetFilters()
 bool DepthCamera::_writeToFrameStream(RawFramePtr &rawUnprocessed)
 {
   Lock<Mutex> _(_frameStreamWriterMutex);
-  if(_frameStreamWriter && !_frameStreamWriter->write(std::dynamic_pointer_cast<Frame>(rawUnprocessed)))
+  if(_frameStreamWriter && (!_frameStreamWriter->isPaused() && 
+            !_frameStreamWriter->write(std::dynamic_pointer_cast<Frame>(rawUnprocessed))))
   {
     logger(LOG_ERROR) << "DepthCamera: Failed to save frames to frame stream" << std::endl;
     return false;

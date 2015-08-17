@@ -106,7 +106,7 @@ protected:
   
   void _captureThreadWrapper(); // this is non-virtual and simply calls _captureLoop
   
-  bool _running; // is capture running?
+  bool _running, _isPaused; // is capture running?
   
   bool _writeToFrameStream(RawFramePtr &rawUnprocessed);
   
@@ -175,6 +175,11 @@ public:
   inline const DevicePtr &getDevice() const { return _device; }
   
   inline bool isRunning() const { return _running; }
+  
+  inline bool isPaused() const { return _isPaused; }
+  
+  bool pause();
+  bool resume();
   
   template <typename T>
   bool getStreamParam(const String &name, T &value) const;
