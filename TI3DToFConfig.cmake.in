@@ -14,4 +14,4 @@ set(TI3DToF_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@" "${VOXEL_INCLUDE_DIRS}")
 include("${TI3DTOF_CMAKE_DIR}/TI3DToFTargets.cmake")
  
 # These are IMPORTED targets created by FooBarTargets.cmake
-set(TI3DToF_LIBRARIES ti3dtof ${VOXEL_LIBRARIES})
+set(TI3DToF_LIBRARIES Voxel::ti3dtof ${VOXEL_LIBRARIES})

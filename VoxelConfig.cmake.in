@@ -14,4 +14,4 @@ set(VOXEL_ABI_VERSION @VOXEL_ABI_VERSION@)
 include("${VOXEL_CMAKE_DIR}/VoxelTargets.cmake")
  
 # These are IMPORTED targets created by FooBarTargets.cmake
-set(VOXEL_LIBRARIES voxel)
+set(VOXEL_LIBRARIES Voxel::voxel)

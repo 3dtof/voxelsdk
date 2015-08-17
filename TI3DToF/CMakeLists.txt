@@ -1,3 +1,5 @@
+find_package(Voxel ${VOXEL_VERSION} REQUIRED)
+
 add_library(ti3dtof SHARED
   VoxelProgrammerBase.cpp
   VoxelUSBProgrammer.cpp
@@ -18,7 +20,7 @@ generate_export_header(ti3dtof
 )
 
 target_link_libraries(ti3dtof
-  voxel ${COMMON_LIBS}
+  ${VOXEL_LIBRARIES} ${COMMON_LIBS}
 )
 
 add_subdirectory(boards)
@@ -136,3 +138,5 @@ IF(LINUX)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION})")
   create_cpack_config(libti3dtof-dev ${VOXEL_VERSION})
 ENDIF()
+
+create_cmake_config(TI3DToF "ti3dtof" ti3dtof_dev TI3DToF)

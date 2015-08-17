@@ -128,10 +128,6 @@ add_subdirectory(Test)
 add_subdirectory(App)
 add_subdirectory(Util)
 
-create_cmake_config(Voxel voxel voxel_dev Voxel)
-create_cmake_config(TI3DToF "ti3dtof" ti3dtof_dev TI3DToF)
-create_cmake_config(VoxelPCL "voxelpcl" voxelpcl_dev VoxelPCL)
-
 
 IF(WINDOWS)
   SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
