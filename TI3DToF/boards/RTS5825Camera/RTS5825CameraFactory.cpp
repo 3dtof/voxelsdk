@@ -1,7 +1,7 @@
 /*
  * TI Voxel Lib component.
  *
- * Copyright (c) 2014 Texas Instruments Inc.
+ * Copyright (c) 2015 Texas Instruments Inc.
  */
 
 #include "RTS5825CameraFactory.h"
@@ -18,23 +18,23 @@ namespace TI
 {
   
   
-LipsCameraFactory::LipsCameraFactory(const String &name): ToFCameraFactoryBase(name)
+RTS5825CameraFactory::RTS5825CameraFactory(const String &name): ToFCameraFactoryBase(name)
 {
   _addSupportedDevices({
-    DevicePtr(new USBDevice(LIPS_CAMERA_VENDOR_ID, LIPS_CAMERA_PRODUCT_ID1, "")),
+    DevicePtr(new USBDevice(RTS5825CAMERA_VENDOR_ID, RTS5825CAMERA_PRODUCT_ID1, "")),
   });
 }
 
-DepthCameraPtr LipsCameraFactory::getDepthCamera(DevicePtr device)
+DepthCameraPtr RTS5825CameraFactory::getDepthCamera(DevicePtr device)
 {
   if(device->interfaceID() == Device::USB)
   {
     USBDevice &d = (USBDevice &)*device;
     
-    if(d.vendorID() == LIPS_CAMERA_VENDOR_ID && 
-      (d.productID() == LIPS_CAMERA_PRODUCT_ID1))
+    if(d.vendorID() == RTS5825CAMERA_VENDOR_ID && 
+      (d.productID() == RTS5825CAMERA_PRODUCT_ID1))
     {
-      return DepthCameraPtr(new LipsCamera(device));
+      return DepthCameraPtr(new RTS5825Camera(device));
     }
   }
   
@@ -44,7 +44,7 @@ DepthCameraPtr LipsCameraFactory::getDepthCamera(DevicePtr device)
 
 extern "C" void SYMBOL_EXPORT getDepthCameraFactory(DepthCameraFactoryPtr &ptr)
 {
-  ptr = DepthCameraFactoryPtr(new LipsCameraFactory("RTS5825Camera"));
+  ptr = DepthCameraFactoryPtr(new RTS5825CameraFactory("RTS5825Camera"));
 }
 
 extern "C" int SYMBOL_EXPORT getABIVersion()

@@ -1,7 +1,7 @@
 /*
  * TI Voxel Lib component.
  *
- * Copyright (c) 2014 Texas Instruments Inc.
+ * Copyright (c) 2015 Texas Instruments Inc.
  */
 
 #include "RTS5825Camera.h"
@@ -18,12 +18,12 @@ namespace Voxel
 namespace TI
 {
   
-LipsCamera::LipsCamera(Voxel::DevicePtr device): ToFHaddockCamera("RTS5825Camera", device)
+RTS5825Camera::RTS5825Camera(Voxel::DevicePtr device): ToFHaddockCamera("RTS5825Camera", device)
 {
   _init();
 }
 
-class LipsMixVoltageParameter: public UnsignedIntegerParameter
+class RTS5825CameraMixVoltageParameter: public UnsignedIntegerParameter
 {
 protected:
   virtual uint _fromRawValue(uint32_t value) const
@@ -43,16 +43,16 @@ protected:
   }
   
 public:
-  LipsMixVoltageParameter(RegisterProgrammer &programmer):
+  RTS5825CameraMixVoltageParameter(RegisterProgrammer &programmer):
   UnsignedIntegerParameter(programmer, MIX_VOLTAGE, "mV", 0x2D05, 8, 7, 0, 500, 2075, 1500, "Mixing voltage", 
                            "Mixing voltage?", Parameter::IO_READ_WRITE, {})
   {}
   
-  virtual ~LipsMixVoltageParameter() {}
+  virtual ~RTS5825CameraMixVoltageParameter() {}
 };
 
 
-class LipsIlluminationVoltageParameter: public UnsignedIntegerParameter
+class RTS5825CameraIlluminationVoltageParameter: public UnsignedIntegerParameter
 {
 protected:
   virtual uint _fromRawValue(uint32_t value) const
@@ -72,15 +72,15 @@ protected:
   }
   
 public:
-  LipsIlluminationVoltageParameter(RegisterProgrammer &programmer):
+  RTS5825CameraIlluminationVoltageParameter(RegisterProgrammer &programmer):
   UnsignedIntegerParameter(programmer, ILLUM_VOLTAGE, "mV", 0x2D0E, 8, 7, 0, 500, 1850, 1500, "Illumination voltage", 
                            "Voltage applied to the infra-red Illumination source", Parameter::IO_READ_WRITE, {})
   {}
   
-  virtual ~LipsIlluminationVoltageParameter() {}
+  virtual ~RTS5825CameraIlluminationVoltageParameter() {}
 };
 
-class LipsCameraUVCStreamer : public UVCStreamer
+class RTS5825CameraUVCStreamer : public UVCStreamer
 {
 protected:
   bool _isReallyRunning = false;
@@ -101,7 +101,12 @@ public:
     return _isReallyRunning;
   }
 
-  LipsCameraUVCStreamer(DevicePtr device) : UVCStreamer(device)
+  bool setVideoMode(const VideoMode &videoMode)
+  {
+    return true;
+  }
+
+  RTS5825CameraUVCStreamer(DevicePtr device) : UVCStreamer(device)
   {
     VideoMode m;
     m.frameSize.width = 320*2;
@@ -113,7 +118,7 @@ public:
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 
-  virtual ~LipsCameraUVCStreamer()
+  virtual ~RTS5825CameraUVCStreamer()
   {
     if (isInitialized() && isRunning())
       stop();
@@ -122,7 +127,7 @@ public:
 };
 
 
-bool LipsCamera::_init()
+bool RTS5825Camera::_init()
 {
   USBDevice &d = (USBDevice &)*_device;
   
@@ -131,14 +136,14 @@ bool LipsCamera::_init()
   _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(
     { {0x2D, 1}, {0x58, 3}, {0x5C, 3} },
     controlDevice));
-  _streamer = Ptr<Streamer>(new LipsCameraUVCStreamer(controlDevice));
+  _streamer = Ptr<Streamer>(new RTS5825CameraUVCStreamer(controlDevice));
   
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
   if(!_addParameters({
-    ParameterPtr(new LipsMixVoltageParameter(*_programmer)),
-    ParameterPtr(new LipsIlluminationVoltageParameter(*_programmer)),
+    ParameterPtr(new RTS5825CameraMixVoltageParameter(*_programmer)),
+    ParameterPtr(new RTS5825CameraIlluminationVoltageParameter(*_programmer)),
     }))
   {
     return false;
@@ -162,101 +167,70 @@ bool LipsCamera::_init()
   return true;
 }
 
-bool LipsCamera::_initStartParams()
+bool RTS5825Camera::_initStartParams()
 {
-  if(!set(ILLUM_VOLTAGE, 1500U))
-    return false;
-  return 
-  //set(ILLUM_VOLTAGE, 1500U) && 
-  //set(MIX_VOLTAGE, 1500U) &&
-  Voxel::TI::ToFCamera::_initStartParams();
+  return Voxel::TI::ToFCamera::_initStartParams();
 }
 
 
 
-bool LipsCamera::_getFieldOfView(float &fovHalfAngle) const
+bool RTS5825Camera::_getFieldOfView(float &fovHalfAngle) const
 {
   fovHalfAngle = (87/2.0f)*(M_PI/180.0f);
   return true;
 }
 
-bool LipsCamera::_setStreamerFrameSize(const FrameSize &s)
+bool RTS5825Camera::_setStreamerFrameSize(const FrameSize &s)
 {
   UVCStreamer *streamer = dynamic_cast<UVCStreamer *>(&*_streamer);
   
   if(!streamer)
   {
-    logger(LOG_ERROR) << "LipsCamera: Streamer is not of type UVC" << std::endl;
+    logger(LOG_ERROR) << "RTS5825Camera: Streamer is not of type UVC" << std::endl;
     return false;
   }
   
   VideoMode m;
   m.frameSize = s;
   
-  int bytesPerPixel;
-  
-#if 0
-  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
-  {
-    logger(LOG_ERROR) << "LipsCamera: Could not get current bytes per pixel" << std::endl;
-    return false;
-  }
-#else
-  bytesPerPixel = 4;
-#endif
+  int bytesPerPixel = 4;
   
   if(bytesPerPixel == 4)
     m.frameSize.width *= 2;
   
-#if 0
-  if(!_getFrameRate(m.frameRate))
-  {
-    logger(LOG_ERROR) << "LipsCamera: Could not get current frame rate" << std::endl;
-    return false;
-  }
-#endif
   m.frameRate.denominator = 1;
-  m.frameRate.numerator = 25;
+  m.frameRate.numerator = 30;
   
   if(!streamer->setVideoMode(m))
   {
-    logger(LOG_ERROR) << "LipsCamera: Could not set video mode for UVC" << std::endl;
+    logger(LOG_ERROR) << "RTS5825Camera: Could not set video mode for UVC" << std::endl;
     return false;
   }
   
   return true;
 }
 
-bool LipsCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool RTS5825Camera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
   supportedVideoModes = Vector<SupportedVideoMode> {
-    SupportedVideoMode(320,240,25,1,4),
-    // SupportedVideoMode(160,240,50,1,4),
-    // SupportedVideoMode(160,120,100,1,4),
-    // SupportedVideoMode(80,120,200,1,4),
-    // SupportedVideoMode(80,60,400,1,4),
-    // SupportedVideoMode(320,240,50,1,2),
-    // SupportedVideoMode(320,120,100,1,2),
-    // SupportedVideoMode(160,120,200,1,2),
-    // SupportedVideoMode(160,60,400,1,2),
-    // SupportedVideoMode(80,60,400,1,2),
+    SupportedVideoMode(320,240,30,1,4),
   };
   return true;
 }
 
-bool LipsCamera::_getMaximumVideoMode(VideoMode &videoMode) const
+bool RTS5825Camera::_getMaximumVideoMode(VideoMode &videoMode) const
 {
   int bytesPerPixel;
   if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
   {
-    logger(LOG_ERROR) << "LipsCamera: Could not get current bytes per pixel" << std::endl;
+    logger(LOG_ERROR) << "RTS5825Camera: Could not get current bytes per pixel" << std::endl;
     return false;
   }
   
   videoMode.frameSize.width = 320;
   videoMode.frameSize.height = 240;
   videoMode.frameRate.denominator = 1;
-  videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
+  videoMode.frameRate.numerator = (bytesPerPixel == 4)?30:30;
   return true;
 }
 
