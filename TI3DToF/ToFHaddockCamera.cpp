@@ -58,7 +58,8 @@ public:
     if(systemClockFrequency == 0)
       return false;
     
-    modM = value*modN/systemClockFrequency;
+    modM = value*modN/2/systemClockFrequency;
+    modM *= 2;  // mod_m lsbit has no effect and should be set to 0
     
     if(!_depthCamera._set(MOD_N, modN))
       return false;
@@ -164,7 +165,7 @@ class HaddockUnambiguousRangeParameter: public UnsignedIntegerParameter
   ToFHaddockCamera &_depthCamera;
 public:
   HaddockUnambiguousRangeParameter(ToFHaddockCamera &depthCamera, RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0x5C60, 24, 5, 0, 6, 60, 
+  UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0x5C60, 24, 5, 0, 3, 60, 
                            DEFAULT_UNAMBIGUOUS_RANGE, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"),
                            _depthCamera(depthCamera) {}
                            
