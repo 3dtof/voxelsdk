@@ -1,3 +1,4 @@
+find_package(Voxel ${VOXEL_VERSION} REQUIRED)
 find_package(PCL 1.6 REQUIRED COMPONENTS common io visualization)
 
 IF(WINDOWS)
@@ -8,8 +9,8 @@ ENDIF()
 add_definitions(${PCL_DEFINITIONS})
 
 add_library(voxelpcl SHARED PCLGrabber.cpp)
-target_include_directories(voxelpcl PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})
-target_link_libraries(voxelpcl LINK_PUBLIC voxel LINK_PRIVATE ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES})
+target_include_directories(voxelpcl PRIVATE ${VOXEL_INCLUDE_DIRS} PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})
+target_link_libraries(voxelpcl LINK_PUBLIC ${VOXEL_LIBRARIES} LINK_PRIVATE ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES})
 
 generate_export_header(voxelpcl
   EXPORT_FILE_NAME "VoxelPCLExports.h"
@@ -45,3 +46,5 @@ IF(LINUX)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION}), libpcl-visualization-1.7-dev, libpcl-io-1.7-dev, libpcl-common-1.7-dev")
   create_cpack_config(libvoxel-pcl-dev ${VOXEL_VERSION})
 ENDIF()
+
+create_cmake_config(VoxelPCL "voxelpcl" voxelpcl_dev VoxelPCL)
