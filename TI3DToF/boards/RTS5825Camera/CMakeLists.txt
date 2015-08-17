@@ -22,7 +22,7 @@ install(TARGETS rts5825camera
 list(APPEND CONF_FILES
   boards/RTS5825Camera/RTS5825Camera.conf
   boards/RTS5825Camera/RTS5825CameraNormal.conf
-  boards/RTS5825Camera/RTS5825CameraTestMode.conf
+  boards/RTS5825Camera/RTS5825CameraNoCalibration.conf
 )
 
 set(CONF_FILES "${CONF_FILES}" PARENT_SCOPE)

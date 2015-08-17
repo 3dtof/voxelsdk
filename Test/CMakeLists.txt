@@ -38,6 +38,7 @@ install(TARGETS
   DownloaderTest 
   UVCStreamerTest
   CameraSystemTest
+  CameraSystemConfigTest
   CameraSystemSaveStreamTest
   CameraSystemReadStreamTest
   DMLParseTest

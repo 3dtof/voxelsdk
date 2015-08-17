@@ -153,3 +153,5 @@ IF(LINUX)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), python2.7 (>= 2.7.0)")
   create_cpack_config(libvoxel-python ${VOXEL_VERSION})
 ENDIF()
+
+create_cmake_config(Voxel voxel voxel_dev Voxel)

@@ -194,6 +194,14 @@ bool VoxelDCamera::_init()
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
+  /* Workaround for initial samples only, but we need it for now for testing */
+  if (
+      !set(TG_DISABLE, false) ||
+      !_programmer->writeRegister(0x583A, 0x008200) ||
+      !_programmer->writeRegister(0x583A, 0x004200) ||
+      !set(TG_DISABLE, true))
+    return false;
+
   if (
       !set(ILLUM_VOLTAGE, 1800U) &&
       !set(MOD_FREQ1, 24.0f) &&
