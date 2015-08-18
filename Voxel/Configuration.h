@@ -326,6 +326,8 @@ public:
   bool readFromHardware();
   bool writeToHardware();
   
+  inline bool hasHardwareConfigurationSupport() { return _hardwareReader && _hardwareWriter; }
+  
   inline void setHardwareReader(HardwareSerializer hardwareReader) { _hardwareReader = hardwareReader; }
   inline void setHardwareWriter(HardwareSerializer hardwareWriter) { _hardwareWriter = hardwareWriter; }
   
