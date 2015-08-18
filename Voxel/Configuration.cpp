@@ -635,7 +635,7 @@ bool ConfigurationFile::write(const String &configFile)
     return false;
   }
   
-  logger(LOG_INFO) << "ConfigurationFile: Saving profile to '" << _fileName << "'..." << std::endl;
+  logger(LOG_INFO) << "ConfigurationFile: Saving to '" << _fileName << "'..." << std::endl;
   
   if(getLocation() == ConfigurationFile::IN_CAMERA && !_saveAllDataFiles(_mainConfigurationFile->_hardwareID + "-"))
     return false;
@@ -1488,9 +1488,10 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
   
   if(writeToHardware())
   {
+    id = newid;
+    
     if(_currentCameraProfileID == id)
       return setCurrentCameraProfile(newid);
-    id = newid;
     return true;
   }
   else
