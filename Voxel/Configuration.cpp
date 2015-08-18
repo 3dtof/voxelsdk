@@ -1203,15 +1203,18 @@ bool MainConfigurationFile::readFromHardware()
   if(!_hardwareReader || !(ret = _hardwareReader(serialNumber, timestamp, so)) || so.size() == 0) 
     // Last condition is when the data in hardware and backup file in host are the same...
   {
-    if(!ret)
-      logger(LOG_WARNING) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
-    else if(_hardwareReader && so.size() == 0)
-      logger(LOG_INFO) << "MainConfigurationFile: Reading from local copy of hardware configuration data" << std::endl;
+    if(_hardwareReader)
+    {
+      if(!ret)
+        logger(LOG_WARNING) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
+      else if(so.size() == 0)
+        logger(LOG_INFO) << "MainConfigurationFile: Reading from local copy of hardware configuration data" << std::endl;
+    }
       
-    
     if(!fs.is_open() || !fs.good())
     {
-      logger(LOG_WARNING) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
+      if(_hardwareReader)
+        logger(LOG_WARNING) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
       return false;
     }
     
