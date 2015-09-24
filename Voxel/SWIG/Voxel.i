@@ -86,6 +86,7 @@ namespace std
 %template(IntegerVector) vector<int>;
 %template(UnsignedIntegerVector) vector<uint>;
 %template(FrameVector) vector<Voxel::FramePtr>;
+%template(IntensityPointVector) vector<Voxel::IntensityPoint>;
 
 %handle_reference(std::string);
 %apply string &INOUT { string &fileName };
