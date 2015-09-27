@@ -34,7 +34,7 @@ list(APPEND CONF_FILES
 
 list(APPEND FW_FILES
   OPT9220_0v27.tip
-  OPT9221_0v20.tip
+  OPT9221_0v23.tip
 )
 
 set(filesToCopy) # Remove this variable
