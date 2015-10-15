@@ -1443,7 +1443,7 @@ bool MainConfigurationFile::writeToHardware()
   
   if(_hardwareWriter && !_hardwareWriter(serialNumber, timestamp, so))
   {
-    logger(LOG_ERROR) << "MainConfigurationFile: Failed to write configuration from hardware." << std::endl;
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to write configuration to hardware." << std::endl;
     return false;
   }
   

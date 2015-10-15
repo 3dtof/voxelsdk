@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
       return -1;
     }
     
-    std::cout << "Profile saved to host with id = " << id << " to file '" << config->getFileName() << "'" << std::endl;
+    std::cout << "Profile saved to host with id = " << id << " to file '" << config->getConfigFileName() << "'" << std::endl;
     return 0;
   }
   
