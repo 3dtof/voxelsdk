@@ -33,7 +33,9 @@ install(FILES
   DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT ${component})
   
 # Install the export set for use with the install-tree
-install(EXPORT ${package}Targets DESTINATION
-  ${INSTALL_CMAKE_DIR} COMPONENT ${component})
+install(EXPORT ${package}Targets
+  DESTINATION ${INSTALL_CMAKE_DIR} 
+  NAMESPACE Voxel::
+  COMPONENT ${component})
  
 ENDFUNCTION()
