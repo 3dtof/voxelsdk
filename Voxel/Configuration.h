@@ -152,7 +152,9 @@ public:
   ConfigSetMap configs;
   
   inline Location getLocation() const { return _location; }
-  inline const String &getFileName() const { return _fileName; }
+  inline int getID() { return _id; }
+  inline int getParentID() { return _parentID; }
+  inline const String &getProfileName() { return _profileName; }
   
   virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   virtual String get(const String &section, const String &name) const;
@@ -326,6 +328,8 @@ public:
   bool readFromHardware();
   bool writeToHardware();
   
+  inline bool hasHardwareConfigurationSupport() { return _hardwareReader && _hardwareWriter; }
+  
   inline void setHardwareReader(HardwareSerializer hardwareReader) { _hardwareReader = hardwareReader; }
   inline void setHardwareWriter(HardwareSerializer hardwareWriter) { _hardwareWriter = hardwareWriter; }
   
@@ -343,12 +347,22 @@ public:
   template <typename T>
   bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
   
-  int getDefaultCameraProfileID() 
+  inline int getDefaultCameraProfileID() 
   { 
     if(_defaultCameraProfileIDInHardware >= 0) 
       return _defaultCameraProfileIDInHardware;
     else
       return _defaultCameraProfileID; 
+  }
+  
+  inline int getDefaultCameraProfileIDInHost() 
+  { 
+    return _defaultCameraProfileID;
+  }
+  
+  inline int getDefaultCameraProfileIDInCamera() 
+  { 
+    return _defaultCameraProfileID; 
   }
   
   bool setDefaultCameraProfile(const int id);

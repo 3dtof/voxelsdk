@@ -51,6 +51,8 @@ class VOXEL_EXPORT FrameStreamWriter
   
   Mutex _mutex;
   
+  bool _isPaused = false;
+  
   size_t _frameCount;
   FrameStreamHeader _header;
   FrameStreamPacket _rawpacket, _configPacket;
@@ -65,6 +67,10 @@ public:
   FrameStreamWriter(OutputFileStream &stream, GeneratorIDType processedRawFrameGeneratorID, GeneratorIDType depthFrameGeneratorID, GeneratorIDType pointCloudFrameGeneratorID);
   
   inline bool isStreamGood() { return _stream.good(); }
+  
+  bool pause();
+  bool resume();
+  inline bool isPaused() { return _isPaused; }
   
   bool write(FramePtr rawUnprocessed);
   

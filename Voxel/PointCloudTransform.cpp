@@ -361,8 +361,8 @@ bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, Poin
 {
   uint w = (width + columnsToMerge - 1)/columnsToMerge, h = (height + rowsToMerge - 1)/rowsToMerge;
   
-  if(distances.size() > w*h ||
-    pointCloudFrame.size() > w*h)
+  if(distances.size() < w*h ||
+    pointCloudFrame.size() < w*h)
     return false;
   
   for(int v = 0; v < height; v += rowsToMerge)

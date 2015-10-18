@@ -55,9 +55,37 @@ FrameStreamWriter::FrameStreamWriter(OutputFileStream &stream, GeneratorIDType p
   _init(processedRawFrameGeneratorID, depthFrameGeneratorID, pointCloudFrameGeneratorID);
 }
 
+bool FrameStreamWriter::pause()
+{
+  Lock<Mutex> _(_mutex);
+  if(!_isPaused)
+  {
+    _isPaused = true;
+    return true;
+  }
+  
+  return false;
+}
+
+bool FrameStreamWriter::resume()
+{
+  Lock<Mutex> _(_mutex);
+  if(_isPaused)
+  {
+    _isPaused = false;
+    return true;
+  }
+  return false;
+}
+
+
+
 bool FrameStreamWriter::write(Voxel::FramePtr rawUnprocessed)
 {
   Lock<Mutex> _(_mutex);
+  
+  if(_isPaused)
+    return false;
   
   if(!isStreamGood())
     return false;
