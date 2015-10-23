@@ -44,7 +44,7 @@ bool TintinEEPROMDownloader::_configureForDownload()
   {
     logger(LOG_INFO) << "TintinEEPROMDownloader: Reseting device..." << std::endl;
     _outStream << "Reseting device..." << std::endl;
-    VoxelXUProgrammer p({}, _device);
+    VoxelXUProgrammer p({{}}, _device);
     p.reset();
   
     // Wait for 10 seconds
