@@ -315,6 +315,28 @@ public:
   virtual ~TintinCDKDummyDelayFBDCCorrModeParameter() {}
 };
 
+
+class TintinCDKModulationFrequencyParameter: public TintinModulationFrequencyParameter
+{
+public:
+  TintinCDKModulationFrequencyParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS, const float &defaultValue = 48):
+    TintinModulationFrequencyParameter(depthCamera, programmer, name, vcoFreq, modPS, defaultValue) {}
+    
+  virtual const float getOptimalMaximum() { return 60; }
+  virtual const float getOptimalMinimum() { return 39; }
+  
+  virtual ~TintinCDKModulationFrequencyParameter() {}
+};
+
+#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/48/(1 << 12)
+class TintinCDKUnambiguousRangeParameter: public TintinUnambiguousRangeParameter
+{
+public:
+  TintinCDKUnambiguousRangeParameter(ToFTintinCamera& depthCamera, RegisterProgrammer& programmer):
+    TintinUnambiguousRangeParameter(depthCamera, programmer, 3, 50, DEFAULT_UNAMBIGUOUS_RANGE, 1, 0) {}
+  virtual ~TintinCDKUnambiguousRangeParameter() {}
+};
+
 bool TintinCDKCamera::_init()
 {
   USBDevice &d = (USBDevice &)*_device;
@@ -372,6 +394,9 @@ bool TintinCDKCamera::_init()
     ParameterPtr(new TintinCDKIllumCurrentParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerParameter(*_programmer)),
     ParameterPtr(new TintinCDKIlluminationPowerPercentParameter(*this, *_programmer)),
+    ParameterPtr(new TintinCDKModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ1, MOD_PS1)),
+    ParameterPtr(new TintinCDKModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, VCO_FREQ2, MOD_PS2)),
+    ParameterPtr(new TintinCDKUnambiguousRangeParameter(*this, *_programmer))
     }))
   {
     return false;
