@@ -202,9 +202,11 @@ bool TintinUnambiguousRangeParameter::set(const uint &value)
       !mfp->set(modulationFrequency1) ||
       !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) ||
       !_depthCamera._set(DEALIAS_EN, false) || // Disable dealiasing explicitly
-      !UnsignedIntegerParameter::set(value) || // Save the value in a register
+      !_depthCamera._set(SCRATCH1, value) || // Save the value in a register
       !_depthCamera._set(TG_DISABLE, false))
       return false;
+      
+    _value = value;
     
     return true;
   }
