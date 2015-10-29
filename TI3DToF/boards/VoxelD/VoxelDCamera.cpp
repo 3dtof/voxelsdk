@@ -229,8 +229,8 @@ bool VoxelDCamera::_init()
     return false;
 
   if (
-      !set(ILLUM_VOLTAGE, 1800U) &&
-      !set(MOD_FREQ1, 24.0f) &&
+      //!set(ILLUM_VOLTAGE, 1800U) &&
+      //!set(MOD_FREQ1, 24.0f) &&
       !set(CONFIDENCE_THRESHOLD, 2U))
     return false;
   
