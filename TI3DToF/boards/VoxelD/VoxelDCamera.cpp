@@ -103,6 +103,29 @@ public:
 
 };
 
+class VoxelDModulationFrequencyParameter: public TintinModulationFrequencyParameter
+{
+public:
+  VoxelDModulationFrequencyParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS, const float &defaultValue = 24):
+    TintinModulationFrequencyParameter(depthCamera, programmer, name, vcoFreq, modPS, defaultValue) {}
+    
+  virtual const float getOptimalMaximum() { return 30; }
+  virtual const float getOptimalMinimum() { return 10; }
+  
+  virtual ~VoxelDModulationFrequencyParameter() {}
+};
+
+#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/24/(1 << 12)
+class VoxelDUnambiguousRangeParameter: public TintinUnambiguousRangeParameter
+{
+public:
+  VoxelDUnambiguousRangeParameter(ToFTintinCamera& depthCamera, RegisterProgrammer& programmer):
+  TintinUnambiguousRangeParameter(depthCamera, programmer, 5, 50, DEFAULT_UNAMBIGUOUS_RANGE, 5, 2) {}
+  
+  virtual ~VoxelDUnambiguousRangeParameter() {}
+};
+
+
 bool VoxelDCamera::_setIllumPolarity(const bool value)
 {
   if (value) {
@@ -167,7 +190,10 @@ bool VoxelDCamera::_init()
   if(!_addParameters({
     ParameterPtr(new VoxelDMixVoltageParameter(*_programmer)),
     ParameterPtr(new VoxelDIlluminationVoltageParameter(*_programmer)),
-    ParameterPtr(new VoxelDIlluminationPolarityParameter(*this, *_programmer))
+    ParameterPtr(new VoxelDIlluminationPolarityParameter(*this, *_programmer)),
+    ParameterPtr(new VoxelDModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ1, MOD_PS1)),
+    ParameterPtr(new VoxelDModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, VCO_FREQ2, MOD_PS2)),
+    ParameterPtr(new VoxelDUnambiguousRangeParameter(*this, *_programmer))
     }))
   {
     return false;

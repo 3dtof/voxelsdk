@@ -85,261 +85,217 @@ public:
   virtual ~TintinVCOFrequency() {}
 };
 
-class TintinModulationFrequencyParameter: public FloatParameter
+bool TintinModulationFrequencyParameter::get(float &value, bool refresh)
 {
-  ToFTintinCamera &_depthCamera;
-  String _modPS, _vcoFreq;
-public:
-  TintinModulationFrequencyParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS):
-  FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, 48, "Modulation frequency", "Frequency used for modulation of illumination", 
-                 Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
-                 
-  virtual const float getOptimalMaximum() const { return 60; }
-  virtual const float getOptimalMinimum() const { return 39; }
-                 
-  virtual const float lowerLimit() const 
-  { 
-    int quadCount;
-    
-    if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
-      return _lowerLimit;
-    
-    if(quadCount == 0)
-      return _lowerLimit;
-    
-    return 37.5f/quadCount; 
-    
-  }
-  virtual const float upperLimit() const 
-  { 
-    int quadCount;
-    
-    if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
-      return _upperLimit;
-    
-    if(quadCount == 0)
-      return _upperLimit;
-    
-    return 600.0f/quadCount;
-  }
-                 
-  virtual bool get(float &value, bool refresh = false)
+  float vcoFrequency;
+  
+  uint modulationPS;
+  
+  int quadCount;
+  
+  if(!_depthCamera._get(_vcoFreq, vcoFrequency, refresh) || !_depthCamera._get(_modPS, modulationPS, refresh) || !_depthCamera._get(QUAD_CNT_MAX, quadCount, refresh))
+    return false;
+  
+  if(quadCount == 0)
+    return false;
+  
+  float v = vcoFrequency/quadCount/(1 + modulationPS);
+  
+  if(!validate(v))
+    return false;
+  
+  value = v;
+  return true;
+}
+  
+bool TintinModulationFrequencyParameter::set(const float &value)
+{
+  if(!validate(value))
+    return false;
+  
+  ParameterPtr p = _depthCamera.getParam(_vcoFreq);
+  
+  int quadCount;
+  
+  if(!p || !_depthCamera._get(QUAD_CNT_MAX, quadCount))
+    return false;
+  
+  if(quadCount == 0)
+    return false;
+  
+  TintinVCOFrequency &v = (TintinVCOFrequency &)*p;
+  
+  uint modulationPS = v.lowerLimit()/quadCount/value; // Using lower limit for setting VCO frequency
+  
+  if(!v.set((modulationPS + 1)*quadCount*value))
+    return false;
+  
+  if(!_depthCamera._set(MOD_PLL_UPDATE, true))
+    return false;
+  
+  ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+  
+  if(!_depthCamera._set(_modPS, modulationPS))
+    return false;
+  
+  float val;
+  
+  if(!v.get(val))
+    return false;
+  
+  return true;
+}
+
+bool TintinUnambiguousRangeParameter::get(uint &value, bool refresh)
+{
+  if(!_depthCamera._get(SCRATCH1, value, refresh) || !validate(value))// Invalid value? Probably register not set yet
   {
-    float vcoFrequency;
-    
-    uint modulationPS;
-    
-    int quadCount;
-    
-    if(!_depthCamera._get(_vcoFreq, vcoFrequency, refresh) || !_depthCamera._get(_modPS, modulationPS, refresh) || !_depthCamera._get(QUAD_CNT_MAX, quadCount, refresh))
+    if(validate(_value))
+    {
+      value = _value; // Use saved value
+    }
+    else
+    {
+      if(!set(_defaultValue)) // set range of 3 meters
       return false;
     
-    if(quadCount == 0)
-      return false;
-    
-    float v = vcoFrequency/quadCount/(1 + modulationPS);
-    
-    if(!validate(v))
-      return false;
-    
-    value = v;
-    return true;
+      _value = _defaultValue;
+      value = _defaultValue;
+    }
   }
   
-  virtual bool set(const float &value)
+  return true;
+}
+
+bool TintinUnambiguousRangeParameter::set(const uint &value)
+{
+  ParameterPtr p = _depthCamera.getParam(MOD_FREQ1);
+  
+  TintinModulationFrequencyParameter *mfp = dynamic_cast<TintinModulationFrequencyParameter *>(p.get());
+  
+  TintinVCOFrequency *vco = dynamic_cast<TintinVCOFrequency *>(_depthCamera.getParam(VCO_FREQ1).get());
+  
+  if(!mfp || !vco)
+    return false;
+  
+  float modulationFrequency1Minimum = mfp->getOptimalMinimum();
+  
+  FrameRate r;
+  
+  uint delayFBCoeff1;
+  
+  if(!_depthCamera._getFrameRate(r))
+    return false;
+  
+  // No need of dealiasing?
+  if(value <= (uint)(4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/modulationFrequency1Minimum))
   {
-    if(!validate(value))
+    float modulationFrequency1 = 4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/value;
+    delayFBCoeff1 = modulationFrequency1*(1 << 10)/24;
+    
+    if(!_depthCamera._set(TG_DISABLE, true) || 
+      !_depthCamera._set(QUAD_CNT_MAX, 4) || 
+      !_depthCamera._set(SUBFRAME_CNT_MAX, 4) || 
+      !_depthCamera._setFrameRate(r) ||
+      !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
+      !_depthCamera._set(DEALIASED_PHASE_MASK, 0) || 
+      !mfp->set(modulationFrequency1) ||
+      !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) ||
+      !_depthCamera._set(DEALIAS_EN, false) || // Disable dealiasing explicitly
+      !_depthCamera._set(SCRATCH1, value) || // Save the value in a register
+      !_depthCamera._set(TG_DISABLE, false))
+      return false;
+      
+    _value = value;
+    
+    return true;
+  }
+  else
+  {
+    if(!_depthCamera._set(TG_DISABLE, true) ||
+      !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
       return false;
     
-    ParameterPtr p = _depthCamera.getParam(_vcoFreq);
+    uint ma = 2, mb = 3, ka = 2, kb = 1, modPS1 = _modPS1, modPS2 = _modPS2;
     
-    int quadCount;
+    uint freqRatio = ma*(1 << 12)/mb;
     
-    if(!p || !_depthCamera._get(QUAD_CNT_MAX, quadCount))
-      return false;
+    float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS1), vco->lowerLimit()), 
+    vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS1), vco->upperLimit());
     
-    if(quadCount == 0)
-      return false;
+    float s = (96.0f/ma)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
     
-    TintinVCOFrequency &v = (TintinVCOFrequency &)*p;
+    int phaseMask = 0;
+    int sign = 1;
     
-    uint modulationPS = v.lowerLimit()/quadCount/value; // Using lower limit for setting VCO frequency
+    float vcoFreq;
     
-    if(!v.set((modulationPS + 1)*quadCount*value))
-      return false;
+    if(s > vcoFreqMaximum)
+    {
+      sign = 1;
+      while(s/(1 << phaseMask) > vcoFreqMaximum)
+        phaseMask++;
+      
+      vcoFreq = s/(1 << phaseMask);
+      
+      if(vcoFreq < vcoFreqMinimum)
+      {     
+        phaseMask--;
+        vcoFreq = vcoFreqMaximum;
+      }
+    }
+    else if(s < vcoFreqMinimum)
+    {
+      sign = -1;
+      while(s*(1 << phaseMask) < vcoFreqMinimum)
+        phaseMask++;
+      
+      vcoFreq = s*(1 << phaseMask);
+      
+      if(vcoFreq > vcoFreqMaximum)
+        vcoFreq = vcoFreqMaximum;
+    }
+    else
+      vcoFreq = s;
+    
+    // delayFBCoeff1 = modFreq2*(1 << 10)/24
+    float vcoFreq2 = std::max(vco->lowerLimit(), vcoFreq*mb/ma*(1+modPS2)/(1+modPS1));
+    
+    delayFBCoeff1 = vcoFreq2/6/(1 + modPS2)*(1 << 10)/24;
     
     if(!_depthCamera._set(MOD_PLL_UPDATE, true))
       return false;
     
-    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+    ParameterPtr pllUpdate(nullptr, [this](Parameter *) 
+    { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
     
-    if(!_depthCamera._set(_modPS, modulationPS))
+    if(!_depthCamera._set(VCO_FREQ1, vcoFreq) ||
+      !_depthCamera._set(VCO_FREQ2, vcoFreq2) ||
+      !_depthCamera._set(MOD_PS1, modPS1) ||
+      !_depthCamera._set(MOD_PS2, modPS2) ||
+      !_depthCamera._set(MA, ma) || 
+      !_depthCamera._set(MB, mb) || 
+      !_depthCamera._set(KA, ka) ||
+      !_depthCamera._set(KB, kb) ||
+      !_depthCamera._set(FREQ_RATIO, freqRatio) ||
+      !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) || 
+      !_depthCamera._set(DEALIASED_PHASE_MASK, (int)sign*phaseMask) ||
+      !_depthCamera._setFrameRate(r) ||
+      !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
+      !_depthCamera._set(DEALIAS_EN, true)) // Enable dealiasing explicitly
+    return false;
+    
+    if(!_depthCamera._set(SCRATCH1, value)) // Save the value in a register
       return false;
     
-    float val;
-    
-    if(!v.get(val))
+    if(!_depthCamera._set(TG_DISABLE, false))
       return false;
+    
+    _value = value;
     
     return true;
   }
-  
-  virtual ~TintinModulationFrequencyParameter() {}
-};
-
-// NOTE: scratch1 register available for software to store bits in Tintin camera.
-#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/48/(1 << 12)
-class TintinUnambiguousRangeParameter: public UnsignedIntegerParameter
-{
-  ToFTintinCamera &_depthCamera;
-public:
-  TintinUnambiguousRangeParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer):
-    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0, 0, 0, 0, 3, 50, 
-    DEFAULT_UNAMBIGUOUS_RANGE, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"),
-    _depthCamera(depthCamera) {}
-  
-  virtual bool get(uint &value, bool refresh = false)
-  {
-    if(refresh)
-    {
-      if(!_depthCamera._get(SCRATCH1, value, refresh))// Invalid value? Probably register not set yet
-      {
-        if(!set(DEFAULT_UNAMBIGUOUS_RANGE)) // set range of 3 meters
-          return false;
-        
-        _value = DEFAULT_UNAMBIGUOUS_RANGE;
-        value = DEFAULT_UNAMBIGUOUS_RANGE;
-      }
-      return true;
-    }
-    else
-      return _depthCamera._get(SCRATCH1, value, refresh);
-  }
-
-  virtual bool set(const uint &value)
-  {
-    ParameterPtr p = _depthCamera.getParam(MOD_FREQ1);
-    
-    TintinModulationFrequencyParameter *mfp = dynamic_cast<TintinModulationFrequencyParameter *>(p.get());
-    
-    TintinVCOFrequency *vco = dynamic_cast<TintinVCOFrequency *>(_depthCamera.getParam(VCO_FREQ1).get());
-    
-    if(!mfp || !vco)
-      return false;
-    
-    float modulationFrequency1Minimum = mfp->getOptimalMinimum();
-    
-    FrameRate r;
-    
-    uint delayFBCoeff1;
-    
-    if(!_depthCamera._getFrameRate(r))
-      return false;
-    
-    // No need of dealiasing?
-    if(value <= (uint)(4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/modulationFrequency1Minimum))
-    {
-      float modulationFrequency1 = 4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/value;
-      delayFBCoeff1 = modulationFrequency1*(1 << 10)/24;
-      
-      if(!_depthCamera._set(TG_DISABLE, true) || 
-        !_depthCamera._set(QUAD_CNT_MAX, 4) || 
-        !_depthCamera._set(SUBFRAME_CNT_MAX, 4) || 
-        !_depthCamera._setFrameRate(r) ||
-        !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
-        !_depthCamera._set(DEALIASED_PHASE_MASK, 0) || 
-        !mfp->set(modulationFrequency1) ||
-        !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) ||
-        !_depthCamera._set(DEALIAS_EN, false) || // Disable dealiasing explicitly
-        !UnsignedIntegerParameter::set(value) || // Save the value in a register
-        !_depthCamera._set(TG_DISABLE, false))
-        return false;
-      
-      return true;
-    }
-    else
-    {
-      if(!_depthCamera._set(TG_DISABLE, true) ||
-        !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
-        return false;
-      
-      uint ma = 2, mb = 3, ka = 2, kb = 1, modPS1 = 1, modPS2 = 0;
-      
-      uint freqRatio = ma*(1 << 12)/mb;
-      
-      float vcoFreqMinimum = std::max(mfp->getOptimalMinimum()*6*(1 + modPS1), vco->lowerLimit()), 
-      vcoFreqMaximum = std::min((mfp->getOptimalMaximum()*ma)/mb*6*(1 + modPS1), vco->upperLimit());
-      
-      float s = (96.0f/ma)*(1 + modPS1)*SPEED_OF_LIGHT*1E-6/value; // in MHz
-      
-      int phaseMask = 0;
-      int sign = 1;
-      
-      float vcoFreq;
-      
-      if(s > vcoFreqMaximum)
-      {
-        sign = 1;
-        while(s/(1 << phaseMask) > vcoFreqMaximum)
-          phaseMask++;
-        
-        vcoFreq = s/(1 << phaseMask);
-        
-        if(vcoFreq < vcoFreqMinimum)
-        {     
-          phaseMask--;
-          vcoFreq = vcoFreqMaximum;
-        }
-      }
-      else if(s < vcoFreqMinimum)
-      {
-        sign = -1;
-        while(s*(1 << phaseMask) < vcoFreqMinimum)
-          phaseMask++;
-        
-        vcoFreq = s*(1 << phaseMask);
-        
-        if(vcoFreq > vcoFreqMaximum)
-          vcoFreq = vcoFreqMaximum;
-      }
-      else
-        vcoFreq = s;
-      
-      // delayFBCoeff1 = modFreq2*(1 << 10)/24
-      delayFBCoeff1 = (vcoFreq*mb/ma/6*(1+modPS2)/(1 + modPS1))*(1 << 10)/24;
-      
-      if(!_depthCamera._set(MOD_PLL_UPDATE, true))
-        return false;
-      
-      ParameterPtr pllUpdate(nullptr, [this](Parameter *) 
-      { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
-      
-      if(!_depthCamera._set(VCO_FREQ1, vcoFreq) ||
-        !_depthCamera._set(VCO_FREQ2, vcoFreq*mb/ma*(1+modPS2)/(1+modPS1)) ||
-        !_depthCamera._set(MOD_PS1, modPS1) ||
-        !_depthCamera._set(MOD_PS2, modPS2) ||
-        !_depthCamera._set(MA, ma) || 
-        !_depthCamera._set(MB, mb) || 
-        !_depthCamera._set(KA, ka) ||
-        !_depthCamera._set(KB, kb) ||
-        !_depthCamera._set(FREQ_RATIO, freqRatio) ||
-        !_depthCamera._set(DELAY_FB_COEFF1, delayFBCoeff1) || 
-        !_depthCamera._set(DEALIASED_PHASE_MASK, (int)sign*phaseMask) ||
-        !_depthCamera._setFrameRate(r) ||
-        !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
-        !_depthCamera._set(DEALIAS_EN, true)) // Enable dealiasing explicitly
-      return false;
-      
-      if(!_depthCamera._set(SCRATCH1, value)) // Save the value in a register
-        return false;
-      
-      if(!_depthCamera._set(TG_DISABLE, false))
-        return false;
-      
-      return true;
-    }
-  }
-};
+}
 
 ToFTintinCamera::ToFTintinCamera(const String &name, DevicePtr device): ToFCamera(name, "tintin.ti", device)
 {
@@ -419,9 +375,6 @@ bool ToFTintinCamera::_init()
   if(!_addParameters({
     ParameterPtr(new TintinVCOFrequency(*this, *_programmer, VCO_FREQ1, MOD_M1, MOD_M_FRAC1, MOD_N1)),
     ParameterPtr(new TintinVCOFrequency(*this, *_programmer, VCO_FREQ2, MOD_M2, MOD_M_FRAC2, MOD_N2)),
-    ParameterPtr(new TintinModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ1, MOD_PS1)),
-    ParameterPtr(new TintinModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, VCO_FREQ2, MOD_PS2)),
-    ParameterPtr(new TintinUnambiguousRangeParameter(*this, *_programmer))
   }))
     return false;
   

@@ -56,6 +56,8 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   
 endif()
 
+set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
 include_directories(
   Voxel
   TI3DToF

@@ -109,6 +109,71 @@ public:
   friend class TintinUnambiguousRangeParameter;
 };
 
+class TI3DTOF_EXPORT TintinModulationFrequencyParameter: public FloatParameter
+{
+  ToFTintinCamera &_depthCamera;
+  String _modPS, _vcoFreq;
+public:
+  TintinModulationFrequencyParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS, const float &defaultValue):
+  FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, defaultValue, "Modulation frequency", "Frequency used for modulation of illumination", 
+                 Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
+                 
+  virtual const float getOptimalMaximum() = 0;
+  virtual const float getOptimalMinimum() = 0;
+                 
+  virtual const float lowerLimit() const 
+  { 
+    int quadCount;
+    
+    if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
+      return _lowerLimit;
+    
+    if(quadCount == 0)
+      return _lowerLimit;
+    
+    return 37.5f/quadCount; 
+    
+  }
+  virtual const float upperLimit() const 
+  { 
+    int quadCount;
+    
+    if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
+      return _upperLimit;
+    
+    if(quadCount == 0)
+      return _upperLimit;
+    
+    return 600.0f/quadCount;
+  }
+                 
+  virtual bool get(float &value, bool refresh = false);
+  
+  virtual bool set(const float &value);
+  
+  virtual ~TintinModulationFrequencyParameter() {}
+};
+
+// NOTE: scratch1 register available for software to store bits in Tintin camera.
+class TI3DTOF_EXPORT TintinUnambiguousRangeParameter: public UnsignedIntegerParameter
+{
+  ToFTintinCamera &_depthCamera;
+  uint _defaultValue;
+  uint _modPS1, _modPS2;
+public:
+  TintinUnambiguousRangeParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const uint &minimum, const uint &maximum, const uint &defaultValue, const uint &modPS1, const uint &modPS2):
+    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0, 0, 0, 0, minimum, maximum, 
+                           defaultValue, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"), _defaultValue(defaultValue),
+                           _modPS1(modPS1), _modPS2(modPS2),
+                           _depthCamera(depthCamera) {}
+                           
+  virtual bool get(uint &value, bool refresh = false);
+  
+  virtual bool set(const uint &value);
+};
+
+
+
 }
 }
 
