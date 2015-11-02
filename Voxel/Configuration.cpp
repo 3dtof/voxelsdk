@@ -75,18 +75,29 @@ bool Configuration::_addPath(const String &type, const String &path)
 
   const _Path &pt = t->second;
 
-  char *p = getenv(pt.environmentVariable.c_str());
+  return Configuration::addPathToEnvironmentVariable(pt.environmentVariable, path);
+}
+
+bool Configuration::addPathToEnvironmentVariable(const String &environmentVariable, const String &path, bool prepend)
+{
+  char *p = getenv(environmentVariable.c_str());
+
+  String result;
+
+  if(p != 0)
+  {
+    if(prepend)
+      result = path + PATH_SEP + p;
+    else
+      result = p + PATH_SEP + path;
+  }
+  else
+    result = path;
 
 #ifdef WINDOWS
-  if(p != 0)
-    return _putenv_s(pt.environmentVariable.c_str(), (path + PATH_SEP + p).c_str()) == 0;
-  else
-    return _putenv_s(pt.environmentVariable.c_str(), path.c_str()) == 0;
+  return _putenv_s(environmentVariable.c_str(), result.c_str()) == 0;
 #elif defined(LINUX)
-  if(p != 0)
-    return setenv(pt.environmentVariable.c_str(), (path + PATH_SEP + p).c_str(), 1) == 0;
-  else
-    return setenv(pt.environmentVariable.c_str(), path.c_str(), 1) == 0;
+  return setenv(environmentVariable.c_str(), result.c_str(), 1) == 0;
 #endif
 }
 

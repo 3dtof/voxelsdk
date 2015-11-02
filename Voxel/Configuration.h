@@ -47,6 +47,7 @@ public:
   inline static bool addFirmwarePath(const String &path) { return _addPath("fw", path); }
   inline static bool addConfPath(const String &path) { return _addPath("conf", path); }
   inline static bool addLibPath(const String &path) { return _addPath("lib", path); }
+  static bool addPathToEnvironmentVariable(const String &environmentVariable, const String &path, bool prepend = true);
   
   bool getLocalPath(const String &type, String &path);
   inline bool getLocalFirmwarePath(String &path) { return getLocalPath("fw", path); }
