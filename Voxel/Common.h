@@ -192,6 +192,13 @@ bool VOXEL_EXPORT makeDirectory(const String &filename);
 String VOXEL_EXPORT dirname(const String &filename);
 String VOXEL_EXPORT basename(const String &filename);
 
+struct Version
+{
+  uint8_t major, minor, patch, abi, conf;
+};
+
+Version VOXEL_EXPORT getSDKVersion();
+
 
 /**
  * @}

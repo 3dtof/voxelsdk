@@ -28,6 +28,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "VoxelConfig.h"
+
 namespace Voxel
 {
 
@@ -248,6 +250,15 @@ bool makeDirectory(const String &filename)
 #endif
 }
 
-
+Version getSDKVersion()
+{
+  Version v;
+  v.major = VOXEL_MAJOR_VERSION;
+  v.minor = VOXEL_MINOR_VERSION;
+  v.patch = VOXEL_PATCH_VERSION;
+  v.conf = VOXEL_CONF_VERSION;
+  v.abi = VOXEL_ABI_VERSION;
+  return v;
+}
   
 }
