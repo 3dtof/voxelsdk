@@ -26,7 +26,7 @@ install(TARGETS voxelpcl
 install(FILES
   PCLGrabber.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelPCLExports.h
-  DESTINATION include/voxel/pcl
+  DESTINATION include/voxel-${VOXEL_VERSION}/pcl
   COMPONENT voxelpcl_dev
 )
 
