@@ -49,6 +49,8 @@ add_library(voxel SHARED
   ${COMMON_LIB_FILES}
 )
 
+add_library(Voxel::voxel ALIAS voxel)
+
 generate_export_header(voxel
   EXPORT_FILE_NAME "VoxelExports.h"
 )

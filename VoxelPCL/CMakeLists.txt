@@ -9,6 +9,9 @@ ENDIF()
 add_definitions(${PCL_DEFINITIONS})
 
 add_library(voxelpcl SHARED PCLGrabber.cpp)
+
+add_library(Voxel::voxelpcl ALIAS voxelpcl)
+
 target_include_directories(voxelpcl PRIVATE ${VOXEL_INCLUDE_DIRS} PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})
 target_link_libraries(voxelpcl LINK_PUBLIC ${VOXEL_LIBRARIES} LINK_PRIVATE ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES})
 
