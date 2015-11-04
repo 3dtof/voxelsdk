@@ -16,7 +16,7 @@ elseif(LINUX)
 endif()
  
 # Create the FooBarConfig.cmake and FooBarConfigVersion files
-file(RELATIVE_PATH REL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR} "${CMAKE_INSTALL_PREFIX}/include/voxel")
+file(RELATIVE_PATH REL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR} "${CMAKE_INSTALL_PREFIX}/include/voxel-${VOXEL_VERSION}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${build_include_dir}" "${PROJECT_BINARY_DIR}/${build_include_dir}")
 configure_file("${PROJECT_SOURCE_DIR}/${package}Config.cmake.in" "${PROJECT_BINARY_DIR}/${package}Config.cmake" @ONLY)

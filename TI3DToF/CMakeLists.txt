@@ -40,14 +40,26 @@ list(APPEND FW_FILES
 set(filesToCopy) # Remove this variable
   
 ### Copy configuration and firmware files to build directory
-foreach(f ${CONF_FILES} ${FW_FILES})
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/conf ${CMAKE_BINARY_DIR}/fw)
+foreach(f ${CONF_FILES})
   get_filename_component(filename ${f} NAME)
   list(APPEND filesToCopy
-    ${CMAKE_CURRENT_BINARY_DIR}/${filename}
+    ${CMAKE_BINARY_DIR}/conf/${filename}
   )
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${filename}
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/conf/${filename}
                    COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_BINARY_DIR}/conf/
+                   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
+endforeach()
+
+foreach(f ${FW_FILES})
+  get_filename_component(filename ${f} NAME)
+  list(APPEND filesToCopy
+    ${CMAKE_BINARY_DIR}/fw/${filename}
+  )
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/fw/${filename}
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_BINARY_DIR}/fw
                    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
 endforeach()
 
@@ -76,34 +88,24 @@ install(TARGETS ti3dtof
   RUNTIME DESTINATION lib COMPONENT ti3dtof
 )
 
-IF(LINUX)
 install(FILES 
   ${CONF_FILES}
-  DESTINATION /etc/voxel/
+  DESTINATION share/voxel-${VOXEL_VERSION}/conf
   COMPONENT ti3dtof
 )
 
 install(FILES 
   ${FW_FILES}
-  DESTINATION /lib/firmware/voxel
+  DESTINATION share/voxel-${VOXEL_VERSION}/fw
   COMPONENT ti3dtof
 )
 
+IF(LINUX)
 install(FILES
   ${UDEV_FILES}
   DESTINATION /etc/udev/rules.d/
   COMPONENT ti3dtof
 )
-ELSEIF(WINDOWS)
-INSTALL(FILES
-  ${CONF_FILES}
-  DESTINATION lib/voxel/conf
-  COMPONENT ti3dtof)
-
-INSTALL(FILES
-  ${FW_FILES}
-  DESTINATION lib/voxel/fw
-  COMPONENT ti3dtof)
 ENDIF()
 
 install(FILES
@@ -121,7 +123,7 @@ install(FILES
   VoxelUSBProgrammer.h
   VoxelXUProgrammer.h
   ${CMAKE_CURRENT_BINARY_DIR}/TI3DToFExports.h
-  DESTINATION include/voxel/ti3dtof
+  DESTINATION include/voxel-${VOXEL_VERSION}/ti3dtof
   COMPONENT ti3dtof_dev
 )
 

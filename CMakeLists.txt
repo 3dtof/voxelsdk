@@ -59,6 +59,14 @@ endif()
 
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
+foreach(config ${CMAKE_CONFIGURATION_TYPES})
+  string(TOUPPER ${config} c)
+  message(${c})
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${c} ${PROJECT_BINARY_DIR}/lib)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${c} ${PROJECT_BINARY_DIR}/bin)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${c} ${PROJECT_BINARY_DIR}/lib)
+endforeach()
+
 include_directories(
   Voxel
   TI3DToF

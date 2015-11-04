@@ -108,7 +108,7 @@ install(FILES
   VideoMode.h
   PointCloudTransform.h
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelExports.h
-  DESTINATION include/voxel
+  DESTINATION include/voxel-${VOXEL_VERSION}
   COMPONENT voxel_dev
 )
 
@@ -123,7 +123,7 @@ install(FILES
   Filter/BilateralFilter.h
   Filter/SmoothFilter.h
   Filter/DiscreteGaussian.h
-  DESTINATION include/voxel/Filter
+  DESTINATION include/voxel-${VOXEL_VERSION}/Filter
   COMPONENT voxel_dev
 )
 
@@ -131,7 +131,7 @@ configure_file(VoxelConfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/VoxelConfig.h" @ONL
 
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/VoxelConfig.h
-  DESTINATION include/voxel
+  DESTINATION include/voxel-${VOXEL_VERSION}
   COMPONENT voxel_dev
 )
 
