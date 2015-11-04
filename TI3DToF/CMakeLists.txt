@@ -16,6 +16,8 @@ add_library(ti3dtof SHARED
   ${COMMON_LIB_FILES}
 )
 
+add_library(Voxel::ti3dtof ALIAS ti3dtof)
+
 generate_export_header(ti3dtof
   EXPORT_FILE_NAME "TI3DToFExports.h"
 )
