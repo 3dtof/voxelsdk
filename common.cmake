@@ -73,3 +73,30 @@ endfunction()
 function(set_voxel_library_output_directory target)
   set_library_output_directory(${target} voxel)
 endfunction()
+
+function (read_config filename key value)
+  file (STRINGS ${filename} _config
+        REGEX "^${key}="
+        )
+  string (REGEX REPLACE
+        "^${key}=\"?\(.*\)\"?" "\\1" val "${_config}"
+        )
+  set(${value} "${val}" PARENT_SCOPE)
+endfunction()
+
+if(LINUX)
+  function(get_distribution_codename codename)
+    read_config(/etc/lsb-release DISTRIB_CODENAME cn)
+    set(${codename} "${cn}" PARENT_SCOPE)
+  endfunction()
+  
+
+  function(create_cpack_config name ver)
+    set(CPACK_PACKAGE_VERSION "${ver}")
+    set(CPACK_PACKAGE_NAME "${name}")
+    get_distribution_codename(codename)
+    set(CPACK_PACKAGE_FILE_NAME "${name}-${ver}-${ARCH}-${codename}")
+    set(CPACK_OUTPUT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackConfig-${name}.cmake")
+    include(CPack)
+  endfunction(create_cpack_config)
+endif()
