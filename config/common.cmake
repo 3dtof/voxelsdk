@@ -52,7 +52,7 @@ function(set_output_directory target path)
   else()
     foreach(config ${CMAKE_CONFIGURATION_TYPES})
       string(TOUPPER ${config} c)
-      set_target_properties(target
+      set_target_properties(${target}
         PROPERTIES
           LIBRARY_OUTPUT_DIRECTORY_${c} ${path}
           RUNTIME_OUTPUT_DIRECTORY_${c} ${path}
