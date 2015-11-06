@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -ne 1 ]; then
-  echo "Please specific version"
+  echo "Please specify version as major.minor.patch"
   exit 0
 fi
 

@@ -41,14 +41,25 @@ set_target_properties(voxelpcl PROPERTIES
 
 
 IF(LINUX)
+  get_distribution_codename(codename)
+
   set(CPACK_COMPONENTS_ALL voxelpcl)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "PCL integration with Grabber and Viewer")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libpcl-visualization-1.7, libpcl-io-1.7, libpcl-common-1.7")
+  
+  if(${codename} STREQUAL "trusty")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libpcl-visualization-1.7, libpcl-io-1.7, libpcl-common-1.7")
+  else() #${codename} STREQUAL "wily"
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libpcl-visualization1.7, libpcl-io1.7, libpcl-common1.7")
+  endif()
   create_cpack_config(libvoxel-pcl ${VOXEL_VERSION})
 
   set(CPACK_COMPONENTS_ALL voxelpcl_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION}), libpcl-visualization-1.7-dev, libpcl-io-1.7-dev, libpcl-common-1.7-dev")
+  if(${codename} STREQUAL "trusty")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION}), libpcl-visualization-1.7-dev, libpcl-io-1.7-dev, libpcl-common-1.7-dev")
+  else() #${codename} STREQUAL "wily"
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION}), libpcl-dev")
+  endif()
   create_cpack_config(libvoxel-pcl-dev ${VOXEL_VERSION})
 ENDIF()
 
