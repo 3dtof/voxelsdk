@@ -27,8 +27,14 @@ SET_SOURCE_FILES_PROPERTIES(${file} PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(${file} PROPERTIES SWIG_FLAGS "-builtin")
 endforeach()
 
+get_library_output_directory(python2.7 OUTDIR)
+set(CMAKE_SWIG_OUTDIR ${OUTDIR})
+
 SWIG_ADD_MODULE(Voxel python ${SWIG_FILES})
 SWIG_LINK_LIBRARIES(Voxel voxel ${PYTHON_LIBRARIES})
+
+set_library_output_directory(${SWIG_MODULE_Voxel_REAL_NAME} python2.7)
+
 
 install(TARGETS ${SWIG_MODULE_Voxel_REAL_NAME}
   DESTINATION lib/python2.7

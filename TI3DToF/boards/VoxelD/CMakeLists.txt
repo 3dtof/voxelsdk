@@ -4,6 +4,8 @@ add_library(voxeld SHARED
   ${COMMON_LIB_FILES}
 )
 
+set_voxel_library_output_directory(voxeld)
+
 generate_export_header(voxeld
   EXPORT_FILE_NAME "SymbolExports.h"
   EXPORT_MACRO_NAME SYMBOL_EXPORT
@@ -34,8 +36,5 @@ set(UDEV_FILES "${UDEV_FILES}" PARENT_SCOPE)
 
 set_target_properties(voxeld PROPERTIES 
                       VERSION ${VOXEL_VERSION} 
-                      SOVERSION ${VOXEL_ABI_VERSION}
-                      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../.."
-                      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../.."
-                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../..")
+                      SOVERSION ${VOXEL_ABI_VERSION})
 

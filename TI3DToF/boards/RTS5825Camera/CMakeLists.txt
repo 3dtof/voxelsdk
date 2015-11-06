@@ -4,6 +4,8 @@ add_library(rts5825camera SHARED
   ${COMMON_LIB_FILES}
 )
 
+set_voxel_library_output_directory(rts5825camera)
+
 generate_export_header(rts5825camera
   EXPORT_FILE_NAME "SymbolExports.h"
   EXPORT_MACRO_NAME SYMBOL_EXPORT
@@ -35,8 +37,5 @@ set(UDEV_FILES "${UDEV_FILES}" PARENT_SCOPE)
 
 set_target_properties(rts5825camera PROPERTIES 
                       VERSION ${VOXEL_VERSION} 
-                      SOVERSION ${VOXEL_ABI_VERSION}
-                      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../.."
-                      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../.."
-                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../..")
+                      SOVERSION ${VOXEL_ABI_VERSION})
 

@@ -39,3 +39,37 @@ install(EXPORT ${package}Targets
   COMPONENT ${component})
  
 ENDFUNCTION()
+
+
+function(set_output_directory target path)
+  if(NOT CMAKE_CONFIGURATION_TYPES)
+    set_target_properties(${target}
+      PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${path}
+        RUNTIME_OUTPUT_DIRECTORY ${path}
+        ARCHIVE_OUTPUT_DIRECTORY ${path}
+      )
+  else()
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+      string(TOUPPER ${config} c)
+      set_target_properties(target
+        PROPERTIES
+          LIBRARY_OUTPUT_DIRECTORY_${c} ${path}
+          RUNTIME_OUTPUT_DIRECTORY_${c} ${path}
+          ARCHIVE_OUTPUT_DIRECTORY_${c} ${path}
+      )
+    endforeach()
+  endif()
+endfunction()
+
+function(get_library_output_directory OUTDIR)
+  set(OUTDIR ${PROJECT_BINARY_DIR}/lib/${ARGV0} PARENT_SCOPE)
+endfunction()
+
+function(set_library_output_directory target)
+  set_output_directory(${target} ${PROJECT_BINARY_DIR}/lib/${ARGV1})
+endfunction()
+
+function(set_voxel_library_output_directory target)
+  set_library_output_directory(${target} voxel)
+endfunction()

@@ -49,6 +49,8 @@ add_library(voxel SHARED
   ${COMMON_LIB_FILES}
 )
 
+set_library_output_directory(voxel)
+
 add_library(Voxel::voxel ALIAS voxel)
 
 generate_export_header(voxel
