@@ -22,14 +22,25 @@ namespace Voxel
  * \ingroup Util
  */
 
+struct SDKVersion
+{
+  uint8_t major, minor, patch, abi, conf;
+};
+
 class VOXEL_EXPORT Configuration
 {
 protected:
   struct _Path
   {
-    String standardPath;
+    String installPath;
     String environmentVariable;
   };
+  
+  String _sdkPath;
+  String _sdkVersion;
+  
+  Vector<String> _pathKeys;
+  Vector<String> _pathValues;
   
   static const Map<String, _Path> _pathTypes;
   
@@ -40,6 +51,10 @@ protected:
   static bool _addPath(const String &type, const String &path);
   
 public:
+  static SDKVersion getSDKVersion();
+  
+  Configuration();
+  
   inline bool getFirmwarePaths(Vector<String> &paths) { return _getPaths("fw", paths); }
   inline bool getConfPaths(Vector<String> &paths) { return _getPaths("conf", paths); }
   inline bool getLibPaths(Vector<String> &paths) { return _getPaths("lib", paths); }
@@ -48,6 +63,18 @@ public:
   inline static bool addConfPath(const String &path) { return _addPath("conf", path); }
   inline static bool addLibPath(const String &path) { return _addPath("lib", path); }
   static bool addPathToEnvironmentVariable(const String &environmentVariable, const String &path, bool prepend = true);
+  
+  inline static bool getEnvironmentVariable(const String &environmentVariable, String &value)
+  {
+    char *p = getenv(environmentVariable.c_str());
+    if(p) { value = p; return true; }
+    return false;
+  }
+  
+  static bool setEnvironmentVariable(const String &environmentVariable, const String &value);
+  
+  inline static bool setSDKPath(const String &path) { return setEnvironmentVariable("VOXEL_SDK_PATH", path); }
+  inline static bool getSDKPath(String &path) { return getEnvironmentVariable("VOXEL_SDK_PATH", path); }
   
   bool getLocalPath(const String &type, String &path);
   inline bool getLocalFirmwarePath(String &path) { return getLocalPath("fw", path); }

@@ -24,47 +24,77 @@
 #define PATH_SEP ';'
 #endif
 
+#define BASE_STR "#BASE#"
+#define VERSION_STR "#VERSION#"
+
+#define CONF_FIRMWARE_KEY "fw"
+#define CONF_LIB_KEY "lib"
+#define CONF_CONF_KEY "conf"
 
 #define CAMERA_PROFILES "camera_profiles"
 
 #define CONFIG_VERSION_MAJOR 0
 #define CONFIG_VERSION_MINOR 1
 
+
 namespace Voxel
 {
 
 const Map<String, Configuration::_Path> Configuration::_pathTypes = {
-  { "fw", // Firmwares
+  { CONF_FIRMWARE_KEY,
     {
-#ifdef LINUX
-      "/lib/firmware/voxel",
-#elif defined(WINDOWS)
-      "C:\\Program Files\\VoxelCommon\\fw",
-#endif
+      BASE_STR DIR_SEP "share" DIR_SEP "voxel-" VERSION_STR DIR_SEP "fw",
       "VOXEL_FW_PATH"
     }
   },
-  { "lib",
+  { CONF_LIB_KEY,
     {
-#ifdef LINUX
-      "/usr/lib/voxel", 
-#elif defined(WINDOWS)
-      "C:\\Program Files\\VoxelCommon\\lib",
-#endif
+      BASE_STR DIR_SEP "lib" DIR_SEP "voxel",
       "VOXEL_LIB_PATH"
     }
   },
-  { "conf",
+  { CONF_CONF_KEY,
     {
-#ifdef LINUX
-      "/etc/voxel",
-#elif defined(WINDOWS)
-      "C:\\Program Files\\VoxelCommon\\conf",
-#endif
+      BASE_STR DIR_SEP "share" DIR_SEP "voxel-" VERSION_STR DIR_SEP "conf",
       "VOXEL_CONF_PATH"
     }
   }
 };
+
+Configuration::Configuration()
+{
+  if(!Configuration::getSDKPath(_sdkPath))
+  {
+#ifdef LINUX
+    _sdkPath = "/usr";
+    logger(LOG_DEBUG) << "Configuration: Failed to get SDK path from environment, trying standard path of /usr." << std::endl;
+#else
+    logger(LOG_ERROR) << "Configuration: Failed to get SDK path." << std::endl;
+#endif
+  }
+  
+  SDKVersion v = Configuration::getSDKVersion();
+  
+  OutputStringStream ss;
+  ss << (uint)v.major << "." << (uint)v.minor << "." << (uint)v.patch;
+  
+  _sdkVersion = ss.str();
+  
+  _pathKeys = {BASE_STR, VERSION_STR};
+  _pathValues = {_sdkPath, _sdkVersion};
+}
+
+SDKVersion Configuration::getSDKVersion()
+{
+  SDKVersion v;
+  v.major = VOXEL_MAJOR_VERSION;
+  v.minor = VOXEL_MINOR_VERSION;
+  v.patch = VOXEL_PATCH_VERSION;
+  v.conf = VOXEL_CONF_VERSION;
+  v.abi = VOXEL_ABI_VERSION;
+  return v;
+}
+
 
 bool Configuration::_addPath(const String &type, const String &path)
 {
@@ -100,6 +130,16 @@ bool Configuration::addPathToEnvironmentVariable(const String &environmentVariab
   return setenv(environmentVariable.c_str(), result.c_str(), 1) == 0;
 #endif
 }
+
+bool Configuration::setEnvironmentVariable(const String &environmentVariable, const String &value)
+{
+#ifdef WINDOWS
+  return _putenv_s(environmentVariable.c_str(), value.c_str()) == 0;
+#elif defined(LINUX)
+  return setenv(environmentVariable.c_str(), value.c_str(), 1) == 0;
+#endif  
+}
+
 
 bool Configuration::getLocalPath(const String &type, String &path)
 {
@@ -176,7 +216,12 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   
   paths.clear();
   
-  paths.push_back(pt.standardPath);
+  
+  String installPath = substitute(pt.installPath, _pathKeys, _pathValues);
+  
+  logger(LOG_DEBUG) << "Configuration: SDK install path for type '" << type << "' = " << installPath << std::endl;
+  
+  paths.push_back(installPath);
   
   char *p = getenv(pt.environmentVariable.c_str());
   
