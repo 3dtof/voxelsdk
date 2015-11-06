@@ -250,15 +250,22 @@ bool makeDirectory(const String &filename)
 #endif
 }
 
-Version getSDKVersion()
+String substitute(const String &s, const Vector<String> &keys, const Vector<String> &values)
 {
-  Version v;
-  v.major = VOXEL_MAJOR_VERSION;
-  v.minor = VOXEL_MINOR_VERSION;
-  v.patch = VOXEL_PATCH_VERSION;
-  v.conf = VOXEL_CONF_VERSION;
-  v.abi = VOXEL_ABI_VERSION;
-  return v;
+  String result = s;
+  for(auto i = 0; i < keys.size(); i++)
+  {
+    auto &k = keys[i];
+    auto &v = values[i];
+    auto p = result.find(k);
+    
+    if(p == String::npos)
+      continue;
+    
+    result.replace(p, k.size(), v);
+  }
+  return result;
 }
+
   
 }
