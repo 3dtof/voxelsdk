@@ -19,12 +19,12 @@ endif()
 file(RELATIVE_PATH REL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR} "${CMAKE_INSTALL_PREFIX}/include/voxel-${VOXEL_VERSION}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/${build_include_dir}" "${PROJECT_BINARY_DIR}/${build_include_dir}")
-configure_file("${PROJECT_SOURCE_DIR}/${package}Config.cmake.in" "${PROJECT_BINARY_DIR}/${package}Config.cmake" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/config/${package}Config.cmake.in" "${PROJECT_BINARY_DIR}/${package}Config.cmake" @ONLY)
 # ... for the install tree
 set(CONF_INCLUDE_DIRS "\${${UPACKAGE}_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file("${PROJECT_SOURCE_DIR}/${package}Config.cmake.in" "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${package}Config.cmake" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/config/${package}Config.cmake.in" "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${package}Config.cmake" @ONLY)
 # ... for both
-configure_file("${PROJECT_SOURCE_DIR}/${package}ConfigVersion.cmake.in" "${PROJECT_BINARY_DIR}/${package}ConfigVersion.cmake" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/config/${package}ConfigVersion.cmake.in" "${PROJECT_BINARY_DIR}/${package}ConfigVersion.cmake" @ONLY)
  
 # Install the FooBarConfig.cmake and FooBarConfigVersion.cmake
 install(FILES

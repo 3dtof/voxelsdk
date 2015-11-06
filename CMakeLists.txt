@@ -49,7 +49,7 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI/CyAPI.lib)
   
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/dllversion.rc.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/dllversion.rc.in
     ${CMAKE_CURRENT_BINARY_DIR}/dllversion.rc
     @ONLY)
   
@@ -96,11 +96,11 @@ IF(LINUX)
   set(CPACK_DEB_COMPONENT_INSTALL 1)
 ENDIF()
 
-INCLUDE(common.cmake)
+INCLUDE(config/common.cmake)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
+  configure_file(${CMAKE_SOURCE_DIR}/config/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -139,7 +139,7 @@ add_subdirectory(Util)
 
 
 IF(WINDOWS)
-  SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
+  SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/config)
   SET(CPACK_NSIS_MODIFY_PATH ON)
   
   SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
@@ -150,7 +150,7 @@ IF(WINDOWS)
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
   ENDIF()
   
-  INCLUDE(windows_all_in_installer_config.cmake)
+  INCLUDE(config/windows_all_in_installer_config.cmake)
   
   include(CPack)
 ENDIF()
