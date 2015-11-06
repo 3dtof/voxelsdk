@@ -27,7 +27,7 @@ IF(LINUX)
   create_cpack_config(libvoxel-apps ${VOXEL_VERSION})
 ELSEIF(WINDOWS)
   
-  INSTALL(PROGRAMS VoxelCLIStart.cmd
+  INSTALL(PROGRAMS VoxelCLIStart.cmd CLIStart.cmd SimpleVoxelViewer.cmd
     DESTINATION bin
     COMPONENT apps
   )
