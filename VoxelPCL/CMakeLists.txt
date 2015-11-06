@@ -10,6 +10,8 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_library(voxelpcl SHARED PCLGrabber.cpp)
 
+set_library_output_directory(voxelpcl)
+
 add_library(Voxel::voxelpcl ALIAS voxelpcl)
 
 target_include_directories(voxelpcl PRIVATE ${VOXEL_INCLUDE_DIRS} PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})

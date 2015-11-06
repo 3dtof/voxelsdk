@@ -15,6 +15,8 @@ add_library(ti3dtof SHARED
   ${COMMON_LIB_FILES}
 )
 
+set_library_output_directory(ti3dtof)
+
 add_library(Voxel::ti3dtof ALIAS ti3dtof)
 
 generate_export_header(ti3dtof
@@ -40,26 +42,26 @@ list(APPEND FW_FILES
 set(filesToCopy) # Remove this variable
   
 ### Copy configuration and firmware files to build directory
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/conf ${CMAKE_BINARY_DIR}/fw)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/conf ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/fw)
 foreach(f ${CONF_FILES})
   get_filename_component(filename ${f} NAME)
   list(APPEND filesToCopy
-    ${CMAKE_BINARY_DIR}/conf/${filename}
+    ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/conf/${filename}
   )
-  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/conf/${filename}
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/conf/${filename}
                    COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_BINARY_DIR}/conf/
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/conf/
                    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
 endforeach()
 
 foreach(f ${FW_FILES})
   get_filename_component(filename ${f} NAME)
   list(APPEND filesToCopy
-    ${CMAKE_BINARY_DIR}/fw/${filename}
+    ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/fw/${filename}
   )
-  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/fw/${filename}
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/fw/${filename}
                    COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_BINARY_DIR}/fw
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_BINARY_DIR}/share/voxel-${VOXEL_VERSION}/fw
                    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${f})
 endforeach()
 
