@@ -622,13 +622,13 @@ bool DepthCamera::setCameraProfile(const int id, bool softApply)
     
     const ConfigSet *params;
     
-    if(config->getConfigSet("params", params) && !_applyConfigParams(params))
+    if(config->getConfigSet("defining_params", params) && !_applyConfigParams(params))
     {
-      logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
+      logger(LOG_ERROR) << "DepthCamera: Could not set defining parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
       return false;
     }
     
-    if(config->getConfigSet("defining_params", params) && !_applyConfigParams(params))
+    if(config->getConfigSet("params", params) && !_applyConfigParams(params))
     {
       logger(LOG_ERROR) << "DepthCamera: Could not set parameters to initialize profile '" << cameraProfileName << "'" << std::endl;
       return false;
