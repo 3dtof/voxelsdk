@@ -644,7 +644,7 @@ bool ToFTintinCamera::_applyCalibrationParams()
                 std::back_inserter(nlCoeff2));
     }
     
-    if(nlCoeff1.size() != 16 || nlCoeff2.size() != 16)
+    if(nlCoeff1.size() != 16 || (nlCoeff2.size() != 16 && nlCoeff2.size() != 0))
       return false;
     
     int phasePeriod = configFile.getInteger("calib", NONLINEARITY_PHASE_PERIOD);
@@ -652,8 +652,13 @@ bool ToFTintinCamera::_applyCalibrationParams()
     String n1 = NONLINEARITY_COEFF_F1, n2 = NONLINEARITY_COEFF_F2;
     
     for(auto i = 0; i < 16; i++)
-      if(!set(n1 + "_" + std::to_string(i), nlCoeff1[i]) || !set(n2 + "_" + std::to_string(i), nlCoeff2[i]))
+      if(!set(n1 + "_" + std::to_string(i), nlCoeff1[i]))
         return false;
+      
+    if(nlCoeff2.size() == 16)
+      for(auto i = 0; i < 16; i++)
+        if(!set(n2 + "_" + std::to_string(i), nlCoeff2[i]))
+          return false;
       
     if(!set(NONLINEARITY_PHASE_PERIOD, phasePeriod) || !set(NONLINEARITY_ENABLE, true))
       return false;
