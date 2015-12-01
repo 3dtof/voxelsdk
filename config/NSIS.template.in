@@ -1225,10 +1225,11 @@ Section "-Add to path"
   Push $INSTDIR\lib\python2.7
   Call AddToPythonPath
 
-  doNotAddToPath:
   ;HLP
   Call addPCLToPath
   Call addQTToPath
+
+  doNotAddToPath:
 SectionEnd
 
 ;--------------------------------
