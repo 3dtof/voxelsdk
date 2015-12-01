@@ -42,7 +42,7 @@ install(TARGETS ${SWIG_MODULE_Voxel_REAL_NAME}
 )
 
 install(FILES 
-  ${CMAKE_CURRENT_BINARY_DIR}/Voxel.py
+  ${CMAKE_BINARY_DIR}/lib/python2.7/Voxel.py
   DESTINATION lib/python2.7
   COMPONENT voxel_python
 )
