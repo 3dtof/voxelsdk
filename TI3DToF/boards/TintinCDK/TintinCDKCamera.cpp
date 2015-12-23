@@ -498,7 +498,11 @@ bool TintinCDKCamera::_init()
 
 bool TintinCDKCamera::_initStartParams()
 {
+  FrameSize s;
   USBDevice &d = (USBDevice &)*_device;
+
+  if (!_getFrameSize(s) || !_setStreamerFrameSize(s))
+    return false;
 
   if(!ToFTintinCamera::_initStartParams())
     return false;
@@ -524,8 +528,10 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   m.frameSize = s;
   
   int bytesPerPixel;
+  int quadCount;
+  ToFFrameType frameType;
   
-  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  if(!_get(PIXEL_DATA_SIZE, bytesPerPixel) || !_get(QUAD_CNT_MAX, quadCount) || !_getToFFrameType(frameType))
   {
     logger(LOG_ERROR) << "TintinCDKCamera: Could not get current bytes per pixel" << std::endl;
     return false;
@@ -561,7 +567,11 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
       return false;
     }
   
-    if (!bulkStreamer->setBufferSize(s.width * s.height * bytesPerPixel)) 
+    uint scaleFactor = bytesPerPixel;
+    if (frameType == ToF_QUAD)
+      scaleFactor = quadCount * 2;
+
+    if (!bulkStreamer->setBufferSize(s.width * s.height * scaleFactor)) 
     {
       logger(LOG_ERROR) << "TintinCDKCamera: Could not set buffer size for bulk transfer" << std::endl;
       return false;
