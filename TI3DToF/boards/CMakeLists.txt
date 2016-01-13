@@ -1,3 +1,4 @@
+add_subdirectory(CalculusCDK)
 add_subdirectory(HaddockCDK)
 add_subdirectory(TintinCDK)
 add_subdirectory(RTS5825Camera)

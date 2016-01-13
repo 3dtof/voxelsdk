@@ -9,6 +9,7 @@ add_library(ti3dtof SHARED
   ToFDepthFrameGenerator.cpp
   ToFCameraFactoryBase.cpp
   ToFFrameGenerator.cpp
+  ToFCalculusCamera.cpp
   ToFHaddockCamera.cpp
   ToFTintinCamera.cpp
   ToFCrossTalkFilter.cpp
@@ -30,6 +31,7 @@ target_link_libraries(ti3dtof
 add_subdirectory(boards)
 
 list(APPEND CONF_FILES
+  OPT8320.dml
   OPT9220.dml
   OPT9221.dml
 )
@@ -111,6 +113,7 @@ install(FILES
 ENDIF()
 
 install(FILES
+  ToFCalculusCamera.h
   ToFCamera.h
   ToFCameraBase.h
   ToFCameraFactoryBase.h
