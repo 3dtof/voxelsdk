@@ -1405,7 +1405,8 @@ void CLIManager::_disconnect(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
-    logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
+    if(_keepRunning)
+      logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
     return;
   }
   
