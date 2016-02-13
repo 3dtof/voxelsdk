@@ -46,6 +46,8 @@ protected:
   
   Map<String, Command> _specialParameters; // such as frame_size, frame_rate, roi, etc.
   
+  String _commandHistoryFileName;
+  
   bool _keepRunning = true;
   
   void _getTokens(const char *command, Vector<String> &tokens);

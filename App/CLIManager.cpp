@@ -25,6 +25,11 @@ namespace Voxel
   
 CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
 {
+  Configuration conf;
+  _commandHistoryFileName = "history.txt";
+  conf.getLocalFile("cli", _commandHistoryFileName);
+  
+  
   _commands = Map<String, Command>({
     {"list",           Command(_H(&CLIManager::_listHelp),          _P(&CLIManager::_list),          nullptr)},
     {"status",         Command(_H(&CLIManager::_currentHelp),       _P(&CLIManager::_current),       nullptr)},
@@ -89,7 +94,7 @@ void CLIManager::_commandLoop()
   /* Load history from file. The history file is just a plain text file
    * where entries are separated by newlines. */
   linenoiseHistorySetMaxLen(1000);
-  linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
+  linenoiseHistoryLoad(_commandHistoryFileName.c_str()); /* Load the history at startup */
   
   linenoiseSetCompletionCallback(std::bind(&CLIManager::_completionCallback, this, std::placeholders::_1, std::placeholders::_2));
   
@@ -113,7 +118,7 @@ void CLIManager::_commandLoop()
     if (line[0] != '\0') 
     {
       linenoiseHistoryAdd(line); /* Add to the history. */
-      linenoiseHistorySave("history.txt"); /* Save the history on disk. */
+      linenoiseHistorySave(_commandHistoryFileName.c_str()); /* Save the history on disk. */
       
       _getTokens(line, tokens);
       free(line);
