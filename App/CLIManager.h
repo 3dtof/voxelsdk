@@ -114,7 +114,15 @@ protected:
   
   void _save(const Vector<String> &tokens);
   void _saveHelp();
+  
+  template <typename FrameType>
+  bool _saveFrameToFile(const Frame *frame, OutputFileStream &saveFile, const String &subType = "");
+  
   void _saveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  
+  void _vxlToRaw(const Vector<String> &tokens);
+  void _vxlToRawHelp();
+  void _vxlToRawCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   
   void _reset(const Vector<String> &tokens);
   void _resetHelp();

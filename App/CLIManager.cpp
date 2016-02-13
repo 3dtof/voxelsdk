@@ -36,6 +36,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"get",            Command(_H(&CLIManager::_getParameterHelp),  _P(&CLIManager::_getParameter),  _C(&CLIManager::_getParameterCompletion))},
     {"set",            Command(_H(&CLIManager::_setParameterHelp),  _P(&CLIManager::_setParameter),  _C(&CLIManager::_setParameterCompletion))},
     {"save",           Command(_H(&CLIManager::_saveHelp),          _P(&CLIManager::_save),          _C(&CLIManager::_saveCompletion))},
+    {"vxltoraw",       Command(_H(&CLIManager::_vxlToRawHelp),      _P(&CLIManager::_vxlToRaw),      _C(&CLIManager::_vxlToRawCompletion))},
     {"cap",            Command(_H(&CLIManager::_capabilitiesHelp),  _P(&CLIManager::_capabilities),  _C(&CLIManager::_capabilitiesCompletion))},
     {"help",           Command(_H(&CLIManager::_helpHelp),          _P(&CLIManager::_help),          nullptr)},
     {"disconnect",     Command(_H(&CLIManager::_disconnectHelp),    _P(&CLIManager::_disconnect),    nullptr)},
@@ -45,6 +46,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"addfilter",      Command(_H(&CLIManager::_addFilterHelp),     _P(&CLIManager::_addFilter),     _C(&CLIManager::_addFilterCompletion))},
     {"removefilter",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
     {"setfilterparam", Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
+    
   });
   
   _specialParameters = Map<String, Command>({
@@ -218,34 +220,36 @@ void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
 }
 
 
-void CLIManager::_helpHelp()          { std::cout << "help [cmd]\t\t  Print this help and for any specified Voxel command 'cmd'" << std::endl; }
-void CLIManager::_exitHelp()          { std::cout << "exit\t\t\t  Exit VoxelCLI" << std::endl; }
-void CLIManager::_connectHelp()       { std::cout << "connect <dev>\t\t  Connect to a specific device. <dev> needs to be device ID\n"
-                                                  << "\t\t\t  in the format INTERFACE::DEVICE::SERIAL. Use double-quotes for the ID if it contains spaces" << std::endl; }
-void CLIManager::_listHelp()          { std::cout << "list\t\t\t  Scan and list all valid Voxel connectable devices" << std::endl; }
-void CLIManager::_currentHelp()       { std::cout << "status\t\t\t  Show the current connected device ID if present" << std::endl; }
-void CLIManager::_startHelp()         { std::cout << "start\t\t\t  Start streaming and showing the current device" << std::endl; }
-void CLIManager::_stopHelp()          { std::cout << "stop\t\t\t  Stop streaming the current device" << std::endl; }
-void CLIManager::_getRegisterHelp()   { std::cout << "getr <reg>\t\t  Get register value at <reg>. Use '0x' prefix for hexadecimal" << std::endl; }
-void CLIManager::_setRegisterHelp()   { std::cout << "setr <reg> = <value>\t  Set register <reg> to <value>. Use '0x' prefix for hexadecimal" << std::endl; }
-void CLIManager::_getParameterHelp()  { std::cout << "get <param>\t\t  Get parameter value given by name <param>" << std::endl; }
-void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]\t  Get capabilities of the current depth camera.\n"
-                                                  << "\t\t\t  Optionally a parameter name can be given to list only that parameter details given by name <param>.\n"
-                                                  << "\t\t\t  A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
-void CLIManager::_filtersHelp()       { std::cout << "filters\t\t\t  List available filters and currently in use filters" << std::endl; }
-void CLIManager::_addFilterHelp()     { std::cout << "addfilter <frametype> <name> <pos>\t  Add filter <name> for <frametype> at <pos>.\n"
-                                                  << "\t\t\t Set <pos> = -1 to add the end.\n"
-                                                  << "\t\t\t <frametype> can be raw/raw_processed/depth."<< std::endl; }
-void CLIManager::_removeFilterHelp()  { std::cout << "removefilter <frametype> <pos>\t  Remove filter with id <filterid> for <frametype>.\n"
-                                                  << "\t\t\t <frametype> can be raw/raw_processed/depth."<< std::endl; }
-void CLIManager::_setFilterParamHelp(){ std::cout << "setfilterparam <frametype> <filterid> <param> = <value>  Set parameter <param> to <value> for filter\n"
-                                                  << "\t\t\t with id <filterid> present for frame type <frametype>.\n"
-                                                  << "\t\t\t <frametype> can be raw/raw_processed/depth" << std::endl; }
-void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>\t  Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_helpHelp()          { std::cout << "help [cmd]                Print this help and for any specified Voxel command 'cmd'" << std::endl; }
+void CLIManager::_exitHelp()          { std::cout << "exit                      Exit VoxelCLI" << std::endl; }
+void CLIManager::_connectHelp()       { std::cout << "connect <dev>             Connect to a specific device. <dev> needs to be device ID\n"
+                                                  << "                          in the format INTERFACE::DEVICE::SERIAL. Use double-quotes for the ID if it contains spaces" << std::endl; }
+void CLIManager::_listHelp()          { std::cout << "list                      Scan and list all valid Voxel connectable devices" << std::endl; }
+void CLIManager::_currentHelp()       { std::cout << "status                    Show the current connected device ID if present" << std::endl; }
+void CLIManager::_startHelp()         { std::cout << "start                     Start streaming and showing the current device" << std::endl; }
+void CLIManager::_stopHelp()          { std::cout << "stop                      Stop streaming the current device" << std::endl; }
+void CLIManager::_getRegisterHelp()   { std::cout << "getr <reg>                Get register value at <reg>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_setRegisterHelp()   { std::cout << "setr <reg> = <value>      Set register <reg> to <value>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_getParameterHelp()  { std::cout << "get <param>               Get parameter value given by name <param>" << std::endl; }
+void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]          Get capabilities of the current depth camera.\n"
+                                                  << "                          Optionally a parameter name can be given to list only that parameter details given by name <param>.\n"
+                                                  << "                          A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
+void CLIManager::_filtersHelp()       { std::cout << "filters                   List available filters and currently in use filters" << std::endl; }
+void CLIManager::_addFilterHelp()     { std::cout << "addfilter <frametype> <name> <pos>    Add filter <name> for <frametype> at <pos>.\n"
+                                                  << "                          Set <pos> = -1 to add the end.\n"
+                                                  << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
+void CLIManager::_removeFilterHelp()  { std::cout << "removefilter <frametype> <pos>    Remove filter with id <filterid> for <frametype>.\n"
+                                                  << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
+void CLIManager::_setFilterParamHelp(){ std::cout << "setfilterparam <frametype> <filterid> <param> = <value>   Set parameter <param> to <value> for filter\n"
+                                                  << "                          with id <filterid> present for frame type <frametype>.\n"
+                                                  << "                          <frametype> can be raw/raw_processed/depth" << std::endl; }
+void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>     Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
 void CLIManager::_saveHelp()          { std::cout << "save type count filename  Save current 'count' number of frames.\n"
-                                                  <<  "\t\t\t  'type' = raw/raw_processed/depth/pointcloud" << std::endl; }
-void CLIManager::_disconnectHelp()    { std::cout << "disconnect\t\t  Disconnect the currently connected depth camera" << std::endl; }
-void CLIManager::_resetHelp()         { std::cout << "reset\t\t\t  Reset and disconnect the currently connected depth camera" << std::endl; }
+                                                  << "                          'type' = raw/phase/ambient/amplitude/flags/depth/pointcloud/vxl" << std::endl; }
+void CLIManager::_vxlToRawHelp()      { std::cout << "vxltoraw rawtype vxlfile rawfile   Get raw data from saved VXL file.\n"
+                                                  << "                          'rawtype' = raw/phase/ambient/amplitude/flags/depth/pointcloud" << std::endl; }                                                  
+void CLIManager::_disconnectHelp()    { std::cout << "disconnect                Disconnect the currently connected depth camera" << std::endl; }
+void CLIManager::_resetHelp()         { std::cout << "reset                     Reset and disconnect the currently connected depth camera" << std::endl; }
 
 
 void CLIManager::_help(const Vector<String> &tokens)
@@ -1057,6 +1061,128 @@ void CLIManager::_setParameterCompletion(const Vector<String> &tokens, linenoise
   _paramCompletion(tokens, lc);
 }
 
+template <>
+bool CLIManager::_saveFrameToFile<RawDataFrame>(const Frame *frame, OutputFileStream &saveFile, const String &subType)
+{
+  const RawDataFrame *f = dynamic_cast<const RawDataFrame *>(frame);
+  
+  if(!f)
+  {
+    logger(LOG_ERROR) << "Null frame captured? or not of type RawDataFrame" << std::endl;
+    return false;
+  }
+  
+  std::cout << "Saving frame " << f->id << "@" << f->timestamp << "us";
+  
+  if(_lastTimeStamp != 0)
+    std::cout << " (" << 1E6/(f->timestamp - _lastTimeStamp) << " fps)";
+  
+  std::cout << ", raw frame size = " << f->data.size() << "bytes" << std::endl;
+  
+  _lastTimeStamp = f->timestamp;
+  _saveFile.write((char *)f->data.data(), f->data.size());
+  
+  return true;
+}
+
+template <>
+bool CLIManager::_saveFrameToFile<ToFRawFrame>(const Frame *frame, OutputFileStream &saveFile, const String &subType)
+{
+  const ToFRawFrame  *f = dynamic_cast<const ToFRawFrame *>(frame);
+  
+  if(!f)
+  {
+    logger(LOG_ERROR) << "Null frame captured? or not of type RawDataFrame" << std::endl;
+    return false;
+  }
+  
+  std::cout << "Saving frame " << f->id << "@" << f->timestamp << "us";
+  
+  if(_lastTimeStamp != 0)
+    std::cout << " (" << 1E6/(f->timestamp - _lastTimeStamp) << " fps)";
+  
+  std::cout << ", " << subType << " frame size = " << f->size.width << "x" << f->size.height << " (row-ordered";
+  
+  _lastTimeStamp = f->timestamp;
+  
+  if(f->phase() && subType == "phase")
+  {
+    std::cout << ", " << f->phaseWordWidth() << "byte(s) per pixel)" << std::endl;
+    _saveFile.write((char *)f->phase(), f->phaseWordWidth()*f->size.width * f->size.height);
+  }
+  
+  if(f->amplitude() && subType == "amplitude")
+  {
+    std::cout << ", " << f->amplitudeWordWidth() << "byte(s) per pixel)" << std::endl;
+    _saveFile.write((char *)f->amplitude(), f->amplitudeWordWidth()*f->size.width * f->size.height);
+  }
+  
+  if(f->ambient() && subType == "ambient")
+  {
+    std::cout << ", " << f->ambientWordWidth() << "byte(s) per pixel)" << std::endl;
+    _saveFile.write((char *)f->ambient(), f->ambientWordWidth()*f->size.width * f->size.height);
+  }
+  
+  if(f->flags() && subType == "flags")
+  {
+    std::cout << ", " << f->flagsWordWidth() << "byte(s) per pixel)" << std::endl;
+    _saveFile.write((char *)f->flags(), f->flagsWordWidth()*f->size.width * f->size.height);      
+  }
+  
+  return true;
+}
+
+template <>
+bool CLIManager::_saveFrameToFile<DepthFrame>(const Frame *frame, OutputFileStream &saveFile, const String &subType)
+{
+  const DepthFrame *f = dynamic_cast<const DepthFrame *>(frame);
+  
+  if(!f)
+  {
+    logger(LOG_ERROR) << "Null frame captured? or not of type RawDataFrame" << std::endl;
+    return false;
+  }
+  
+  std::cout << "Saving frame " << f->id << "@" << f->timestamp << "us";
+  
+  if(_lastTimeStamp != 0)
+    std::cout << " (" << 1E6/(f->timestamp - _lastTimeStamp) << " fps)";
+  
+  std::cout << ", frame size = " << f->size.width << "x" << f->size.height << ", 4-bytes (float) per pixel" << std::endl;
+  
+  _lastTimeStamp = f->timestamp;
+  
+  _saveFile.write((char *)f->depth.data(), sizeof(float)*f->size.width*f->size.height);
+  _saveFile.write((char *)f->amplitude.data(), sizeof(float)*f->size.width*f->size.height);
+  
+  return true;
+}
+
+template <>
+bool CLIManager::_saveFrameToFile<XYZIPointCloudFrame>(const Frame *frame, OutputFileStream &saveFile, const String &subType)
+{
+  const XYZIPointCloudFrame *f = dynamic_cast<const XYZIPointCloudFrame *>(frame);
+  
+  if(!f)
+  {
+    logger(LOG_ERROR) << "Null frame captured? or not of type RawDataFrame" << std::endl;
+    return false;
+  }
+  
+  std::cout << "Saving frame " << f->id << "@" << f->timestamp << "us";
+  
+  if(_lastTimeStamp != 0)
+    std::cout << " (" << 1E6/(f->timestamp - _lastTimeStamp) << " fps)";
+  
+  std::cout << ", number of points = " << f->points.size() << ", 4-bytes float (x, y, z, i) data" << std::endl;
+  
+  _lastTimeStamp = f->timestamp;
+  _saveFile.write((char *)f->points.data(), sizeof(IntensityPoint)*f->points.size());
+  
+  return true;
+}
+
+
 void CLIManager::_save(const Vector<String> &tokens)
 {
   if(!_currentDepthCamera || !_viewer->isRunning())
@@ -1077,23 +1203,113 @@ void CLIManager::_save(const Vector<String> &tokens)
   if(_count > 100000 || _count <= 0)
   {
     logger(LOG_ERROR) << "Invalid count. Allowed values are 1 to 100000" << std::endl;
+    _saveHelp();
     return;
   }
   
   _currentCount = 0;
   _lastTimeStamp = 0;
   
-  _saveFile.open(tokens[3], std::ios::out | std::ios::binary);
-  
-  if(!_saveFile.good())
+  if(tokens[1] != "vxl")
   {
-    logger(LOG_ERROR) << "Could not open '" << tokens[3] << "' for writing frames." << std::endl;
-    return;
+    _saveFile.close();
+    _saveFile.clear();
+    _saveFile.open(tokens[3], std::ios::out | std::ios::binary);
+    
+    if(!_saveFile.good())
+    {
+      logger(LOG_ERROR) << "Could not open '" << tokens[3] << "' for writing frames." << std::endl;
+      return;
+    }
   }
   
   _saveFileName = tokens[3];
   
   if(tokens[1] == "raw")
+  {
+    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameType type) -> void {
+      if(type != DepthCamera::FRAME_RAW_FRAME_UNPROCESSED)
+        return;
+      
+      if(!_saveFrameToFile<RawDataFrame>(&frame, _saveFile))
+      {
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+      
+      _currentCount++;
+      
+      if(_currentCount >= _count)
+      {
+        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+    });
+  } 
+  else if(tokens[1] == "phase" || tokens[1] == "amplitude" || tokens[1] == "ambient" || tokens[1] == "flags")
+  {
+    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this, &tokens](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameType type) {
+      if(type != DepthCamera::FRAME_RAW_FRAME_PROCESSED)
+        return;
+      
+      if(!_saveFrameToFile<ToFRawFrame>(&frame, _saveFile, tokens[1]))
+      {
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+      
+      _currentCount++;
+      
+      if(_currentCount >= _count)
+      {
+        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+    });
+  } 
+  else if(tokens[1] == "depth")
+  {
+    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::DepthImageCallBack>([this](const Voxel::DepthFrame &frame) {
+      
+      if(!_saveFrameToFile<DepthFrame>(&frame, _saveFile))
+      {
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+      
+      _currentCount++;
+      
+      if(_currentCount >= _count)
+      {
+        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+    });
+  } 
+  else if(tokens[1] == "pointcloud")
+  {
+    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::PointCloudFrameCallBack>([this](const Voxel::PointCloudFrame &frame) {
+      
+      if(!_saveFrameToFile<XYZIPointCloudFrame>(&frame, _saveFile))
+      {
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+      
+      _currentCount++;
+      
+      if(_currentCount >= _count)
+      {
+        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
+        _saveFile.close();
+        _saveCallbackConnection.disconnect();
+      }
+    });
+  }
+  else if(tokens[1] == "vxl")
   {
     _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameType type) -> void {
       if(type != DepthCamera::FRAME_RAW_FRAME_UNPROCESSED)
@@ -1116,159 +1332,35 @@ void CLIManager::_save(const Vector<String> &tokens)
       
       _lastTimeStamp = d->timestamp;
       
-      _saveFile.write((char *)&d->id, sizeof(d->id));
-      _saveFile.write((char *)&d->timestamp, sizeof(d->timestamp));
-      
-      _saveFile.write((char *)d->data.data(), d->data.size());
-      
-      _currentCount++;
+      if(_currentCount == 0 && !_currentDepthCamera->saveFrameStream(_saveFileName))
+      {
+        logger(LOG_ERROR) << "Failed to open '" << _saveFileName << "'" << std::endl;
+        _currentDepthCamera->closeFrameStream();
+        _saveCallbackConnection.disconnect();
+        return;
+      }
       
       if(_currentCount >= _count)
       {
         std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
-        _saveFile.close();
+        _currentDepthCamera->closeFrameStream();
         _saveCallbackConnection.disconnect();
-      }
-    });
-  } 
-  else if(tokens[1] == "raw_processed")
-  {
-    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::RawImageCallBack>([this](const Voxel::RawFrame &frame, const Voxel::DepthCamera::FrameType type) {
-      if(type != DepthCamera::FRAME_RAW_FRAME_PROCESSED)
-        return;
-      
-      const ToFRawFrame *d = dynamic_cast<const ToFRawFrame *>(&frame);
-
-      if(!d)
-      {
-        logger(LOG_ERROR) << "Null frame captured? or not of type ToFRawFrame" << std::endl;
-        return;
-      }
-
-      std::cout << "Capture frame " << d->id << "@" << d->timestamp;
-
-      if(_lastTimeStamp != 0)
-      {
-        std::cout << " (" << 1E6 / (d->timestamp - _lastTimeStamp) << " fps)";
-      }
-
-      std::cout << std::endl;
-
-      _lastTimeStamp = d->timestamp;
-      
-      _saveFile.write((char *)&d->id, sizeof(d->id));
-      _saveFile.write((char *)&d->timestamp, sizeof(d->timestamp));
-
-      if(d->phase())
-      {
-        _saveFile.write((char *)d->phase(), d->phaseWordWidth()*d->size.width * d->size.height);
-      }
-
-      if(d->amplitude())
-      {
-        _saveFile.write((char *)d->amplitude(), d->amplitudeWordWidth()*d->size.width * d->size.height);
-      }
-
-      if(d->ambient())
-      {
-        _saveFile.write((char *)d->ambient(), d->ambientWordWidth()*d->size.width * d->size.height);
-      }
-
-      if(d->flags())
-      {
-        _saveFile.write((char *)d->flags(), d->flagsWordWidth()*d->size.width * d->size.height);      
       }
       
       _currentCount++;
-      
-      if(_currentCount >= _count)
-      {
-        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
-        _saveFile.close();
-        _saveCallbackConnection.disconnect();
-      }
-    });
-  } 
-  else if(tokens[1] == "depth")
-  {
-    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::DepthImageCallBack>([this](const Voxel::DepthFrame &frame) {
-      const DepthFrame *d = dynamic_cast<const DepthFrame *>(&frame);
-      
-      if(!d)
-      {
-        logger(LOG_ERROR) << "Null frame captured? or not of type DepthFrame" << std::endl;
-        return;
-      }
-      
-      std::cout << "Capture frame " << d->id << "@" << d->timestamp;
-      
-      if(_lastTimeStamp != 0)
-        std::cout << " (" << 1E6/(d->timestamp - _lastTimeStamp) << " fps)";
-      
-      std::cout << std::endl;
-      
-      _lastTimeStamp = d->timestamp;
-      
-      _saveFile.write((char *)&d->id, sizeof(d->id));
-      _saveFile.write((char *)&d->timestamp, sizeof(d->timestamp));
-      
-      _saveFile.write((char *)d->depth.data(), sizeof(float)*d->size.width*d->size.height);
-      _saveFile.write((char *)d->amplitude.data(), sizeof(float)*d->size.width*d->size.height);
-    
-      _currentCount++;
-      
-      if(_currentCount >= _count)
-      {
-        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
-        _saveFile.close();
-        _saveCallbackConnection.disconnect();
-      }
-    });
-  } 
-  else if(tokens[1] == "pointcloud")
-  {
-    _saveCallbackConnection = _viewer->getGrabber()->registerCallback<PCLGrabber::PointCloudFrameCallBack>([this](const Voxel::PointCloudFrame &frame) {
-      const XYZIPointCloudFrame *d = dynamic_cast<const XYZIPointCloudFrame *>(&frame);
-      
-      if(!d)
-      {
-        logger(LOG_ERROR) << "Null frame captured? or not of type XYZIPointCloudFrame" << std::endl;
-        return;
-      }
-      
-      std::cout << "Capture frame " << d->id << "@" << d->timestamp;
-      
-      if(_lastTimeStamp != 0)
-        std::cout << " (" << 1E6/(d->timestamp - _lastTimeStamp) << " fps)";
-      
-      std::cout << std::endl;
-      
-      _lastTimeStamp = d->timestamp;
-      
-      _saveFile.write((char *)&d->id, sizeof(d->id));
-      _saveFile.write((char *)&d->timestamp, sizeof(d->timestamp));
-      
-      _saveFile.write((char *)d->points.data(), sizeof(IntensityPoint)*d->points.size());
-          
-      _currentCount++;
-      
-      if(_currentCount >= _count)
-      {
-        std::cout << "Saved to file '" << _saveFileName << "'" << std::endl;
-        _saveFile.close();
-        _saveCallbackConnection.disconnect();
-      }
     });
   }
   else
   {
     logger(LOG_ERROR) << "Unknown frame type '" << tokens[1] << "'" << std::endl;
+    _saveFile.close();
+    _saveHelp();
     return;
   }
   
   if(!_saveCallbackConnection.connected())
   {
-    logger(LOG_ERROR) << "Could not connect to save the frames." << std::endl;
+    logger(LOG_ERROR) << "Could not connect to grabber to save the frames." << std::endl;
     _saveFile.close();
   }
 }
@@ -1280,14 +1372,18 @@ void CLIManager::_saveCompletion(const Vector<String> &tokens, linenoiseCompleti
   
   if(tokens.size() == 1)
   {
+    linenoiseAddCompletion(lc, (tokens[0] + " vxl").c_str());
     linenoiseAddCompletion(lc, (tokens[0] + " raw").c_str());
-    linenoiseAddCompletion(lc, (tokens[0] + " raw_processed").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " phase").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " amplitude").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " ambient").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " flags").c_str());
     linenoiseAddCompletion(lc, (tokens[0] + " depth").c_str());
     linenoiseAddCompletion(lc, (tokens[0] + " pointcloud").c_str());
   }
   else if(tokens.size() == 2)
   {
-    Vector<String> types = {"raw", "raw_processed", "depth", "pointcloud"};
+    Vector<String> types = {"raw", "phase", "amplitude", "ambient", "flags", "depth", "pointcloud", "vxl"};
     
     for(auto &t: types)
     {
@@ -1960,7 +2056,107 @@ void CLIManager::_setFilterParamCompletion(const Vector<String> &tokens, linenoi
   }
 }
 
+void CLIManager::_vxlToRaw(const Vector<String> &tokens)
+{
+  if(tokens.size() < 4)
+  {
+    logger(LOG_ERROR) << "Required parameters missing." << std::endl;
+    _vxlToRawHelp();
+    return;
+  }
+  
+  String vxlFile = tokens[2];
+  _saveFile.close();
+  _saveFile.clear();
+  _saveFile.open(tokens[3], std::ios::out | std::ios::binary);
+    
+  if(!_saveFile.good())
+  {
+    logger(LOG_ERROR) << "Could not open '" << tokens[3] << "' for writing frames." << std::endl;
+    _vxlToRawHelp();
+    return;
+  }
+  
+  _lastTimeStamp = 0;
+  _currentCount = 0;
+  
+  DepthCamera::FrameType type;
+  
+  if(tokens[1] == "raw")
+    type = DepthCamera::FRAME_RAW_FRAME_UNPROCESSED;
+  else if(tokens[1] == "phase" || tokens[1] == "amplitude" || tokens[1] == "ambient" || tokens[1] == "flags")
+    type = DepthCamera::FRAME_RAW_FRAME_PROCESSED;
+  else if(tokens[1] == "depth")
+    type = DepthCamera::FRAME_DEPTH_FRAME;
+  else if(tokens[1] == "pointcloud")
+    type = DepthCamera::FRAME_XYZI_POINT_CLOUD_FRAME;
+  else
+  {
+    logger(LOG_ERROR) << "Unknown frame type '" << tokens[1] << "'" << std::endl;
+    _vxlToRawHelp();
+    return;
+  }
+  
+  FrameStreamReader r(vxlFile, _sys);
+  
+  if(!r.isStreamGood())
+  {
+    logger(LOG_ERROR) << "File could not be opened for reading" << std::endl;
+    return;
+  }
+  
+  std::cout << "Number of data frames in stream = " << r.size() << std::endl;
+  
+  for(auto i = 0; i < r.size(); i++)
+  {
+    if(!r.readNext())
+    {
+      logger(LOG_ERROR) << "Could not process frame id = " << i << std::endl;
+      continue;
+    }
+    
+    if(type == DepthCamera::FRAME_RAW_FRAME_UNPROCESSED)
+      _saveFrameToFile<RawDataFrame>(r.frames[type].get(), _saveFile);
+    else if(type == DepthCamera::FRAME_RAW_FRAME_PROCESSED)
+      _saveFrameToFile<ToFRawFrame>(r.frames[type].get(), _saveFile, tokens[1]);
+    else if(type == DepthCamera::FRAME_DEPTH_FRAME)
+      _saveFrameToFile<DepthFrame>(r.frames[type].get(), _saveFile);
+    else if(type == DepthCamera::FRAME_XYZI_POINT_CLOUD_FRAME)
+      _saveFrameToFile<XYZIPointCloudFrame>(r.frames[type].get(), _saveFile);
+  }
+  
+  _saveFile.close();
+}
 
+void CLIManager::_vxlToRawCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  if(tokens.size() == 1)
+  {
+    linenoiseAddCompletion(lc, (tokens[0] + " raw").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " phase").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " amplitude").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " ambient").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " flags").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " depth").c_str());
+    linenoiseAddCompletion(lc, (tokens[0] + " pointcloud").c_str());
+  }
+  else if(tokens.size() == 2)
+  {
+    Vector<String> types = {"raw", "phase", "amplitude", "ambient", "flags", "depth", "pointcloud"};
+    
+    for(auto &t: types)
+    {
+      if(t.size() < tokens[1].size())
+        continue;
+      
+      if(t.compare(0, tokens[1].size(), tokens[1]) == 0)
+        linenoiseAddCompletion(lc, (tokens[0] + " " + t).c_str());
+    }
+  }
+}
 
   
 }
