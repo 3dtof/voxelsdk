@@ -2135,9 +2135,6 @@ void CLIManager::_vxlToRaw(const Vector<String> &tokens)
 
 void CLIManager::_vxlToRawCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
 {
-  if(!_currentDepthCamera)
-    return;
-  
   if(tokens.size() == 1)
   {
     linenoiseAddCompletion(lc, (tokens[0] + " raw").c_str());
