@@ -29,7 +29,8 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
   _commandHistoryFileName = "history.txt";
   conf.getLocalFile("cli", _commandHistoryFileName);
   
-  _commandGroups = Map<String, Vector<String> >({
+  _commandGroups = Vector<CommandGroup>({
+    {"CLI Controls", {"help", "exit"}},
     {"Parameter/Register Handling", {"get", "set", "cap", "getr", "setr"}},
     {"Device/Camera Handling", {"list", "connect", "disconnect", "reset"}},
     {"Stream Commands", {"start", "stop", "status", "save", "vxltoraw"}},
@@ -50,7 +51,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"save",           Command(_H(&CLIManager::_saveHelp),          _P(&CLIManager::_save),          _C(&CLIManager::_saveCompletion))},
     {"vxltoraw",       Command(_H(&CLIManager::_vxlToRawHelp),      _P(&CLIManager::_vxlToRaw),      _C(&CLIManager::_vxlToRawCompletion))},
     {"cap",            Command(_H(&CLIManager::_capabilitiesHelp),  _P(&CLIManager::_capabilities),  _C(&CLIManager::_capabilitiesCompletion))},
-    {"help",           Command(_H(&CLIManager::_helpHelp),          _P(&CLIManager::_help),          nullptr)},
+    {"help",           Command(_H(&CLIManager::_helpHelp),          _P(&CLIManager::_help),          _C(&CLIManager::_helpCompletion))},
     {"disconnect",     Command(_H(&CLIManager::_disconnectHelp),    _P(&CLIManager::_disconnect),    nullptr)},
     {"reset",          Command(_H(&CLIManager::_resetHelp),         _P(&CLIManager::_reset),         nullptr)},
     {"exit",           Command(_H(&CLIManager::_exitHelp),          _P(&CLIManager::_exit),          nullptr)},
@@ -288,9 +289,9 @@ void CLIManager::_help(const Vector<String> &tokens)
   {
     for(auto &g: _commandGroups)
     {
-      std::cout << "## " << g.first << " ##" << std::endl;
+      std::cout << "## " << g.name << " ##" << std::endl;
       
-      for(auto &c: g.second)
+      for(auto &c: g.commands)
       {
         auto command = _commands.find(c);
         
@@ -307,6 +308,40 @@ void CLIManager::_help(const Vector<String> &tokens)
     }
   }
 }
+
+void CLIManager::_helpCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(tokens.size() == 1)
+  {
+    for(auto &g: _commandGroups)
+    {
+      for(auto &c: g.commands)
+      {
+        auto command = _commands.find(c);
+        
+        if(command != _commands.end())
+          linenoiseAddCompletion(lc, (tokens[0] + " " + c).c_str());
+      }
+    }
+  }
+  else if(tokens.size() > 1)
+  {
+    for(auto &g: _commandGroups)
+    {
+      for(auto &c: g.commands)
+      {
+        if(c.size() < tokens[1].size() || c.compare(0, tokens[1].size(), tokens[1]) != 0)
+          continue;
+        
+        auto command = _commands.find(c);
+        
+        if(command != _commands.end())
+          linenoiseAddCompletion(lc, (tokens[0] + " " + c).c_str());
+      }
+    }
+  }
+}
+
 
 void CLIManager::_exit(const Vector<String> &tokens)
 {
@@ -975,7 +1010,19 @@ void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
   _getTokens(buf, tokens);
   
   if(tokens.size() == 0)
+  {
+    for(auto &g: _commandGroups)
+    {
+      for(auto &c: g.commands)
+      {
+        auto command = _commands.find(c);
+        
+        if(command != _commands.end())
+          linenoiseAddCompletion(lc, c.c_str());
+      }
+    }
     return;
+  }
   
   uint length = strlen(buf);
   

@@ -42,8 +42,14 @@ protected:
     help(h), process(p), complete(c) {}
   };
   
+  struct CommandGroup
+  {
+    String name;
+    Vector<String> commands;
+  };
+  
   Map<String, Command> _commands;
-  Map<String, Vector<String> > _commandGroups; // Holds groups of commands, suitable for printing help
+  Vector<CommandGroup> _commandGroups; // Holds groups of commands, suitable for printing help
   Map<String, Command> _specialParameters; // such as frame_size, frame_rate, roi, etc.
   
   String _commandHistoryFileName;
@@ -60,6 +66,7 @@ protected:
   // Comand related functions
   void _help(const Vector<String> &tokens);
   void _helpHelp();
+  void _helpCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   
   void _exit(const Vector<String> &tokens);
   void _exitHelp();
