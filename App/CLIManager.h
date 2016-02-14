@@ -165,7 +165,9 @@ protected:
   void _profileListHelp();
   
   void _profileSet(const Vector<String> &tokens);
-  void _getProfileIDs(const String &partialID, Vector<String> &ids);
+  
+  /// @param type is a 2-bit field. LSB is to include software profiles and MSB for hardware profile. By default, both are included.
+  void _getProfileIDs(const String &partialID, Vector<String> &ids, const unsigned int type = 0x3); 
   void _profileSetCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   void _profileSetHelp();
   
@@ -184,6 +186,21 @@ protected:
   void _profileParamRemove(const Vector<String> &tokens);
   void _profileParamRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   void _profileParamRemoveHelp();
+  
+  void _profileSetDefault(const Vector<String> &tokens);
+  void _profileSetDefaultCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileSetDefaultHelp();
+  
+  void _profileHWFetch(const Vector<String> &tokens);
+  void _profileHWFetchCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileHWFetchHelp();
+  
+  void _profileHWSave(const Vector<String> &tokens);
+  void _profileHWSaveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileHWSaveHelp();
+  
+  void _profileHWRemoveDefault(const Vector<String> &tokens);
+  void _profileHWRemoveDefaultHelp();
   
 public:
   CLIManager(CameraSystem &sys);

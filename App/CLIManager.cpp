@@ -36,40 +36,41 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"Device/Camera Handling", {"list", "connect", "disconnect", "reset"}},
     {"Stream Commands", {"start", "stop", "status", "save", "vxltoraw"}},
     {"Filter Controls", {"filterlist", "filteradd", "filterremove", "filterparam"}},
-    {"Camera Profile Handling", {"profilelist", "profileselect", "profileadd", "profileremove", "profileparam", "profileparamremove"}},
+    {"Camera Profile Handling", {"profilelist", "profileselect", "profileadd", "profileremove", "profileparam", "profileparamremove", "profilesetdefault", "profilehwsave", "profilehwfetch", "profilehwremovedefault"}},
   });
   
   
   _commands = Map<String, Command>({
-    {"list",           Command(_H(&CLIManager::_listHelp),          _P(&CLIManager::_list),          nullptr)},
-    {"status",         Command(_H(&CLIManager::_currentHelp),       _P(&CLIManager::_current),       nullptr)},
-    {"connect",        Command(_H(&CLIManager::_connectHelp),       _P(&CLIManager::_connect),       _C(&CLIManager::_connectCompletion))},
-    {"start",          Command(_H(&CLIManager::_startHelp),         _P(&CLIManager::_start),         nullptr)},
-    {"stop",           Command(_H(&CLIManager::_stopHelp),          _P(&CLIManager::_stop),          nullptr)},
-    {"getr",           Command(_H(&CLIManager::_getRegisterHelp),   _P(&CLIManager::_getRegister),   nullptr)},
-    {"setr",           Command(_H(&CLIManager::_setRegisterHelp),   _P(&CLIManager::_setRegister),   nullptr)},
-    {"get",            Command(_H(&CLIManager::_getParameterHelp),  _P(&CLIManager::_getParameter),  _C(&CLIManager::_getParameterCompletion))},
-    {"set",            Command(_H(&CLIManager::_setParameterHelp),  _P(&CLIManager::_setParameter),  _C(&CLIManager::_setParameterCompletion))},
-    {"save",           Command(_H(&CLIManager::_saveHelp),          _P(&CLIManager::_save),          _C(&CLIManager::_saveCompletion))},
-    {"vxltoraw",       Command(_H(&CLIManager::_vxlToRawHelp),      _P(&CLIManager::_vxlToRaw),      _C(&CLIManager::_vxlToRawCompletion))},
-    {"cap",            Command(_H(&CLIManager::_capabilitiesHelp),  _P(&CLIManager::_capabilities),  _C(&CLIManager::_capabilitiesCompletion))},
-    {"help",           Command(_H(&CLIManager::_helpHelp),          _P(&CLIManager::_help),          _C(&CLIManager::_helpCompletion))},
-    {"disconnect",     Command(_H(&CLIManager::_disconnectHelp),    _P(&CLIManager::_disconnect),    nullptr)},
-    {"reset",          Command(_H(&CLIManager::_resetHelp),         _P(&CLIManager::_reset),         nullptr)},
-    {"exit",           Command(_H(&CLIManager::_exitHelp),          _P(&CLIManager::_exit),          nullptr)},
-    {"filterlist",     Command(_H(&CLIManager::_filtersHelp),       _P(&CLIManager::_filters),       nullptr)},
-    {"filteradd",      Command(_H(&CLIManager::_addFilterHelp),     _P(&CLIManager::_addFilter),     _C(&CLIManager::_addFilterCompletion))},
-    {"filterremove",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
-    {"filterparam",    Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
-    {"profilelist",    Command(_H(&CLIManager::_profileListHelp),   _P(&CLIManager::_profileList),   nullptr)},
-    {"profileselect",  Command(_H(&CLIManager::_profileSetHelp),    _P(&CLIManager::_profileSet),    _C(&CLIManager::_profileSetCompletion))},
-    {"profileadd",     Command(_H(&CLIManager::_profileAddHelp),    _P(&CLIManager::_profileAdd),    _C(&CLIManager::_profileAddCompletion))},
-    {"profileremove",  Command(_H(&CLIManager::_profileRemoveHelp), _P(&CLIManager::_profileRemove), _C(&CLIManager::_profileRemoveCompletion))},
-    {"profileparam",   Command(_H(&CLIManager::_profileParamHelp),  _P(&CLIManager::_profileParam),  _C(&CLIManager::_profileParamCompletion))},
-    {"profileparamremove",   
-                       Command(_H(&CLIManager::_profileParamRemoveHelp),  
-                                                                    _P(&CLIManager::_profileParamRemove),  
-                                                                                                     _C(&CLIManager::_profileParamCompletion))},
+    {"list",                  Command(_H(&CLIManager::_listHelp),                   _P(&CLIManager::_list),                   nullptr)},
+    {"status",                Command(_H(&CLIManager::_currentHelp),                _P(&CLIManager::_current),                nullptr)},
+    {"connect",               Command(_H(&CLIManager::_connectHelp),                _P(&CLIManager::_connect),                _C(&CLIManager::_connectCompletion))},
+    {"start",                 Command(_H(&CLIManager::_startHelp),                  _P(&CLIManager::_start),                  nullptr)},
+    {"stop",                  Command(_H(&CLIManager::_stopHelp),                   _P(&CLIManager::_stop),                   nullptr)},
+    {"getr",                  Command(_H(&CLIManager::_getRegisterHelp),            _P(&CLIManager::_getRegister),            nullptr)},
+    {"setr",                  Command(_H(&CLIManager::_setRegisterHelp),            _P(&CLIManager::_setRegister),            nullptr)},
+    {"get",                   Command(_H(&CLIManager::_getParameterHelp),           _P(&CLIManager::_getParameter),           _C(&CLIManager::_getParameterCompletion))},
+    {"set",                   Command(_H(&CLIManager::_setParameterHelp),           _P(&CLIManager::_setParameter),           _C(&CLIManager::_setParameterCompletion))},
+    {"save",                  Command(_H(&CLIManager::_saveHelp),                   _P(&CLIManager::_save),                   _C(&CLIManager::_saveCompletion))},
+    {"vxltoraw",              Command(_H(&CLIManager::_vxlToRawHelp),               _P(&CLIManager::_vxlToRaw),               _C(&CLIManager::_vxlToRawCompletion))},
+    {"cap",                   Command(_H(&CLIManager::_capabilitiesHelp),           _P(&CLIManager::_capabilities),           _C(&CLIManager::_capabilitiesCompletion))},
+    {"help",                  Command(_H(&CLIManager::_helpHelp),                   _P(&CLIManager::_help),                   _C(&CLIManager::_helpCompletion))},
+    {"disconnect",            Command(_H(&CLIManager::_disconnectHelp),             _P(&CLIManager::_disconnect),             nullptr)},
+    {"reset",                 Command(_H(&CLIManager::_resetHelp),                  _P(&CLIManager::_reset),                  nullptr)},
+    {"exit",                  Command(_H(&CLIManager::_exitHelp),                   _P(&CLIManager::_exit),                   nullptr)},
+    {"filterlist",            Command(_H(&CLIManager::_filtersHelp),                _P(&CLIManager::_filters),                nullptr)},
+    {"filteradd",             Command(_H(&CLIManager::_addFilterHelp),              _P(&CLIManager::_addFilter),              _C(&CLIManager::_addFilterCompletion))},
+    {"filterremove",          Command(_H(&CLIManager::_removeFilterHelp),           _P(&CLIManager::_removeFilter),           _C(&CLIManager::_removeFilterCompletion))},
+    {"filterparam",           Command(_H(&CLIManager::_setFilterParamHelp),         _P(&CLIManager::_setFilterParam),         _C(&CLIManager::_setFilterParamCompletion))},
+    {"profilelist",           Command(_H(&CLIManager::_profileListHelp),            _P(&CLIManager::_profileList),            nullptr)},
+    {"profileselect",         Command(_H(&CLIManager::_profileSetHelp),             _P(&CLIManager::_profileSet),             _C(&CLIManager::_profileSetCompletion))},
+    {"profileadd",            Command(_H(&CLIManager::_profileAddHelp),             _P(&CLIManager::_profileAdd),             _C(&CLIManager::_profileAddCompletion))},
+    {"profileremove",         Command(_H(&CLIManager::_profileRemoveHelp),          _P(&CLIManager::_profileRemove),          _C(&CLIManager::_profileRemoveCompletion))},
+    {"profileparam",          Command(_H(&CLIManager::_profileParamHelp),           _P(&CLIManager::_profileParam),           _C(&CLIManager::_profileParamCompletion))},
+    {"profileparamremove",    Command(_H(&CLIManager::_profileParamRemoveHelp),     _P(&CLIManager::_profileParamRemove),     _C(&CLIManager::_profileParamRemoveCompletion))},
+    {"profilesetdefault",     Command(_H(&CLIManager::_profileSetDefaultHelp),      _P(&CLIManager::_profileSetDefault),      _C(&CLIManager::_profileSetDefaultCompletion))},
+    {"profilehwsave",         Command(_H(&CLIManager::_profileHWSaveHelp),          _P(&CLIManager::_profileHWSave),          _C(&CLIManager::_profileHWSaveCompletion))},
+    {"profilehwfetch",        Command(_H(&CLIManager::_profileHWFetchHelp),         _P(&CLIManager::_profileHWFetch),         _C(&CLIManager::_profileHWFetchCompletion))},
+    {"profilehwremovedefault",Command(_H(&CLIManager::_profileHWRemoveDefaultHelp), _P(&CLIManager::_profileHWRemoveDefault), nullptr)},
   });
   
   _specialParameters = Map<String, Command>({
@@ -243,46 +244,52 @@ void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
 }
 
 
-void CLIManager::_helpHelp()          { std::cout << "help [cmd]                Print this help and for any specified Voxel command 'cmd'" << std::endl; }
-void CLIManager::_exitHelp()          { std::cout << "exit                      Exit VoxelCLI" << std::endl; }
-void CLIManager::_connectHelp()       { std::cout << "connect <dev>             Connect to a specific device. <dev> needs to be device ID\n"
-                                                  << "                          in the format INTERFACE::DEVICE::SERIAL. Use double-quotes for the ID if it contains spaces" << std::endl; }
-void CLIManager::_listHelp()          { std::cout << "list                      Scan and list all valid Voxel connectable devices" << std::endl; }
-void CLIManager::_currentHelp()       { std::cout << "status                    Show the current connected device ID if present" << std::endl; }
-void CLIManager::_startHelp()         { std::cout << "start                     Start streaming and showing the current device" << std::endl; }
-void CLIManager::_stopHelp()          { std::cout << "stop                      Stop streaming the current device" << std::endl; }
-void CLIManager::_getRegisterHelp()   { std::cout << "getr <reg>                Get register value at <reg>. Use '0x' prefix for hexadecimal" << std::endl; }
-void CLIManager::_setRegisterHelp()   { std::cout << "setr <reg> = <value>      Set register <reg> to <value>. Use '0x' prefix for hexadecimal" << std::endl; }
-void CLIManager::_getParameterHelp()  { std::cout << "get <param>               Get parameter value given by name <param>" << std::endl; }
-void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]          Get capabilities of the current depth camera.\n"
-                                                  << "                          Optionally a parameter name can be given to list only that parameter details given by name <param>.\n"
-                                                  << "                          A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
-void CLIManager::_filtersHelp()       { std::cout << "filterlist                List available filters and currently in use filters" << std::endl; }
-void CLIManager::_addFilterHelp()     { std::cout << "filteradd <frametype> <name> <pos>    Add filter <name> for <frametype> at <pos>.\n"
-                                                  << "                          Set <pos> = -1 to add the end.\n"
-                                                  << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
-void CLIManager::_removeFilterHelp()  { std::cout << "filterremove <frametype> <pos>    Remove filter with id <filterid> for <frametype>.\n"
-                                                  << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
-void CLIManager::_setFilterParamHelp(){ std::cout << "filterparam <frametype> <filterid> <param> = <value>   Set parameter <param> to <value> for filter\n"
-                                                  << "                          with id <filterid> present for frame type <frametype>.\n"
-                                                  << "                          <frametype> can be raw/raw_processed/depth" << std::endl; }
-void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>     Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
-void CLIManager::_saveHelp()          { std::cout << "save <type> <count> <filename>  Save current 'count' number of frames.\n"
-                                                  << "                          'type' = raw/phase/ambient/amplitude/flags/depth/pointcloud/vxl" << std::endl; }
-void CLIManager::_vxlToRawHelp()      { std::cout << "vxltoraw <rawtype> <vxlfile> <rawfile>   Get raw data from saved VXL file.\n"
-                                                  << "                          'rawtype' = raw/phase/ambient/amplitude/flags/depth/pointcloud" << std::endl; }                                                  
-void CLIManager::_disconnectHelp()    { std::cout << "disconnect                Disconnect the currently connected depth camera" << std::endl; }
-void CLIManager::_resetHelp()         { std::cout << "reset                     Reset and disconnect the currently connected depth camera" << std::endl; }
-
-void CLIManager::_profileListHelp()   { std::cout << "profilelist               List all profiles associated with the currently connected depth camera" << std::endl; }
-void CLIManager::_profileSetHelp()    { std::cout << "profileselect <id>        Select and apply a particular profile to currently connected depth camera" << std::endl; }
-void CLIManager::_profileAddHelp()    { std::cout << "profileadd <name> [parentid]    Add a new profile to currently connected depth camera" << std::endl
-                                                  << "                          An optional parentid can be specified indicating the parent profile" << std::endl
-                                                  << "                          Enclose name in double-quotes when it has spaces" << std::endl; }
-void CLIManager::_profileRemoveHelp() { std::cout << "profileremove <id>        Remove profile with 'id' associated with currently connected depth camera" << std::endl; }
-void CLIManager::_profileParamHelp()  { std::cout << "profileparam <id> [section [paramname[=value]]]    Read/Write a section/parameter in profile with 'id'" << std::endl; }
-void CLIManager::_profileParamRemoveHelp()  
-                                      { std::cout << "profileparamremove <id> <section> [paramname]    Remove a section/parameter in profile with 'id'" << std::endl; }
+void CLIManager::_helpHelp()                   { std::cout << "help [cmd]                Print this help and for any specified Voxel command 'cmd'" << std::endl; }
+void CLIManager::_exitHelp()                   { std::cout << "exit                      Exit VoxelCLI" << std::endl; }
+void CLIManager::_connectHelp()                { std::cout << "connect <dev>             Connect to a specific device. <dev> needs to be device ID\n"
+                                                           << "                          in the format INTERFACE::DEVICE::SERIAL. Use double-quotes for the ID if it contains spaces" << std::endl; }
+void CLIManager::_listHelp()                   { std::cout << "list                      Scan and list all valid Voxel connectable devices" << std::endl; }
+void CLIManager::_currentHelp()                { std::cout << "status                    Show the current connected device ID if present" << std::endl; }
+void CLIManager::_startHelp()                  { std::cout << "start                     Start streaming and showing the current device" << std::endl; }
+void CLIManager::_stopHelp()                   { std::cout << "stop                      Stop streaming the current device" << std::endl; }
+void CLIManager::_getRegisterHelp()            { std::cout << "getr <reg>                Get register value at <reg>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_setRegisterHelp()            { std::cout << "setr <reg> = <value>      Set register <reg> to <value>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_getParameterHelp()           { std::cout << "get <param>               Get parameter value given by name <param>" << std::endl; }
+void CLIManager::_capabilitiesHelp()           { std::cout << "cap [<param>][*]          Get capabilities of the current depth camera.\n"
+                                                           << "                          Optionally a parameter name can be given to list only that parameter details given by name <param>.\n"
+                                                           << "                          A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
+void CLIManager::_filtersHelp()                { std::cout << "filterlist                List available filters and currently in use filters" << std::endl; }
+void CLIManager::_addFilterHelp()              { std::cout << "filteradd <frametype> <name> <pos>    Add filter <name> for <frametype> at <pos>.\n"
+                                                           << "                          Set <pos> = -1 to add the end.\n"
+                                                           << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
+void CLIManager::_removeFilterHelp()           { std::cout << "filterremove <frametype> <pos>    Remove filter with id <filterid> for <frametype>.\n"
+                                                           << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
+void CLIManager::_setFilterParamHelp()         { std::cout << "filterparam <frametype> <filterid> <param> = <value>   Set parameter <param> to <value> for filter\n"
+                                                           << "                          with id <filterid> present for frame type <frametype>.\n"
+                                                           << "                          <frametype> can be raw/raw_processed/depth" << std::endl; }
+void CLIManager::_setParameterHelp()           { std::cout << "set <param> = <value>     Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
+void CLIManager::_saveHelp()                   { std::cout << "save <type> <count> <filename>  Save current 'count' number of frames.\n"
+                                                           << "                          'type' = raw/phase/ambient/amplitude/flags/depth/pointcloud/vxl" << std::endl; }
+void CLIManager::_vxlToRawHelp()               { std::cout << "vxltoraw <rawtype> <vxlfile> <rawfile>   Get raw data from saved VXL file.\n"
+                                                           << "                          'rawtype' = raw/phase/ambient/amplitude/flags/depth/pointcloud" << std::endl; }                                                  
+void CLIManager::_disconnectHelp()             { std::cout << "disconnect                Disconnect the currently connected depth camera" << std::endl; }
+void CLIManager::_resetHelp()                  { std::cout << "reset                     Reset and disconnect the currently connected depth camera" << std::endl; }
+                                               
+void CLIManager::_profileListHelp()            { std::cout << "profilelist               List all profiles associated with the currently connected depth camera" << std::endl; }
+void CLIManager::_profileSetHelp()             { std::cout << "profileselect <id>        Select and apply a particular profile to currently connected depth camera" << std::endl; }
+void CLIManager::_profileAddHelp()             { std::cout << "profileadd <name> [parentid]    Add a new profile to currently connected depth camera" << std::endl
+                                                           << "                          An optional parentid can be specified indicating the parent profile" << std::endl
+                                                           << "                          Enclose name in double-quotes when it has spaces" << std::endl; }
+void CLIManager::_profileRemoveHelp()          { std::cout << "profileremove <id>        Remove profile with 'id' associated with currently connected depth camera" << std::endl; }
+void CLIManager::_profileParamHelp()           { std::cout << "profileparam <id> [section [paramname[=value]]]    Read/Write a section/parameter in profile with 'id'" << std::endl; }
+void CLIManager::_profileParamRemoveHelp()     { std::cout << "profileparamremove <id> <section> [paramname]    Remove a section/parameter in profile with 'id'" << std::endl; }
+void CLIManager::_profileSetDefaultHelp()      { std::cout << "profilesetdefault <id>    Select and apply a particular profile as default to currently connected depth camera" << std::endl; }
+void CLIManager::_profileHWSaveHelp()          { std::cout << "profilehwsave <id>        Save a particular profile on depth camera hardware." << std::endl
+                                                           << "                          The profile 'id' to be saved should be on local host computer where this CLI is being run" << std::endl; }
+void CLIManager::_profileHWFetchHelp()         { std::cout << "profilehwfetch <id>       Save a particular hardware profile's configuration file on local host computer." << std::endl
+                                                           << "                          NOTE: The saved configuration is only for review purposes and is not usable directly as profile." << std::endl; }
+void CLIManager::_profileHWRemoveDefaultHelp() { std::cout << "profilehwremovedefault    Remove default setting of profile in depth camera hardware" << std::endl; }                                                           
+                                                           
 
 void CLIManager::_help(const Vector<String> &tokens)
 {
@@ -2276,6 +2283,9 @@ void CLIManager::_profileList(const Vector<String> &tokens)
     if(c->getLocation() == ConfigurationFile::IN_CAMERA)
       std::cout << " (HW)";
     
+    if(n.first == _currentDepthCamera->configFile.getDefaultCameraProfileIDInCamera() || n.first == _currentDepthCamera->configFile.getDefaultCameraProfileIDInHost())
+      std::cout << " (DEFAULT)";
+    
     if(n.first == _currentDepthCamera->getCurrentCameraProfileID())
       std::cout << " (ACTIVE)";
     
@@ -2283,7 +2293,7 @@ void CLIManager::_profileList(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_getProfileIDs(const String &partialID, Vector<String> &ids)
+void CLIManager::_getProfileIDs(const String &partialID, Vector<String> &ids, const unsigned int type)
 {
   auto &names = _currentDepthCamera->configFile.getCameraProfileNames();
   
@@ -2293,6 +2303,11 @@ void CLIManager::_getProfileIDs(const String &partialID, Vector<String> &ids)
   
   for(auto &n: names)
   {
+    auto profile = _currentDepthCamera->configFile.getCameraProfile(n.first);
+    
+    if(!profile || !((1 << profile->getLocation()) & type))
+      continue;
+    
     sprintf(i, "%d", n.first);
     id = i;
     
@@ -2718,5 +2733,171 @@ void CLIManager::_profileParamRemove(const Vector<String> &tokens)
   std::cout << "Done" << std::endl;
 }
 
+
+void CLIManager::_profileSetDefaultCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  _profileSetCompletion(tokens, lc);
+}
+
+void CLIManager::_profileSetDefault(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
   
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID" << std::endl;
+    _profileSetDefaultHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+  
+  if(!profile)
+  {
+    logger(LOG_ERROR) << "Invalid profile ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  if(!_currentDepthCamera->configFile.setDefaultCameraProfile(id))
+  {
+    logger(LOG_ERROR) << "Failed to set profile ID '" << id << "' as default" << std::endl;
+  }
+}
+
+
+void CLIManager::_profileHWFetchCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  Vector<String> ids;
+  
+  if(tokens.size() > 1)
+    _getProfileIDs(tokens[1], ids, 1 << ConfigurationFile::IN_CAMERA);
+  else
+    _getProfileIDs("", ids, 1 << ConfigurationFile::IN_CAMERA);
+  
+  for(auto &id: ids)
+    linenoiseAddCompletion(lc, (tokens[0] + " " + id).c_str());
+}
+
+
+void CLIManager::_profileHWFetch(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID" << std::endl;
+    _profileSetDefaultHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+  
+  if(!profile)
+  {
+    logger(LOG_ERROR) << "Invalid profile ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  if(profile->getLocation() != ConfigurationFile::IN_CAMERA)
+  {
+    logger(LOG_ERROR) << "Profile with ID '" << id << "' is not in depth camera hardware" << std::endl;
+    return;
+  }
+  
+  if(!profile->write())
+  {
+    logger(LOG_ERROR) << "Failed to save profile with ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  std::cout << "Profile with id = " << id << " saved to host into file '" << profile->getConfigFileName() << "'" << std::endl;
+}
+
+
+void CLIManager::_profileHWSaveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  Vector<String> ids;
+  
+  if(tokens.size() > 1)
+    _getProfileIDs(tokens[1], ids, 1 << ConfigurationFile::IN_HOST);
+  else
+    _getProfileIDs("", ids, 1 << ConfigurationFile::IN_HOST);
+  
+  for(auto &id: ids)
+    linenoiseAddCompletion(lc, (tokens[0] + " " + id).c_str());
+}
+
+
+void CLIManager::_profileHWSave(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID" << std::endl;
+    _profileSetDefaultHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+  
+  if(!profile)
+  {
+    logger(LOG_ERROR) << "Invalid profile ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  if(profile->getLocation() != ConfigurationFile::IN_HOST)
+  {
+    logger(LOG_ERROR) << "Profile with ID '" << id << "' is not on host" << std::endl;
+    return;
+  }
+  
+  if(!_currentDepthCamera->saveCameraProfileToHardware(id))
+  {
+    logger(LOG_ERROR) << "Failed to save profile with ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  std::cout << "Profile saved to hardware with new profile ID = " << id << std::endl;
+}
+
+
+void CLIManager::_profileHWRemoveDefault(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(!_currentDepthCamera->configFile.removeDefaultCameraProfileIDInCamera())
+  {
+    logger(LOG_ERROR) << "Failed to remove default profile ID from hardware." << std::endl;
+  }
+  else
+    std::cout << "Successfully removed default profile ID from hardware." << std::endl;
+}
+
 }

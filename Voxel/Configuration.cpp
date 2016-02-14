@@ -1604,6 +1604,26 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
   }
 }
 
+bool MainConfigurationFile::removeDefaultCameraProfileIDInCamera()
+{
+  if(_defaultCameraProfileIDInHardware == -1)
+  {
+    logger(LOG_ERROR) << "Default profile ID is not set in hardware." << std::endl;
+    return false;
+  }
+  
+  int id = _defaultCameraProfileIDInHardware;
+  
+  _defaultCameraProfileIDInHardware = -1;
+  if(!writeToHardware())
+  {
+    _defaultCameraProfileIDInHardware = id;
+    return false;
+  }
+  return true;
+}
+
+
 bool MainConfigurationFile::setDefaultCameraProfile(const int id)
 {
   ConfigurationFile *config = getCameraProfile(id);

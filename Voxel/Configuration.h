@@ -394,6 +394,9 @@ public:
     return _defaultCameraProfileIDInHardware; 
   }
   
+  /// This only removes the default ID from hardware and not the profile itself
+  bool removeDefaultCameraProfileIDInCamera();
+  
   bool setDefaultCameraProfile(const int id);
   
   inline void setHardwareID(const String &hwID) { _hardwareID = hwID; }
