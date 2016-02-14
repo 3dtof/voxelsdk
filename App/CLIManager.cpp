@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include <fstream>
+#include <iomanip>
 
 using namespace LineNoise;
 
@@ -35,6 +36,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"Device/Camera Handling", {"list", "connect", "disconnect", "reset"}},
     {"Stream Commands", {"start", "stop", "status", "save", "vxltoraw"}},
     {"Filter Controls", {"filterlist", "filteradd", "filterremove", "filterparam"}},
+    {"Camera Profile Handling", {"profilelist", "profileset", "profileadd", "profileremove", "profileparam"}},
   });
   
   
@@ -55,11 +57,15 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"disconnect",     Command(_H(&CLIManager::_disconnectHelp),    _P(&CLIManager::_disconnect),    nullptr)},
     {"reset",          Command(_H(&CLIManager::_resetHelp),         _P(&CLIManager::_reset),         nullptr)},
     {"exit",           Command(_H(&CLIManager::_exitHelp),          _P(&CLIManager::_exit),          nullptr)},
-    {"filterlist",        Command(_H(&CLIManager::_filtersHelp),       _P(&CLIManager::_filters),       nullptr)},
+    {"filterlist",     Command(_H(&CLIManager::_filtersHelp),       _P(&CLIManager::_filters),       nullptr)},
     {"filteradd",      Command(_H(&CLIManager::_addFilterHelp),     _P(&CLIManager::_addFilter),     _C(&CLIManager::_addFilterCompletion))},
     {"filterremove",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
-    {"filterparam", Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
-    
+    {"filterparam",    Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
+    {"profilelist",    Command(_H(&CLIManager::_profileListHelp),   _P(&CLIManager::_profileList),   nullptr)},
+    {"profileset",     Command(_H(&CLIManager::_profileSetHelp),    _P(&CLIManager::_profileSet),    _C(&CLIManager::_profileSetCompletion))},
+    {"profileadd",     Command(_H(&CLIManager::_profileAddHelp),    _P(&CLIManager::_profileAdd),    _C(&CLIManager::_profileAddCompletion))},
+    {"profileremove",  Command(_H(&CLIManager::_profileRemoveHelp), _P(&CLIManager::_profileRemove), _C(&CLIManager::_profileRemoveCompletion))},
+    {"profileparam",   Command(_H(&CLIManager::_profileParamHelp),  _P(&CLIManager::_profileParam),  _C(&CLIManager::_profileParamCompletion))},
   });
   
   _specialParameters = Map<String, Command>({
@@ -257,13 +263,20 @@ void CLIManager::_setFilterParamHelp(){ std::cout << "filterparam <frametype> <f
                                                   << "                          with id <filterid> present for frame type <frametype>.\n"
                                                   << "                          <frametype> can be raw/raw_processed/depth" << std::endl; }
 void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>     Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
-void CLIManager::_saveHelp()          { std::cout << "save type count filename  Save current 'count' number of frames.\n"
+void CLIManager::_saveHelp()          { std::cout << "save <type> <count> <filename>  Save current 'count' number of frames.\n"
                                                   << "                          'type' = raw/phase/ambient/amplitude/flags/depth/pointcloud/vxl" << std::endl; }
-void CLIManager::_vxlToRawHelp()      { std::cout << "vxltoraw rawtype vxlfile rawfile   Get raw data from saved VXL file.\n"
+void CLIManager::_vxlToRawHelp()      { std::cout << "vxltoraw <rawtype> <vxlfile> <rawfile>   Get raw data from saved VXL file.\n"
                                                   << "                          'rawtype' = raw/phase/ambient/amplitude/flags/depth/pointcloud" << std::endl; }                                                  
 void CLIManager::_disconnectHelp()    { std::cout << "disconnect                Disconnect the currently connected depth camera" << std::endl; }
 void CLIManager::_resetHelp()         { std::cout << "reset                     Reset and disconnect the currently connected depth camera" << std::endl; }
 
+void CLIManager::_profileListHelp()   { std::cout << "profilelist               List all profiles associated with the currently connected depth camera" << std::endl; }
+void CLIManager::_profileSetHelp()    { std::cout << "profileset <id>           Select and apply a particular profile to currently connected depth camera" << std::endl; }
+void CLIManager::_profileAddHelp()    { std::cout << "profileadd <name> [parentid]    Add a new profile to currently connected depth camera" << std::endl
+                                                  << "                          An optional parentid can be specified indicating the parent profile" << std::endl
+                                                  << "                          Enclose name in double-quotes when it has spaces" << std::endl; }
+void CLIManager::_profileRemoveHelp() { std::cout << "profileremove <id>        Remove profile with 'id' associated with currently connected depth camera" << std::endl; }
+void CLIManager::_profileParamHelp()  { std::cout << "profileparam <id> [section [name[=value]]]    Read/Write a section/parameter in profile with 'id'" << std::endl; }
 
 void CLIManager::_help(const Vector<String> &tokens)
 {
@@ -1038,10 +1051,18 @@ void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
   }
   else // still typing the main command itself...
   {
-    for(auto &c: _commands)
+    for(auto &g: _commandGroups)
     {
-      if(c.first.size() >= tokens[0].size() && c.first.compare(0, tokens[0].size(), tokens[0]) == 0)
-        linenoiseAddCompletion(lc, c.first.c_str());
+      for(auto &c: g.commands)
+      {
+        if(c.size() >= tokens[0].size() && c.compare(0, tokens[0].size(), tokens[0]) == 0)
+        {
+          auto command = _commands.find(c);
+        
+          if(command != _commands.end())
+            linenoiseAddCompletion(lc, c.c_str());
+        }
+      }
     }
   }
 }
@@ -2228,5 +2249,386 @@ void CLIManager::_vxlToRawCompletion(const Vector<String> &tokens, linenoiseComp
   }
 }
 
+void CLIManager::_profileList(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  std::cout << "List of Profiles:" << std::endl;
+  
+  auto &names = _currentDepthCamera->configFile.getCameraProfileNames();
+  
+  for(auto &n: names)
+  {
+    std::cout << std::setw(3) << n.first << std::setw(0) << " -> " << n.second;
+    
+    auto c = _currentDepthCamera->configFile.getCameraProfile(n.first);
+    
+    if(c->getLocation() == ConfigurationFile::IN_CAMERA)
+      std::cout << " (HW)";
+    
+    if(n.first == _currentDepthCamera->getCurrentCameraProfileID())
+      std::cout << " (ACTIVE)";
+    
+    std::cout << std::endl;
+  }
+}
+
+void CLIManager::_getProfileIDs(const String &partialID, Vector<String> &ids)
+{
+  auto &names = _currentDepthCamera->configFile.getCameraProfileNames();
+  
+  ids.clear();
+  char i[10];
+  String id;
+  
+  for(auto &n: names)
+  {
+    sprintf(i, "%d", n.first);
+    id = i;
+    
+    if(id.size() >= partialID.size() && id.compare(0, partialID.size(), partialID) == 0)
+      ids.push_back(id);
+  }
+  
+  std::sort(ids.begin(), ids.end(), [](const String &a, const String &b) {
+    return atoi(a.c_str()) < atoi(b.c_str());
+  });
+}
+
+
+void CLIManager::_profileSetCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  Vector<String> ids;
+  
+  if(tokens.size() > 1)
+    _getProfileIDs(tokens[1], ids);
+  else
+    _getProfileIDs("", ids);
+  
+  for(auto &id: ids)
+    linenoiseAddCompletion(lc, (tokens[0] + " " + id).c_str());
+}
+
+void CLIManager::_profileSet(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID" << std::endl;
+    _profileSetHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  
+  if(!_currentDepthCamera->configFile.getCameraProfile(id))
+  {
+    logger(LOG_ERROR) << "Invalid profile ID. Check for valid ones using 'profilelist' command" << std::endl;
+    return;
+  }
+  
+  bool r = _currentDepthCamera->isRunning();
+  
+  if(r)
+    _currentDepthCamera->stop();
+  
+  if(!_currentDepthCamera->setCameraProfile(id))
+  {
+    logger(LOG_ERROR) << "Failed to set profile '" << id << "'" << std::endl;
+  }
+  
+  if(r)
+    _currentDepthCamera->start();
+}
+
+
+void CLIManager::_profileAddCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  Vector<String> parentIDs;
+  
+  if(tokens.size() >= 2)
+  {
+    if(tokens.size() > 2)
+      _getProfileIDs(tokens[2], parentIDs);
+    else
+      _getProfileIDs("", parentIDs);
+    
+    for(auto &id: parentIDs)
+      linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + id).c_str());
+  }
+}
+
+void CLIManager::_profileAdd(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify new profile's name" << std::endl;
+    _profileAddHelp();
+    return;
+  }
+  
+  int parentID = -1;
+  
+  if(tokens.size() > 2)
+    parentID = atoi(tokens[2].c_str());
+  
+  if(parentID != -1 && !_currentDepthCamera->configFile.getCameraProfile(parentID))
+  {
+    logger(LOG_ERROR) << "Invalid parent profile ID. Check for valid ones using 'profilelist' command" << std::endl;
+    return;
+  }
+  
+  int id = _currentDepthCamera->addCameraProfile(tokens[1], parentID);
+  
+  if(id < 0)
+  {
+    logger(LOG_ERROR) << "Failed to create new profile" << std::endl;
+    return;
+  }
+  
+  std::cout << "Create new profile with id = '" << id << "', name = '" << tokens[1] << "'" << std::endl;
+}
+
+
+void CLIManager::_profileRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  _profileSetCompletion(tokens, lc);
+}
+
+void CLIManager::_profileRemove(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID to remove" << std::endl;
+    _profileRemoveHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  
+  if(!_currentDepthCamera->configFile.getCameraProfile(id))
+  {
+    logger(LOG_ERROR) << "Invalid profile ID. Check for valid ones using 'profilelist' command" << std::endl;
+    return;
+  }
+  
+  char ch;
+  std::cout << "Are you sure you want to remove profile with id '" << id << "' [y/n]? ";
+  std::cin >> ch;
+  
+  if(ch == 'y' || ch == 'Y')
+  {
+    bool r = _currentDepthCamera->isRunning();
+    
+    if(r)
+      _currentDepthCamera->stop();
+    
+    if(!_currentDepthCamera->removeCameraProfile(id))
+      std::cout << "Failed to remove camera profile '" << id << "'" << std::endl;
+    else
+      std::cout << "Successfully removed camera profile '" << id << "'" << std::endl;
+    
+    if(r)
+      _currentDepthCamera->start();
+  }
+}
+
+
+void CLIManager::_profileParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  if(!_currentDepthCamera)
+    return;
+  
+  Vector<String> ids;
+  
+  if(tokens.size() == 1)
+  {
+    _getProfileIDs("", ids);
+    for(auto &id: ids)
+      linenoiseAddCompletion(lc, (tokens[0] + " " + id).c_str());
+  }
+  else if(tokens.size() == 2)
+  {
+    _getProfileIDs(tokens[1], ids);
+    
+    if(ids.size() == 1 && ids[0] == tokens[1])
+    {
+      int id = atoi(tokens[1].c_str());
+      auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+      
+      if(profile)
+      {
+        for(auto &cs: profile->configs)
+          linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + cs.first).c_str());
+      }
+    }
+    else
+    {
+      for(auto &id: ids)
+        linenoiseAddCompletion(lc, (tokens[0] + " " + id).c_str());
+    }
+  }
+  else if(tokens.size() >= 3)
+  {
+    int id = atoi(tokens[1].c_str());
+    auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+    
+    if(!profile)
+      return;
+    
+    if(tokens.size() == 3)
+    {
+      auto c = profile->configs.find(tokens[2]);
+      
+      if(c == profile->configs.end())
+      {
+        for(auto &cs: profile->configs)
+          if(cs.first.size() >= tokens[2].size() && cs.first.compare(0, tokens[2].size(), tokens[2]) == 0)
+            linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + cs.first).c_str());
+      }
+      else
+      {
+        for(auto &p: c->second.paramNames)
+          linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + p).c_str());
+      }
+    }
+    else
+    {
+      auto c = profile->configs.find(tokens[2]);
+      
+      if(c != profile->configs.end())
+      {
+        for(auto &p: c->second.paramNames)
+          if(p.size() >= tokens[3].size() && p.compare(0, tokens[3].size(), tokens[3]) == 0)
+            linenoiseAddCompletion(lc, (tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + p).c_str());
+      }
+    }
+  }
+}
+
+void CLIManager::_profileParam(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 2)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID" << std::endl;
+    _profileParamHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+  
+  if(!profile)
+  {
+    logger(LOG_ERROR) << "Invalid profile ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  if(tokens.size() == 2) // get all sections
+  {
+    if(!profile->write(std::cout))
+    {
+      logger(LOG_ERROR) << "Failed to print profile parameters." << std::endl;
+    }
+  }
+  else if(tokens.size() == 3) // get section
+  {
+    const ConfigSet *configSet;
+    if(!profile->getConfigSet(tokens[2], configSet))
+    {
+      logger(LOG_ERROR) << "Failed to get section '" << tokens[2] << "'" << std::endl;
+    }
+    else
+    {
+      std::cout << "[" << tokens[2] << "]\n";
+      
+      for(auto i = 0; i < configSet->paramNames.size(); i++)
+      {
+        try 
+        {
+          std::cout << configSet->paramNames[i] << " = " << configSet->params.at(configSet->paramNames[i]) << std::endl;
+        } 
+        catch(std::exception &e)
+        {
+          logger(LOG_ERROR) << "Caught exception with message '" << e.what() << "' which printing parameters." << std::endl;
+        }
+      }
+      logger(LOG_INFO) << "This does not include values inherited from parent if any." << std::endl;
+    }
+  }
+  else if(tokens.size() == 4) // get parameter
+  {
+    String value;
+    value = profile->get(tokens[2], tokens[3]);
+    
+    if(value.size() == 0)
+    {
+      logger(LOG_ERROR) << "Failed to get " << tokens[3] << " in section '" << tokens[2] << "'" << std::endl;
+    }
+    else
+      std::cout << "Got " << tokens[3] << " = " << value << " in section '" << tokens[2] << "'" << std::endl;
+  }
+  else if(tokens.size() > 5 && tokens[4] == "=")// set parameter
+  {
+    if(!profile->set(tokens[2], tokens[3], tokens[5]))
+    {
+      logger(LOG_ERROR) << "Failed to set " << tokens[3] << " = " << tokens[5] << " in section '" << tokens[2] << "'" << std::endl;
+    }
+    else
+    {
+      if(profile->getLocation() == ConfigurationFile::IN_CAMERA)
+      {
+        std::cout << "Saving profile to hardware...";
+        if(!_currentDepthCamera->configFile.writeToHardware())
+        {
+          std::cout << std::endl;
+          logger(LOG_ERROR) << "Failed to save configuration for id = " << id << std::endl;
+          return;
+        }
+        std::cout << "Done" << std::endl;
+      }
+      else if(!profile->write())
+      {
+        logger(LOG_ERROR) << "Failed to save configuration for id = " << id << std::endl;
+        return;
+      }
+      
+      std::cout << "Successfully set " << tokens[3] << " = " << tokens[5] << " in section '" << tokens[2] << "'" << std::endl;
+    }
+  }
+}
   
 }

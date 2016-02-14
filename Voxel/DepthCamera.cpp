@@ -649,7 +649,12 @@ int DepthCamera::addCameraProfile(const String &profileName, const int parentID)
 
 bool DepthCamera::removeCameraProfile(const int id)
 {
-  return configFile.removeCameraProfile(id);
+  if(id == getCurrentCameraProfileID() && configFile.removeCameraProfile(id))
+  {
+    return setCameraProfile(getCurrentCameraProfileID());
+  }
+  else
+    return configFile.removeCameraProfile(id);
 }
 
 

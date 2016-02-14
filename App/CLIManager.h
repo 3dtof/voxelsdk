@@ -161,6 +161,26 @@ protected:
   void _setFilterParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   void _setFilterParamHelp();
   
+  void _profileList(const Vector<String> &tokens);
+  void _profileListHelp();
+  
+  void _profileSet(const Vector<String> &tokens);
+  void _getProfileIDs(const String &partialID, Vector<String> &ids);
+  void _profileSetCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileSetHelp();
+  
+  void _profileAdd(const Vector<String> &tokens);
+  void _profileAddCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileAddHelp();
+  
+  void _profileRemove(const Vector<String> &tokens);
+  void _profileRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileRemoveHelp();
+  
+  void _profileParam(const Vector<String> &tokens);
+  void _profileParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileParamHelp();
+  
 public:
   CLIManager(CameraSystem &sys);
   
