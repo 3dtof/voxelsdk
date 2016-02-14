@@ -36,7 +36,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"Device/Camera Handling", {"list", "connect", "disconnect", "reset"}},
     {"Stream Commands", {"start", "stop", "status", "save", "vxltoraw"}},
     {"Filter Controls", {"filterlist", "filteradd", "filterremove", "filterparam"}},
-    {"Camera Profile Handling", {"profilelist", "profileset", "profileadd", "profileremove", "profileparam"}},
+    {"Camera Profile Handling", {"profilelist", "profileselect", "profileadd", "profileremove", "profileparam", "profileparamremove"}},
   });
   
   
@@ -62,10 +62,14 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"filterremove",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
     {"filterparam",    Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
     {"profilelist",    Command(_H(&CLIManager::_profileListHelp),   _P(&CLIManager::_profileList),   nullptr)},
-    {"profileset",     Command(_H(&CLIManager::_profileSetHelp),    _P(&CLIManager::_profileSet),    _C(&CLIManager::_profileSetCompletion))},
+    {"profileselect",  Command(_H(&CLIManager::_profileSetHelp),    _P(&CLIManager::_profileSet),    _C(&CLIManager::_profileSetCompletion))},
     {"profileadd",     Command(_H(&CLIManager::_profileAddHelp),    _P(&CLIManager::_profileAdd),    _C(&CLIManager::_profileAddCompletion))},
     {"profileremove",  Command(_H(&CLIManager::_profileRemoveHelp), _P(&CLIManager::_profileRemove), _C(&CLIManager::_profileRemoveCompletion))},
     {"profileparam",   Command(_H(&CLIManager::_profileParamHelp),  _P(&CLIManager::_profileParam),  _C(&CLIManager::_profileParamCompletion))},
+    {"profileparamremove",   
+                       Command(_H(&CLIManager::_profileParamRemoveHelp),  
+                                                                    _P(&CLIManager::_profileParamRemove),  
+                                                                                                     _C(&CLIManager::_profileParamCompletion))},
   });
   
   _specialParameters = Map<String, Command>({
@@ -271,12 +275,14 @@ void CLIManager::_disconnectHelp()    { std::cout << "disconnect                
 void CLIManager::_resetHelp()         { std::cout << "reset                     Reset and disconnect the currently connected depth camera" << std::endl; }
 
 void CLIManager::_profileListHelp()   { std::cout << "profilelist               List all profiles associated with the currently connected depth camera" << std::endl; }
-void CLIManager::_profileSetHelp()    { std::cout << "profileset <id>           Select and apply a particular profile to currently connected depth camera" << std::endl; }
+void CLIManager::_profileSetHelp()    { std::cout << "profileselect <id>        Select and apply a particular profile to currently connected depth camera" << std::endl; }
 void CLIManager::_profileAddHelp()    { std::cout << "profileadd <name> [parentid]    Add a new profile to currently connected depth camera" << std::endl
                                                   << "                          An optional parentid can be specified indicating the parent profile" << std::endl
                                                   << "                          Enclose name in double-quotes when it has spaces" << std::endl; }
 void CLIManager::_profileRemoveHelp() { std::cout << "profileremove <id>        Remove profile with 'id' associated with currently connected depth camera" << std::endl; }
-void CLIManager::_profileParamHelp()  { std::cout << "profileparam <id> [section [name[=value]]]    Read/Write a section/parameter in profile with 'id'" << std::endl; }
+void CLIManager::_profileParamHelp()  { std::cout << "profileparam <id> [section [paramname[=value]]]    Read/Write a section/parameter in profile with 'id'" << std::endl; }
+void CLIManager::_profileParamRemoveHelp()  
+                                      { std::cout << "profileparamremove <id> <section> [paramname]    Remove a section/parameter in profile with 'id'" << std::endl; }
 
 void CLIManager::_help(const Vector<String> &tokens)
 {
@@ -1494,7 +1500,7 @@ void CLIManager::_disconnect(const Vector<String> &tokens)
   if(!_currentDepthCamera)
   {
     if(_keepRunning)
-      logger(LOG_ERROR) << "No depth camera is current connected" << std::endl;
+      logger(LOG_ERROR) << "No depth camera is currently connected" << std::endl;
     return;
   }
   
@@ -2567,7 +2573,7 @@ void CLIManager::_profileParam(const Vector<String> &tokens)
   else if(tokens.size() == 3) // get section
   {
     const ConfigSet *configSet;
-    if(!profile->getConfigSet(tokens[2], configSet))
+    if(!profile->getConfigSet(tokens[2], configSet, false))
     {
       logger(LOG_ERROR) << "Failed to get section '" << tokens[2] << "'" << std::endl;
     }
@@ -2630,5 +2636,87 @@ void CLIManager::_profileParam(const Vector<String> &tokens)
     }
   }
 }
+
+void CLIManager::_profileParamRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+{
+  _profileParamCompletion(tokens, lc);
+}
+
+
+void CLIManager::_profileParamRemove(const Vector<String> &tokens)
+{
+  if(!_currentDepthCamera)
+  {
+    logger(LOG_ERROR) << "No depth camera connected." << std::endl;
+    return;
+  }
+  
+  if(tokens.size() < 3)
+  {
+    logger(LOG_ERROR) << "Please specify profile ID and section" << std::endl;
+    _profileParamRemoveHelp();
+    return;
+  }
+  
+  int id = atoi(tokens[1].c_str());
+  auto profile = _currentDepthCamera->configFile.getCameraProfile(id);
+  
+  if(!profile)
+  {
+    logger(LOG_ERROR) << "Invalid profile ID '" << id << "'" << std::endl;
+    return;
+  }
+  
+  if(tokens.size() == 3) // remove section
+  {
+    char ch;
+    std::cout << "Are you sure you want to remove section '" << tokens[2] << "'" << " from profile with id '" << id << "' [y/n]? ";
+    std::cin >> ch;
+    
+    if(ch != 'y'&& ch != 'Y')
+      return;
+    
+    if(!profile->removeSection(tokens[2]))
+    {
+      logger(LOG_ERROR) << "Failed to remove section '" << tokens[2] << "'" << std::endl;
+      return;
+    }
+  }
+  else if(tokens.size() >= 4) // remove parameter
+  {
+    char ch;
+    std::cout << "Are you sure you want to remove parameter '" << tokens[3] << "' from section '" << tokens[2] << "'" << " in profile with id '" << id << "' [y/n]? ";
+    std::cin >> ch;
+    
+    if(ch != 'y'&& ch != 'Y')
+      return;
+    
+    if(!profile->remove(tokens[2], tokens[3]))
+    {
+      logger(LOG_ERROR) << "Failed to remove '" << tokens[3] << "' from section '" << tokens[2] << "' in profile with id = '" << id << "'" << std::endl;
+      return;
+    }
+  }
+  
+  if(profile->getLocation() == ConfigurationFile::IN_CAMERA)
+  {
+    std::cout << "Saving profile to hardware...";
+    if(!_currentDepthCamera->configFile.writeToHardware())
+    {
+      std::cout << std::endl;
+      logger(LOG_ERROR) << "Failed to save configuration for id = " << id << std::endl;
+      return;
+    }
+    std::cout << "Done" << std::endl;
+  }
+  else if(!profile->write())
+  {
+    logger(LOG_ERROR) << "Failed to save configuration for id = " << id << std::endl;
+    return;
+  }
+  
+  std::cout << "Done" << std::endl;
+}
+
   
 }

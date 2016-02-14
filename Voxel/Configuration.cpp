@@ -320,14 +320,14 @@ bool ConfigurationFile::isPresent(const String &section, const String &name, boo
   return false;
 }
 
-bool ConfigurationFile::getConfigSet(const String &section, const ConfigSet *&configSet) const
+bool ConfigurationFile::getConfigSet(const String &section, const ConfigSet *&configSet, bool includeParent) const
 {
   if(configs.find(section) != configs.end())
   {
     configSet = &configs.at(section);
     return true;
   }
-  else
+  else if(includeParent)
   {
     if(section != "global" && _mainConfigurationFile && _parentID >= 0)
     {
@@ -834,6 +834,18 @@ bool ConfigurationFile::remove(const String &section, const String &name)
       
       return true;
     }
+  }
+  return false;
+}
+
+bool ConfigurationFile::removeSection(const String &section)
+{
+  auto cf = configs.find(section);
+  
+  if(cf != configs.end())
+  {
+    configs.erase(cf);
+    return true;
   }
   return false;
 }

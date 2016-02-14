@@ -181,6 +181,10 @@ protected:
   void _profileParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
   void _profileParamHelp();
   
+  void _profileParamRemove(const Vector<String> &tokens);
+  void _profileParamRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc);
+  void _profileParamRemoveHelp();
+  
 public:
   CLIManager(CameraSystem &sys);
   

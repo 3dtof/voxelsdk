@@ -206,8 +206,9 @@ public:
   bool setBoolean(const String &section, const String &name, bool value);
   
   bool remove(const String &section, const String &name);
+  bool removeSection(const String &section);
   
-  virtual bool getConfigSet(const String &section, const ConfigSet *&configSet) const;
+  virtual bool getConfigSet(const String &section, const ConfigSet *&configSet, bool includeParent = true) const;
   
   virtual bool read(const String &configFile);
   virtual bool read(InputStream &in);
