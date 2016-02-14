@@ -105,7 +105,7 @@ bool Voxel14Camera::_init()
     }
     
     
-    _downloader = Ptr<Downloader>(new USBDownloader(_device));
+    _downloader = Ptr<Downloader>(new USBDownloader(_device, true));
     if(!_downloader->download(configFile.get("core", "fw")))
     {
       logger(LOG_ERROR) << "Voxel14Camera: Firmware download failed" << std::endl;

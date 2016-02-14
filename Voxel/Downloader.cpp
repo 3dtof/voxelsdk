@@ -53,7 +53,7 @@ bool USBDownloader::_configureForDownload()
   return ret;
 }
 
-bool USBDownloader::_download(InputFileStream &file, long unsigned int filesize)
+bool USBDownloader::_download(InputStream &file, long unsigned int filesize)
 {
   unsigned char endpointOut = 0x06;
   unsigned char buffer[4096];
@@ -100,7 +100,7 @@ bool USBDownloader::_download(InputFileStream &file, long unsigned int filesize)
   return true;
 }
 
-USBDownloader::USBDownloader(DevicePtr device): Downloader(device), _usbIO(new USBIO(device))
+USBDownloader::USBDownloader(DevicePtr device, bool byteDoublingMode): Downloader(device), _usbIO(new USBIO(device)), _byteDoublingMode(byteDoublingMode)
 {
 }
 
@@ -118,6 +118,8 @@ bool USBDownloader::download(const String &file)
     return false;
   }
   
+  logger(LOG_INFO) << "USBDownloader: Downloading firmware file '" << fil << "'..." << std::endl;
+  
   std::ifstream f(fil, std::ios::binary | std::ios::ate);
   
   if(!f.good())
@@ -129,9 +131,41 @@ bool USBDownloader::download(const String &file)
   
   std::streamoff size = f.tellg();
   
-  f.seekg(std::ios::beg);
   
-  bool ret = _configureForDownload() && _download(f, size);
+  bool ret;
+  
+  f.seekg(std::ios::beg);
+  f.clear();
+  
+  
+  if(_byteDoublingMode)
+  {
+    StringStream ss(std::ios::binary | std::ios::in | std::ios::out);
+    char ch;
+    
+    while(f.get(ch))
+    {
+      ss.put(ch);
+      ss.put(ch);
+    }
+    
+    // Write 512 bytes as padding
+    ch = 'a';
+    int count = 512;
+    while(count--)
+      ss.put(ch);
+    
+    auto s = ss.tellp();
+    
+    logger(LOG_INFO) << "String stream byte count = " << s << std::endl;
+    
+    ss.seekg(std::ios::beg);
+    ss.clear();
+    
+    ret = _configureForDownload() && _download(ss, s);
+  }
+  else
+    ret = _configureForDownload() && _download(f, size);
   
   _setProgress(100);
   

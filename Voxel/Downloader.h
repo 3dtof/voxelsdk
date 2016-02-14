@@ -71,12 +71,13 @@ class VOXEL_EXPORT USBDownloader: public Downloader
 {
 protected:
   USBIOPtr _usbIO;
+  bool _byteDoublingMode;
   
   virtual bool _configureForDownload();
-  virtual bool _download(InputFileStream &file, long unsigned int filesize);
+  virtual bool _download(InputStream &file, long unsigned int filesize);
   
 public:
-  USBDownloader(DevicePtr device);
+  USBDownloader(DevicePtr device, bool byteDoublingMode = false);
   
   virtual bool download(const String &file);
   

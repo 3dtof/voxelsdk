@@ -35,7 +35,7 @@ list(APPEND CONF_FILES
 )
 
 list(APPEND FW_FILES
-  OPT9220_0v27.tip
+  OPT9220_1v0.tip
   OPT9221_0v23.tip
 )
 
