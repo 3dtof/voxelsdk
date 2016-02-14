@@ -29,6 +29,13 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
   _commandHistoryFileName = "history.txt";
   conf.getLocalFile("cli", _commandHistoryFileName);
   
+  _commandGroups = Map<String, Vector<String> >({
+    {"Parameter/Register Handling", {"get", "set", "cap", "getr", "setr"}},
+    {"Device/Camera Handling", {"list", "connect", "disconnect", "reset"}},
+    {"Stream Commands", {"start", "stop", "status", "save", "vxltoraw"}},
+    {"Filter Controls", {"filterlist", "filteradd", "filterremove", "filterparam"}},
+  });
+  
   
   _commands = Map<String, Command>({
     {"list",           Command(_H(&CLIManager::_listHelp),          _P(&CLIManager::_list),          nullptr)},
@@ -47,10 +54,10 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"disconnect",     Command(_H(&CLIManager::_disconnectHelp),    _P(&CLIManager::_disconnect),    nullptr)},
     {"reset",          Command(_H(&CLIManager::_resetHelp),         _P(&CLIManager::_reset),         nullptr)},
     {"exit",           Command(_H(&CLIManager::_exitHelp),          _P(&CLIManager::_exit),          nullptr)},
-    {"filters",        Command(_H(&CLIManager::_filtersHelp),       _P(&CLIManager::_filters),       nullptr)},
-    {"addfilter",      Command(_H(&CLIManager::_addFilterHelp),     _P(&CLIManager::_addFilter),     _C(&CLIManager::_addFilterCompletion))},
-    {"removefilter",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
-    {"setfilterparam", Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
+    {"filterlist",        Command(_H(&CLIManager::_filtersHelp),       _P(&CLIManager::_filters),       nullptr)},
+    {"filteradd",      Command(_H(&CLIManager::_addFilterHelp),     _P(&CLIManager::_addFilter),     _C(&CLIManager::_addFilterCompletion))},
+    {"filterremove",   Command(_H(&CLIManager::_removeFilterHelp),  _P(&CLIManager::_removeFilter),  _C(&CLIManager::_removeFilterCompletion))},
+    {"filterparam", Command(_H(&CLIManager::_setFilterParamHelp),_P(&CLIManager::_setFilterParam),_C(&CLIManager::_setFilterParamCompletion))},
     
   });
   
@@ -239,13 +246,13 @@ void CLIManager::_getParameterHelp()  { std::cout << "get <param>               
 void CLIManager::_capabilitiesHelp()  { std::cout << "cap [<param>][*]          Get capabilities of the current depth camera.\n"
                                                   << "                          Optionally a parameter name can be given to list only that parameter details given by name <param>.\n"
                                                   << "                          A optional wildcard can be given to list all parameters beginning with name <param>" << std::endl; }
-void CLIManager::_filtersHelp()       { std::cout << "filters                   List available filters and currently in use filters" << std::endl; }
-void CLIManager::_addFilterHelp()     { std::cout << "addfilter <frametype> <name> <pos>    Add filter <name> for <frametype> at <pos>.\n"
+void CLIManager::_filtersHelp()       { std::cout << "filterlist                List available filters and currently in use filters" << std::endl; }
+void CLIManager::_addFilterHelp()     { std::cout << "filteradd <frametype> <name> <pos>    Add filter <name> for <frametype> at <pos>.\n"
                                                   << "                          Set <pos> = -1 to add the end.\n"
                                                   << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
-void CLIManager::_removeFilterHelp()  { std::cout << "removefilter <frametype> <pos>    Remove filter with id <filterid> for <frametype>.\n"
+void CLIManager::_removeFilterHelp()  { std::cout << "filterremove <frametype> <pos>    Remove filter with id <filterid> for <frametype>.\n"
                                                   << "                          <frametype> can be raw/raw_processed/depth."<< std::endl; }
-void CLIManager::_setFilterParamHelp(){ std::cout << "setfilterparam <frametype> <filterid> <param> = <value>   Set parameter <param> to <value> for filter\n"
+void CLIManager::_setFilterParamHelp(){ std::cout << "filterparam <frametype> <filterid> <param> = <value>   Set parameter <param> to <value> for filter\n"
                                                   << "                          with id <filterid> present for frame type <frametype>.\n"
                                                   << "                          <frametype> can be raw/raw_processed/depth" << std::endl; }
 void CLIManager::_setParameterHelp()  { std::cout << "set <param> = <value>     Set parameter value given by name <param>. Use '0x' prefix for hexadecimal" << std::endl; }
@@ -279,12 +286,25 @@ void CLIManager::_help(const Vector<String> &tokens)
   }
   else
   {
-    for(auto &c: _commands)
-      if(c.second.help)
+    for(auto &g: _commandGroups)
+    {
+      std::cout << "## " << g.first << " ##" << std::endl;
+      
+      for(auto &c: g.second)
       {
-        c.second.help();
-        std::cout << std::endl;
+        auto command = _commands.find(c);
+        
+        if(command == _commands.end() || !command->second.help)
+        {
+          logger(LOG_ERROR) << "Unknown command '" << c << "'" << std::endl;
+        }
+        else
+        {
+          command->second.help();
+          std::cout << std::endl;
+        }
       }
+    }
   }
 }
 

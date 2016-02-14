@@ -43,7 +43,7 @@ protected:
   };
   
   Map<String, Command> _commands;
-  
+  Map<String, Vector<String> > _commandGroups; // Holds groups of commands, suitable for printing help
   Map<String, Command> _specialParameters; // such as frame_size, frame_rate, roi, etc.
   
   String _commandHistoryFileName;
