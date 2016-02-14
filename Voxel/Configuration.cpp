@@ -1166,7 +1166,22 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
   if(_cameraProfileNames.find(id) != _cameraProfileNames.end())
     _cameraProfileNames.erase(_cameraProfileNames.find(id));
   
-  if(refreshHardware && id != _defaultCameraProfileIDInHardware && !writeToHardware())
+  if(id == _defaultCameraProfileIDInHardware)
+  {
+    bool changed = false;
+    for(auto config = _cameraProfiles.begin(); config != _cameraProfiles.end(); config++)
+      if(config->second.getLocation() == IN_CAMERA)
+      {
+        changed = true;
+        _defaultCameraProfileIDInHardware = config->first;
+        break;
+      }
+    
+    if(!changed)  // There are H/W profiles remaining
+      _defaultCameraProfileIDInHardware = -1;
+  }
+  
+  if(refreshHardware && !writeToHardware())
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to update hardware data after removing profile with id = " << id << std::endl;
     return false;
@@ -1179,17 +1194,15 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
   
   if(id == _defaultCameraProfileID)
   {
+    bool changed = false;
+    
     for(auto config = _cameraProfiles.begin(); config != _cameraProfiles.end(); config++)
       if(config->second.getLocation() == IN_HOST)
-        if(!setDefaultCameraProfile(_cameraProfiles.begin()->first))
-          return false;
-  }
-  else if(id == _defaultCameraProfileIDInHardware)
-  {
-    for(auto config = _cameraProfiles.begin(); config != _cameraProfiles.end(); config++)
-      if(config->second.getLocation() == IN_CAMERA)
-        if(!setDefaultCameraProfile(_cameraProfiles.begin()->first))
-          return false;
+      {
+        if(!setDefaultCameraProfile(config->first))
+          logger(LOG_ERROR) << "MainConfigurationFile: Failed to update the default profile ID to '" << config->first << "'" << std::endl;
+        break;
+      }
   }
   
   if(id == _currentCameraProfileID)
@@ -1541,6 +1554,7 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
     newid = _getNewCameraProfileID(false); // Get new ID for camera
     newconfig.setID(newid);
     newconfig._location = ConfigurationFile::IN_CAMERA;
+    newconfig._fileName = _hardwareID + "-" + newconfig._profileName + ".conf";
   }
   
   ConfigurationFile *parent = getCameraProfile(newconfig._parentID);
@@ -1555,6 +1569,14 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
   _cameraProfiles[newid] = newconfig;
   _cameraProfileNames[newid] = newconfig._profileName;
   
+  bool defaultSet = false;
+  
+  if(_defaultCameraProfileIDInHardware == -1)
+  {
+    defaultSet = true;
+    _defaultCameraProfileIDInHardware = newid;
+  }
+  
   if(writeToHardware())
   {
     id = newid;
@@ -1565,6 +1587,9 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
   }
   else
   {
+    if(defaultSet)
+      _defaultCameraProfileIDInHardware = -1;
+    
     if(newid == id)
     {
       _cameraProfiles[newid] = oldconfig;

@@ -391,7 +391,7 @@ public:
   
   inline int getDefaultCameraProfileIDInCamera() 
   { 
-    return _defaultCameraProfileID; 
+    return _defaultCameraProfileIDInHardware; 
   }
   
   bool setDefaultCameraProfile(const int id);
