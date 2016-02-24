@@ -48,12 +48,9 @@
 #define MOD_CDRIV_CURR "mod_cdriv_curr"
 #define SHUTTER_EN "shutter_en"
 #define INTEGRATION_DUTY_CYCLE "intg_duty_cycle"
-#define CALIB_PHASE_OFFSET "phase_corr_1real"
 
 #undef CONFIDENCE_THRESHOLD
 #define CONFIDENCE_THRESHOLD "amplitude_threshold"
-#undef DISABLE_OFFSET_CORR
-#define DISABLE_OFFSET_CORR "disable_phase_calib"
 
 namespace Voxel
 {

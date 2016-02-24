@@ -373,6 +373,7 @@ bool ToFTintinCamera::_init()
   
   
   if(!_addParameters({
+    ParameterPtr(new PhaseCorrectionAdditiveParameter(false, *_programmer)),
     ParameterPtr(new TintinVCOFrequency(*this, *_programmer, VCO_FREQ1, MOD_M1, MOD_M_FRAC1, MOD_N1)),
     ParameterPtr(new TintinVCOFrequency(*this, *_programmer, VCO_FREQ2, MOD_M2, MOD_M_FRAC2, MOD_N2)),
   }))

@@ -382,6 +382,7 @@ bool ToFHaddockCamera::_init()
   
   
   if(!_addParameters({
+    ParameterPtr(new PhaseCorrectionAdditiveParameter(false, *_programmer)),
     ParameterPtr(new HaddockVCOFrequency(*this, *_programmer)),
     ParameterPtr(new HaddockModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, MOD_PS1)),
     ParameterPtr(new HaddockModulationFrequencyParameter(*this, *_programmer, MOD_FREQ2, MOD_PS2)),

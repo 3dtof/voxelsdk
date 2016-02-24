@@ -80,6 +80,7 @@
 #define ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET_ID 6
 
 
+#define PHASE_CORR_ADD "phase_corr_add" // Is the phase correction additive or subtractive?
 #define PHASE_CORR_1 "phase_corr_1"
 #define PHASE_CORR_2 "phase_corr_2"
 #define TILLUM_CALIB "tillum_calib"
@@ -176,6 +177,14 @@ public:
   friend class IntegrationTimeParameter;
 };
 
+class TI3DTOF_EXPORT PhaseCorrectionAdditiveParameter: public BoolParameter
+{
+public:
+    PhaseCorrectionAdditiveParameter(bool value, RegisterProgrammer &programmer):
+    BoolParameter(programmer, PHASE_CORR_ADD, 0, 0, 0, {"Subtract common-phase correction to phase.", "Add common-phase correction from phase."}, 
+                  {"Subtract Correction", "Add Correction"}, value, "Common-phase Correction Type", "This read-only boolean indicates whether common-phase correction is additive or subtractive", Parameter::IO_READ_ONLY)
+    {}
+};
 }
 }
 

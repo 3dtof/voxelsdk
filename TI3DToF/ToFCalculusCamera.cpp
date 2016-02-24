@@ -186,32 +186,6 @@ public:
 
 };
 
-class CalculusPhaseCorr1Parameter: public IntegerParameter
-{
-protected:
-  ToFCalculusCamera &_depthCamera;
-
-public:
-  CalculusPhaseCorr1Parameter(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer):
-  IntegerParameter(programmer, PHASE_CORR_1, "", 0, 0, 0, 0, -4096, 4095, 0, "", "Phase correction for base frequency. This value is subtracted from the obtained phase.", Parameter::IO_READ_WRITE, {}), _depthCamera(depthCamera)
-  {}
-
-  virtual bool get(int &value, bool refresh = false)
-  {
-    value = -1 * _value;
-    return true;
-  }
-
-  virtual bool set(const int &value)
-  {
-    if (!validate(value))
-      return false;
-
-    _value = -1 *value;
-    return (_depthCamera._set(CALIB_PHASE_OFFSET, _value));
-  }
-};
-
 ToFCalculusCamera::ToFCalculusCamera(const String &name, DevicePtr device): ToFCamera(name, "calculus.ti", device)
 {
 }
@@ -297,6 +271,7 @@ bool ToFCalculusCamera::_init()
   
   
   if(!_addParameters({
+    ParameterPtr(new PhaseCorrectionAdditiveParameter(true, *_programmer)),
     ParameterPtr(new CalculusVCOFrequency(*this, *_programmer, VCO_FREQ, MOD_M1, MOD_M_FRAC1, MOD_N1)),
     ParameterPtr(new CalculusModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ, MOD_PS1)),
     ParameterPtr(new CalculusUnambiguousRangeParameter(*this, *_programmer
@@ -304,13 +279,6 @@ bool ToFCalculusCamera::_init()
   }))
     return false;
   
-  /* Replace phase_corr_1 (and later _2 with its inverse parameter */
-  _parameters.erase(PHASE_CORR_1);
-  if (!_addParameters({
-    ParameterPtr(new CalculusPhaseCorr1Parameter(*this, *_programmer)),
-  }))
-    return false;
-
   if(!ToFCamera::_init())
   {
     return false;

@@ -149,7 +149,12 @@ public:
     
     uint32_t v;
     T val;
-    if(!_programmer.getValue(*this, v))
+    if(_address == 0 && _registerLength == 0) // dummy register?
+    {
+      value == _value;
+      return true;
+    }
+    else if(!_programmer.getValue(*this, v))
     {
       value = _value;
       return false;

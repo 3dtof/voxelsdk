@@ -6169,7 +6169,7 @@
 						</group>
 						<group desc="" name="phase_calib">
 							<propertyList>
-								<property desc="" name="phase_corr_1real" propertyId="1181"/>
+								<property desc="" name="phase_corr_1" propertyId="1181"/>
 								<property desc="" name="phase_corr_2" propertyId="1290"/>
 								<property desc="" name="disable_offset_corr" propertyId="1182"/>
 								<property desc="" name="disable_temp_corr" propertyId="1183"/>
