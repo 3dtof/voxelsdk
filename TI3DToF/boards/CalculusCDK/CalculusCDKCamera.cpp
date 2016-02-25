@@ -183,12 +183,12 @@ bool CalculusCDKCamera::_init()
   _usbIO = USBIOPtr(new USBIO(controlDevice));
   
   _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
-    { {0x58, 3}, {0x2D, 1}, {0x4B, 2}, {0x4E, 2} },
+    { {0x58, 3}, {0x60, 1}, {0x4B, 2}, {0x4E, 2} },
     { 
       {0x58, {0x08, 0x09, 0}},
       {0x4B, {0x0A, 0x0B, 0}},
       {0x4E, {0x0A, 0x0B, 0}}, 
-      {0x2D, {0x04, 0x03, 8}}, 
+      {0x60, {0x0C, 0x0D, 0}}, 
     }, _usbIO,
     controlDevice));
   
