@@ -31,57 +31,31 @@ class CalculusCDKMixVoltageParameter: public UnsignedIntegerParameter
 protected:
   virtual uint _fromRawValue(uint32_t value) const
   {
-    if(value > 0x80U)
-      return (value - 0x80U)*50 + 500;
+    if(value > 0x1AU)
+      return 2000;
+    else if (value == 0)
+      return 800;
     else
-      return 500;
+      return (value)*50 + 750;
   }
   
   virtual uint32_t _toRawValue(uint value) const
   {
-    if(value > 500)
-      return (value - 500)/50 + 0x80U;
+    if(value < 800)
+      return 0x00U;
     else
-      return 0x80U;
+      return (value - 750)/50;
   }
   
 public:
   CalculusCDKMixVoltageParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, MIX_VOLTAGE, "mV", 0x2D05, 8, 7, 0, 500, 2075, 1500, "Mixing voltage", 
+  UnsignedIntegerParameter(programmer, MIX_VOLTAGE, "mV", 0x6023, 8, 7, 0, 800, 2000, 1800, "Mixing voltage", 
                            "Mixing voltage?", Parameter::IO_READ_WRITE, {})
   {}
   
   virtual ~CalculusCDKMixVoltageParameter() {}
 };
 
-
-class CalculusCDKPVDDVoltageParameter: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    if(value > 0x80U)
-      return (value - 0x80U)*50 + 500;
-    else
-      return 500;
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    if(value > 500)
-      return (value - 500)/50 + 0x80U;
-    else
-      return 0x80U;
-  }
-  
-public:
-  CalculusCDKPVDDVoltageParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, PIXELVDD_VOLTAGE, "mV", 0x2D0E, 8, 7, 0, 500, 3650, 3300, "PixelVDD voltage", 
-                           "Bias Voltage applied to the pixel array", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~CalculusCDKPVDDVoltageParameter() {}
-};
 
 class CalculusCDKIlluminationPowerParameter: public UnsignedIntegerParameter
 {
@@ -223,14 +197,6 @@ bool CalculusCDKCamera::_init()
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
-#if 0
-  if(!_addParameters({
-    ParameterPtr(new CalculusCDKPVDDVoltageParameter(*_pmicProgrammer)),
-    }))
-  {
-    return false;
-  }
-#endif
   if (!_addParameters({
     ParameterPtr(new CalculusCDKMixVoltageParameter(*_programmer)),
     ParameterPtr(new CalculusCDKMainCurrentParameter(*_programmer)),
@@ -253,9 +219,6 @@ bool CalculusCDKCamera::_init()
   if(!ToFCalculusCamera::_init())
     return false;
 
-  // PVDD 3.0V
-  _programmer->writeRegister(0x2D0E, 0xA8);
-  
   FrameSize s;
   
   if(!getFrameSize(s)) 
