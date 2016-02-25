@@ -52,6 +52,9 @@
 #undef CONFIDENCE_THRESHOLD
 #define CONFIDENCE_THRESHOLD "amplitude_threshold"
 
+#undef SUBFRAME_CNT_MAX
+#define SUBFRAME_CNT_MAX "sub_frame_cnt_max1"
+
 namespace Voxel
 {
   
@@ -87,6 +90,8 @@ protected:
   virtual bool _is16BitModeEnabled(bool &mode16Bit);
   virtual bool _getDealiasedPhaseMask(int &dealiasedPhaseMask);
   
+  virtual bool _getSubFrameCount(int &subframeCount) const;
+  
   virtual bool _isHistogramEnabled() const;
   
   virtual bool _applyCalibrationParams();
@@ -105,9 +110,6 @@ public:
   friend class CalculusVCOFrequency;
   friend class CalculusModulationFrequencyParameter;
   friend class CalculusIntegDutyCycle;
-  friend class CalculusPixCntMax;
-  friend class CalculusSubFrameCntMax;
-  friend class CalculusPhaseCorr1Parameter;
 };
 
 }

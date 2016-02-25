@@ -137,7 +137,7 @@ bool ToFCamera::_getFrameRate(FrameRate &r) const
   if(!_get(PIX_CNT_MAX_SET_FAILED, pixCountSetFailed) || pixCountSetFailed)
     return false;
   
-  if(!_get(PIX_CNT_MAX, pixCount) || !_get(QUAD_CNT_MAX, quadCount) || !_get(SUBFRAME_CNT_MAX, subFrameCount) || !_getSystemClockFrequency(sysClkFrequency))
+  if(!_get(PIX_CNT_MAX, pixCount) || !_get(QUAD_CNT_MAX, quadCount) || !_getSubFrameCount(subFrameCount) || !_getSystemClockFrequency(sysClkFrequency))
     return false;
   
   uint numerator = sysClkFrequency*1000000,
@@ -150,6 +150,12 @@ bool ToFCamera::_getFrameRate(FrameRate &r) const
   return true;
 }
 
+bool ToFCamera::_getSubFrameCount(int &subFrameCount) const
+{
+  return _get(SUBFRAME_CNT_MAX, subFrameCount);
+}
+
+
 bool ToFCamera::_setFrameRate(const FrameRate &r)
 {
   bool pixCountSetFailed;
@@ -157,7 +163,7 @@ bool ToFCamera::_setFrameRate(const FrameRate &r)
   uint sysClkFrequency, pixCount;
   int quadCount, subFrameCount;
   
-  if(!_get(QUAD_CNT_MAX, quadCount) || !_get(SUBFRAME_CNT_MAX, subFrameCount) || !_getSystemClockFrequency(sysClkFrequency))
+  if(!_get(QUAD_CNT_MAX, quadCount) || !_getSubFrameCount(subFrameCount) || !_getSystemClockFrequency(sysClkFrequency))
     return false;
   
   if(r.numerator == 0 || quadCount == 0 || subFrameCount == 0)
@@ -566,7 +572,7 @@ bool ToFCamera::_getDepthScalingFactor(float& factor)
     int dealiasedPhaseMask;
     uint ma, mb;
     
-    if(!_is16BitModeEnabled(is16BitMode) || !get(DEALIASED_PHASE_MASK, dealiasedPhaseMask) 
+    if(!_is16BitModeEnabled(is16BitMode) || !_getDealiasedPhaseMask(dealiasedPhaseMask) 
       || !get(MA, ma) || !get(MB, mb))
       return false;
     

@@ -450,6 +450,12 @@ bool ToFCalculusCamera::_getCurrentProfileRegisterName(String &name)
   return true;
 }
 
+bool ToFCalculusCamera::_getSubFrameCount(int &subframeCount) const
+{
+  return _get(SUBFRAME_CNT_MAX, subframeCount);
+}
+
+
  
 }
 }

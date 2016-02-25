@@ -152,6 +152,8 @@ protected:
   virtual bool _is16BitModeEnabled(bool &mode16Bit);
   virtual bool _getDealiasedPhaseMask(int &dealiasedPhaseMask);
   
+  virtual bool _getSubFrameCount(int &subframeCount) const;
+  
   virtual bool _initStartParams();
   
   virtual bool _applyCalibrationParams() = 0;
