@@ -23,8 +23,8 @@ install(TARGETS calculuscdk
 
 list(APPEND CONF_FILES
   boards/CalculusCDK/CalculusCDKCamera.conf
+  boards/CalculusCDK/CalculusCDKCameraLensOnly.conf
   boards/CalculusCDK/CalculusCDKCameraNormal.conf
-  boards/CalculusCDK/CalculusCDKCameraHighAmbient.conf
 )
 
 set(CONF_FILES "${CONF_FILES}" PARENT_SCOPE)

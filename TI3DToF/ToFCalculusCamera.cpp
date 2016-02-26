@@ -164,7 +164,7 @@ public:
   }
 };
 
-#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6F/2/24/(1 << 12)
+#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6F/2/30/(1 << 12)
 class CalculusUnambiguousRangeParameter: public UnsignedIntegerParameter
 {
   ToFCalculusCamera &_depthCamera;
