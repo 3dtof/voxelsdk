@@ -3905,19 +3905,24 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="812" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="812" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="11" bankId="0" lsb="7" msb="7"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="813" max="3" min="0" readonly="1" signed="0" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="Set the analog phase offset for base frequency (PLL1) modulation. The Demodulation signal is delayed with respect to illumination modulation by this amount. Therefore, the phase advances by the same amount." function="" fuseId="-1" id="813" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="11" bankId="0" lsb="8" msb="9"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="56.25" value="0"/>
+						<value desc="" meaning="45.5" value="1"/>
+						<value desc="" meaning="11.25" value="2"/>
+						<value desc="" meaning="0" value="3"/>
+					</valueList>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="814" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Enable analog phase offset for base frequency (PLL1) modulation." function="" fuseId="-1" id="814" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="11" bankId="0" lsb="10" msb="10"/>
 					</rangeList>
@@ -6269,6 +6274,8 @@
 								<property desc="" name="flip_phase" propertyId="1321"/>
 								<property desc="" name="clip_mode" propertyId="1176"/>
 								<property desc="" name="invert_hd_vd" propertyId="950"/>
+								<property desc="" name="analog_phase_corr" propertyId="813"/>
+								<property desc="" name="analog_phase_corr_en" propertyId="814"/>
 								<property desc="" name="quad_cnt_max" propertyId="82"/>
 							</propertyList>
 						</group>
