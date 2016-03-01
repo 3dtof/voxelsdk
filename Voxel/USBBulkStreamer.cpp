@@ -119,7 +119,7 @@ public:
             captureRunning = false;
           }
 
-          logger(LOG_WARNING) << "USBBulkStreamer: Resetting bulk endpoint at " << _timer.getCurentRealTime() << std::endl;
+          logger(LOG_WARNING) << "USBBulkStreamer: Resetting bulk endpoint at " << _timer.getCurrentRealTime() << std::endl;
           retriesCount = 0;
           resetCount++;
           if(resetCount % 100 == 0)
@@ -181,7 +181,7 @@ public:
 
     memcpy(raw->data.data(), usbBuffer.data(), usbBuffer.size() - BULK_XFER_EXTRA_SIZE);
 
-    raw->timestamp = _timer.getCurentRealTime(); // in micro seconds
+    raw->timestamp = _timer.getCurrentRealTime(); // in micro seconds
     
     _inUseBuffers.push_back(f);
 

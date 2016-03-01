@@ -106,6 +106,8 @@ typedef std::ostringstream OutputStringStream;
 typedef std::istringstream InputStringStream;
 typedef std::stringstream StringStream;
 
+struct Version { uint8_t major, minor; };
+
 /// String functions
 String VOXEL_EXPORT getHex(uint16_t value);
 void VOXEL_EXPORT split(const String &str, const char delimiter, Vector<String> &split);

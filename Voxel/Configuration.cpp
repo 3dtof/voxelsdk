@@ -1259,8 +1259,8 @@ bool MainConfigurationFile::readFromHardware()
 {
   SerializedObject so;
   
-  ConfigSerialNumberType serialNumber;
-  serialNumber.major = serialNumber.minor = 0;
+  Version version;
+  version.major = version.minor = 0;
   TimeStampType timestamp = 0;
   
   Configuration c;
@@ -1275,17 +1275,17 @@ bool MainConfigurationFile::readFromHardware()
   
     if(fs.good())
     {
-      fs.read((char *)&serialNumber, sizeof(serialNumber));
+      fs.read((char *)&version, sizeof(version));
       fs.read((char *)&timestamp, sizeof(timestamp));
     }
   }
     
   
   bool ret = false;
-  if(!_hardwareReader || !(ret = _hardwareReader(serialNumber, timestamp, so)) || so.size() == 0) 
+  if(!hasHardwareConfigurationSupport() || !(ret = _hardwareSerializer->read(version, timestamp, so)) || so.size() == 0) 
     // Last condition is when the data in hardware and backup file in host are the same...
   {
-    if(_hardwareReader)
+    if(hasHardwareConfigurationSupport())
     {
       if(!ret)
         logger(LOG_WARNING) << "MainConfigurationFile: Failed to read configuration from hardware." << std::endl;
@@ -1295,14 +1295,14 @@ bool MainConfigurationFile::readFromHardware()
       
     if(!fs.is_open() || !fs.good())
     {
-      if(_hardwareReader)
+      if(hasHardwareConfigurationSupport())
         logger(LOG_WARNING) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
       return false;
     }
     
     fs.seekg(0, std::ios::end);
     
-    int size = (int)fs.tellg() - sizeof(timestamp) - sizeof(serialNumber);
+    int size = (int)fs.tellg() - sizeof(timestamp) - sizeof(version);
     
     if(size == 0)
     {
@@ -1311,13 +1311,13 @@ bool MainConfigurationFile::readFromHardware()
     }
     
     so.resize(size);
-    fs.seekg(sizeof(timestamp) + sizeof(serialNumber), std::ios::beg);
+    fs.seekg(sizeof(timestamp) + sizeof(version), std::ios::beg);
     fs.clear();
     fs.read((char *)so.getBytes().data(), size);
   }
   else
   {
-    if(!_saveHardwareImage(serialNumber, timestamp, so))
+    if(!_saveHardwareImage(version, timestamp, so))
     {
       logger(LOG_WARNING) << "MainConfigurationFile: Failed to save locally the configuration image from hardware." << std::endl;
     }
@@ -1447,28 +1447,27 @@ bool MainConfigurationFile::readFromHardware()
   return true;
 }
 
-bool MainConfigurationFile::_saveHardwareImage(MainConfigurationFile::ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so)
+bool MainConfigurationFile::_saveHardwareImage(Version &version, TimeStampType &timestamp, SerializedObject &so)
 {
   Configuration c;
   
   String f = _hardwareID + ".bin", path;
   
-  if(!c.getLocalConfFile(f))
-    return false;
-  
-  OutputFileStream fs(f, std::ios::out | std::ios::binary);
-  
-  if(!fs.good())
+  if(!_hardwareSerializer)
   {
-    logger(LOG_ERROR) << "MainConfigurationFile: Could not open file '" << f << "'" << std::endl;
+    logger(LOG_ERROR) << "MainConfigurationFile: No hardware serializer present." << std::endl;
     return false;
   }
   
-  fs.write((const char *)&serialNumber, sizeof(serialNumber));
-  fs.write((const char *)&timestamp, sizeof(timestamp));
-  fs.write((const char *)so.getBytes().data(), so.size());
+  if(!c.getLocalConfFile(f))
+    return false;
   
-  fs.close();
+  if(!_hardwareSerializer->writeToFile(f, version, timestamp, so))
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to write to hardware." << std::endl;
+    return false;
+  }
+  
   return true;
 }
 
@@ -1515,20 +1514,20 @@ bool MainConfigurationFile::writeToHardware()
   so.resize(out.size());
   memcpy(so.getBytes().data(), &out[0], so.size());
   
-  ConfigSerialNumberType serialNumber;
-  serialNumber.major = CONFIG_VERSION_MAJOR;
-  serialNumber.minor = CONFIG_VERSION_MINOR;
+  Version version;
+  version.major = CONFIG_VERSION_MAJOR;
+  version.minor = CONFIG_VERSION_MINOR;
   
   Timer t;
-  TimeStampType timestamp = t.getCurentRealTime();
+  TimeStampType timestamp = t.getCurrentRealTime();
   
-  if(_hardwareWriter && !_hardwareWriter(serialNumber, timestamp, so))
+  if(hasHardwareConfigurationSupport() && !_hardwareSerializer->write(version, timestamp, so))
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to write configuration to hardware." << std::endl;
     return false;
   }
   
-  if(!_saveHardwareImage(serialNumber, timestamp, so))
+  if(!_saveHardwareImage(version, timestamp, so))
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to save configuration image locally." << std::endl;
     return false;

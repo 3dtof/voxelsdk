@@ -26,6 +26,7 @@ add_library(voxel SHARED
   USBIO.cpp
   USBBulkStreamer.cpp
   UVCStreamer.cpp
+  HardwareSerializer.cpp
   CameraSystem.cpp
   DepthCamera.cpp
   FrameStream.cpp

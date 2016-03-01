@@ -10,6 +10,7 @@
 #include "Common.h"
 #include "Serializable.h"
 #include "DataPacket.h"
+#include "HardwareSerializer.h"
 
 #define FILE_PREFIX "file:"
 
@@ -338,29 +339,30 @@ protected:
   int _getNewCameraProfileID(bool inHost = true);
 
 public:
-  struct ConfigSerialNumberType { uint8_t major, minor; };
-  typedef Function<bool(ConfigSerialNumberType &, TimeStampType &, SerializedObject &)> HardwareSerializer;
   
 protected:  
-  bool _saveHardwareImage(ConfigSerialNumberType &serialNumber, TimeStampType &timestamp, SerializedObject &so);
+  bool _saveHardwareImage(Version &version, TimeStampType &timestamp, SerializedObject &so);
   
-  HardwareSerializer _hardwareReader, _hardwareWriter;
+  HardwareSerializerPtr _hardwareSerializer;
   
   Map<String, CalibrationInformation> _calibrationInformation;
     
 public:
-  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializer hardwareReader = nullptr, HardwareSerializer hardwareWriter = nullptr): 
-  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareReader(hardwareReader), _hardwareWriter(hardwareWriter) {}
+  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializerPtr hardwareSerializer = nullptr): 
+  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareSerializer(hardwareSerializer) 
+  {
+    if(!hardwareSerializer)
+      _hardwareSerializer = HardwareSerializerPtr(new HardwareSerializer());
+  }
   
   virtual bool read(const String &configFile);
   
   bool readFromHardware();
   bool writeToHardware();
   
-  inline bool hasHardwareConfigurationSupport() { return _hardwareReader && _hardwareWriter; }
+  inline bool hasHardwareConfigurationSupport() { return _hardwareSerializer && *_hardwareSerializer; }
   
-  inline void setHardwareReader(HardwareSerializer hardwareReader) { _hardwareReader = hardwareReader; }
-  inline void setHardwareWriter(HardwareSerializer hardwareWriter) { _hardwareWriter = hardwareWriter; }
+  inline void setHardwareConfigSerializer(const HardwareSerializerPtr &hardwareSerializer) { _hardwareSerializer = hardwareSerializer; }
   
   virtual String get(const String &section, const String &name) const;
   virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;

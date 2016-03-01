@@ -37,7 +37,7 @@ public:
   // Assumption: MONOTIC clock's epoch began recently while REALTIME's epoch began a long time ago (~44 years ago)
   TimeStampType convertToRealTime(TimeStampType l);
   
-  TimeStampType getCurentRealTime();
+  TimeStampType getCurrentRealTime();
 };
 
 /**

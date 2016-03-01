@@ -98,7 +98,7 @@ TimeStampType Timer::convertToRealTime(TimeStampType l)
   return (l - _monoticStart) + _realTimeStart;
 }
 
-TimeStampType Timer::getCurentRealTime()
+TimeStampType Timer::getCurrentRealTime()
 {
 #ifdef LINUX
   struct timespec tp;

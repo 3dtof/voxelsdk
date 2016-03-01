@@ -58,6 +58,9 @@
 %apply int &INOUT { int &id };
 
 %include "../SerializedObject.h"
+%include "../USBSystem.h"
+%include "../USBIO.h"
+%include "../HardwareSerializer.h"
 %include "Frame.i"
 
 %include "../RegisterProgrammer.h"

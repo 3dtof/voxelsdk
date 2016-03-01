@@ -189,7 +189,7 @@ public:
 
     if (_sampleStart == 0)
     {
-      _sampleStart = _timer.getCurentRealTime() - (TimeStampType)(timestamp*1E6); // in micro seconds
+      _sampleStart = _timer.getCurrentRealTime() - (TimeStampType)(timestamp*1E6); // in micro seconds
     }
 
     logger(LOG_DEBUG) << "UVCStreamer: Got sample buffer at " << timestamp << std::endl;
@@ -917,7 +917,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
     if(ret)
     {
       p->id = _currentID++;
-      p->timestamp = _time.getCurentRealTime();
+      p->timestamp = _time.getCurrentRealTime();
       return true;
     }
     return false;
