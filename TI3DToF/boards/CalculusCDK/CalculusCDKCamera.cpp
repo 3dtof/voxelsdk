@@ -15,6 +15,9 @@
 
 #include "USBSystem.h"
 
+#define REQUEST_EEPROM_SIZE 0x31
+#define REQUEST_EEPROM_DATA 0x33
+
 namespace Voxel
 {
   
@@ -218,6 +221,9 @@ bool CalculusCDKCamera::_init()
     
   if(!ToFCalculusCamera::_init())
     return false;
+  
+  // Initialize serializer block
+  configFile.setHardwareConfigSerializer(new HardwareSerializer(_usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
 
   FrameSize s;
   
