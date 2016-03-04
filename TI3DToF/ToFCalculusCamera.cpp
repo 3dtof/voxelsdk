@@ -164,7 +164,7 @@ public:
   }
 };
 
-#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6F/2/30/(1 << 12)
+#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6F/2/29.95/(1 << 12)
 class CalculusUnambiguousRangeParameter: public UnsignedIntegerParameter
 {
   ToFCalculusCamera &_depthCamera;
@@ -290,8 +290,12 @@ bool ToFCalculusCamera::_init()
       !set(INIT_1, 0xAU) ||
       !set(INIT_2, true) ||
       !set(INIT_3, true) ||
+      !set(INIT_4, 0x0U) ||
+      !set(INIT_5, true) ||
+      !set(INIT_6, true) ||
       !set(UPDATE_SEL, 2) ||
       !set(SHUTTER_EN, true) ||
+      !set(LUMPED_DEAD_TIME, true) ||
       !set(OP_DATA_ARRANGE_MODE, true))
       return false;
       

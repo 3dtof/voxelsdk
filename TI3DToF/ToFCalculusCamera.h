@@ -42,11 +42,15 @@
 #define INIT_1 "init_1"
 #define INIT_2 "init_2"
 #define INIT_3 "init_3"
+#define INIT_4 "init_4"
+#define INIT_5 "init_5"
+#define INIT_6 "init_6"
 #define UPDATE_SEL "update_sel"
 #define OP_DATA_ARRANGE_MODE "op_data_arrange_mode"
 #define MOD_CDRIV_EN "mod_cdriv_en"
 #define MOD_CDRIV_CURR "mod_cdriv_curr"
 #define SHUTTER_EN "shutter_en"
+#define LUMPED_DEAD_TIME "lumped_dead_time"
 #define INTEGRATION_DUTY_CYCLE "intg_duty_cycle"
 
 #undef CONFIDENCE_THRESHOLD
