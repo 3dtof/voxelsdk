@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<RegMap bankSeed="3" miscAttrSeed="1" name="calculus" propertySeed="1407" propertyViewSeed="1" version="PG2P0" wordLength="24">
+<RegMap bankSeed="3" miscAttrSeed="1" name="calculus" propertySeed="1408" propertyViewSeed="1" version="PG2P0" wordLength="24">
 	<bankList>
 		<bank id="0" name="TOPLEVEL" offset="0" size="256">
 			<invalidRangeList>
@@ -397,9 +397,9 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="116" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="116" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
-						<range address="160" bankId="0" lsb="0" msb="21"/>
+						<range address="160" bankId="0" lsb="0" msb="7"/>
 					</rangeList>
 					<valueList/>
 				</property>
@@ -2028,7 +2028,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="445" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Set to '1' to enable the internal PVDD supply." function="" fuseId="-1" id="445" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="42" bankId="0" lsb="5" msb="5"/>
 					</rangeList>
@@ -2124,11 +2124,20 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="461" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="" default="0" desc="Select internal PVDD voltage" function="" fuseId="-1" id="461" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="43" bankId="0" lsb="18" msb="20"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="default" meaning="2.25" value="0"/>
+						<value desc="" meaning="2.175" value="1"/>
+						<value desc="" meaning="2.1" value="2"/>
+						<value desc="" meaning="1.95" value="3"/>
+						<value desc="" meaning="1.8" value="4"/>
+						<value desc="" meaning="2.7" value="5"/>
+						<value desc="" meaning="2.3625" value="6"/>
+						<value desc="" meaning="2.325" value="7"/>
+					</valueList>
 				</property>
 				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="462" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
@@ -5438,7 +5447,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1285" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Set to '1' for proper functionality" function="" fuseId="-1" id="1285" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="250" bankId="0" lsb="18" msb="18"/>
 					</rangeList>
@@ -5462,7 +5471,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1289" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Set to '1' for proper functionality" function="" fuseId="-1" id="1289" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="247" bankId="0" lsb="17" msb="17"/>
 					</rangeList>
@@ -5873,7 +5882,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1364" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Tristate illum_p driver" function="" fuseId="-1" id="1364" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="58" bankId="0" lsb="20" msb="20"/>
 					</rangeList>
@@ -5889,7 +5898,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1367" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Tristate illum_n driver" function="" fuseId="-1" id="1367" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="58" bankId="0" lsb="21" msb="21"/>
 					</rangeList>
@@ -5913,7 +5922,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="20" desc="" function="" fuseId="-1" id="1371" max="63" min="0" readonly="1" signed="0" strobe="0" totalBits="6" units="">
+				<property aid_0="0" default="20" desc="Set to '0xA' for proper functionality" function="" fuseId="-1" id="1371" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
 					<rangeList>
 						<range address="3" bankId="0" lsb="17" msb="22"/>
 					</rangeList>
@@ -6081,6 +6090,12 @@
 					<rangeList/>
 					<valueList/>
 				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1407" max="16383" min="0" readonly="1" signed="0" strobe="0" totalBits="14" units="">
+					<rangeList>
+						<range address="160" bankId="0" lsb="8" msb="21"/>
+					</rangeList>
+					<valueList/>
+				</property>
 			</propertyList>
 		</propertyView>
 	</propertyViewList>
@@ -6150,6 +6165,9 @@
 								<property desc="" name="init_1" propertyId="749"/>
 								<property desc="" name="init_2" propertyId="1351"/>
 								<property desc="" name="init_3" propertyId="834"/>
+								<property desc="" name="init_4" propertyId="1371"/>
+								<property desc="" name="init_5" propertyId="1289"/>
+								<property desc="" name="init_6" propertyId="1285"/>
 								<property desc="" name="update_sel" propertyId="77"/>
 							</propertyList>
 						</group>
@@ -6232,6 +6250,8 @@
 								<property desc="" name="illum_static_pol" propertyId="675"/>
 								<property desc="" name="illum_dc_corr_dir" propertyId="664"/>
 								<property desc="" name="illum_dc_corr" propertyId="663"/>
+								<property desc="" name="disable_illum_p" propertyId="1364"/>
+								<property desc="" name="disable_illum_n" propertyId="1367"/>
 							</propertyList>
 						</group>
 						<group desc="" name="demod_pll_ctrl">
@@ -6259,6 +6279,16 @@
 						</group>
 					</groupList>
 				</section>
+				<section desc="" name="power">
+					<groupList>
+						<group desc="" name="pvdd">
+							<propertyList>
+								<property desc="" name="pvdd_en" propertyId="445"/>
+								<property desc="" name="pvdd_voltage" propertyId="461"/>
+							</propertyList>
+						</group>
+					</groupList>
+				</section>
 				<section desc="" name="debug">
 					<groupList>
 						<group desc="" name="test">
@@ -6267,6 +6297,7 @@
 								<property desc="" name="test_pattern_enable" propertyId="1075"/>
 								<property desc="" name="binning_mode" propertyId="1076"/>
 								<property desc="" name="scratch1" propertyId="1349"/>
+								<property desc="" name="scratch2" propertyId="116"/>
 							</propertyList>
 						</group>
 						<group desc="" name="misc">
