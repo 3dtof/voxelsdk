@@ -213,9 +213,9 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
     return false;
   }
   
-  if(rows % 8 != 0 || columns % 8 != 0)
+  if(columns % 2 != 0)
   {
-    logger(LOG_ERROR) << "Data2DCodec: Invalid input data. This codec is designed for only rows and columns which are multiples of 8." << std::endl;
+    logger(LOG_ERROR) << "Data2DCodec: Invalid input data. This codec is designed only for data with columns which are multiples of 2." << std::endl;
     return false;
   }
   
@@ -231,7 +231,11 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentPutOffset() << std::endl;
   
-  Vector<int32_t> averages(rows/8*columns/8);
+  uint16_t octetRows = (rows + 4)/8;
+  uint16_t octetColumns = (columns + 4)/8;
+  
+  Vector<int32_t> averages(octetRows*octetColumns);
+  Vector<int32_t> averageCount(octetRows*octetColumns);
   
   List<EightBitOffset> offsets;
   
@@ -239,15 +243,21 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   fourBitOffsets.resize(rows*columns);
   
   for(auto i = 0; i < averages.size(); i++)
+  {
     averages[i] = 0;
+    averageCount[i] = 0;
+  }
   
   for(auto i = 0; i < rows; i++)
     for(auto j = 0; j < columns; j++)
-      averages[i/8*columns/8 + j/8] += inData[i*columns + j];
+      {
+        averages[i/8*octetColumns + j/8] += inData[i*columns + j];
+        averageCount[i/8*octetColumns + j/8]++;
+      }
   
   for(auto i = 0; i < averages.size(); i++)
   {
-    averages[i] /= 64;
+    averages[i] /= averageCount[i];
     int16_t d = averages[i];
     so.put((const char *)&d, sizeof(d));
   }
@@ -260,7 +270,7 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   {
     for(auto j = 0; j < columns; j++)
     {
-      int index = i/8*columns/8 + j/8;
+      int index = i/8*octetColumns + j/8;
       
       int16_t v = (inData[i*columns + j] - averages[index])/QUANTIZATION;
       
@@ -371,17 +381,21 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   so.get((char *)&columns, sizeof(columns));
   so.get((char *)&dealiasPhaseMask, sizeof(dealiasPhaseMask));
   
+  uint16_t octetRows = (rows + 4)/8;
+  uint16_t octetColumns = (columns + 4)/8;
+  
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentGetOffset() << std::endl;
   
-  if(rows % 8 != 0 || columns % 8 != 0)
+  if(columns % 2 != 0)
   {
-    logger(LOG_ERROR) << "Data2DCodec: Invalid input data. This codec is designed for only rows and columns which are multiples of 8." << std::endl;
+    logger(LOG_ERROR) << "Data2DCodec: Invalid input data. This codec is designed only for data with columns which are multiples of 2." << std::endl;
     return false;
   }
   
+  
   logger(LOG_DEBUG) << "Data2DCodec: rows = " << rows << ", columns = " << columns << std::endl;
   
-  Vector<int16_t> averages(rows/8*columns/8);
+  Vector<int16_t> averages(octetRows*octetColumns);
   
   so.get((char *)averages.data(), averages.size()*sizeof(averages[0]));
   
@@ -399,7 +413,7 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   {
     for(auto j = 0; j < columns; j++)
     {
-      outData[i*columns + j] = averages[i/8*columns/8 + j/8];
+      outData[i*columns + j] = averages[i/8*octetColumns + j/8];
     }
   }
   

@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
   
   size_t size = p.tellg();
   
-  size -= 4; // for uint16_t row, column
+  size -= 6; // for uint16_t row, column
   
   p.seekg(0, std::ios::beg);
   p.clear();
@@ -119,14 +119,14 @@ int main(int argc, char *argv[])
   
   if(size == rows*columns*2)
   {
-    phaseOffsets.resize(size/2 + 2); // int16_t data
+    phaseOffsets.resize(size/2 + 3); // int16_t data
     p.read((char *)phaseOffsets.data(), size + 4);
   }
   else if(size = rows*columns*3) // including invalid pixel boolean 2D array?
   {
-    phaseOffsets.resize(size/3 + 2); // int16_t data
+    phaseOffsets.resize(size/3 + 3); // int16_t data
     invalidPixels.resize(size/3);
-    p.read((char *)phaseOffsets.data(), (size*2)/3 + 4);
+    p.read((char *)phaseOffsets.data(), (size*2)/3 + 6);
     p.read((char *)invalidPixels.data(), size/3);
   }
   
