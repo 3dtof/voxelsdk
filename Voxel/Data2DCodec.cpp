@@ -231,8 +231,8 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentPutOffset() << std::endl;
   
-  uint16_t octetRows = (rows + 4)/8;
-  uint16_t octetColumns = (columns + 4)/8;
+  uint16_t octetRows = (rows + 7)/8;
+  uint16_t octetColumns = (columns + 7)/8;
   
   Vector<int32_t> averages(octetRows*octetColumns);
   Vector<int32_t> averageCount(octetRows*octetColumns);
@@ -381,8 +381,8 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   so.get((char *)&columns, sizeof(columns));
   so.get((char *)&dealiasPhaseMask, sizeof(dealiasPhaseMask));
   
-  uint16_t octetRows = (rows + 4)/8;
-  uint16_t octetColumns = (columns + 4)/8;
+  uint16_t octetRows = (rows + 7)/8;
+  uint16_t octetColumns = (columns + 7)/8;
   
   logger(LOG_DEBUG) << "Data2DCodec: current number of bytes = " << so.currentGetOffset() << std::endl;
   
