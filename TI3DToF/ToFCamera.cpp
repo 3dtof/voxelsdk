@@ -357,7 +357,7 @@ bool ToFCamera::_getBinning(uint &rowsToMerge, uint &columnsToMerge) const
   
   if(!get(BIN_ROWS_TO_MERGE, rowsToMerge) || !get(BIN_COLS_TO_MERGE, columnsToMerge))
   {
-    logger(LOG_ERROR) << "ToFCamera: Could not set binning related parameters" << std::endl;
+    logger(LOG_ERROR) << "ToFCamera: Could not get binning related parameters" << std::endl;
     return false;
   }
   
