@@ -37,6 +37,8 @@ add_library(voxel SHARED
   PointCloudFrameGenerator.cpp
   PointCloudTransform.cpp
   Filter/Filter.cpp
+  Filter/DarkPixFilter.cpp
+  Filter/HDRFilter.cpp
   Filter/IIRFilter.cpp
   Filter/MedianFilter.cpp
   Filter/TemporalMedianFilter.cpp
@@ -121,6 +123,8 @@ install(FILES
   Filter/FilterSet.h
   Filter/FilterParameter.h
   Filter/FilterFactory.h
+  Filter/DarkPixFilter.h
+  Filter/HDRFilter.h
   Filter/IIRFilter.h
   Filter/MedianFilter.h
   Filter/TemporalMedianFilter.h
