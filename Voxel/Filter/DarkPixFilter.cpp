@@ -108,15 +108,17 @@ bool DarkPixFilter::_filter(const FramePtr &in, FramePtr &out)
     
     uint s = _size.width*_size.height;
     memcpy(o->ambient(), tofFrame->ambient(), s*tofFrame->ambientWordWidth());
-    memcpy(o->amplitude(), tofFrame->amplitude(), s*tofFrame->amplitudeWordWidth());
+    //memcpy(o->amplitude(), tofFrame->amplitude(), s*tofFrame->amplitudeWordWidth());
     memcpy(o->flags(), tofFrame->flags(), s*tofFrame->flagsWordWidth());
 
     if(tofFrame->phaseWordWidth() == 2)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
         return _filter2<uint16_t, uint8_t>((uint16_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
-      else if(tofFrame->amplitudeWordWidth() == 2)
+      else if(tofFrame->amplitudeWordWidth() == 2) {
+        _filter2<uint16_t, uint16_t>((uint16_t *)tofFrame->amplitude(), (uint16_t *)tofFrame->amplitude(), (uint16_t *)o->amplitude());
         return _filter2<uint16_t, uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+      }
       else if(tofFrame->amplitudeWordWidth() == 4)
         return _filter2<uint16_t, uint32_t>((uint16_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
     }
@@ -133,8 +135,9 @@ bool DarkPixFilter::_filter(const FramePtr &in, FramePtr &out)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
         return _filter2<uint32_t, uint8_t>((uint32_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
-      else if(tofFrame->amplitudeWordWidth() == 2)
+      else if(tofFrame->amplitudeWordWidth() == 2) {
         return _filter2<uint32_t, uint16_t>((uint32_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+      }
       else if(tofFrame->amplitudeWordWidth() == 4)
         return _filter2<uint32_t, uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
     }
