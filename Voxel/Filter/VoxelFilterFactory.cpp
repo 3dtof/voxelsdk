@@ -13,6 +13,7 @@
 #include <Filter/SmoothFilter.h>
 #include <Filter/BilateralFilter.h>
 #include <Filter/DarkPixFilter.h>
+#include <Filter/DenoiseFilter.h>
 #include <Filter/HDRFilter.h>
 
 namespace Voxel
@@ -41,6 +42,10 @@ VoxelFilterFactory::VoxelFilterFactory(): FilterFactory("Voxel")
                       (1 << DepthCamera::FRAME_RAW_FRAME_PROCESSED) | 
                       (1 << DepthCamera::FRAME_DEPTH_FRAME),
                       []() -> FilterPtr { return FilterPtr(new BilateralFilter()); }),
+    FilterDescription("DenoiseFilter", 
+                      (1 << DepthCamera::FRAME_RAW_FRAME_PROCESSED) | 
+                      (1 << DepthCamera::FRAME_DEPTH_FRAME),
+                      []() -> FilterPtr { return FilterPtr(new DenoiseFilter()); }),
     FilterDescription("DarkPixFilter", 
                       (1 << DepthCamera::FRAME_RAW_FRAME_PROCESSED) | 
                       (1 << DepthCamera::FRAME_DEPTH_FRAME),
