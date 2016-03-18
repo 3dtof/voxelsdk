@@ -129,7 +129,8 @@ bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
          float var1 = (float)(max_phase - min_phase);
          float var2 = _threshold * amp_avg;
          ampOut[p] = (var1 <= var2) ? (AmpT)amp_avg : (AmpT)0;
-         phaseOut[p] = (var1 <= var2) ? (PhaseT)phase_avg : (PhaseT)0;
+         //phaseOut[p] = (var1 <= var2) ? (PhaseT)phase_avg : (PhaseT)0;
+         phaseOut[p] = phaseIn[p];
       }
       else 
       {
