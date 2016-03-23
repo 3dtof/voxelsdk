@@ -8,9 +8,11 @@ fi
 version=$1
 
 mkdir -p ../packages/$version
-cd build
+mkdir -p build; cd build
 rm -rf doc
-touch ../Voxel/SWIG/Voxel.i
+
+if [ -e ../Voxel/SWIG/Voxel.i ]; then touch ../Voxel/SWIG/Voxel.i; fi
+
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make clean
 make -j2
