@@ -24,6 +24,7 @@ class VOXEL_EXPORT DarkPixFilter: public Filter
 protected:
   float _aThrNear, _phThrNear;
   float _aThrFar, _phThrFar;
+  float _ambThresh;
 
   Vector<ByteType> _current;
   
@@ -33,14 +34,14 @@ protected:
   bool _filter(const T *in, T *out);
 
   template <typename T, typename T2>
-  bool _filter2(const T *in, T2 *amp, T *out);
+  bool _filter2(const T *in, T2 *amp, uint8_t *amb, T *out);
 
   virtual bool _filter(const FramePtr &in, FramePtr &out);
   
   virtual void _onSet(const FilterParameterPtr &f);
   
 public:
-  DarkPixFilter(float aThrNear = 1, float phThrNear = 4095, float aThrFar = 20, float phThrFar = 2000);
+  DarkPixFilter(float aThrNear = 1, float phThrNear = 4095, float aThrFar = 20, float phThrFar = 2000, float ambThresh = 1);
   
   virtual void reset();
   

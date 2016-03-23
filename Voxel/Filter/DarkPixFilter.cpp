@@ -9,13 +9,14 @@
 namespace Voxel
 {
   
-DarkPixFilter::DarkPixFilter(float aThrNear, float phThrNear, float aThrFar, float phThrFar): Filter("DarkPixFilter"), _aThrNear(aThrNear), _phThrNear(phThrNear), _aThrFar(aThrFar), _phThrFar(phThrFar)
+DarkPixFilter::DarkPixFilter(float aThrNear, float phThrNear, float aThrFar, float phThrFar, float ambThresh): Filter("DarkPixFilter"), _aThrNear(aThrNear), _phThrNear(phThrNear), _aThrFar(aThrFar), _phThrFar(phThrFar), _ambThresh(ambThresh)
 {
   _addParameters({
     FilterParameterPtr(new FloatFilterParameter("aThrNear", "aThrNear", "NearAmpThr", _aThrNear, "", 0.0f, 4095.0f)),
     FilterParameterPtr(new FloatFilterParameter("phThrNear", "phThrNear", "NearPhThr", _phThrNear, "", 0.0f, 4095.0f)),
     FilterParameterPtr(new FloatFilterParameter("aThrFar", "aThrFar", "FarAmpThr", _aThrFar, "", 0.0f, 4095.0f)),
-    FilterParameterPtr(new FloatFilterParameter("phThrFar", "phThrFar", "FarPhThr", _phThrFar, "", 0.0f, 4095.0f))
+    FilterParameterPtr(new FloatFilterParameter("phThrFar", "phThrFar", "FarPhThr", _phThrFar, "", 0.0f, 4095.0f)),
+    FilterParameterPtr(new FloatFilterParameter("ambThresh", "ambThresh", "Ambient Threshold", _ambThresh, "", 0.0f, 15.0f))
   });
 }
 
@@ -49,6 +50,13 @@ void DarkPixFilter::_onSet(const FilterParameterPtr &f)
       logger(LOG_WARNING) << "DarkPixFilter:  Could not get the recently updated 'phThrFar' parameter" << std::endl;
     }
   }
+  else if(f->name() == "ambThresh") 
+  {
+    if(!_get(f->name(), _ambThresh))
+    {
+      logger(LOG_WARNING) << "DarkPixFilter:  Could not get the recently updated 'ambThresh' parameter" << std::endl;
+    }
+  }
 }
 
 void DarkPixFilter::reset()
@@ -68,13 +76,13 @@ bool DarkPixFilter::_filter(const T *in, T *out)
 }
 
 template <typename T, typename T2>
-bool DarkPixFilter::_filter2(const T *in, T2 *amp, T *out)
+bool DarkPixFilter::_filter2(const T *in, T2 *amp, uint8_t *amb, T *out)
 {
     uint s = _size.width*_size.height;
 
     for (auto p = 0; p < s; p++)
     {
-      if ( ((amp[p] < _aThrNear) && (in[p] < _phThrNear)) ||  ((amp[p] > _aThrFar) && (in[p] > _phThrFar))  )
+      if ( ((amp[p] < _aThrNear) && (in[p] < _phThrNear)) ||  ((amp[p] > _aThrFar) && (in[p] > _phThrFar)) || ((amb[p] < _ambThresh)) )
          out[p] = 0;
       else
          out[p] = in[p];
@@ -114,32 +122,32 @@ bool DarkPixFilter::_filter(const FramePtr &in, FramePtr &out)
     if(tofFrame->phaseWordWidth() == 2)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
-        return _filter2<uint16_t, uint8_t>((uint16_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+        return _filter2<uint16_t, uint8_t>((uint16_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), o->ambient(), (uint16_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 2) {
-        _filter2<uint16_t, uint16_t>((uint16_t *)tofFrame->amplitude(), (uint16_t *)tofFrame->amplitude(), (uint16_t *)o->amplitude());
-        return _filter2<uint16_t, uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+        _filter2<uint16_t, uint16_t>((uint16_t *)tofFrame->amplitude(), (uint16_t *)tofFrame->amplitude(), o->ambient(), (uint16_t *)o->amplitude());
+        return _filter2<uint16_t, uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), o->ambient(), (uint16_t *)o->phase());
       }
       else if(tofFrame->amplitudeWordWidth() == 4)
-        return _filter2<uint16_t, uint32_t>((uint16_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+        return _filter2<uint16_t, uint32_t>((uint16_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), o->ambient(), (uint16_t *)o->phase());
     }
     else if(tofFrame->phaseWordWidth() == 1)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
-        return _filter2<uint8_t, uint8_t>((uint8_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
+        return _filter2<uint8_t, uint8_t>((uint8_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), o->ambient(), (uint8_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 2)
-        return _filter2<uint8_t, uint16_t>((uint8_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
+        return _filter2<uint8_t, uint16_t>((uint8_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), o->ambient(), (uint8_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 4)
-        return _filter2<uint8_t, uint32_t>((uint8_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
+        return _filter2<uint8_t, uint32_t>((uint8_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), o->ambient(), (uint8_t *)o->phase());
     }
     else if(tofFrame->phaseWordWidth() == 4)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
-        return _filter2<uint32_t, uint8_t>((uint32_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+        return _filter2<uint32_t, uint8_t>((uint32_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), o->ambient(), (uint32_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 2) {
-        return _filter2<uint32_t, uint16_t>((uint32_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+        return _filter2<uint32_t, uint16_t>((uint32_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), o->ambient(), (uint32_t *)o->phase());
       }
       else if(tofFrame->amplitudeWordWidth() == 4)
-        return _filter2<uint32_t, uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+        return _filter2<uint32_t, uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), o->ambient(), (uint32_t *)o->phase());
     }
   }
   else if(depthFrame)
