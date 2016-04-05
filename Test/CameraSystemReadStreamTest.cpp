@@ -29,7 +29,7 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
 
 void help()
 {
-  std::cout << "CameraSystemSaveStreamTest v1.0" << std::endl;
+  std::cout << "CameraSystemReadStreamTest v1.0" << std::endl;
   
   CSimpleOpt::SOption *option = argumentSpecifications.data();
   
