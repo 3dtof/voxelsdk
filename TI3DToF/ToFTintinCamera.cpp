@@ -195,7 +195,6 @@ bool TintinUnambiguousRangeParameter::set(const uint &value)
     
     if(!_depthCamera._set(TG_DISABLE, true) || 
       !_depthCamera._set(QUAD_CNT_MAX, 4) || 
-      !_depthCamera._set(SUBFRAME_CNT_MAX, 4) || 
       !_depthCamera._setFrameRate(r) ||
       !_depthCamera._set(DEALIAS_16BIT_OP_ENABLE, false) ||
       !_depthCamera._set(DEALIASED_PHASE_MASK, 0) || 
@@ -213,7 +212,7 @@ bool TintinUnambiguousRangeParameter::set(const uint &value)
   else
   {
     if(!_depthCamera._set(TG_DISABLE, true) ||
-      !_depthCamera._set(QUAD_CNT_MAX, 6) || !_depthCamera._set(SUBFRAME_CNT_MAX, 2))
+      !_depthCamera._set(QUAD_CNT_MAX, 6))
       return false;
     
     uint ma = 2, mb = 3, ka = 2, kb = 1, modPS1 = _modPS1, modPS2 = _modPS2;
