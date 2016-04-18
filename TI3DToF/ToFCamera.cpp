@@ -247,7 +247,7 @@ bool ToFCamera::_setFrameSize(const FrameSize &s, bool resetROI)
   
   if(!_getSupportedVideoModes(supportedVideoModes) || !_getBytesPerPixel(bytesPerPixel))
   {
-    logger(LOG_ERROR) << "Could not get supported video modes or current bytes per pixel, to get nearest valid frame size" << std::endl;
+    logger(LOG_ERROR) << "ToFCamera: Could not get supported video modes or current bytes per pixel, to get nearest valid frame size" << std::endl;
     return false;
   }
   
@@ -499,7 +499,7 @@ bool ToFCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forF
   
   if(!_getSupportedVideoModes(supportedVideoModes) || !_getBytesPerPixel(bytesPerPixel))
   {
-    logger(LOG_ERROR) << "Could not get supported video modes or current bytes per pixel, to get nearest valid frame size" << std::endl;
+    logger(LOG_ERROR) << "ToFCamera: Could not get supported video modes or current bytes per pixel, to get nearest valid frame size" << std::endl;
     return false;
   }
   

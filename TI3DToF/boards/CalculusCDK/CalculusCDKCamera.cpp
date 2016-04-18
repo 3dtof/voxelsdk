@@ -206,6 +206,8 @@ bool CalculusCDKCamera::_init()
     ParameterPtr(new CalculusCDKIllumCurrentParameter(*_programmer)),
     ParameterPtr(new CalculusCDKIlluminationPowerParameter(*_programmer)),
     ParameterPtr(new CalculusCDKIlluminationPowerPercentParameter(*this, *_programmer)),
+    ParameterPtr(new CalculusModulationFrequencyParameter(*this, *_programmer, 12, 37, 18)),
+    ParameterPtr(new CalculusUnambiguousRangeParameter(*this, *_programmer, 4, 50, 5)),
     }))
   {
     return false;
@@ -298,9 +300,7 @@ bool CalculusCDKCamera::_setStreamerFrameSize(const FrameSize &s)
 
 bool CalculusCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
-  supportedVideoModes = Vector<SupportedVideoMode> {
-    SupportedVideoMode(80,60,30,1,4),
-  };
+  supportedVideoModes.clear();
   return true;
 }
 

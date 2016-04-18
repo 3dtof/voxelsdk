@@ -19,23 +19,22 @@ namespace TI
 class CalculusVCOFrequency: public FloatParameter
 {
   ToFCalculusCamera &_depthCamera;
-  String _vcoFreq, _modM, _modMFrac, _modN;
 public:
-  CalculusVCOFrequency(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer, const String &vcoFreq, const String &modM, const String &modMFrac, const String &modN):
+  CalculusVCOFrequency(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer):
   FloatParameter(programmer, VCO_FREQ, "MHz", 0, 0, 0, 1, 300, 600, 384, "VCO frequency", 
-                 "Frequency of the VCO used for generating modulation frequencies", IOType::IO_READ_WRITE, {modM, modN}), _depthCamera(depthCamera),
-                  _vcoFreq(vcoFreq), _modM(modM), _modMFrac(modMFrac), _modN(modN) {}
+                 "Frequency of the VCO used for generating modulation frequencies", IOType::IO_READ_WRITE, 
+		 {MOD_M, MOD_M_FRAC, MOD_N}), _depthCamera(depthCamera) {}
                  
   virtual bool get(float &value, bool refresh = false)
   {
     uint modM, modMFrac, modN, systemClockFrequency;
-    if (!_depthCamera._get(_modM, modM, refresh) || !_depthCamera._get(_modMFrac, modMFrac, refresh)
-        || !_depthCamera._get(_modN, modN, refresh) || !_depthCamera._getSystemClockFrequency(systemClockFrequency))
+    if (!_depthCamera._get(MOD_M, modM, refresh) || !_depthCamera._get(MOD_M_FRAC, modMFrac, refresh)
+        || !_depthCamera._get(MOD_N, modN, refresh) || !_depthCamera._getSystemClockFrequency(systemClockFrequency))
       return false;
 
     float modMf = modM + ((float) modMFrac)/(1 << 16);
 
-    float v = 2 * systemClockFrequency * modMf/(1 << modN);
+    float v = 2*systemClockFrequency*modMf/(1 << modN);
 
     if (!validate(v))
       return false;
@@ -63,11 +62,12 @@ public:
     if(systemClockFrequency == 0)
       return false;
     
-    float modMf = value * modN / systemClockFrequency;
+    float modMf = value*(1 << modN)/(2*systemClockFrequency);
+    
     modM = (uint) modMf;
     modMFrac = (uint)(modMf - modM) * (1 << 16);
     
-    if(!_depthCamera._set(_modM, modM) || !_depthCamera._set(_modN, modN) || !_depthCamera._set(_modMFrac, modMFrac))
+    if(!_depthCamera._set(MOD_M, modM) || !_depthCamera._set(MOD_N, modN) || !_depthCamera._set(MOD_M_FRAC, modMFrac))
       return false;
     
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -80,111 +80,206 @@ public:
   virtual ~CalculusVCOFrequency() {}
 };
 
-class CalculusModulationFrequencyParameter: public FloatParameter
+const float CalculusModulationFrequencyParameter::lowerLimit() const 
+{ 
+  int quadCount;
+  
+  ParameterPtr p = _depthCamera.getParam(VCO_FREQ);
+  
+  ParameterPtr p1 = _depthCamera.getParam(MOD_PS);
+  
+  if(!p || !p1)
+    return _lowerLimit;
+  
+  FloatParameter *vco = dynamic_cast<FloatParameter *>(p.get());
+  UnsignedIntegerParameter *ps = dynamic_cast<UnsignedIntegerParameter *>(p.get());
+  
+  if(!vco || !ps)
+    return _lowerLimit;
+  
+  float vcoLowerLimit = vco->lowerLimit();
+  uint psUpperLimit = ps->upperLimit();
+  
+  if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
+    return _lowerLimit;
+  
+  if(quadCount == 0)
+    return _lowerLimit;
+  
+  return vcoLowerLimit/(1 + psUpperLimit)/quadCount;
+}
+
+const float CalculusModulationFrequencyParameter::upperLimit() const 
+{ 
+  int quadCount;
+  
+  ParameterPtr p = _depthCamera.getParam(VCO_FREQ);
+  
+  ParameterPtr p1 = _depthCamera.getParam(MOD_PS);
+  
+  if(!p || !p1)
+    return _upperLimit;
+  
+  FloatParameter *vco = dynamic_cast<FloatParameter *>(p.get());
+  UnsignedIntegerParameter *ps = dynamic_cast<UnsignedIntegerParameter *>(p.get());
+  
+  if(!vco || !ps)
+    return _upperLimit;
+  
+  float vcoUpperLimit = vco->upperLimit();
+  uint psLowerLimit = ps->lowerLimit();
+  
+  if(!_depthCamera._get(QUAD_CNT_MAX, quadCount))
+    return _upperLimit;
+  
+  if(quadCount == 0)
+    return _upperLimit;
+  
+  return vcoUpperLimit/(1 + psLowerLimit)/quadCount;
+}
+
+bool CalculusModulationFrequencyParameter::get(float& value, bool refresh)
 {
-  ToFCalculusCamera &_depthCamera;
-  String _modPS, _vcoFreq;
-public:
-  CalculusModulationFrequencyParameter(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS):
-  FloatParameter(programmer, name, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, 48, "Modulation frequency", "Frequency used for modulation of illumination", 
-                 Parameter::IO_READ_WRITE, {vcoFreq, modPS}), _vcoFreq(vcoFreq), _modPS(modPS), _depthCamera(depthCamera) {}
-                 
-  virtual const float lowerLimit() const
+  float vcoFrequency;
+  
+  uint modulationPS;
+  int quadCount = 4;
+
+  if (!_depthCamera._get(VCO_FREQ, vcoFrequency, refresh) || !_depthCamera._get(MOD_PS, modulationPS, refresh))
+    return false;
+
+  if (quadCount == 0)
+    return false;
+
+  float v = vcoFrequency/quadCount/(1 + modulationPS);
+
+  if (!validate(v))
+    return false;
+
+  value = v;
+  return true;
+  
+}
+
+bool CalculusModulationFrequencyParameter::set(const float &value)
+{
+  if(!validate(value))
+    return false;
+  
+  ParameterPtr p = _depthCamera.getParam(VCO_FREQ);
+
+  int quadCount = 4;
+  
+  if(!p)
+    return false;
+  
+  if (quadCount == 0)
+    return false;
+
+  CalculusVCOFrequency &v = (CalculusVCOFrequency &)*p;
+  
+  uint modulationPS = v.lowerLimit()/quadCount/value;
+  
+  if(!v.set((modulationPS + 1) *quadCount*value))
+    return false;
+  
+  if(!_depthCamera._set(MOD_PLL_UPDATE, true))
+    return false;
+  
+  ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
+  
+  if(!_depthCamera._set(MOD_PS, modulationPS))
+    return false;
+  
+  float val;
+  
+  if(!v.get(val))
+    return false;
+  
+  return true;
+}
+
+bool CalculusUnambiguousRangeParameter::get(uint &value, bool refresh)
+{
+  if(!UnsignedIntegerParameter::get(value, refresh) || !validate(value))// Invalid value? Probably register not set yet
   {
-    int quadCount = 4;
-
-    //if (!_depthCamera._get(QUAD_CNT_MAX, quadCount))
-    //  return _lowerLimit;
-
-    if (quadCount == 0)
-      return _lowerLimit;
-
-    return 37.5f/quadCount;
-  }
-
-  virtual bool get(float &value, bool refresh = false)
-  {
-    float vcoFrequency;
+    if(validate(_value))
+    {
+      value = _value; // Use saved value
+    }
+    else
+    {
+      if(!set(_defaultValue)) // set range to default value
+      return false;
     
-    uint modulationPS;
-    int quadCount = 4;
-
-    if (!_depthCamera._get(_vcoFreq, vcoFrequency, refresh) || !_depthCamera._get(_modPS, modulationPS, refresh))
-      return false;
-
-    if (quadCount == 0)
-      return false;
-
-    float v = vcoFrequency/quadCount/(1 + modulationPS);
-
-    if (!validate(v))
-      return false;
-
-    value = v;
-    return true;
-    
+      _value = _defaultValue;
+      value = _defaultValue;
+    }
   }
   
-  virtual bool set(const float &value)
-  {
-    if(!validate(value))
-      return false;
-    
-    ParameterPtr p = _depthCamera.getParam(_vcoFreq);
+  return true;
+}
 
-    int quadCount = 4;
-    
-    if(!p)
-      return false;
-    
-    if (quadCount == 0)
-      return false;
-
-    CalculusVCOFrequency &v = (CalculusVCOFrequency &)*p;
-    
-    uint modulationPS = v.lowerLimit()/quadCount/value;
-    
-    if(!v.set((modulationPS + 1) *quadCount*value))
-      return false;
-    
-    if(!_depthCamera._set(MOD_PLL_UPDATE, true))
-      return false;
-    
-    ParameterPtr pllUpdate(nullptr, [this](Parameter *) { _depthCamera._set(MOD_PLL_UPDATE, false); }); // Set PLL update to false when going out of scope of this function
-    
-    if(!_depthCamera._set(_modPS, modulationPS))
-      return false;
-    
-    float val;
-    
-    if(!v.get(val))
-      return false;
-    
-    return true;
-  }
-};
-
-#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6F/2/29.95/(1 << 12)
-class CalculusUnambiguousRangeParameter: public UnsignedIntegerParameter
+bool CalculusUnambiguousRangeParameter::set(const uint &value)
 {
-  ToFCalculusCamera &_depthCamera;
-public:
-  CalculusUnambiguousRangeParameter(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0, 0, 0, 0, 3, 50, DEFAULT_UNAMBIGUOUS_RANGE, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"), _depthCamera(depthCamera) {}
-
-  virtual bool get(uint &value, bool refresh = false)
+  ParameterPtr p = _depthCamera.getParam(MOD_F);
+  
+  CalculusModulationFrequencyParameter *mfp = dynamic_cast<CalculusModulationFrequencyParameter *>(p.get());
+  
+  if(!mfp)
+    return false;
+  
+  float modulationFrequency1Minimum = mfp->getOptimalMinimum(), modulationFrequency1Maximum = mfp->getOptimalMaximum();
+  
+  FrameRate r;
+  
+  if(!_depthCamera._getFrameRate(r))
+    return false;
+  
+  // No need of dealiasing?
+  if(value <= (uint)(4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/modulationFrequency1Minimum))
   {
-    _value = DEFAULT_UNAMBIGUOUS_RANGE;
-    value = DEFAULT_UNAMBIGUOUS_RANGE;
+    float modulationFrequency1 = 4095*SPEED_OF_LIGHT/1E6f/2/(1 << 12)/value;
+    
+    if(!_depthCamera._set(TG_EN, false) || 
+      !_depthCamera._setFrameRate(r) ||
+      !mfp->set(modulationFrequency1) ||
+      !_depthCamera._set(DEALIAS_EN, false) ||// Disable dealiasing explicitly)
+      !_depthCamera._set(ALT_FRM_EN, false) ||
+      //!UnsignedIntegerParameter::set(value) // Save the value in a register
+      !_depthCamera._set(TG_EN, true))
+      return false;
+      
+    _value = value;
+    
     return true;
   }
-
-  virtual bool set(const uint &value)
+  else
   {
+    int rangeExtensionRatio = ceil(log2(value/(SPEED_OF_LIGHT/(2*modulationFrequency1Maximum*1E6))));
+    
+    if(rangeExtensionRatio > 6)
+    {
+      logger(LOG_ERROR) << "CalculusUnambiguousRangeParameter: Desired unambiguous range is too large." << std::endl;
+      return false;
+    }
+    
+    if(!_depthCamera._set(TG_EN, false) ||
+      !_depthCamera._set(ALT_FRM_EN, true) ||
+      !mfp->set(modulationFrequency1Maximum) ||
+      !_depthCamera._set(ALT_FREQ_SEL, rangeExtensionRatio - 1) ||
+      !_depthCamera._setFrameRate(r) ||
+      !_depthCamera._set(DEALIAS_EN, true) ||
+      //!UnsignedIntegerParameter::set(value) || // Save the value in a register
+      !_depthCamera._set(TG_EN, true))
+      return false;
+    
+    _value = value;
+    
     return true;
   }
+}
 
-};
 
 ToFCalculusCamera::ToFCalculusCamera(const String &name, DevicePtr device): ToFCamera(name, "calculus.ti", device)
 {
@@ -206,18 +301,6 @@ bool ToFCalculusCamera::_getBytesPerPixel(uint &bpp) const
 bool ToFCalculusCamera::_getOpDataArrangeMode(int &dataArrangeMode) const
 {
   dataArrangeMode = 0;
-  return true;
-}
-
-bool ToFCalculusCamera::_getFrameRate(FrameRate &r) const
-{
-  r.numerator = 30;
-  r.denominator = 1;
-  return true;
-}
-
-bool ToFCalculusCamera::_setFrameRate(const FrameRate &r)
-{
   return true;
 }
 
@@ -272,10 +355,7 @@ bool ToFCalculusCamera::_init()
   
   if(!_addParameters({
     ParameterPtr(new PhaseCorrectionAdditiveParameter(true, *_programmer)),
-    ParameterPtr(new CalculusVCOFrequency(*this, *_programmer, VCO_FREQ, MOD_M1, MOD_M_FRAC1, MOD_N1)),
-    ParameterPtr(new CalculusModulationFrequencyParameter(*this, *_programmer, MOD_FREQ1, VCO_FREQ, MOD_PS1)),
-    ParameterPtr(new CalculusUnambiguousRangeParameter(*this, *_programmer
-      )),
+    ParameterPtr(new CalculusVCOFrequency(*this, *_programmer)),
   }))
     return false;
   
@@ -414,7 +494,7 @@ bool ToFCalculusCamera::_getIlluminationFrequency(float& frequency) const
 {
   float modulationFrequency;
   
-  if(!get(MOD_FREQ1, frequency))
+  if(!get(MOD_F, frequency))
     return false;
     
   return true;
@@ -456,7 +536,30 @@ bool ToFCalculusCamera::_getCurrentProfileRegisterName(String &name)
 
 bool ToFCalculusCamera::_getSubFrameCount(int &subframeCount) const
 {
-  return _get(SUBFRAME_CNT_MAX, subframeCount);
+  bool dealiasEnabled;
+  if(!_get(DEALIAS_EN, dealiasEnabled))
+    return false;
+  
+  uint subFrameCount1;
+  
+  if(!dealiasEnabled)
+  {
+    if(!_get(SUBFRAME_CNT_MAX1, subFrameCount1))
+      return false;
+    else
+    {
+      subframeCount = subFrameCount1;
+      return true;
+    }
+  }
+  
+  uint subframeCount2;
+  
+  if(!_get(SUBFRAME_CNT_MAX1, subFrameCount1) || !_get(SUBFRAME_CNT_MAX2, subframeCount2))
+    return false;
+  
+  subframeCount = subFrameCount1 + subframeCount2;
+  return true;
 }
 
 

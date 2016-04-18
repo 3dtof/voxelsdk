@@ -9,32 +9,20 @@
 
 #include <ToFCamera.h>
 
-#undef MOD_M
-#define MOD_M "mod_m"
-#define MOD_M1 "mod_m"
-#define MOD_M_FRAC1 "mod_m_frac"
-#define MOD_M2 "mdiv_fb_deci_pll2"
-#undef MOD_N
-#define MOD_N "mod_n"
-#define MOD_N1 "mod_n"
-#define MOD_N2 "mdiv_pll_2_in"
-
+#define MOD_M_FRAC "mod_m_frac"
 #undef MOD_PS1
-#define MOD_PS1 "mod_ps"
+#define MOD_PS "mod_ps"
 #undef MOD_PS2
-#define MOD_PS2 "mdiv_ff_pll2"
-#undef MOD_PLL_UPDATE
-#define MOD_PLL_UPDATE "mod_pll_update"
-#undef ROW_START
-#define ROW_START "row_start"
-#undef ROW_END
-#define ROW_END "row_end"
-#undef COL_START
-#define COL_START "col_start"
-#undef COL_END
-#define COL_END "col_end"
-#undef QUAD_CNT_MAX
-#define QUAD_CNT_MAX "quad_cnt_max"
+#undef MOD_FREQ1
+#undef MOD_FREQ2
+#define MOD_F "mod_freq1"
+
+#undef DEALIAS_16BIT_OP_ENABLE
+#undef DEALIASED_PHASE_MASK
+
+#define ALT_FRM_EN "alt_frm_en"
+#define ALT_FREQ_SEL "alt_freq_sel"
+#define SUP_FRM_INTG_SCALE "sup_frm_intg_scale"
 
 #define STANDBY "standby"
 #define DIS_SDMOD "dis_sdmod"
@@ -51,13 +39,13 @@
 #define MOD_CDRIV_CURR "mod_cdriv_curr"
 #define SHUTTER_EN "shutter_en"
 #define LUMPED_DEAD_TIME "lumped_dead_time"
-#define INTEGRATION_DUTY_CYCLE "intg_duty_cycle"
 
 #undef CONFIDENCE_THRESHOLD
 #define CONFIDENCE_THRESHOLD "amplitude_threshold"
 
 #undef SUBFRAME_CNT_MAX
-#define SUBFRAME_CNT_MAX "sub_frame_cnt_max1"
+#define SUBFRAME_CNT_MAX1 "sub_frame_cnt_max1"
+#define SUBFRAME_CNT_MAX2 "sub_frame_cnt_max2"
 
 namespace Voxel
 {
@@ -78,11 +66,7 @@ protected:
   virtual bool _getFrameSize(Voxel::FrameSize &s) const;
   virtual bool _getBytesPerPixel(uint &bpp) const;
   virtual bool _getOpDataArrangeMode(int &dataArrangeMode) const;
-  virtual bool _getFrameRate(FrameRate &r) const;
-  virtual bool _setFrameRate(const FrameRate &r);
   virtual bool _getSystemClockFrequency(uint &frequency) const;
-  
-  
   
   virtual bool _getToFFrameType(ToFFrameType &frameType) const;
   virtual bool _allowedROI(String &message);
@@ -114,6 +98,46 @@ public:
   friend class CalculusVCOFrequency;
   friend class CalculusModulationFrequencyParameter;
   friend class CalculusIntegDutyCycle;
+  friend class CalculusUnambiguousRangeParameter;
+};
+
+class TI3DTOF_EXPORT CalculusModulationFrequencyParameter: public FloatParameter
+{
+  ToFCalculusCamera &_depthCamera;
+  float _optimalMinimum, _optimalMaximum;
+public:
+  CalculusModulationFrequencyParameter(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer, const float &optimalMinimum, const float &optimalMaximum, const float &defaultValue):
+  FloatParameter(programmer, MOD_F, "MHz", 0, 0, 0, 1, 2.5f, 600.0f, defaultValue, "Modulation frequency", "Frequency used for modulation of illumination", 
+                 Parameter::IO_READ_WRITE, {VCO_FREQ, MOD_M, MOD_M_FRAC, MOD_N, MOD_PS}), _optimalMinimum(optimalMinimum), _optimalMaximum(optimalMaximum), _depthCamera(depthCamera) {}
+                 
+  const float getOptimalMaximum() { return _optimalMaximum; }
+  const float getOptimalMinimum() { return _optimalMinimum; }
+                 
+  virtual const float lowerLimit() const;
+  virtual const float upperLimit() const;
+                 
+  virtual bool get(float &value, bool refresh = false);
+  
+  virtual bool set(const float &value);
+  
+  virtual ~CalculusModulationFrequencyParameter() {}
+};
+
+class TI3DTOF_EXPORT CalculusUnambiguousRangeParameter: public UnsignedIntegerParameter
+{
+  ToFCalculusCamera &_depthCamera;
+  uint _defaultValue;
+public:
+  CalculusUnambiguousRangeParameter(ToFCalculusCamera &depthCamera, RegisterProgrammer &programmer, const uint &minimum, const uint &maximum, const uint &defaultValue):
+    UnsignedIntegerParameter(programmer, UNAMBIGUOUS_RANGE, "m", 0, 0, 23, 16, minimum, maximum, 
+                           defaultValue, "Unambiguous Range", "Unambiguous range of distance the camera needs to support"), _defaultValue(defaultValue),
+                           _depthCamera(depthCamera) {} //FIXME 0x5839, 24 -- this register is not working
+                           
+  virtual bool get(uint &value, bool refresh = false);
+  
+  virtual bool set(const uint &value);
+  
+  virtual ~CalculusUnambiguousRangeParameter() {}
 };
 
 }
