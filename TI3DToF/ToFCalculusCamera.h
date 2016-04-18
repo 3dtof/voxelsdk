@@ -47,6 +47,14 @@
 #define SUBFRAME_CNT_MAX1 "sub_frame_cnt_max1"
 #define SUBFRAME_CNT_MAX2 "sub_frame_cnt_max2"
 
+#define COEFF_ILLUM "coeff_illum"
+#define COEFF_SENSOR "coeff_sensor"
+
+#define NONLINEARITY_PHASE_PERIOD "phase_lin_corr_period"
+#define NONLINEARITY_COEFF "phase_lin_coeff"
+#define NONLINEARITY_DISABLE "phase_lin_corr_dis"
+
+
 namespace Voxel
 {
   

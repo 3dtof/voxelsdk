@@ -8,6 +8,9 @@
 #include <Configuration.h>
 #include <ParameterDMLParser.h>
 
+#include <iterator>
+#include <algorithm>
+
 namespace Voxel
 {
   
@@ -367,10 +370,62 @@ bool ToFCalculusCamera::_init()
     return false;
   
   if(!ToFCamera::_init())
-  {
     return false;
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
+    auto f = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "quad_cnt_max");
+    if(f != calibInfo.definingParameters.end())
+      calibInfo.definingParameters.erase(f);
+    
+    {
+      auto f = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "mix_volt");
+      if(f != calibInfo.definingParameters.end())
+        calibInfo.definingParameters.erase(f);
+    }
+    
+    auto f1 = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "sub_frame_cnt_max");
+    if(f1 != calibInfo.definingParameters.end())
+      *f1 = "sub_frame_cnt_max1";
   }
-
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
+    Vector<String> params = {COEFF_ILLUM, COEFF_SENSOR, CALIB_PREC};
+    calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end());
+    
+    auto f = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "quad_cnt_max");
+    if(f != calibInfo.definingParameters.end())
+      calibInfo.definingParameters.erase(f);
+    
+    {
+      auto f = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "mix_volt");
+      if(f != calibInfo.definingParameters.end())
+        calibInfo.definingParameters.erase(f);
+    }
+    
+    auto f1 = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "sub_frame_cnt_max");
+    if(f1 != calibInfo.definingParameters.end())
+      *f1 = "sub_frame_cnt_max1";
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET];
+    
+    auto f = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "mix_volt");
+    if(f != calibInfo.definingParameters.end())
+      calibInfo.definingParameters.erase(f);
+  }
+  
+  {
+    CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
+    calibInfo.name = ToF_CALIB_SECT_NON_LINEARITY;
+    calibInfo.id = ToF_CALIB_SECT_NON_LINEARITY_ID;
+    calibInfo.definingParameters = {"op_clk_freq", "unambiguous_range", "frame_rate", "sub_frame_cnt_max1", "intg_time"}; //"mix_volt", 
+    calibInfo.calibrationParameters = {NONLINEARITY_PHASE_PERIOD, NONLINEARITY_COEFF};
+  }
+  
+  
   if (!set(STANDBY, true) ||
       !set(STANDBY, false) ||
       !set(INIT_0, 0xAU) ||
@@ -528,16 +583,76 @@ bool ToFCalculusCamera::_getDealiasedPhaseMask(int &dealiasedPhaseMask)
 bool ToFCalculusCamera::_applyCalibrationParams()
 {
   bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID)) == 0;
-
-  if (commonPhaseCalibEnable) {
-    if (!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)))
+  bool temperatureCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_TEMPERATURE_ID)) == 0;
+  bool nonlinearityCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_NON_LINEARITY_ID)) == 0;
+  
+  if(commonPhaseCalibEnable)
+  {
+    if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
+      !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
+      !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
+      !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
+      !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)))
       return false;
-  } else {
-    if (!set(DISABLE_OFFSET_CORR, true) ||
-      !set(PHASE_CORR_1, 0)
+  }
+  else
+  {
+    if(!set(DISABLE_OFFSET_CORR, true) || 
+      !set(PHASE_CORR_1, 0) ||
+      !set(PHASE_CORR_2, 0)
     )
       return false;
   }
+  
+  if(temperatureCalibEnable)
+  {
+    if(!set(DISABLE_TEMP_CORR, configFile.getBoolean("calib", DISABLE_TEMP_CORR)) ||
+      !set(CALIB_PREC, (uint)configFile.getInteger("calib", CALIB_PREC)) ||
+      !set(COEFF_ILLUM, configFile.getInteger("calib", COEFF_ILLUM)) ||
+      !set(COEFF_SENSOR, configFile.getInteger("calib", COEFF_SENSOR)))
+      return false;
+  }
+  else
+  {
+    if(!set(DISABLE_TEMP_CORR, true))
+      return false;
+  }
+  
+  if(nonlinearityCalibEnable && configFile.isPresent("calib", NONLINEARITY_COEFF) &&
+    configFile.isPresent("calib", NONLINEARITY_PHASE_PERIOD))
+  {
+    Vector<uint> nlCoeff1;
+    
+    nlCoeff1.reserve(9);
+    
+    {
+      std::istringstream ss(configFile.get("calib", NONLINEARITY_COEFF));
+      
+      std::copy(std::istream_iterator<uint>(ss),
+                std::istream_iterator<uint>(),
+                std::back_inserter(nlCoeff1));
+    }
+    
+    if(nlCoeff1.size() != 9)
+      return false;
+    
+    bool phasePeriod = configFile.getBoolean("calib", NONLINEARITY_PHASE_PERIOD);
+    
+    String n1 = NONLINEARITY_COEFF;
+    
+    for(auto i = 0; i < 9; i++)
+      if(!set(n1 + "_" + std::to_string(i), (int)nlCoeff1[i]))
+        return false;
+      
+    if(!set(NONLINEARITY_PHASE_PERIOD, phasePeriod) || !set(NONLINEARITY_DISABLE, false))
+      return false;
+  }
+  else
+  {
+    if(!set(NONLINEARITY_DISABLE, true))
+      return false;
+  }
+  
   return true;
 }
 
