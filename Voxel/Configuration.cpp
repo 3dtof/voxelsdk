@@ -267,7 +267,7 @@ bool Configuration::_get(const String &type, String &name)
   for(auto &p: paths)
   {
     String n = (p.size() > 0)?(p + DIR_SEP + name):name;
-    
+
     std::ifstream f(n, std::ios::binary);
     
     if(f.good())
