@@ -112,8 +112,8 @@ bool ToFFrameGenerator::_onReadConfiguration()
   
   if(_majorVersion == 0 && _minorVersion < 3)
   {
-    _size.width = _roi.width/_columnsToMerge;
-    _size.height = _roi.height/_rowsToMerge;
+    _size.width = (_roi.width + _columnsToMerge - 1)/_columnsToMerge;
+    _size.height = (_roi.height + _rowsToMerge - 1)/_rowsToMerge;
     _frameSize = _size;
     _quadCount = 4;
   }
@@ -123,8 +123,8 @@ bool ToFFrameGenerator::_onReadConfiguration()
       !get(PARAM_QUAD_COUNT, _quadCount))
       return false;
     
-    _size.width = std::min<uint>(_frameSize.width, _roi.width/_columnsToMerge);
-    _size.height = std::min<uint>(_frameSize.height, _roi.height/_rowsToMerge);
+    _size.width = std::min<uint>(_frameSize.width, (_roi.width + _columnsToMerge - 1)/_columnsToMerge);
+    _size.height = std::min<uint>(_frameSize.height, (_roi.height + _rowsToMerge - 1)/_rowsToMerge);
   }
   
   _frameType = (ToFFrameType)frameType;
@@ -235,8 +235,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
   }
   
   _frameSize = frameSize;
-  _size.width = std::min<uint>(frameSize.width, _roi.width/_columnsToMerge);
-  _size.height = std::min<uint>(frameSize.height, _roi.height/_rowsToMerge);
+  _size.width = std::min<uint>(frameSize.width, (_roi.width + _columnsToMerge - 1)/_columnsToMerge);
+  _size.height = std::min<uint>(frameSize.height, (_roi.height + _rowsToMerge - 1)/_rowsToMerge);
   
   _histogramEnabled = histogramEnabled;
   _crossTalkCoefficients = crossTalkCoefficients;

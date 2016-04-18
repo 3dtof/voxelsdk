@@ -439,7 +439,7 @@ bool ToFCamera::_initStartParams()
   
   FrameSize maxFrameSize, frameSize;
   
-  if(!getMaximumFrameSize(maxFrameSize) || !getFrameSize(frameSize))
+  if(!getMaximumFrameSize(maxFrameSize) || !getFrameSize(frameSize) || !_setFrameSize(frameSize, false))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not get frame related parameters. Cannot convert raw data to ToF data" << std::endl;
     return false;

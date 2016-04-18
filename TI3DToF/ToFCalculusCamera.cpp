@@ -285,10 +285,17 @@ ToFCalculusCamera::ToFCalculusCamera(const String &name, DevicePtr device): ToFC
 {
 }
 
-bool ToFCalculusCamera::_getFrameSize(Voxel::FrameSize &s) const
+bool ToFCalculusCamera::_getFrameSize(FrameSize &s) const
 {
-  s.width = 80;
-  s.height = 60;
+  uint rowsToMerge, columnsToMerge;
+  RegionOfInterest roi;
+  
+  if(!_getBinning(rowsToMerge, columnsToMerge) || !_getROI(roi))
+    return false;
+  
+  s.width = (roi.width + columnsToMerge - 1)/columnsToMerge;
+  s.height = (roi.height + rowsToMerge - 1)/rowsToMerge;
+  
   return true;
 }
 
@@ -395,14 +402,13 @@ bool ToFCalculusCamera::_initStartParams()
 
 bool ToFCalculusCamera::_allowedROI(String &message)
 {
-  message  = "Column start and end must be multiples of 16, both between 0 to 319. ";
+  message  = "Column start and end must be between 0 to 319. ";
   message += "Row start and end must be between 0 to 239.";
   return true;
 }
 
-bool ToFCalculusCamera::_getROI(RegionOfInterest &roi)
+bool ToFCalculusCamera::_getROI(RegionOfInterest &roi) const
 {
-#if 0
   uint rowStart, rowEnd, colStart, colEnd;
   
   if(!_get(ROW_START, rowStart) || !_get(ROW_END, rowEnd) || !_get(COL_START, colStart) || !_get(COL_END, colEnd))
@@ -411,26 +417,15 @@ bool ToFCalculusCamera::_getROI(RegionOfInterest &roi)
     return false;
   }
   
-  colStart = colStart*2;
-  colEnd = (colEnd + 1)*2 - 1;
-  
   roi.x = colStart;
   roi.y = rowStart;
   roi.width = colEnd - colStart + 1;
   roi.height = rowEnd - rowStart + 1;
-#else
-  roi.x = 0;
-  roi.y = 0;
-  roi.width = 80;
-  roi.height = 60;
-#endif
-
   return true;
 }
 
 bool ToFCalculusCamera::_setROI(const RegionOfInterest &roi)
 {
-#if 0
   if(isRunning())
   {
     logger(LOG_ERROR) << "ToFCalculusCamera: Cannot set frame size while the camera is streaming" << std::endl;
@@ -439,8 +434,8 @@ bool ToFCalculusCamera::_setROI(const RegionOfInterest &roi)
   
   uint rowStart, rowEnd, colStart, colEnd;
   
-  colStart = (roi.x/16)*8;
-  colEnd = ((roi.x + roi.width)/16)*8 - 1;
+  colStart = roi.x;
+  colEnd = roi.x + roi.width - 1;
   
   rowStart = roi.y;
   rowEnd = rowStart + roi.height - 1;
@@ -463,19 +458,37 @@ bool ToFCalculusCamera::_setROI(const RegionOfInterest &roi)
     logger(LOG_ERROR) << "ToFCalculusCamera: Could not update frame size to closest valid frame size" << std::endl;
     return false;
   }
-#endif
   
   return true;
 }
 
 bool ToFCalculusCamera::_getBinning(uint &rowsToMerge, uint &columnsToMerge) const
 {
-  rowsToMerge = columnsToMerge = 1;
+  int r, c;
+  if(!_get(BIN_ROWS_TO_MERGE, r) || !_get(BIN_COLS_TO_MERGE, c))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not set binning related parameters" << std::endl;
+    return false;
+  }
+  
+  rowsToMerge = 1 << r;
+  columnsToMerge = 1 << c;
+  
   return true;
 }
 
 bool ToFCalculusCamera::_setBinning(uint rowsToMerge, uint columnsToMerge, const FrameSize &frameSize)
 {
+  uint r, c;
+  
+  nearestPowerOf2(rowsToMerge, r);
+  nearestPowerOf2(columnsToMerge, c);
+  
+  if(!_set(BIN_ROWS_TO_MERGE, (int)r) || !_set(BIN_COLS_TO_MERGE, (int)c))
+  {
+    logger(LOG_ERROR) << "ToFCamera: Could not set binning related parameters" << std::endl;
+    return false;
+  }
   return true;
 }
 

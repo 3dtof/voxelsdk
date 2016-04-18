@@ -70,7 +70,7 @@ protected:
   
   virtual bool _getToFFrameType(ToFFrameType &frameType) const;
   virtual bool _allowedROI(String &message);
-  virtual bool _getROI(RegionOfInterest &roi);
+  virtual bool _getROI(RegionOfInterest &roi) const;
   virtual bool _setROI(const RegionOfInterest &roi);
   virtual bool _getBinning(uint &rowsToMerge, uint &columnsToMerge) const;
   virtual bool _setBinning(uint rowsToMerge, uint columnsToMerge, const FrameSize &frameSize);

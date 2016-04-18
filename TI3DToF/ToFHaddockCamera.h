@@ -31,7 +31,7 @@ protected:
   
   
   virtual bool _allowedROI(String &message);
-  virtual bool _getROI(RegionOfInterest &roi);
+  virtual bool _getROI(RegionOfInterest &roi) const;
   virtual bool _setROI(const RegionOfInterest &roi);
   
   virtual bool _isHistogramEnabled() const;

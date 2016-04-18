@@ -413,7 +413,7 @@ bool ToFTintinCamera::_allowedROI(String &message)
   return true;
 }
 
-bool ToFTintinCamera::_getROI(RegionOfInterest &roi)
+bool ToFTintinCamera::_getROI(RegionOfInterest &roi) const
 {
   uint rowStart, rowEnd, colStart, colEnd;
   

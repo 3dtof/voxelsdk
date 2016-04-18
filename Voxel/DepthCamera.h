@@ -132,7 +132,7 @@ protected:
   virtual bool _setBytesPerPixel(const uint &bpp) = 0;
   
   
-  virtual bool _getROI(RegionOfInterest &roi) = 0;
+  virtual bool _getROI(RegionOfInterest &roi) const = 0;
   virtual bool _setROI(const RegionOfInterest &roi) = 0;
   virtual bool _allowedROI(String &message) = 0;
   

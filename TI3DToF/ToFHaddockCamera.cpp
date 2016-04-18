@@ -471,7 +471,7 @@ bool ToFHaddockCamera::_allowedROI(String &message)
   return true;
 }
 
-bool ToFHaddockCamera::_getROI(RegionOfInterest &roi)
+bool ToFHaddockCamera::_getROI(RegionOfInterest &roi) const
 {
   uint rowStart, rowEnd, colStart, colEnd;
   
