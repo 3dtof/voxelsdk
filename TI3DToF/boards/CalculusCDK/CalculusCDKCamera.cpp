@@ -221,12 +221,12 @@ bool CalculusCDKCamera::_init()
   )
     return false;
     
-  if(!ToFCalculusCamera::_init())
-    return false;
-  
   // Initialize serializer block
   configFile.setHardwareConfigSerializer(new HardwareSerializer(_usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
 
+  if(!ToFCalculusCamera::_init())
+    return false;
+  
   FrameSize s;
   
   if(!getFrameSize(s)) 
