@@ -204,7 +204,7 @@ bool CalculusModulationFrequencyParameter::set(const float &value)
 
 bool CalculusUnambiguousRangeParameter::get(uint &value, bool refresh)
 {
-  if(!UnsignedIntegerParameter::get(value, refresh) || !validate(value))// Invalid value? Probably register not set yet
+  if(!_depthCamera._get(SCRATCH2, value, refresh) || !validate(value))// Invalid value? Probably register not set yet
   {
     if(validate(_value))
     {
@@ -249,7 +249,7 @@ bool CalculusUnambiguousRangeParameter::set(const uint &value)
       !mfp->set(modulationFrequency1) ||
       !_depthCamera._set(DEALIAS_EN, false) ||// Disable dealiasing explicitly)
       !_depthCamera._set(ALT_FRM_EN, false) ||
-      //!UnsignedIntegerParameter::set(value) // Save the value in a register
+      !_depthCamera._set(SCRATCH2, value) || // Save the value in a register
       !_depthCamera._set(TG_EN, true))
       return false;
       

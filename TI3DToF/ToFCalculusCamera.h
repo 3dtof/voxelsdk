@@ -54,6 +54,8 @@
 #define NONLINEARITY_COEFF "phase_lin_coeff"
 #define NONLINEARITY_DISABLE "phase_lin_corr_dis"
 
+// For unambigous range
+#define SCRATCH2 "scratch2"
 
 namespace Voxel
 {
