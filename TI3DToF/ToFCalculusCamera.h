@@ -51,7 +51,7 @@
 #define COEFF_SENSOR "coeff_sensor"
 
 #define NONLINEARITY_PHASE_PERIOD "phase_lin_corr_period"
-#define NONLINEARITY_COEFF "phase_lin_coeff0"
+#define NONLINEARITY_COEFF "phase_lin_coeff"
 #define NONLINEARITY_DISABLE "phase_lin_corr_dis"
 
 // For unambigous range

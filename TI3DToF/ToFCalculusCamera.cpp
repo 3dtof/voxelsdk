@@ -421,7 +421,7 @@ bool ToFCalculusCamera::_init()
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
     calibInfo.name = ToF_CALIB_SECT_NON_LINEARITY;
     calibInfo.id = ToF_CALIB_SECT_NON_LINEARITY_ID;
-    calibInfo.definingParameters = {"op_clk_freq", "unambiguous_range", "frame_rate", "sub_frame_cnt_max1", "intg_time"}; //"mix_volt", 
+    calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max1", "intg_time"}; //"mix_volt", 
     calibInfo.calibrationParameters = {NONLINEARITY_PHASE_PERIOD, NONLINEARITY_COEFF};
   }
   
