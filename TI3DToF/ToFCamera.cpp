@@ -103,7 +103,7 @@ bool ToFCamera::_init()
     calibInfo.name = ToF_CALIB_SECT_COMMON_PHASE_OFFSET;
     calibInfo.id = ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID;
     calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
-    calibInfo.calibrationParameters = {"phase_corr_1", "phase_corr_2", "tillum_calib", "tsensor_calib", "actual_distance", "disable_phase_corr"};
+    calibInfo.calibrationParameters = {"phase_corr_1", "phase_corr_2", "tillum_calib", "tsensor_calib", "actual_distance"};
   }
   
   {
