@@ -1109,8 +1109,43 @@ bool MainConfigurationFile::_updateCameraProfileList()
   return true;
 }
 
+bool MainConfigurationFile::removeAllHardwareCameraProfiles()
+{
+  bool tryAgain = true;
+  
+  while(tryAgain)
+  {
+    tryAgain = false;
+    for(auto c = _cameraProfiles.begin(); c != _cameraProfiles.end(); c++)
+    {
+      if(c->second.getLocation() == IN_HOST)
+        continue;
+      
+      if(!_removeCameraProfile(c->first, false))
+        return false;
+      else
+      {
+        tryAgain = true;
+        break;
+      }
+    }
+  }
+  
+  if(!writeToHardware())
+  {
+    logger(LOG_ERROR) << "MainConfigurationFile: Failed to remove all hardware profiles." << std::endl;
+    return false;
+  }
+  return true;
+}
+
 
 bool MainConfigurationFile::removeCameraProfile(const int id)
+{
+  return _removeCameraProfile(id);
+}
+
+bool MainConfigurationFile::_removeCameraProfile(const int id, bool updateHardware)
 {
   if(_cameraProfiles.find(id) == _cameraProfiles.end())
     return false;
@@ -1176,12 +1211,12 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
         _defaultCameraProfileIDInHardware = config->first;
         break;
       }
-    
-    if(!changed)  // There are H/W profiles remaining
-      _defaultCameraProfileIDInHardware = -1;
+      
+      if(!changed)  // Are there H/W profiles remaining?
+        _defaultCameraProfileIDInHardware = -1;
   }
   
-  if(refreshHardware && !writeToHardware())
+  if(updateHardware && refreshHardware && !writeToHardware())
   {
     logger(LOG_ERROR) << "MainConfigurationFile: Failed to update hardware data after removing profile with id = " << id << std::endl;
     return false;
@@ -1215,7 +1250,6 @@ bool MainConfigurationFile::removeCameraProfile(const int id)
   
   return true;
 }
-
 
 
 String MainConfigurationFile::get(const String &section, const String &name) const
@@ -1536,7 +1570,21 @@ bool MainConfigurationFile::writeToHardware()
   return true;
 }
 
-bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
+bool MainConfigurationFile::saveCameraProfileToHardware(int &id, bool saveParents, bool setAsDefault, const String &namePrefix)
+{
+  Vector<int> newIDsAdded;
+  Vector<ConfigurationFile> oldIDsModified;
+  if(!_saveCameraProfileToHardware(id, newIDsAdded, oldIDsModified, saveParents, true, setAsDefault, namePrefix))
+  {
+    _rollbackCameraProfiles(newIDsAdded, oldIDsModified);
+    return false;
+  }
+  else
+    return true;
+  
+}
+
+bool MainConfigurationFile::_saveCameraProfileToHardware(int &id, Vector<int> &newIDsAdded, Vector<ConfigurationFile> &oldIDsModified, bool saveParents, bool updateHardware, bool setAsDefault, const String &namePrefix)
 {
   ConfigurationFile *config = getCameraProfile(id);
   
@@ -1548,60 +1596,103 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id)
   
   int newid = id;
   
-  if(config->getLocation() == ConfigurationFile::IN_HOST) // Was it in camera earlier?
+  newconfig.setProfileName(namePrefix + newconfig.getProfileName());
+  
+  if(config->getLocation() == ConfigurationFile::IN_HOST) // Is it in host and not camera?
   {
     newid = _getNewCameraProfileID(false); // Get new ID for camera
     newconfig.setID(newid);
     newconfig._location = ConfigurationFile::IN_CAMERA;
-    newconfig._fileName = _hardwareID + "-" + newconfig._profileName + ".conf";
+    newconfig._fileName = _hardwareID + "-" + newconfig.getProfileName() + ".conf";
   }
+  
+  _cameraProfiles[newid] = newconfig; // Set once now to aid saving parents
+  _cameraProfileNames[newid] = newconfig._profileName;
+  
+  if(newid != id)
+    newIDsAdded.push_back(newid);
+  else
+    oldIDsModified.push_back(oldconfig);
   
   ConfigurationFile *parent = getCameraProfile(newconfig._parentID);
   
   if(parent && parent->getLocation() == ConfigurationFile::IN_HOST)
-    if(!newconfig.mergeParentConfiguration())
+  {
+    if(!saveParents)
     {
-      logger(LOG_ERROR) << "MainConfigurationFile: Failed to merge data from parents" << std::endl;
-      return false;
+      if(!newconfig.mergeParentConfiguration())
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Failed to merge data from parents" << std::endl;
+        return false;
+      }
     }
+    else
+    {
+      int parentID = newconfig._parentID;
+      
+      if(!_saveCameraProfileToHardware(parentID, newIDsAdded, oldIDsModified, saveParents, false, false, namePrefix))
+      {
+        logger(LOG_ERROR) << "MainConfigurationFile: Failed to prepare parent to write to hardware." << std::endl;
+        return false;
+      }
+      
+      newconfig.setParentID(parentID);
+      parent = getCameraProfile(parentID);
+    }
+  }
   
-  _cameraProfiles[newid] = newconfig;
-  _cameraProfileNames[newid] = newconfig._profileName;
+  std::cout << "Saving ID = " << id << " (" << newid << ") to hardware..." << std::endl;
+  _cameraProfiles[newid] = newconfig; // Set again to reflect changes related to parent.
   
   bool defaultSet = false;
+  int _previousDefault = _defaultCameraProfileIDInHardware;
   
-  if(_defaultCameraProfileIDInHardware == -1)
+  if(_defaultCameraProfileIDInHardware == -1 || setAsDefault)
   {
     defaultSet = true;
     _defaultCameraProfileIDInHardware = newid;
   }
   
-  if(writeToHardware())
+  if(updateHardware)
   {
-    id = newid;
-    
-    if(_currentCameraProfileID == id)
-      return setCurrentCameraProfile(newid);
-    return true;
-  }
-  else
-  {
-    if(defaultSet)
-      _defaultCameraProfileIDInHardware = -1;
-    
-    if(newid == id)
+    if(writeToHardware())
     {
-      _cameraProfiles[newid] = oldconfig;
-      _cameraProfileNames[newid] = oldconfig._profileName;
+      id = newid;
+      
+      if(_currentCameraProfileID == id)
+        return setCurrentCameraProfile(newid);
+      return true;
     }
     else
     {
-      _cameraProfileNames.erase(newid);
-      _cameraProfiles.erase(newid);
+      if(defaultSet)
+        _defaultCameraProfileIDInHardware = _previousDefault;
+      
+      return false;
     }
-    return false;
   }
+  return true;
 }
+
+bool MainConfigurationFile::_rollbackCameraProfiles(const Vector< int >& newIDsAdded, const Vector< ConfigurationFile >& oldIDsModified)
+{
+  // Roll back old IDs
+  for(auto &c: oldIDsModified)
+  {
+    _cameraProfiles[c.getID()] = c;
+    _cameraProfileNames[c.getID()] = c._profileName;
+  }
+  
+  // Roll back and remove all new IDs
+  for(auto i: newIDsAdded)
+  {
+    _cameraProfileNames.erase(i);
+    _cameraProfiles.erase(i);
+  }
+  return true;
+}
+
+
 
 bool MainConfigurationFile::removeDefaultCameraProfileIDInCamera()
 {

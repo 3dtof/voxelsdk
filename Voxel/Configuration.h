@@ -181,14 +181,16 @@ public:
   ConfigSetMap configs;
   
   inline Location getLocation() const { return _location; }
-  inline int getID() { return _id; }
-  inline int getParentID() { return _parentID; }
-  inline const String &getProfileName() { return _profileName; }
+  inline int getID() const { return _id; }
+  inline int getParentID() const { return _parentID; }
+  inline const String &getProfileName() const { return _profileName; }
   
   virtual bool isPresent(const String &section, const String &name, bool includeParent = true) const;
   virtual String get(const String &section, const String &name) const;
   
+  inline void setProfileName(const String &name) { _profileName = name; set("global", "name", name); }
   inline void setID(const int id) { _id = id; setInteger("global", "id", id); }
+  inline void setParentID(const int id) { _parentID = id; setInteger("global", "parent", id); }
   
   template <typename T>
   bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
@@ -338,14 +340,15 @@ protected:
   
   int _getNewCameraProfileID(bool inHost = true);
 
-public:
-  
-protected:  
   bool _saveHardwareImage(Version &version, TimeStampType &timestamp, SerializedObject &so);
   
   HardwareSerializerPtr _hardwareSerializer;
   
   Map<String, CalibrationInformation> _calibrationInformation;
+  
+  bool _removeCameraProfile(const int id, bool updateHardware = true);
+  bool _saveCameraProfileToHardware(int &id, Vector<int> &newIDsAdded, Vector<ConfigurationFile> &oldIDsModified, bool saveParents = false, bool updateHardware = true, bool setAsDefault = false, const String &namePrefix = "");
+  bool _rollbackCameraProfiles(const Vector<int> &newIDsAdded, const Vector<ConfigurationFile> &oldIDsModified);
     
 public:
   MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializerPtr hardwareSerializer = nullptr): 
@@ -369,8 +372,9 @@ public:
   
   int addCameraProfile(const String &profileName, const int parentID = -1);
   bool setCurrentCameraProfile(const int id);
+  bool removeAllHardwareCameraProfiles();
   bool removeCameraProfile(const int id);
-  bool saveCameraProfileToHardware(int &id);
+  bool saveCameraProfileToHardware(int &id, bool saveParents = false, bool setAsDefault = false, const String &namePrefix = "");
   
   ConfigurationFile *getDefaultCameraProfile();
   ConfigurationFile *getCameraProfile(const int id);

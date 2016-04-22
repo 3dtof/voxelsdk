@@ -254,7 +254,7 @@ public:
   int addCameraProfile(const String &profileName, const int parentID);
   bool setCameraProfile(const int id, bool softApply = false);
   bool removeCameraProfile(const int id);
-  inline bool saveCameraProfileToHardware(int &id) { return configFile.saveCameraProfileToHardware(id); }
+  inline bool saveCameraProfileToHardware(int &id, bool saveParents = false, bool setAsDefault = false, const String &namePrefix = "") { return configFile.saveCameraProfileToHardware(id, saveParents, setAsDefault, namePrefix); }
   
   bool close();
   virtual ~DepthCamera();
