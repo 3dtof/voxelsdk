@@ -1653,12 +1653,12 @@ bool MainConfigurationFile::_saveCameraProfileToHardware(int &id, Vector<int> &n
     _defaultCameraProfileIDInHardware = newid;
   }
   
+  id = newid;
+  
   if(updateHardware)
   {
     if(writeToHardware())
     {
-      id = newid;
-      
       if(_currentCameraProfileID == id)
         return setCurrentCameraProfile(newid);
       return true;
