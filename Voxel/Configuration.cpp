@@ -582,7 +582,7 @@ bool ConfigurationFile::_serializeAllDataFiles(OutputStream &out)
         ConfigDataPacket cp;
         cp.type = ConfigDataPacket::PACKET_2D_DATA_FILE;
         
-        Data2DCodec codec;
+        Data2DCodec codec(_mainConfigurationFile->_quantizationFactor);
         
         Data2DCodec::Array2D in;
         Data2DCodec::ArrayBool2D invalidPixels; // Just empty array
@@ -1455,7 +1455,7 @@ bool MainConfigurationFile::readFromHardware()
       
       name = name.substr(sizeof(FILE_PREFIX) - 1);
       
-      Data2DCodec codec; 
+      Data2DCodec codec(_mainConfigurationFile->_quantizationFactor); 
       
       Data2DCodec::ByteArray in;
       Data2DCodec::Array2D out;

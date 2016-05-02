@@ -751,7 +751,5 @@ bool DepthCamera::setSerialNumber(const String &serialNumber)
 { 
   return false;
 }
-
-
   
 }

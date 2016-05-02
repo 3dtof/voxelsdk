@@ -12,8 +12,6 @@
 
 #define MAX_OFFSET_COUNT 5000
 
-#define QUANTIZATION 4
-
 namespace Voxel
 {
   
@@ -272,7 +270,7 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
     {
       int index = i/8*octetColumns + j/8;
       
-      int16_t v = (inData[i*columns + j] - averages[index])/QUANTIZATION;
+      int16_t v = (inData[i*columns + j] - averages[index])/_quantization;
       
       if(!noInvalidPixels && invalidPixels[i*columns + j])
       {
@@ -440,7 +438,7 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
       {
         if(d1 > 8)
           d1 = d1 - 16;
-        outData[i*columns + j] += d1*QUANTIZATION;
+        outData[i*columns + j] += d1*_quantization;
       }
       else
       {
@@ -458,14 +456,14 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
       {
         if(d2 > 8)
           d2 = d2 - 16;
-        outData[i*columns + j + 1] += d2*QUANTIZATION;
+        outData[i*columns + j + 1] += d2*_quantization;
       }
       else
       {
         int8_t o;
         so.get((char *)&o, sizeof(o));
         
-        outData[i*columns + j + 1] += o*QUANTIZATION;
+        outData[i*columns + j + 1] += o*_quantization;
         offsetCount++;
       }
     }

@@ -223,6 +223,7 @@ bool CalculusCDKCamera::_init()
     
   // Initialize serializer block
   configFile.setHardwareConfigSerializer(new HardwareSerializer(_usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
+  configFile.setSerializationQuantizationFactor(2);
 
   if(!ToFCalculusCamera::_init())
     return false;
@@ -319,7 +320,6 @@ bool CalculusCDKCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSi
   frameRate.denominator = 1;
   return true;
 }
-
   
 }
 }

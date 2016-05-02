@@ -39,6 +39,8 @@ class VOXEL_EXPORT Data2DCodec
     EightBitOffset(int r, int c, int8_t offset, int index): r(r), c(c), offset(offset), index(index) {}
   };
   
+  int _quantization;
+  
 public:
   typedef Vector<ByteType> ByteArray;
   typedef Vector<uint8_t> ArrayBool2D;
@@ -46,7 +48,7 @@ public:
   typedef Vector<Array2DElementType> Array2D;
   
   
-  Data2DCodec() {}
+  Data2DCodec(int quantization = 4): _quantization(quantization) {}
   
   bool compress(const Array2D &in, const ArrayBool2D &invalidPixels, ByteArray &out);
   bool decompress(const ByteArray &in, Array2D &out);

@@ -344,6 +344,8 @@ protected:
   
   HardwareSerializerPtr _hardwareSerializer;
   
+  int _quantizationFactor;
+  
   Map<String, CalibrationInformation> _calibrationInformation;
   
   bool _removeCameraProfile(const int id, bool updateHardware = true);
@@ -351,12 +353,15 @@ protected:
   bool _rollbackCameraProfiles(const Vector<int> &newIDsAdded, const Vector<ConfigurationFile> &oldIDsModified);
     
 public:
-  MainConfigurationFile(const String &name, const String &hardwareID, HardwareSerializerPtr hardwareSerializer = nullptr): 
-  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareSerializer(hardwareSerializer) 
+  MainConfigurationFile(const String &name, const String &hardwareID, int quantizationFactor = 4, HardwareSerializerPtr hardwareSerializer = nullptr): 
+  _currentCameraProfile(nullptr), _defaultCameraProfileID(-1), _defaultCameraProfileIDInHardware(-1), _mainConfigName(name), _hardwareSerializer(hardwareSerializer),
+  _quantizationFactor(quantizationFactor)
   {
     if(!hardwareSerializer)
       _hardwareSerializer = HardwareSerializerPtr(new HardwareSerializer());
   }
+  
+  void setSerializationQuantizationFactor(int quantizationFactor) { _quantizationFactor = quantizationFactor; }
   
   virtual bool read(const String &configFile);
   
