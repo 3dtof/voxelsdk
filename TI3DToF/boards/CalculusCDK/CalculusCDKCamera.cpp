@@ -223,7 +223,7 @@ bool CalculusCDKCamera::_init()
     
   // Initialize serializer block
   configFile.setHardwareConfigSerializer(new HardwareSerializer(_usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
-  configFile.setSerializationQuantizationFactor(2);
+  configFile.setSerializationQuantizationFactor(1);
 
   if(!ToFCalculusCamera::_init())
     return false;

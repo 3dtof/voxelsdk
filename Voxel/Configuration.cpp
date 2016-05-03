@@ -1455,7 +1455,7 @@ bool MainConfigurationFile::readFromHardware()
       
       name = name.substr(sizeof(FILE_PREFIX) - 1);
       
-      Data2DCodec codec(_mainConfigurationFile->_quantizationFactor); 
+      Data2DCodec codec(_quantizationFactor); 
       
       Data2DCodec::ByteArray in;
       Data2DCodec::Array2D out;
