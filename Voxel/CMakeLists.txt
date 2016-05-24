@@ -93,6 +93,7 @@ install(FILES
   Data2DCodec.h
   FrameStream.h
   FrameGenerator.h
+  HardwareSerializer.h
   PointCloudFrameGenerator.h
   SerializedObject.h
   Serializable.h
