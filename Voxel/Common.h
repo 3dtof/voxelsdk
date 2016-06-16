@@ -128,7 +128,7 @@ Ptr<T> byteAlloc(unsigned long sizeInBytes)
   return Ptr<T>((T *)new uint8_t[sizeInBytes], [](T *d) { delete[]((uint8_t *)d);  });
 }
 
-uint VOXEL_EXPORT gcd(uint n, uint m);
+float VOXEL_EXPORT gcd(float n, float m);
 
 // This returns nearest 'n = 2^m' such that 2^(m - 1) < value < 2^m
 unsigned int VOXEL_EXPORT nearestPowerOf2(unsigned int value, unsigned int &index);
