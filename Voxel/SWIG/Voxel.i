@@ -203,6 +203,7 @@ namespace std
 %ignore Voxel::DepthCamera::saveCameraProfileToHardware();
 
 %include "../DepthCamera.h"
+%include "../FileCamera.h"
 %include "../DepthCameraFactory.h"
 %include "../DownloaderFactory.h"
 %include "../CameraSystem.h"

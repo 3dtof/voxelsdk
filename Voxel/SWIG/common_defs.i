@@ -16,6 +16,7 @@
 %make_ptr(FilterFactory);
 
 %make_ptr(DepthCamera);
+%make_ptr(FileCamera);
 %make_ptr(DepthCameraFactory);
 %make_ptr(DepthCameraLibrary);
 

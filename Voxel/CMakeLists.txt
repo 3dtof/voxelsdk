@@ -29,6 +29,7 @@ add_library(voxel SHARED
   HardwareSerializer.cpp
   CameraSystem.cpp
   DepthCamera.cpp
+  FileCamera.cpp
   FrameStream.cpp
   FrameGenerator.cpp
   DepthCameraLibrary.cpp
@@ -82,6 +83,7 @@ install(FILES
   Common.h
   Configuration.h
   DepthCamera.h
+  FileCamera.h
   DepthCameraLibrary.h
   DepthCameraFactory.h
   DownloaderFactory.h
