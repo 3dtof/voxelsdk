@@ -27,7 +27,7 @@ class VOXEL_EXPORT Frame
 {
 public:
   TimeStampType timestamp = 0; // Unix timestamp in micro-seconds
-  int id = -1;
+  int32_t id = -1;
   
   inline operator String()
   {
@@ -82,7 +82,7 @@ public:
   
   virtual bool serialize(SerializedObject &object) const
   {
-    size_t s = sizeof(id) + sizeof(timestamp) + depth.size()*sizeof(float)*2 + sizeof(size_t)*2;
+    uint32_t s = sizeof(id) + sizeof(timestamp) + depth.size()*sizeof(float)*2 + sizeof(uint32_t)*2;
     
     object.resize(s);
     
@@ -345,20 +345,20 @@ public:
   
   virtual bool serialize(SerializedObject &object) const
   {
-    size_t s = sizeof(id) + sizeof(timestamp) + 
+    uint32_t s = sizeof(id) + sizeof(timestamp) + 
       _phase.size()*sizeof(PhaseByteType) + 
       _amplitude.size()*sizeof(AmplitudeByteType) + 
       _ambient.size()*sizeof(AmbientByteType) + 
       _flags.size()*sizeof(FlagsByteType) + 
       _histogram.size()*sizeof(uint16_t) + 
-      sizeof(size_t)*2;
+      sizeof(uint32_t)*3;
     
     object.resize(s);
     
     object.put((const char *)&id, sizeof(id));
     object.put((const char *)&timestamp, sizeof(timestamp));
     
-    size_t histogramSize = _histogram.size();
+    uint32_t histogramSize = (uint32_t)_histogram.size();
     object.put((const char *)&size.width, sizeof(size.width));
     object.put((const char *)&size.height, sizeof(size.height));
     object.put((const char *)&histogramSize, sizeof(histogramSize));
@@ -378,7 +378,7 @@ public:
     object.get((char *)&id, sizeof(id));
     object.get((char *)&timestamp, sizeof(timestamp));
     
-    size_t histogramSize;
+    uint32_t histogramSize;
     object.get((char *)&size.width, sizeof(size.width));
     object.get((char *)&size.height, sizeof(size.height));
     object.get((char *)&histogramSize, sizeof(histogramSize));
@@ -508,7 +508,7 @@ public:
   
   virtual bool serialize(SerializedObject &object) const
   {
-    size_t s = sizeof(id) + sizeof(timestamp) + 
+    uint32_t s = sizeof(id) + sizeof(timestamp) + 
     _i.size()*sizeof(ByteType) +
     _q.size()*sizeof(ByteType) +
     sizeof(uint32_t)*2;
@@ -609,14 +609,14 @@ public:
   
   virtual bool serialize(SerializedObject &object) const
   {
-    size_t s = sizeof(id) + sizeof(timestamp) + data.size()*sizeof(ByteType) + sizeof(size_t);
+    uint32_t s = sizeof(id) + sizeof(timestamp) + data.size()*sizeof(ByteType) + sizeof(uint32_t);
     
     object.resize(s);
     
     object.put((const char *)&id, sizeof(id));
     object.put((const char *)&timestamp, sizeof(timestamp));
     
-    s = data.size();
+    s = (uint32_t)data.size();
     object.put((const char *)&s, sizeof(s));
     
     object.put((const char *)data.data(), sizeof(ByteType)*data.size());
@@ -625,7 +625,7 @@ public:
   
   virtual bool deserialize(SerializedObject &object)
   {
-    size_t s;
+    uint32_t s;
     if(!object.get((char *)&id, sizeof(id)) ||
     !object.get((char *)&timestamp, sizeof(timestamp)) ||
     !object.get((char *)&s, sizeof(s)))
@@ -716,14 +716,14 @@ public:
   
   virtual bool serialize(SerializedObject &object) const
   {
-    size_t s = sizeof(id) + sizeof(timestamp) + points.size()*sizeof(PointType) + sizeof(size_t);
+    uint32_t s = sizeof(id) + sizeof(timestamp) + points.size()*sizeof(PointType) + sizeof(uint32_t);
     
     object.resize(s);
     
     object.put((const char *)&id, sizeof(id));
     object.put((const char *)&timestamp, sizeof(timestamp));
     
-    s = points.size();
+    s = (uint32_t)points.size();
     object.put((const char *)&s, sizeof(s));
     
     object.put((const char *)points.data(), sizeof(PointType)*points.size());
@@ -735,7 +735,7 @@ public:
     object.get((char *)&id, sizeof(id));
     object.get((char *)&timestamp, sizeof(timestamp));
     
-    size_t s;
+    uint32_t s;
     object.get((char *)&s, sizeof(s));
     
     points.resize(s);
