@@ -435,6 +435,8 @@ bool ToFCalculusCamera::_init()
       !set(INIT_4, 0x0U) ||
       !set(INIT_5, true) ||
       !set(INIT_6, true) ||
+      !set(INIT_7, true) ||
+      !set(INIT_8, true) ||
       !set(UPDATE_SEL, 2) ||
       !set(SHUTTER_EN, true) ||
       !set(LUMPED_DEAD_TIME, true) ||

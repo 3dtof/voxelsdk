@@ -33,6 +33,8 @@
 #define INIT_4 "init_4"
 #define INIT_5 "init_5"
 #define INIT_6 "init_6"
+#define INIT_7 "init_7"
+#define INIT_8 "init_8"
 #define UPDATE_SEL "update_sel"
 #define OP_DATA_ARRANGE_MODE "op_data_arrange_mode"
 #define MOD_CDRIV_EN "mod_cdriv_en"
