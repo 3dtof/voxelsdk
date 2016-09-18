@@ -591,7 +591,7 @@ bool ToFCalculusCamera::_applyCalibrationParams()
     if(!set(PHASE_CORR_1, configFile.getInteger("calib", PHASE_CORR_1)) ||
       !set(PHASE_CORR_2, configFile.getInteger("calib", PHASE_CORR_2)) ||
       !set(TILLUM_CALIB, (uint)configFile.getInteger("calib", TILLUM_CALIB)) ||
-      !set(TSENSOR_CALIB, (uint)(128 + configFile.getInteger("calib", TSENSOR_CALIB)/2)) ||
+      !set(TSENSOR_CALIB, (uint)configFile.getInteger("calib", TSENSOR_CALIB)) ||
       !set(DISABLE_OFFSET_CORR, configFile.getBoolean("calib", DISABLE_OFFSET_CORR)))
       return false;
   }
