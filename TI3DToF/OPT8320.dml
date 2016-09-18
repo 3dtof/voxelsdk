@@ -190,7 +190,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="4" desc="" function="" fuseId="-1" id="82" max="15" min="0" readonly="0" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="2" default="4" desc="" function="" fuseId="-1" id="82" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="131" bankId="0" lsb="0" msb="3"/>
 					</rangeList>
@@ -823,7 +823,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="187" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
+				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="187" max="15" min="0" readonly="1" signed="0" strobe="0" totalBits="4" units="">
 					<rangeList>
 						<range address="188" bankId="0" lsb="0" msb="3"/>
 					</rangeList>
@@ -841,13 +841,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="190" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="0" default="0" desc="Set to '0x1D6' for proper functionality" function="" fuseId="-1" id="190" max="4194303" min="0" readonly="0" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="189" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="191" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="" default="0" desc="Set to '0x1EA' for proper functionality" function="" fuseId="-1" id="191" max="4194303" min="0" readonly="0" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="190" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
@@ -865,7 +865,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="194" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Set to '1' for proper functionality" function="" fuseId="-1" id="194" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="189" bankId="0" lsb="22" msb="22"/>
 					</rangeList>
@@ -889,7 +889,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="198" max="3" min="0" readonly="1" signed="0" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="Set to '3' for proper functionality" function="" fuseId="-1" id="198" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="191" bankId="0" lsb="22" msb="23"/>
 					</rangeList>
@@ -3037,23 +3037,41 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="658" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Set to 1 to enable SSCG" function="" fuseId="-1" id="658" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="3" msb="3"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="659" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="" default="0" desc="SSCG period in terms of cycles of (Fin / (2 ^ mod_n))" function="" fuseId="-1" id="659" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="4" msb="6"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="2048" value="0"/>
+						<value desc="" meaning="4096" value="1"/>
+						<value desc="" meaning="8192" value="2"/>
+						<value desc="" meaning="1024" value="3"/>
+						<value desc="" meaning="512" value="4"/>
+						<value desc="" meaning="256" value="5"/>
+						<value desc="" meaning="128" value="6"/>
+						<value desc="" meaning="invalid" value="7"/>
+					</valueList>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="660" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="0" default="0" desc="SSCG modulation index in %" function="" fuseId="-1" id="660" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="7" msb="9"/>
 					</rangeList>
-					<valueList/>
+					<valueList>
+						<value desc="" meaning="12.5%" value="0"/>
+						<value desc="" meaning="6.25%" value="1"/>
+						<value desc="" meaning="3.125%" value="2"/>
+						<value desc="" meaning="1.5625%" value="3"/>
+						<value desc="" meaning="0.75%" value="4"/>
+						<value desc="" meaning="0.375%" value="5"/>
+						<value desc="" meaning="0.175%" value="6"/>
+						<value desc="" meaning="0.175%" value="7"/>
+					</valueList>
 				</property>
 				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="661" max="3" min="0" readonly="1" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
@@ -3920,18 +3938,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Set the analog phase offset for base frequency (PLL1) modulation. The Demodulation signal is delayed with respect to illumination modulation by this amount. Therefore, the phase advances by the same amount." function="" fuseId="-1" id="813" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="813" max="3" min="0" readonly="1" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="11" bankId="0" lsb="8" msb="9"/>
 					</rangeList>
-					<valueList>
-						<value desc="" meaning="56.25" value="0"/>
-						<value desc="" meaning="45.5" value="1"/>
-						<value desc="" meaning="11.25" value="2"/>
-						<value desc="" meaning="0" value="3"/>
-					</valueList>
+					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="Enable analog phase offset for base frequency (PLL1) modulation." function="" fuseId="-1" id="814" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="814" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="11" bankId="0" lsb="10" msb="10"/>
 					</rangeList>
@@ -5313,7 +5326,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1265" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="Set to '1' for proper functionality" function="" fuseId="-1" id="1265" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="249" bankId="0" lsb="14" msb="14"/>
 					</rangeList>
@@ -5325,7 +5338,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1267" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Set to '1' for proper functionality" function="" fuseId="-1" id="1267" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="249" bankId="0" lsb="18" msb="18"/>
 					</rangeList>
@@ -5713,7 +5726,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1333" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="" default="0" desc="Disables the extra pre-emphasis quad when lumped_dead_time is enabled." function="" fuseId="-1" id="1333" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="84" bankId="0" lsb="23" msb="23"/>
 					</rangeList>
@@ -5922,7 +5935,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="20" desc="Set to '0xA' for proper functionality" function="" fuseId="-1" id="1371" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
+				<property aid_0="0" default="20" desc="Set to '0' for proper functionality" function="" fuseId="-1" id="1371" max="63" min="0" readonly="0" signed="0" strobe="0" totalBits="6" units="">
 					<rangeList>
 						<range address="3" bankId="0" lsb="17" msb="22"/>
 					</rangeList>
@@ -6133,6 +6146,7 @@
 								<property desc="" name="intg_duty_cycle" propertyId="1304"/>
 								<property desc="" name="sup_frm_intg_scale" propertyId="1327"/>
 								<property desc="" name="lumped_dead_time" propertyId="1305"/>
+								<property desc="" name="prequad_dis" propertyId="1333"/>
 								<property desc="" name="intg_duty_cycle_set_failed" propertyId="1316"/>
 								<property desc="" name="en_dyn_pdn" propertyId="1306"/>
 							</propertyList>
@@ -6168,6 +6182,12 @@
 								<property desc="" name="init_4" propertyId="1371"/>
 								<property desc="" name="init_5" propertyId="1289"/>
 								<property desc="" name="init_6" propertyId="1285"/>
+								<property desc="" name="init_7" propertyId="1265"/>
+								<property desc="" name="init_8" propertyId="1267"/>
+								<property desc="" name="init_9" propertyId="190"/>
+								<property desc="" name="init_10" propertyId="191"/>
+								<property desc="" name="init_11" propertyId="194"/>
+								<property desc="" name="init_12" propertyId="198"/>
 								<property desc="" name="update_sel" propertyId="77"/>
 							</propertyList>
 						</group>
@@ -6277,6 +6297,13 @@
 								<property desc="" name="mod_cdriv_dc_bias" propertyId="833"/>
 							</propertyList>
 						</group>
+						<group desc="" name="sscg">
+							<propertyList>
+								<property desc="" name="sscg_en" propertyId="658"/>
+								<property desc="" name="sscg_period" propertyId="659"/>
+								<property desc="" name="sscg_modulation" propertyId="660"/>
+							</propertyList>
+						</group>
 					</groupList>
 				</section>
 				<section desc="" name="power">
@@ -6305,8 +6332,6 @@
 								<property desc="" name="flip_phase" propertyId="1321"/>
 								<property desc="" name="clip_mode" propertyId="1176"/>
 								<property desc="" name="invert_hd_vd" propertyId="950"/>
-								<property desc="" name="analog_phase_corr" propertyId="813"/>
-								<property desc="" name="analog_phase_corr_en" propertyId="814"/>
 								<property desc="" name="quad_cnt_max" propertyId="82"/>
 							</propertyList>
 						</group>
