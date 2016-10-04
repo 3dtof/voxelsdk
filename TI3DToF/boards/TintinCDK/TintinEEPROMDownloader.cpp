@@ -82,6 +82,25 @@ bool TintinEEPROMDownloader::_configureForDownload()
     return false;
   }
 
+  uint8_t pmicRegVal[] = { 0x00 };
+  length = 1;
+  if (!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x05, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x0E, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x11, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x14, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x17, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x1A, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x1C, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x1D, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x1E, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x1F, pmicRegVal, length) ||
+    !_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 0x0C, 0x2D, 0x21, pmicRegVal, length)
+    )
+  {
+    logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to turn off PMIC rails" << std::endl;
+    _outStream << "Failed to turn off PMIC rails" << std::endl;
+    return false;
+  }
   // JEDEC ID
   uint8_t jedecID[3];
   length = 3;
