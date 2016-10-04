@@ -4040,7 +4040,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="Temperature output from OPT8320's built-in temp sensor" function="" fuseId="-1" id="839" max="255" min="-256" readonly="1" signed="1" strobe="0" totalBits="9" units="">
+				<property aid_0="2" default="0" desc="Temperature output from OPT8320's built-in temp sensor" function="" fuseId="-1" id="839" max="511" min="0" readonly="1" signed="0" strobe="0" totalBits="9" units="">
 					<rangeList>
 						<range address="87" bankId="0" lsb="0" msb="8"/>
 					</rangeList>
