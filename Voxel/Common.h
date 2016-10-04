@@ -104,7 +104,6 @@ typedef std::istream InputStream;
 typedef std::ostream OutputStream;
 typedef std::ostringstream OutputStringStream;
 typedef std::istringstream InputStringStream;
-typedef std::stringstream StringStream;
 
 struct Version { uint8_t major, minor; };
 

@@ -162,8 +162,8 @@ bool VoxelDCamera::_init()
     }
     
     
-    _downloader = Ptr<Downloader>(new USBDownloader(_device, true));
-    if(!_downloader->download(configFile.get("core", "fw")))
+    _downloader = Ptr<Downloader>(new USBDownloader(_device));
+    if(!_downloader->download(configFile.get("core", "fw"))) // TODO: This needs to come from a configuration
     {
       logger(LOG_ERROR) << "VoxelDCamera: Firmware download failed" << std::endl;
       return false;
