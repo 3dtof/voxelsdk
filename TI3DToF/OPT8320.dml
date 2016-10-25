@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<RegMap bankSeed="3" miscAttrSeed="1" name="calculus" propertySeed="1408" propertyViewSeed="1" version="PG2P0" wordLength="24">
+<RegMap bankSeed="3" miscAttrSeed="1" name="calculus" propertySeed="1409" propertyViewSeed="1" version="PG2P0" wordLength="24">
 	<bankList>
 		<bank id="0" name="TOPLEVEL" offset="0" size="256">
 			<invalidRangeList>
@@ -4040,9 +4040,9 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="2" default="0" desc="Temperature output from OPT8320's built-in temp sensor" function="" fuseId="-1" id="839" max="511" min="0" readonly="1" signed="0" strobe="0" totalBits="9" units="">
+				<property aid_0="2" default="0" desc="Temperature output from OPT8320's built-in temp sensor" function="" fuseId="-1" id="839" max="255" min="0" readonly="1" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
-						<range address="87" bankId="0" lsb="0" msb="8"/>
+						<range address="87" bankId="0" lsb="0" msb="7"/>
 					</rangeList>
 					<valueList/>
 				</property>
@@ -4614,8 +4614,10 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1145" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
-					<rangeList/>
+				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="1145" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+					<rangeList>
+						<range address="87" bankId="0" lsb="8" msb="8"/>
+					</rangeList>
 					<valueList/>
 				</property>
 				<property aid_0="" default="15" desc="" function="" fuseId="-1" id="1146" max="31" min="0" readonly="1" signed="0" strobe="0" totalBits="5" units="">
@@ -6107,6 +6109,10 @@
 					<rangeList>
 						<range address="160" bankId="0" lsb="8" msb="21"/>
 					</rangeList>
+					<valueList/>
+				</property>
+				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="1408" max="0" min="0" readonly="1" signed="0" strobe="0" totalBits="0" units="">
+					<rangeList/>
 					<valueList/>
 				</property>
 			</propertyList>
