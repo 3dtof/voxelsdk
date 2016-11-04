@@ -968,13 +968,13 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="190" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="190" max="4194303" min="0" readonly="0" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="189" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="191" max="4194303" min="0" readonly="1" signed="0" strobe="0" totalBits="22" units="">
+				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="191" max="4194303" min="0" readonly="0" signed="0" strobe="0" totalBits="22" units="">
 					<rangeList>
 						<range address="190" bankId="0" lsb="0" msb="21"/>
 					</rangeList>
@@ -992,7 +992,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="194" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="194" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="189" bankId="0" lsb="22" msb="22"/>
 					</rangeList>
@@ -1016,7 +1016,7 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="198" max="3" min="0" readonly="1" signed="0" strobe="0" totalBits="2" units="">
+				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="198" max="3" min="0" readonly="0" signed="0" strobe="0" totalBits="2" units="">
 					<rangeList>
 						<range address="191" bankId="0" lsb="22" msb="23"/>
 					</rangeList>
@@ -3726,7 +3726,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="" function="" fuseId="-1" id="6401" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="6401" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="76" bankId="3" lsb="19" msb="19"/>
 					</rangeList>
@@ -6193,19 +6193,19 @@
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="8665" max="1" min="0" readonly="1" signed="0" strobe="0" totalBits="1" units="">
+				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="8665" max="1" min="0" readonly="0" signed="0" strobe="0" totalBits="1" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="3" msb="3"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="8666" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="1" default="0" desc="" function="" fuseId="-1" id="8666" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="4" msb="6"/>
 					</rangeList>
 					<valueList/>
 				</property>
-				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="8667" max="7" min="0" readonly="1" signed="0" strobe="0" totalBits="3" units="">
+				<property aid_0="0" default="0" desc="" function="" fuseId="-1" id="8667" max="7" min="0" readonly="0" signed="0" strobe="0" totalBits="3" units="">
 					<rangeList>
 						<range address="14" bankId="0" lsb="7" msb="9"/>
 					</rangeList>
@@ -6965,7 +6965,7 @@
 					<rangeList/>
 					<valueList/>
 				</property>
-				<property aid_0="" default="0" desc="General purpose scratch register" function="" fuseId="-1" id="10039" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
+				<property aid_0="0" default="0" desc="General purpose scratch register" function="" fuseId="-1" id="10039" max="255" min="0" readonly="0" signed="0" strobe="0" totalBits="8" units="">
 					<rangeList>
 						<range address="167" bankId="3" lsb="0" msb="7"/>
 					</rangeList>
@@ -7342,6 +7342,21 @@
 								<property desc="" name="scratch1" propertyId="10039"/>
 								<property desc="" name="scratch2" propertyId="10040"/>
 								<property desc="" name="scratch3" propertyId="10041"/>
+							</propertyList>
+						</group>
+						<group desc="" name="sscg">
+							<propertyList>
+								<property desc="" name="sscg_en" propertyId="8665"/>
+								<property desc="" name="sscg_period" propertyId="8666"/>
+								<property desc="" name="sscg_modulation" propertyId="8667"/>
+							</propertyList>
+						</group>
+						<group desc="" name="init">
+							<propertyList>
+								<property desc="" name="init_2" propertyId="190"/>
+								<property desc="" name="init_3" propertyId="191"/>
+								<property desc="" name="init_4" propertyId="194"/>
+								<property desc="" name="init_5" propertyId="198"/>
 							</propertyList>
 						</group>
 					</groupList>
