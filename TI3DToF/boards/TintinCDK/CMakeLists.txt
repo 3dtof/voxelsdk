@@ -30,6 +30,7 @@ list(APPEND CONF_FILES
   boards/TintinCDK/TintinCDKCameraLongRange.conf
   boards/TintinCDK/TintinCDKCameraHighAmbient.conf
   boards/TintinCDK/TintinCDKCameraNoCalibration.conf
+  boards/TintinCDK/TintinCDKCameraExtraLongRange.conf
   boards/TintinCDK/TintinCDKCameraPhaseOffset.bin
 )
 
