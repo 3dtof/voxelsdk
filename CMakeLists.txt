@@ -45,7 +45,11 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   SET(WINDOWS 1)
   add_definitions(/fp:fast /W0 /bigobj)
   ADD_DEFINITIONS(-DWINDOWS /wd4251)
-  SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32 Version)
+  if(NOT MSVC_VERSION GREATER 1800)
+    SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32 Version)
+  else()
+    SET(COMMON_LIBS setupapi strmiids strmbase Cfgmgr32 Version legacy_stdio_definitions)
+  endif()
   SET(COMMON_LIBS_PRIVATE ${CMAKE_SOURCE_DIR}/Voxel/CyAPI/CyAPI.lib)
   
   configure_file(
