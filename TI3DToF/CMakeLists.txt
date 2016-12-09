@@ -1,4 +1,4 @@
-find_package(Voxel ${VOXEL_VERSION} REQUIRED)
+#find_package(Voxel ${VOXEL_VERSION} REQUIRED)
 
 add_library(ti3dtof SHARED
   VoxelProgrammerBase.cpp

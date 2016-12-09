@@ -25,7 +25,7 @@ add_executable(DMLParseTest DMLParseTest.cpp)
 target_link_libraries(DMLParseTest voxel)
 
 add_executable(Voxel14RegisterTest Voxel14RegisterTest.cpp)
-target_link_libraries(Voxel14RegisterTest ti3dtof)
+target_link_libraries(Voxel14RegisterTest voxel ti3dtof)
 
 add_executable(Data2DCodecTest Data2DCodecTest.cpp)
 target_link_libraries(Data2DCodecTest voxel)

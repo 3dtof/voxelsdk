@@ -96,10 +96,10 @@ endif()
 include_directories(
   Voxel
   TI3DToF
-  VoxelPCL
+#  VoxelPCL
   ${PROJECT_BINARY_DIR}/Voxel
   ${PROJECT_BINARY_DIR}/TI3DToF
-  ${PROJECT_BINARY_DIR}/VoxelPCL
+#  ${PROJECT_BINARY_DIR}/VoxelPCL
   ${COMMON_INCLUDE}
 )
 
@@ -151,11 +151,12 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main 
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 add_subdirectory(Voxel)
-add_subdirectory(VoxelPCL)
+#add_subdirectory(VoxelPCL)
 add_subdirectory(TI3DToF)
 add_subdirectory(Test)
-add_subdirectory(App)
+#add_subdirectory(App)
 add_subdirectory(Util)
+add_subdirectory(Demos)
 
 
 IF(WINDOWS)

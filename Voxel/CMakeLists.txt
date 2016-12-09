@@ -64,6 +64,8 @@ generate_export_header(voxel
 target_link_libraries(voxel
   LINK_PUBLIC ${COMMON_LIBS}
   LINK_PRIVATE ${COMMON_LIBS_PRIVATE}
+  usb
+  udev
 )
 
 set_target_properties(voxel PROPERTIES 
@@ -147,7 +149,7 @@ install(FILES
   COMPONENT voxel_dev
 )
 
-add_subdirectory(SWIG)
+#add_subdirectory(SWIG)
 
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL voxel)
