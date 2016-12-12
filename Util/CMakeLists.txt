@@ -1,10 +1,15 @@
 SET(VOXEL_UTIL_VERSION ${VOXEL_VERSION})
+find_package(OpenCV REQUIRED)
 
 add_executable(SerialNumber SerialNumber.cpp)
 target_link_libraries(SerialNumber voxel)
 
+add_executable(extract extract.cpp)
+target_link_libraries(extract voxel ${OpenCV_LIBS} )
+
 install(TARGETS
   SerialNumber
+  extract
   RUNTIME
   DESTINATION bin
   COMPONENT util
