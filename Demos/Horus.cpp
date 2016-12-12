@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int skipped_frames;
+
 Horus::Horus(int w, int h) : TOFApp(w, h)
 {
    _setBackground = false;
@@ -181,16 +183,16 @@ void Horus::update(Frame *frame)
          }
       }
       putText(drawing, "Cnt="+to_string(peopleCount), cv::Point(40, 30), FONT_HERSHEY_PLAIN, 1, Scalar(255, 0, 0));
-#ifdef TOF_INTERACTIVE
-      imshow("Draw", drawing);
-#else
-      if((draw_throttle % 30) == 0) {
-        char file_name[80];
-        sprintf (file_name, "draw%03d.png", draw_throttle / 30);
-        imwrite (file_name, drawing);
+      if(skipped_frames == 0) {
+        imshow("Draw", drawing);
+      } else {
+        if((draw_throttle % skipped_frames) == 0) {
+          char file_name[80];
+          sprintf (file_name, "draw%03d.png", draw_throttle / skipped_frames);
+          imwrite (file_name, drawing);
+        }
+        draw_throttle ++;
       }
-      draw_throttle ++;
-#endif
    }
 }
 

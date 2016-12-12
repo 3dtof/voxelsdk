@@ -1,5 +1,7 @@
 #include "Horus.h"
 
+int skipped_frames = 0;
+
 int getkey() {
     int character;
     struct termios orig_term_attr;
@@ -31,6 +33,13 @@ int ii = 0;
    int key;
    bool done = false;
    Mat bImg;
+
+   if(argc > 1) skipped_frames = atoi(argv[1]);
+   else {
+     printf ("\nIf you want to run demo without keyboard, provide 'skipped_frames' as argument (e.g. SimplePeopleTracking 30)!");
+     printf ("\nImages with the result of processing are saved in PNG files. This test always stops after 15 seconds\n");
+   }
+
    //Horus eye(320, 240);
    Horus eye(160, 120);
    //Horus eye(80, 60);
@@ -41,17 +50,18 @@ int ii = 0;
    }
    eye.start();
    while (!done) {
-#ifdef TOF_INTERACTIVE
-      char key = getkey();
-      if (key == 'q') 
-         done = true;
-      else if (key == 'b') 
-         eye.resetBackground();
-#else      
-      usleep(100000);
-      ii ++;
-      if(ii == 150) done = true;
-#endif
+     if(skipped_frames == 0)
+     {
+       char key = getkey();
+       if (key == 'q') 
+          done = true;
+       else if (key == 'b') 
+          eye.resetBackground();
+     } else {    
+       usleep(100000);
+       ii ++;
+       if(ii == 150) done = true;
+     }
    }
 
 err_exit:

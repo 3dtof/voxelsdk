@@ -21,6 +21,8 @@
 
 #define FRAME_QUEUE_SZ		3
 
+extern int skipped_frames;
+
 // Frame callback
 static deque<Voxel::Frame *> qFrame; 
 static pthread_mutex_t gmtx;
@@ -164,11 +166,11 @@ void *TOFApp::eventLoop(void *p)
       }
 
       done = !app->_isRunning;   
-#ifdef TOF_INTERACTIVE
-      waitKey(app->_loopDelay);
-#else
-      usleep(10000);
-#endif
+      if(skipped_frames == 0) {
+        waitKey(app->_loopDelay);
+      } else {
+        usleep(10000);
+      }
    }
    
    app->disconnect();
