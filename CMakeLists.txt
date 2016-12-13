@@ -45,7 +45,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(COMMON_LIBS_PRIVATE "")
   set(COMMON_INCLUDE
     ${COMMON_INCLUDE}
-    /usr/include/libusb-1.0
+    ${VOXELSDK_INCDIR}/libusb-1.0
     Util/
   )
   
