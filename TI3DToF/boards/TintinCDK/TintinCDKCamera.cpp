@@ -485,8 +485,10 @@ bool TintinCDKCamera::_init()
   if (!set(TILLUM_SLAVE_ADDR, 0x72U))
     return false;
 
-  if ((d.productID() == TINTIN_CDK_PRODUCT_BULK) && !set(BLK_HEADER_EN, false))
-    return false;
+  if (d.productID() == TINTIN_CDK_PRODUCT_BULK) {
+    if (!set(BLK_HEADER_EN, false) || !set(BLK_SIZE, 512U))
+      return false;
+  }
 
   return true;
 }
