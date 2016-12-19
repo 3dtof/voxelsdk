@@ -59,6 +59,297 @@ void MedianFilter::_onSet(const FilterParameterPtr &f)
 template <typename T>
 bool MedianFilter::_filter(const T *in, T *out)
 {
+#ifdef x86_OPT
+  uint s = _size.width*_size.height;
+  int tempi = 0;
+  int temp = 0;
+  T *cur, *hist;
+
+  unsigned int transSize =   s*sizeof(T);
+  if(_current.size() != transSize)
+  {
+    _current.resize(transSize);
+    memset(_current.data(), 0, transSize);
+  }
+  
+  uint histSize = (2*_halfKernelSize + 1)*(2*_halfKernelSize + 1) * sizeof(T);
+  
+  if(_hist.size() != histSize)
+  {
+    _hist.resize(histSize);
+    memset(_hist.data(), 0, histSize);
+  }
+  
+  cur = (T *)_current.data();
+  hist = (T *)_hist.data();
+  
+  int stablePixel = _size.width*_size.height;
+  
+  int index;
+  int order = 2 * _halfKernelSize + 1;
+  int nWidthMinus1 = _size.width - 1;
+  int nHeightMinus1 = _size.height - 1;
+
+  if(order == 3)
+  {  
+    /*----------------------------------------------------------------*/
+    /*        TO FIND THE MEDIAN OF FIRST AND LAST COLUMN             */
+    /*----------------------------------------------------------------*/
+  
+    for (int j = 1; j < nHeightMinus1; j++) 
+    {
+      for (int i = 0; i < _size.width; i+=nWidthMinus1) 
+      {
+        int p = j*_size.width + i;
+        index = 0;
+        
+        /*** Loading pixels to calculate median ***/
+        for (int k = -(int)_halfKernelSize; k <= (int)_halfKernelSize; k++) 
+        {
+          for (int m = -(int)_halfKernelSize; m <= (int)_halfKernelSize; m++) 
+          {
+            int i2 = i+m; int j2 = j+k;
+            if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
+            {
+              int q = j2*_size.width+i2;
+              hist[index++] = in[q];
+            }
+          }
+        }
+
+        int s, temp = 0, r;
+        T hist_temp;
+        int size_inb2 = index/2;
+        for(r = 0; r <= size_inb2; r++)
+        {
+          for(s = r+1, temp = r; s < index; s++)
+          {
+            if(hist[s] < hist[temp])
+              temp = s;
+          }
+          if(temp != r)
+          {
+            hist_temp = hist[temp];
+            hist[temp]= hist[r];
+          }
+        }
+        T val;
+        if(temp == (r-1))
+          val = hist[temp];
+        else
+          val = hist_temp;
+        
+        /* Output w/ deadband */
+        float ferr = cur[p]?fabs((float)(val- cur[p])/cur[p]):FLT_MAX;
+        
+        if (ferr > _deadband) 
+        {
+          out[p] = cur[p] = val;
+          stablePixel--;
+        }
+        else
+          out[p] = cur[p];
+      }  // for (i)
+    } // for (j)
+
+    /*-------------------------------------------------------------*/
+    /*            TO FIND THE MEDIAN OF FIRST AND LAST ROW         */
+    /*-------------------------------------------------------------*/
+
+    /*** Loading pixels to calculate median ***/
+    for (int j = 0; j < _size.height; j+=nHeightMinus1) 
+    {
+      for (int i = 0; i < _size.width; i++) 
+      {
+        int p = j*_size.width + i;
+        index = 0;
+        
+        for (int k =-(int)_halfKernelSize; k <= (int)_halfKernelSize; k++) 
+        {
+          for (int m = -(int)_halfKernelSize; m <= (int)_halfKernelSize; m++) 
+          {
+            int i2 = i+m; int j2 = j+k;
+            if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
+            {
+              int q = j2*_size.width+i2;
+              hist[index++] = in[q];
+            }
+          }
+        }
+
+        int s, temp = 0, r;
+        T hist_temp;
+        int size_inb2 = index/2;
+        for(r = 0; r <= size_inb2; r++)
+        {
+          for(s = r+1, temp = r; s < index; s++)
+          {
+            if(hist[s] < hist[temp])
+              temp = s;
+          }
+          if(temp != r)
+          {
+            hist_temp = hist[temp];
+            hist[temp]= hist[r];
+          }
+        }
+        T val;
+        if(temp == (r-1))
+          val = hist[temp];
+        else
+          val = hist_temp;
+        
+        /* Output w/ deadband */
+        float ferr = cur[p]?fabs((float)(val- cur[p])/cur[p]):FLT_MAX;
+        
+        if (ferr > _deadband) 
+        {
+          out[p] = cur[p] = val;
+          stablePixel--;
+        }
+        else
+          out[p] = cur[p];
+      }  // for (i)
+    } // for (j)
+
+    /*---------------------------------------------------------------*/
+    /*             TO FIND THE MEDIAN OF CENTRE PIXELS              */
+    /*---------------------------------------------------------------*/
+
+
+    int height =_size.height;
+    int width=_size.width;
+    int32_t idx;
+    
+    for (int32_t i = 1; i < nHeightMinus1; i++)
+    {
+      for (int32_t j = 1; j < nWidthMinus1; j++)
+      {
+        idx = i*width + j;
+    
+        /* ------------------------------------------------------------ */
+        /* load 3x3 neighbouring pixels into local buffer               */
+        /* ------------------------------------------------------------ */
+        T p[3][3];
+        for (int32_t m = 0; m < 3; m++)
+          for (int32_t n = 0; n < 3; n++)
+            p[m][n] = in[idx + (m - 1)*width + (n - 1)];
+
+        /* ------------------------------------------------------------ */
+        /* Step 1.                                                      */
+        /* Sort each column of p                                        */
+        /* ------------------------------------------------------------ */
+        T tmp;
+        for (int32_t n = 0; n < 3; n++) {
+          if (p[1][n] > p[0][n]) {
+            tmp = p[0][n]; p[0][n] = p[1][n]; p[1][n] = tmp;
+          }
+          if (p[2][n] > p[0][n]) {
+            tmp = p[0][n]; p[0][n] = p[2][n]; p[2][n] = tmp;
+          }
+          if (p[2][n] > p[1][n]) {
+            tmp = p[1][n]; p[1][n] = p[2][n]; p[2][n] = tmp;
+          }
+        }
+
+        /* ------------------------------------------------------------ */
+        /* Step 2                                                       */
+        /* Find minimum value of maximums, i.e., first row of P         */
+        /* ------------------------------------------------------------ */
+        int32_t pmin_of_max = p[0][0];
+        if (p[0][1] < pmin_of_max) pmin_of_max = p[0][1];
+        if (p[0][2] < pmin_of_max) pmin_of_max = p[0][2];
+
+        /* ------------------------------------------------------------ */
+        /* Find middle value of medians, i.e., second row of p          */
+        /* ------------------------------------------------------------ */
+        int32_t pmed_of_med = p[1][0];
+        int32_t mmax = (p[1][1] > p[1][2]) ? p[1][1] : p[1][2];
+        int32_t mmin = (p[1][1] > p[1][2]) ? p[1][2] : p[1][1];
+
+        if (mmin > pmed_of_med) pmed_of_med = mmin;
+        if (pmed_of_med > mmax) pmed_of_med = mmax;
+
+        /* ------------------------------------------------------------ */
+        /* Find maximum value of minimus, i.e., third row of p          */
+        /* ------------------------------------------------------------ */
+        int32_t pmax_of_min = p[2][0];
+        if (p[2][1] > pmax_of_min) pmax_of_min = p[2][1];
+        if (p[2][2] > pmax_of_min) pmax_of_min = p[2][2];
+
+        /* ------------------------------------------------------------ */
+        /* Step 3                                                       */
+        /* Find middle of pmin_of_max, pmed_of_med, pmax_of_min;        */
+        /* ------------------------------------------------------------ */
+        if (pmax_of_min > pmin_of_max) {
+          tmp = pmin_of_max; pmin_of_max = pmax_of_min; pmax_of_min = tmp;
+        }
+        if (pmax_of_min > pmed_of_med)
+          pmed_of_med = pmax_of_min;
+        if (pmed_of_med > pmin_of_max)
+          pmed_of_med = pmin_of_max;
+
+        float ferr = cur[idx]?fabs((float)(pmed_of_med- cur[idx])/cur[idx]):FLT_MAX;
+
+        if (ferr > _deadband) 
+        {
+          out[idx] = cur[idx] = pmed_of_med;
+          stablePixel--;
+        }
+        else
+          out[idx] = cur[idx];
+
+      }
+    }
+  }
+  else
+  {
+    for (int j = 0; j < _size.height; j++) 
+    {
+      for (int i = 0; i < _size.width; i++) 
+      {
+        int p = j*_size.width + i;
+        index = 0;
+
+        for (int k = -(int)_halfKernelSize; k <= (int)_halfKernelSize; k++) 
+        {
+          for (int m = -(int)_halfKernelSize; m <= (int)_halfKernelSize; m++) 
+          {
+            int i2 = i+m; int j2 = j+k;
+            if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
+            {
+              int q = j2*_size.width+i2;
+              hist[index++] = in[q];
+            }
+          }
+        }
+
+        std::nth_element(hist, hist + index/2, hist + index);
+        T val = hist[index/2];
+
+        // Output w/ deadband
+        float ferr = cur[p]?fabs((float)(val- cur[p])/cur[p]):FLT_MAX;
+
+        if (ferr > _deadband) 
+        {
+          out[p] = cur[p] = val;
+          stablePixel--;
+        }
+        else
+          out[p] = cur[p];
+      }  // for (i)
+    } // for (j)    
+  }
+  /* Adjust deadband until ratio is achieved */
+  float diff = (float)stablePixel - _stability*_size.width*_size.height;
+  if (diff < 0)
+    _deadband += _deadbandStep;
+  else
+    _deadband -= _deadbandStep;
+
+  _set("deadband", _deadband);
+
+#else
   uint s = _size.width*_size.height;
   
   T *cur, *hist;
@@ -128,6 +419,7 @@ bool MedianFilter::_filter(const T *in, T *out)
   
   _set("deadband", _deadband);
   
+#endif
   return true;
 }
 
