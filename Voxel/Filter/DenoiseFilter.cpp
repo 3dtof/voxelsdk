@@ -255,6 +255,7 @@ bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
 
 bool DenoiseFilter::_filter(const FramePtr &in, FramePtr &out)
 {
+  bool ret;
    ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
    DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());
   
@@ -278,29 +279,29 @@ bool DenoiseFilter::_filter(const FramePtr &in, FramePtr &out)
       if (tofFrame->phaseWordWidth() == 2)
       {
          if (tofFrame->amplitudeWordWidth() == 1)
-            return _filter2<uint16_t, uint8_t>(in, out);
+            ret = _filter2<uint16_t, uint8_t>(in, out);
          else if (tofFrame->amplitudeWordWidth() == 2)
-            return _filter2<uint16_t, uint16_t>(in, out);
+            ret = _filter2<uint16_t, uint16_t>(in, out);
          else if(tofFrame->amplitudeWordWidth() == 4)
-            return _filter2<uint16_t, uint32_t>(in, out);
+            ret = _filter2<uint16_t, uint32_t>(in, out);
       }
       else if (tofFrame->phaseWordWidth() == 1)
       {
          if (tofFrame->amplitudeWordWidth() == 1)
-            return _filter2<uint8_t, uint8_t>(in, out);
+            ret = _filter2<uint8_t, uint8_t>(in, out);
          else if (tofFrame->amplitudeWordWidth() == 2)
-            return _filter2<uint8_t, uint16_t>(in, out);
+            ret = _filter2<uint8_t, uint16_t>(in, out);
          else if (tofFrame->amplitudeWordWidth() == 4)
-            return _filter2<uint8_t, uint32_t>(in, out);
+            ret = _filter2<uint8_t, uint32_t>(in, out);
       }
       else if (tofFrame->phaseWordWidth() == 4)
       {
          if (tofFrame->amplitudeWordWidth() == 1)
-            return _filter2<uint32_t, uint8_t>(in, out);
+            ret = _filter2<uint32_t, uint8_t>(in, out);
          else if (tofFrame->amplitudeWordWidth() == 2)
-            return _filter2<uint32_t, uint16_t>(in, out);
+            ret = _filter2<uint32_t, uint16_t>(in, out);
          else if(tofFrame->amplitudeWordWidth() == 4)
-            return _filter2<uint32_t, uint32_t>(in, out);
+            ret = _filter2<uint32_t, uint32_t>(in, out);
       }
    }
    else if(depthFrame)
@@ -316,10 +317,9 @@ bool DenoiseFilter::_filter(const FramePtr &in, FramePtr &out)
     
       o->amplitude = depthFrame->amplitude;
     
-      return _filter<float>(depthFrame->depth.data(), o->depth.data());
+      ret = _filter<float>(depthFrame->depth.data(), o->depth.data());
    }
-   else
-      return false;
+  return ret;
 }
   
 }
