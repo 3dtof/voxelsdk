@@ -383,10 +383,11 @@ public:
     object.get((char *)&size.height, sizeof(size.height));
     object.get((char *)&histogramSize, sizeof(histogramSize));
     
-    _phase.resize(size.width*size.height);
-    _amplitude.resize(size.width*size.height);
-    _ambient.resize(size.width*size.height);
-    _flags.resize(size.width*size.height);
+    unsigned int frameSize = size.width*size.height;
+    _phase.resize(frameSize);
+    _amplitude.resize(frameSize);
+    _ambient.resize(frameSize);
+    _flags.resize(frameSize);
     
     object.get((char *)_phase.data(), sizeof(PhaseByteType)*_phase.size());
     object.get((char *)_amplitude.data(), sizeof(AmplitudeByteType)*_amplitude.size());

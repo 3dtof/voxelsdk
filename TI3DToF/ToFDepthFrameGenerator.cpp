@@ -125,8 +125,8 @@ bool ToFDepthFrameGenerator::generate(const FramePtr &in, FramePtr &out)
   
   auto totalSize = depthFrame->size.width*depthFrame->size.height;
   
-  depthFrame->depth.resize(depthFrame->size.width*depthFrame->size.height);
-  depthFrame->amplitude.resize(depthFrame->size.width*depthFrame->size.height);
+  depthFrame->depth.resize(totalSize);
+  depthFrame->amplitude.resize(totalSize);
   
   // NOTE: Add more sizes as necessary
   if(toFRawFramePtr->phaseWordWidth() == 1)

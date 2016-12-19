@@ -459,10 +459,11 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
       return false;
     }
     
-    t->_ambient.resize(_size.width*_size.height);
-    t->_amplitude.resize(_size.width*_size.height);
-    t->_phase.resize(_size.width*_size.height);
-    t->_flags.resize(_size.width*_size.height);
+    unsigned int frameSize = _size.width*_size.height;
+    t->_ambient.resize(frameSize);
+    t->_amplitude.resize(frameSize);
+    t->_phase.resize(frameSize);
+    t->_flags.resize(frameSize);
     
     if(_dataArrangeMode == 2)
     {
@@ -535,16 +536,17 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
       return false;
     }
     
-    if(rawDataFrame->data.size() < _size.height*_size.width*2)
+    unsigned int frameSize = _size.width*_size.height;
+    if(rawDataFrame->data.size() < frameSize*2)
     {
       logger(LOG_ERROR) << "ToFFrameGenerator: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << _size.height*_size.width*2 << std::endl;
       return false;
     }
     
-    t->_ambient.resize(_size.width*_size.height);
-    t->_amplitude.resize(_size.width*_size.height);
-    t->_phase.resize(_size.width*_size.height);
-    t->_flags.resize(_size.width*_size.height);
+    t->_ambient.resize(frameSize);
+    t->_amplitude.resize(frameSize);
+    t->_phase.resize(frameSize);
+    t->_flags.resize(frameSize);
 
     auto index = 0;
     
@@ -651,10 +653,11 @@ bool ToFFrameGenerator::generate(const ToFRawIQFramePtr &in, FramePtr &out)
   t->id = input->id;
   t->timestamp = input->timestamp;
   
-  t->_ambient.resize(_size.width*_size.height);
-  t->_amplitude.resize(_size.width*_size.height);
-  t->_phase.resize(_size.width*_size.height);
-  t->_flags.resize(_size.width*_size.height);
+  unsigned int frameSize = _size.width*_size.height;
+  t->_ambient.resize(frameSize);
+  t->_amplitude.resize(frameSize);
+  t->_phase.resize(frameSize);
+  t->_flags.resize(frameSize);
   
   auto index = 0;
   
@@ -739,14 +742,15 @@ bool ToFFrameGenerator::_generateToFRawIQFrame(const FramePtr &in, FramePtr &out
   if(_frameType == ToF_QUAD)
     sizeFactor = _quadCount;
   
-  if(rawDataFrame->data.size() < _size.height*_size.width*sizeFactor)
+  unsigned int frameSize = _size.height*_size.width;
+  if(rawDataFrame->data.size() < frameSize*sizeFactor)
   {
     logger(LOG_ERROR) << "ToFFrameGenerator: Incomplete raw data size = " << rawDataFrame->data.size() << ". Required size = " << _size.height*_size.width*2 << std::endl;
     return false;
   }
   
-  t->_i.resize(_size.width*_size.height);
-  t->_q.resize(_size.width*_size.height);
+  t->_i.resize(frameSize);
+  t->_q.resize(frameSize);
   
   auto index1 = 0, index2 = 0;
       

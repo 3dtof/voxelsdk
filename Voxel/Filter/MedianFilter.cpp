@@ -157,9 +157,15 @@ bool MedianFilter::_filter(const FramePtr &in, FramePtr &out)
     //logger(LOG_INFO) << "IIRFilter: Applying filter with gain = " << _gain << " to ToFRawFrame id = " << tofFrame->id << std::endl;
     
     uint s = _size.width*_size.height;
-    memcpy(o->ambient(), tofFrame->ambient(), s*tofFrame->ambientWordWidth());
-    memcpy(o->amplitude(), tofFrame->amplitude(), s*tofFrame->amplitudeWordWidth());
-    memcpy(o->flags(), tofFrame->flags(), s*tofFrame->flagsWordWidth());
+    /*** amplitudeWordWidth and phaseWordWidth are same ***/
+    /*** ambientWordWidth and flagsWordWidth are same ***/
+    
+    unsigned int size1 = s*tofFrame->ambientWordWidth();
+    unsigned int size2 = s*tofFrame->amplitudeWordWidth();
+
+    memcpy(o->ambient(), tofFrame->ambient(), size1);
+    memcpy(o->amplitude(), tofFrame->amplitude(), size2);
+    memcpy(o->flags(), tofFrame->flags(), size1);
     
     if(tofFrame->phaseWordWidth() == 2)
       return _filter<uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)o->phase());
