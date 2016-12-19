@@ -471,6 +471,74 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
       
       uint16_t *data = (uint16_t *)rawDataFrame->data.data();
       
+#ifdef x86_OPT
+      /*** loop unrolling by 4 ***/ 
+      for (auto i = 0; i < _size.height; i++) 
+      {
+        auto i2 = i*_size.width*2;
+        auto i1 = i*_size.width;
+        auto index1_0 = 0;
+        auto index1_1 = 0;
+        auto index1_2 = 0;
+        auto index1_3 = 0;
+        auto index2_0 = 0;
+        auto index2_1 = 0;
+        auto index2_2 = 0;
+        auto index2_3 = 0;
+
+        for (auto j = 0; j < _size.width/8; j+=4) 
+        {
+          index1_0 = i2 + j*16;
+          index1_1 = i2 + (j+1)*16;
+          index1_2 = i2 + (j+2)*16;
+          index1_3 = i2 + (j+3)*16;
+
+          index2_0 = index1_0 >> 1;
+          index2_1 = index1_1 >> 1;
+          index2_2 = index1_2 >> 1;
+          index2_3 = index1_3 >> 1;
+          
+          uint16_t *pData0 = &data[index1_0];
+          uint16_t *pData1 = &data[index1_1];
+          uint16_t *pData2 = &data[index1_2];
+          uint16_t *pData3 = &data[index1_3];
+          for (auto k = 0; k < 8; k++) 
+          {
+            t->_amplitude[index2_0 + k] = pData0[k] & MAX_PHASE_VALUE;
+            t->_flags[index2_0 + k]     = (pData0[k + 8] & 0xF000) >> 12;
+            t->_amplitude[index2_1 + k] = pData1[k] & MAX_PHASE_VALUE;
+            t->_flags[index2_1 + k]     = (pData1[k + 8] & 0xF000) >> 12;
+            t->_amplitude[index2_2 + k] = pData2[k] & MAX_PHASE_VALUE;
+            t->_flags[index2_2 + k]     = (pData2[k + 8] & 0xF000) >> 12;
+            t->_amplitude[index2_3 + k] = pData3[k] & MAX_PHASE_VALUE;
+            t->_flags[index2_3 + k]     = (pData3[k + 8] & 0xF000) >> 12;
+
+            if(_dealiased16BitMode)
+            {
+              t->_phase[index2_0 + k]   = ((pData0[k + 8] & MAX_PHASE_VALUE) << 4) + (pData0[index1 + k] >> 12);
+              t->_ambient[index2_0 + k] = 0xF;
+              t->_phase[index2_1 + k]   = ((pData1[k + 8] & MAX_PHASE_VALUE) << 4) + (pData1[index1 + k] >> 12);
+              t->_ambient[index2_1 + k] = 0xF;
+              t->_phase[index2_2 + k]   = ((pData2[k + 8] & MAX_PHASE_VALUE) << 4) + (pData2[index1 + k] >> 12);
+              t->_ambient[index2_2 + k] = 0xF;
+              t->_phase[index2_3 + k]   = ((pData3[k + 8] & MAX_PHASE_VALUE) << 4) + (pData3[index1 + k] >> 12);
+              t->_ambient[index2_3 + k] = 0xF;
+            }
+            else
+            {
+              t->_phase[index2_0 + k]   = pData0[k + 8] & MAX_PHASE_VALUE;
+              t->_ambient[index2_0 + k] = (pData0[k] & 0xF000) >> 12;
+              t->_phase[index2_1 + k]   = pData1[k + 8] & MAX_PHASE_VALUE;
+              t->_ambient[index2_1 + k] = (pData1[k] & 0xF000) >> 12;
+              t->_phase[index2_2 + k]   = pData2[k + 8] & MAX_PHASE_VALUE;
+              t->_ambient[index2_2 + k] = (pData2[k] & 0xF000) >> 12;
+              t->_phase[index2_3 + k]   = pData3[k + 8] & MAX_PHASE_VALUE;
+              t->_ambient[index2_3 + k] = (pData3[k] & 0xF000) >> 12;
+            }
+          }
+        }
+      }
+#else
       for (auto i = 0; i < _size.height; i++) 
       {
         for (auto j = 0; j < _size.width/8; j++) 
@@ -498,6 +566,7 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
           }
         }
       }
+#endif
     }
     else // dataArrangeMode == 0
     {

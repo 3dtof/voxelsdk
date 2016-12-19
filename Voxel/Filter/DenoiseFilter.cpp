@@ -66,6 +66,116 @@ bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
 
    uint s = _size.width*_size.height;
  
+#ifdef x86_OPT
+   /*** amplitudeWordWidth and phaseWordWidth are same ***/
+   /*** ambientWordWidth and flagsWordWidth are same ***/
+     
+   unsigned int size1 = s*in->amplitudeWordWidth();   
+   unsigned int size2 = s*in->ambientWordWidth();   
+   
+   memcpy(out->ambient(), in->ambient(), size2);
+   memcpy(out->flags(), in->flags(), size2);
+
+   buf.resize(size1);
+   memcpy(buf.data(), in->amplitude(), size1);
+   _ampHistory.push_back(std::move(buf));
+
+   buf.resize(size1);
+   memcpy(buf.data(), in->phase(), size1);
+   _phaseHistory.push_back(std::move(buf));
+
+   buf.resize(size2);
+   memcpy(buf.data(), in->ambient(), size2);
+   _ambHistory.push_back(std::move(buf));
+
+   buf.resize(size2);
+   memcpy(buf.data(), in->flags(), size2);
+   _flagsHistory.push_back(std::move(buf));
+
+   if (_ampHistory.size() > _order) 
+   {
+       _ampHistory.pop_front();
+       _phaseHistory.pop_front();
+       _ambHistory.pop_front();
+       _flagsHistory.pop_front();
+   }
+
+   AmpT *ampIn = (AmpT *)in->amplitude();
+   AmpT *ampOut = (AmpT *)out->amplitude();
+   PhaseT *phaseIn = (PhaseT *)in->phase();
+   PhaseT *phaseOut = (PhaseT *)out->phase();
+   /*** loop unroll by 4 ***/
+   
+   for (int p = 0; p < s; p+=4) 
+   {
+      bool valid1 = false;
+      bool valid2 = false;
+      bool valid3 = false;
+      bool valid4 = false;
+      uint valid_cnt1 = 0;
+      uint valid_cnt2 = 0;
+      uint valid_cnt3 = 0;
+      uint valid_cnt4 = 0;
+      float amp_sum1 = 0, phase_sum1 = 0;
+      float amp_sum2 = 0, phase_sum2 = 0;
+      float amp_sum3 = 0, phase_sum3= 0;
+      float amp_sum4 = 0, phase_sum4 = 0;
+
+      for (auto i = 0; i < _ampHistory.size(); i++)
+      {
+         AmpT *amp_cur = (AmpT *)_ampHistory[i].data();
+         PhaseT *phase_cur = (PhaseT *)_phaseHistory[i].data();
+         uint8_t *flags_cur = (uint8_t *)_flagsHistory[i].data();
+
+         if ( (flags_cur[p] & SATURATED) != SATURATED ) 
+         {
+            valid1 = true; valid_cnt1++;
+            amp_sum1 += (float)amp_cur[p]; 
+         }
+         if ( (flags_cur[p+1] & SATURATED) != SATURATED ) 
+         {
+            valid2 = true; valid_cnt2++;
+            amp_sum2 += (float)amp_cur[p+1]; 
+         }
+         if ( (flags_cur[p+2] & SATURATED) != SATURATED ) 
+         {
+            valid3 = true; valid_cnt3++;
+            amp_sum3 += (float)amp_cur[p+2]; 
+         }
+         if ( (flags_cur[p+3] & SATURATED) != SATURATED ) 
+         {
+            valid4 = true; valid_cnt4++;
+            amp_sum4 += (float)amp_cur[p+3]; 
+         }
+      }
+      
+      float amp_avg1   = amp_sum1/valid_cnt1;
+      float amp_avg2   = amp_sum2/valid_cnt2;
+      float amp_avg3   = amp_sum3/valid_cnt3;
+      float amp_avg4   = amp_sum4/valid_cnt4;
+
+      if (valid1) 
+         ampOut[p] = amp_avg1; 
+      else 
+         ampOut[p] = ampIn[p];
+
+      if (valid2) 
+         ampOut[p+1] = amp_avg2;
+      else 
+         ampOut[p+1] = ampIn[p+1];
+
+      if (valid3) 
+         ampOut[p+2] = amp_avg3;
+      else 
+         ampOut[p+2] = ampIn[p+2];
+
+      if (valid4) 
+         ampOut[p+3] = amp_avg4;
+      else 
+         ampOut[p+3] = ampIn[p+3];
+   }
+   memcpy(phaseOut, phaseIn, size1);
+#else
    memcpy(out->ambient(), in->ambient(), s*in->ambientWordWidth());
    memcpy(out->flags(), in->flags(), s*in->flagsWordWidth());
 
@@ -139,6 +249,7 @@ bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
       }
    }
 
+#endif 
    return true;
 }
 

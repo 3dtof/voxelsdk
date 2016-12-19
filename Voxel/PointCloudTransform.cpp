@@ -359,6 +359,69 @@ Point PointCloudTransform::imageToWorld(const Point &p, float depth)
 
 bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame)
 {
+#ifdef COMMON_OPT
+  uint w, h;
+  if((columnsToMerge == 1) && (rowsToMerge == 1))
+    w = width, h = height;
+  else
+    w = (width + columnsToMerge - 1)/columnsToMerge, h = (height + rowsToMerge - 1)/rowsToMerge;
+   
+  auto nFrameSize = w*h;
+  if(distances.size() < nFrameSize ||
+    pointCloudFrame.size() < nFrameSize)
+    return false;
+
+  auto mergedWidth = width/columnsToMerge;
+
+  if(columnsToMerge == 1)
+  {
+    for(int v = 0; v < height; v += rowsToMerge)
+    {
+      int v_merged = v/rowsToMerge *  mergedWidth;  
+      int v_width = v * width;
+#ifdef x86_OPT
+      for(int u = 0; u < width; u += 4)
+      {
+        int idx = v_width + u;
+        int idx_1 = v_width + u + 1;
+        int idx_2 = v_width + u + 2;
+        int idx_3 = v_width + u + 3;
+
+        int idx2 = v_merged + u;
+        int idx3 = v_merged + u + 1;
+        int idx4 = v_merged + u + 2;
+        int idx5 = v_merged + u + 3;
+
+        Point *p = pointCloudFrame[idx2];
+        Point *p1 = pointCloudFrame[idx3];
+        Point *p2 = pointCloudFrame[idx4];
+        Point *p3 = pointCloudFrame[idx5];
+
+        *p = directions[idx] * distances[idx2];
+        *p1 = directions[idx_1] * distances[idx3];
+        *p2 = directions[idx_2] * distances[idx4];
+        *p3 = directions[idx_3] * distances[idx5];
+      }
+    }
+  }
+  else
+  {
+    for(int v = 0; v < height; v += rowsToMerge)
+    { 
+      int v_merged = v/rowsToMerge *  mergedWidth;  
+      int v_width = v * width;
+      for(int u = 0; u < width; u += columnsToMerge)
+      {
+        int idx = v_width + u;
+        int idx2 = v_merged + u/columnsToMerge;
+        Point *p = pointCloudFrame[idx2];
+
+        if(p)
+          *p = directions[idx] * distances[idx2];
+      }
+    }
+  }
+#else
   uint w = (width + columnsToMerge - 1)/columnsToMerge, h = (height + rowsToMerge - 1)/rowsToMerge;
 
   if(distances.size() < w*h ||
@@ -382,6 +445,7 @@ bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, Poin
 //       }
     }
   }
+#endif
   return true;
 }
 
