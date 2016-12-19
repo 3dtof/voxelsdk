@@ -3,7 +3,7 @@ project (Voxel)
 
 set(VOXEL_MAJOR_VERSION 0)
 set(VOXEL_MINOR_VERSION 6)
-set(VOXEL_PATCH_VERSION 7)
+set(VOXEL_PATCH_VERSION 8)
 set(VOXEL_VERSION ${VOXEL_MAJOR_VERSION}.${VOXEL_MINOR_VERSION}.${VOXEL_PATCH_VERSION})
 set(VOXEL_ABI_VERSION 34)
 set(VOXEL_CONF_VERSION 1)
@@ -22,8 +22,24 @@ set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(LINUX 1)
-  add_definitions(-msse2 -pthread -std=c++11 -fPIC -ffast-math)
-  ADD_DEFINITIONS(-DLINUX)  
+  #Comment below line while running on x86 and uncomment while running on ARM 
+  SET(ARM_PLATFORM 1)
+  
+  if(ARM_PLATFORM)
+    add_definitions(-mtune=arm7 -mfpu=neon-vfpv4 -mfloat-abi=hard -pthread -std=c++11 -fPIC -ffast-math)
+    #-DARM_OPT to enable arm optimizaions
+    ADD_DEFINITIONS(-DARM_OPT)
+    ADD_DEFINITIONS(-DCOMMON_OPT)
+
+  else()
+    add_definitions(-msse2 -pthread -std=c++11 -fPIC -ffast-math)
+    #-Dx86_OPT to enable x86 optimizaions
+    ADD_DEFINITIONS(-Dx86_OPT)
+    ADD_DEFINITIONS(-DCOMMON_OPT)
+
+  endif()
+  
+  ADD_DEFINITIONS(-DLINUX)
 
   set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
   SET(COMMON_LIBS_PRIVATE "")

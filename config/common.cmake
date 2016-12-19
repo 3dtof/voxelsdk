@@ -86,7 +86,11 @@ endfunction()
 
 if(LINUX)
   function(get_distribution_codename codename)
+  if(ARM_PLATFORM)
+    read_config(/etc/os-release DISTRIB_CODENAME cn)
+  else()
     read_config(/etc/lsb-release DISTRIB_CODENAME cn)
+  endif()
     set(${codename} "${cn}" PARENT_SCOPE)
   endfunction()
   
