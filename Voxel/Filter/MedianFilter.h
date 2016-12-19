@@ -9,6 +9,14 @@
 
 #include <Filter/Filter.h>
 #include <memory.h>
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#define vmin_max(a,b) \
+                     { uint16x8_t vtemp = a;\
+                       a = vmaxq_u16(a, b);\
+                       b = vminq_u16(vtemp, b);}
+
+#endif
 
 namespace Voxel
 {
