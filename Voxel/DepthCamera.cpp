@@ -14,6 +14,10 @@
 #include "Logger.h"
 #include "PointCloudFrameGenerator.h"
 
+#ifdef ARM_OPT
+int32_t nFrameWidth = 0, nFrameHeight = 0;
+#endif
+
 namespace Voxel
 {
   
@@ -320,6 +324,13 @@ bool DepthCamera::start()
     return false;
   }
   
+#ifdef ARM_OPT
+  FrameSize s;
+  _getFrameSize(s);
+  nFrameWidth = s.width;
+  nFrameHeight = s.height;
+#endif
+
   resetFilters();
   
   if(!_start())

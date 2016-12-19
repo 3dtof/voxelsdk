@@ -8,6 +8,9 @@
 #define VOXEL_DENOISE_H
 
 #include "Filter.h"
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
 
 #include <string.h>
 #include <deque>
@@ -26,11 +29,20 @@ protected:
    uint _order;
    float _threshold;
 
+#ifndef ARM_OPT
    std::deque<Vector<ByteType>> _ampHistory;
    std::deque<Vector<ByteType>> _phaseHistory;
    std::deque<Vector<ByteType>> _ambHistory;
    std::deque<Vector<ByteType>> _flagsHistory;
 
+#else
+   ByteType **_ampHistory;
+   ByteType **_phaseHistory; 
+   ByteType **_ambHistory; 
+   ByteType **_flagsHistory; 
+   int denoise_frames;
+   int cnt;
+#endif
    FrameSize _size;
   
    template <typename T>

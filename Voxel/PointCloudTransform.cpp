@@ -13,6 +13,9 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
 
 namespace Voxel
 {
@@ -402,6 +405,32 @@ bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, Poin
         *p2 = directions[idx_2] * distances[idx4];
         *p3 = directions[idx_3] * distances[idx5];
       }
+#elif ARM_OPT
+      int widthm4 = width - 4;
+      int u;
+
+      for(u = 0; u < width; u += 4)
+      {
+        int idx  = v_width + u;
+        int idx2 = v_merged + u;
+
+        Point *p = pointCloudFrame[idx2];
+
+        float32x4_t ndist;
+        float32x4x4_t nPC;
+        float32x4x3_t nDir;
+        
+        nDir = vld3q_f32((float32_t *)&directions[idx]);
+        ndist = vld1q_f32((float32_t *)&distances[idx2]);
+        
+        nPC.val[0] = vmulq_f32(nDir.val[0], ndist);
+        nPC.val[1] = vmulq_f32(nDir.val[1], ndist);
+        nPC.val[2] = vmulq_f32(nDir.val[2], ndist);
+        
+        vst4q_f32((float32_t *)(&p->x), nPC);
+
+      }
+#endif
     }
   }
   else

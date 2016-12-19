@@ -11,6 +11,10 @@
 #define _MATH_DEFINES
 #include <math.h>
 
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
+
 #define MAX_PHASE_VALUE 0x0FFF
 #define MAX_PHASE_RANGE 0x1000
 #define TOF_ANGLE_TO_PHASE_FACTOR 4096/(2*M_PI)
@@ -535,6 +539,54 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
               t->_phase[index2_3 + k]   = pData3[k + 8] & MAX_PHASE_VALUE;
               t->_ambient[index2_3 + k] = (pData3[k] & 0xF000) >> 12;
             }
+          }
+        }
+      }
+#elif ARM_OPT 
+      for (auto i = 0; i < _size.height; i++) 
+      {
+        auto i2 = i*_size.width*2;
+        auto i1 = i*_size.width;
+        for (auto j = 0; j < _size.width/8; j++) 
+        {
+          index1 = i2 + j*16;
+          index2 = index1 >> 1;
+          
+          if(_dealiased16BitMode)
+          {
+            for (auto k = 0; k < 8; k++) 
+            {
+              t->_amplitude[index2 + k] = data[index1 + k] & MAX_PHASE_VALUE;
+              t->_flags[index2 + k] = (data[index1 + k + 8] & 0xF000) >> 12;
+
+              t->_phase[index2 + k] = ((data[index1 + k + 8] & MAX_PHASE_VALUE) << 4) + (data[index1 + k] >> 12);
+              t->_ambient[index2 + k] = 0xF;
+            }
+          }
+          else
+          {
+            uint16x8_t amplitude, phase;
+            uint16x8_t flags, ambient;
+
+            amplitude = vld1q_u16(&data[index1]);
+            flags     = vld1q_u16(&data[index1] + 8);
+
+            amplitude = vandq_u16(amplitude, vdupq_n_u16(MAX_PHASE_VALUE));
+            flags     = vandq_u16(flags, vdupq_n_u16(0xF000));
+            flags     = vshrq_n_u16(flags, 12);
+
+            vst1q_u16(&t->_amplitude[index2], amplitude);
+            vst1_u8(&t->_flags[index2], vmovn_u16(flags));
+
+            phase   = vld1q_u16(&data[index1 + 8]);
+            ambient = vld1q_u16(&data[index1]);
+
+            phase   = vandq_u16(phase, vdupq_n_u16(MAX_PHASE_VALUE));
+            ambient = vandq_u16(ambient, vdupq_n_u16(0xF000));
+            ambient = vshrq_n_u16(ambient, 12);
+
+            vst1q_u16(&t->_phase[index2], phase);
+            vst1_u8(&t->_ambient[index2], vmovn_u16(ambient));
           }
         }
       }

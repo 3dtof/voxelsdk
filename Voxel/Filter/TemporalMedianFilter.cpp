@@ -13,6 +13,13 @@ TemporalMedianFilter::TemporalMedianFilter(uint order, float deadband): Filter("
     FilterParameterPtr(new UnsignedFilterParameter("order", "Order", "Order of the filter", _order, "", 1, 100)),
     FilterParameterPtr(new FloatFilterParameter("deadband", "Dead band", "Dead band", _deadband, "", 0, 1)),
   });
+#ifdef ARM_OPT
+  _history = (ByteType **)malloc(_order * sizeof(ByteType *));
+  _history[0] = NULL;
+  _history[1] = NULL;
+  _history[2] = NULL;
+  _current = NULL;
+#endif
 }
 
 void TemporalMedianFilter::_onSet(const FilterParameterPtr &f)
@@ -33,7 +40,27 @@ void TemporalMedianFilter::_onSet(const FilterParameterPtr &f)
   }
 }
 
-void TemporalMedianFilter::reset() { _history.clear(); _current.clear(); }
+void TemporalMedianFilter::reset()
+{
+#ifndef ARM_OPT
+  _history.clear(); 
+  _current.clear();
+#else
+  if(_history[0] != NULL)
+    free(_history[0]);
+  if(_history[1] != NULL)
+    free(_history[1]);
+  if(_history[2] != NULL)
+    free(_history[2]);
+  if(_current != NULL)
+    free(_current);
+  _history[0] = (ByteType *)malloc(nFrameWidth*nFrameHeight*4);
+  _history[1] = (ByteType *)malloc(nFrameWidth*nFrameHeight*4);
+  _history[2] = (ByteType *)malloc(nFrameWidth*nFrameHeight*4);
+  _current = (ByteType *)malloc(nFrameWidth*nFrameHeight*4);
+  memset(_current, 0, nFrameWidth*nFrameHeight*4);
+#endif
+}
 
 template <typename T>
 bool TemporalMedianFilter::_filter(const T *in, T *out)
@@ -85,6 +112,92 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
     }
   }
 
+#elif ARM_OPT
+  auto number_bytes = s*sizeof(T);
+  cur = (T *)_current;
+
+  if(frame_cnt < _order)
+  {
+
+    memcpy(_history[frame_cnt], in, number_bytes);
+    memcpy(cur, in, number_bytes);
+    memcpy(out, in, number_bytes);
+    frame_cnt++;
+  }
+  else
+  {
+
+    memcpy(_history[number_frames], in, number_bytes);
+    number_frames=(number_frames==2)?0:++number_frames;
+    int bits = 0;
+    int cnt = 0;
+    s = s / 8;
+    uint16x8_t frame1;
+    uint16x8_t frame2;
+    uint16x8_t frame3;
+    uint16x8_t zeros ;
+    uint16x8_t temp;
+    /*--- 0.05 * 2^18 . INORDER TO PERFORM INTEGER MULTIPLICATION(APPROX.) ---*/
+    uint16x8_t vdead = vdupq_n_u16(13108); 
+    uint16x8_t temp_mul;
+    uint16x8_t temp_str;
+    uint16x8_t temp_str1;
+    uint16x8_t temp_cmp;
+    uint16x8_t subq;
+    
+    for (auto i = 0; i < s; i++)
+    {
+      zeros = vdupq_n_u16(0);
+      /*---  LOADING THE FRAMES ---*/  
+      frame1 = vld1q_u16(((uint16_t *)(_history[0])) + bits);
+      frame2 = vld1q_u16(((uint16_t *)(_history[1])) + bits);
+      frame3 = vld1q_u16(((uint16_t *)(_history[2])) + bits);
+      uint16x8_t vcur = vld1q_u16((uint16_t *)cur + bits);
+      
+      /*--- FINDING THE MEDIAN ---*/
+      vmax_min(frame1, frame2);                       
+      vmax_min(frame1, frame3);
+      vmax_min(frame2, frame3);
+      
+      /*--- CHECKING WHETHER THE MEDIAN IS ZERO ---*/
+      zeros = vcleq_u16(zeros,frame2); 
+      
+      /*--- FINDING DIFFERENCE BETWEEN CURRENT PIXEL AND THE REFERENCE PIXEL ---*/ 
+      subq = vsubq_u16(frame2,vcur);                  
+      temp = vreinterpretq_u16_s16(vabsq_s16(vreinterpretq_s16_u16(subq)));  //FINDING THE ABSOLUTE VALUE
+      
+      /*--- VQDMULHQ WILL MULTIPLY TWO VECTORS(VECTOR COMPRISES OF EIGHT ELEMENT AND EACH ELEMENT SIZE IS 16-BIT) AND STORES THE RESULT IN 
+            32-BIT VECTOR AND SHIFTS THE RESULT 16 TIMES TO RIGHT ---*/ 
+      temp_mul = (vreinterpretq_u16_s16(vqdmulhq_s16(vreinterpretq_s16_u16(vdead),vreinterpretq_s16_u16(vcur)))); //MULTIPLYING REFERENCE PIXEL AND DEADBAND VALUE  
+      temp_mul = vshrq_n_u16(temp_mul,3);   
+      
+      /*--- CHECKING   fabs((float)v - cur[i]) > _deadband * cur[i]) ---*/
+      temp_cmp = vcgtq_u16(temp,temp_mul);
+      
+      /*--- STORING PROPER value.  fabs((float)v - cur[i]) > _deadband * cur[i])==1 STORE THE MEDIAN VALUE
+            ELSE STORE THE REFERENCE PIXEL VALUE ---*/
+    
+      /*--- TEMP_CMP CONATINS ONES WHEN   v > 0 &&  fabs((float)v - cur[i]) > _deadband * cur[i])==1 ---*/
+      temp_cmp = vandq_u16(zeros, temp_cmp);      
+
+      /*--- PARSING ONLY THOSE ELEMENTS WHICH SATISFY THE ABOVE IF STATEMENT ---*/
+      temp_str = vandq_u16(temp_cmp, frame2);           
+
+      /*--- PARSING ONLY THOSE ELEMENTS WHICH SATISFY THE ELSE CASE ---*/
+      temp_str1 = vandq_u16(vmvnq_u16(temp_cmp), vcur);   
+      
+      /*--- COMBINING THE RESULTS OF IF AND ELSE STATEMENT ---*/
+      temp_str = vorrq_u16(temp_str, temp_str1);           
+      
+      /*--- STORING THE RESULT IN OUT AND CUR ---*/
+      vst1q_u16((uint16_t *)out + bits , temp_str);
+      vst1q_u16((uint16_t *)cur + bits , temp_str);
+      
+      /*--- INCREAMTING THE POINTER TO NEXT 8 PIXELS ---*/
+      bits = bits + 8;
+    }
+
+  }
 #else
   if(_current.size() != s*sizeof(T))
   {
