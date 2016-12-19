@@ -12,7 +12,7 @@
 
 #include <algorithm>
 
-#define MAX_FRAME_BUFFERS 2
+#define MAX_FRAME_BUFFERS 3
 
 namespace Voxel
 {

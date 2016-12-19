@@ -12,7 +12,7 @@
 #include <memory.h>
 #include <assert.h>
 
-#define MAX_BUFFER_COUNT 2
+#define MAX_BUFFER_COUNT 3
 
 #ifdef LINUX
 #include <linux/videodev2.h>

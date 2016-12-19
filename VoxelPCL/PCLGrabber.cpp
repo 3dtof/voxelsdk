@@ -9,7 +9,7 @@
 namespace Voxel
 {
   
-PCLGrabber::PCLGrabber(DepthCamera &depthCamera): _depthCamera(depthCamera), _pointCloudBuffer(2)
+PCLGrabber::PCLGrabber(DepthCamera &depthCamera): _depthCamera(depthCamera), _pointCloudBuffer(3)
 {
   _pointCloudSignal = createSignal<PointCloudCallBack>();
   _pointCloudFrameSignal = createSignal<PointCloudFrameCallBack>();

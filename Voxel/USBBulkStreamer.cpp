@@ -13,7 +13,7 @@
 
 // Ask for an extra 255 bytes of data to ensure we don't end on a 512 byte packet
 #define BULK_XFER_EXTRA_SIZE  255
-#define MAX_BUFFER_COUNT      2
+#define MAX_BUFFER_COUNT      3
 
 namespace Voxel
 {
