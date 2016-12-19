@@ -171,7 +171,6 @@ bool GeneratorConfigurationSubPacket::write(SerializedObject &object)
   return true;
 }
 
-
 FrameStreamReader::FrameStreamReader(InputFileStream &stream, CameraSystem &sys):_stream(stream), _sys(sys), frames(4)
 {
   _init();

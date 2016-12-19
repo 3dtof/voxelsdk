@@ -100,7 +100,7 @@ class VOXEL_EXPORT FrameStreamReader
   
   size_t _currentPacketIndex; // index on _allPacketOffsets
   size_t _currentFrameIndex; // index on _dataPacketLocation
-  
+
   CameraSystem &_sys;
   
   Ptr<FrameGenerator> _frameGenerator[3]; // for processed raw, depth and point cloud
@@ -114,6 +114,7 @@ class VOXEL_EXPORT FrameStreamReader
   bool _readConfigPacket(size_t packetIndex);
   
 public:
+
   FrameStreamReader(const String &fileName, CameraSystem &sys);
   FrameStreamReader(InputFileStream &stream, CameraSystem &sys);
   

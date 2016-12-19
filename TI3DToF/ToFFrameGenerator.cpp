@@ -501,9 +501,9 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
     else // dataArrangeMode == 0
     {
       auto index1 = 0, index2 = 0;
-      
+
       uint16_t *data = (uint16_t *)rawDataFrame->data.data();
-      
+
       for (auto i = 0; i < _size.height; i++) 
       {
         for (auto j = 0; j < _size.width; j++) 
@@ -512,7 +512,7 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
           index2 = i*_size.width + j;
           t->_amplitude[index2] = data[index1] & MAX_PHASE_VALUE;
           t->_flags[index2] = (data[index1 + 1] & 0xF000) >> 12;
-          
+
           if(_dealiased16BitMode)
           {
             t->_phase[index2] = ((data[index1 + 1] & MAX_PHASE_VALUE) << 4) + (data[index1] >> 12);
@@ -545,7 +545,7 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
     t->_amplitude.resize(_size.width*_size.height);
     t->_phase.resize(_size.width*_size.height);
     t->_flags.resize(_size.width*_size.height);
-    
+
     auto index = 0;
     
     uint16_t *data = (uint16_t *)rawDataFrame->data.data();
@@ -571,8 +571,8 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
   
   if(!_applyCrossTalkFilter(out))
     return false;
-  
-  
+
+
   t = dynamic_cast<ToFRawFrameTemplate<uint16_t, uint8_t> *>(out.get());
   
   if(!t)
@@ -580,13 +580,13 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
     logger(LOG_ERROR) << "ToFFrameGenerator: Output frame is not a ToF frame!" << std::endl;
     return false;
   }
-  
+
   if(!_applyPhaseOffsetCorrection(t->_phase))
   {
     logger(LOG_ERROR) << "ToFFrameGenerator: Failed to apply phase offset correction" << std::endl;
     return false;
   }
-  
+
   if(!_histogramEnabled)
     return true; // No histogram data
     
@@ -596,13 +596,13 @@ bool ToFFrameGenerator::_generateToFRawFrame(const FramePtr &in, FramePtr &out)
     << ", bytes in frame = " << _size.height*_size.width*_bytesPerPixel << std::endl;
     return false;
   }
-  
+
   uint8_t *data = rawDataFrame->data.data() + _size.height*_size.width*_bytesPerPixel;
   
   t->_histogram.resize(48); // 48 elements of 16-bits each
-  
+
   memcpy((uint8_t *)t->_histogram.data(), data, 96);
-  
+
   return true;
 }
 

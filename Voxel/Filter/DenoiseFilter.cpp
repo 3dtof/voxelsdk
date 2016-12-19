@@ -166,7 +166,7 @@ bool DenoiseFilter::_filter(const FramePtr &in, FramePtr &out)
     
       if (tofFrame->phaseWordWidth() == 2)
       {
-         if (tofFrame->amplitudeWordWidth() == 1) 
+         if (tofFrame->amplitudeWordWidth() == 1)
             return _filter2<uint16_t, uint8_t>(in, out);
          else if (tofFrame->amplitudeWordWidth() == 2)
             return _filter2<uint16_t, uint16_t>(in, out);

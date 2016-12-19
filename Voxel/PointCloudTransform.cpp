@@ -360,11 +360,11 @@ Point PointCloudTransform::imageToWorld(const Point &p, float depth)
 bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame)
 {
   uint w = (width + columnsToMerge - 1)/columnsToMerge, h = (height + rowsToMerge - 1)/rowsToMerge;
-  
+
   if(distances.size() < w*h ||
     pointCloudFrame.size() < w*h)
     return false;
-  
+
   for(int v = 0; v < height; v += rowsToMerge)
   {
     for(int u = 0; u < width; u += columnsToMerge)
@@ -372,7 +372,7 @@ bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, Poin
       int idx = v * width + u;
       int idx2 = v/rowsToMerge * width/columnsToMerge + u/columnsToMerge;
       Point *p = pointCloudFrame[idx2];
-      
+
       if(p)
         *p = directions[idx] * distances[idx2];
 //       else
