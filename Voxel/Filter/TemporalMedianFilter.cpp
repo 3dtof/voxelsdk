@@ -41,7 +41,51 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
   uint s = _size.width*_size.height;
   
   T *cur, *hist;
+#ifdef x86_OPT
+  unsigned int transSize = s*sizeof(T);
+  if(_current.size() != transSize)
+  {
+    _current.resize(transSize);
+    memset(_current.data(), 0, transSize);
+  }
   
+  cur = (T *)_current.data();
+  
+  if(_history.size() < _order)
+  {
+    Vector<ByteType> h;
+    h.resize(transSize);
+    
+    memcpy(h.data(), in, transSize);
+    
+    _history.push_back(std::move(h));
+    
+    memcpy(cur, in, transSize);
+    memcpy(out, in, transSize);
+  }
+  else
+  {
+    _history.pop_front();
+    
+    Vector<ByteType> h;
+    h.resize(transSize);
+    
+    memcpy(h.data(), in, transSize);
+    
+    _history.push_back(std::move(h));
+    
+    for(auto i = 0; i < s; i++)
+    {
+      T v;
+      _getMedian(i, v);
+      if(v > 0 && fabs((float)v - cur[i]) > _deadband * cur[i])
+        out[i] = cur[i] = v;
+      else
+        out[i] = cur[i];
+    }
+  }
+
+#else
   if(_current.size() != s*sizeof(T))
   {
     _current.resize(s*sizeof(T));
@@ -85,12 +129,67 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
         out[i] = cur[i];
     }
   }
+#endif
   return true;
 }
 
+#ifndef ARM_OPT
 template <typename T>
 void TemporalMedianFilter::_getMedian(IndexType offset, T &value)
 {
+#ifdef x86_OPT
+  if(_order == 3)
+  {
+    T v[3] = {0}, tempi;
+    int temp, isize;
+    int k, i = 0;
+    int nOffset = offset*sizeof(T);
+    for(auto &h: _history)
+    {
+      T *h1 = (T *)(h.data());
+
+      if(h.size() > nOffset)
+      {
+        v[i] = (h1[offset]);
+        i++;
+      }
+    }
+
+    int isizeb2 = i/2;
+    for(int j = 0; j <= isizeb2; j++)
+    {
+      for(k = j+1, temp = j; k < i; k++)
+      {
+        if(v[k] < v[temp])
+          temp = k;
+      }
+      if(temp != j)
+      {
+        tempi = v[j];
+        v[j] = v[temp];
+        v[temp] = tempi;
+      }
+    }
+    value = v[i/2];
+  }
+  else
+  {
+    Vector<T> v;
+
+    v.reserve(_order);
+
+    for(auto &h: _history)
+    {
+      T *h1 = (T *)(h.data());
+      if(h.size() > offset*sizeof(T))
+        v.push_back(h1[offset]);
+    }
+
+    std::nth_element(v.begin(), v.begin() + v.size()/2,  v.end());
+
+    value = v[v.size()/2];
+  }
+#else
   Vector<T> v;
   
   v.reserve(_order);
@@ -105,7 +204,9 @@ void TemporalMedianFilter::_getMedian(IndexType offset, T &value)
   std::nth_element(v.begin(), v.begin() + v.size()/2,  v.end());
   
   value = v[v.size()/2];
+#endif
 }
+#endif
 
 bool TemporalMedianFilter::_filter(const FramePtr &in, FramePtr &out)
 {
