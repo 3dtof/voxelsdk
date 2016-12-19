@@ -626,7 +626,8 @@ public:
   
   virtual bool deserialize(SerializedObject &object)
   {
-    size_t s;
+    /** size_t is 4 in arm and 8 in x86. So used uint64_t**/
+    uint64_t s;
     if(!object.get((char *)&id, sizeof(id)) ||
     !object.get((char *)&timestamp, sizeof(timestamp)) ||
     !object.get((char *)&s, sizeof(s)))
