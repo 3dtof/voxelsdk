@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 
     count++;
     
-    if(count >= 100)
+    if(count >= frameCount)
     {
       dc.stop();
     }
