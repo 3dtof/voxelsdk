@@ -362,7 +362,7 @@ Point PointCloudTransform::imageToWorld(const Point &p, float depth)
 
 bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame)
 {
-#ifdef COMMON_OPT
+#if defined(ARM_OPT) || defined (x86_OPT)
   uint w, h;
   if((columnsToMerge == 1) && (rowsToMerge == 1))
     w = width, h = height;
