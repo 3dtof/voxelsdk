@@ -72,6 +72,7 @@ bool BilateralFilter::_filter(const  T *in, const T2 *ref, T *out)
 
 bool BilateralFilter::_filter(const FramePtr &in, FramePtr &out)
 {
+  bool ret = false;
   ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
   DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());
   
@@ -102,32 +103,31 @@ bool BilateralFilter::_filter(const FramePtr &in, FramePtr &out)
     if(tofFrame->phaseWordWidth() == 2)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
-        return _filter<uint16_t, uint8_t>((uint16_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+        ret = _filter<uint16_t, uint8_t>((uint16_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 2)
-        return _filter<uint16_t, uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+        ret = _filter<uint16_t, uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 4)
-        return _filter<uint16_t, uint32_t>((uint16_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
+        ret = _filter<uint16_t, uint32_t>((uint16_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint16_t *)o->phase());
     }
     else if(tofFrame->phaseWordWidth() == 1)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
-        return _filter<uint8_t, uint8_t>((uint8_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
+        ret = _filter<uint8_t, uint8_t>((uint8_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 2)
-        return _filter<uint8_t, uint16_t>((uint8_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
+        ret = _filter<uint8_t, uint16_t>((uint8_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 4)
-        return _filter<uint8_t, uint32_t>((uint8_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
+        ret = _filter<uint8_t, uint32_t>((uint8_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint8_t *)o->phase());
     }
     else if(tofFrame->phaseWordWidth() == 4)
     {
       if(tofFrame->amplitudeWordWidth() == 1)
-        return _filter<uint32_t, uint8_t>((uint32_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+        ret = _filter<uint32_t, uint8_t>((uint32_t *)tofFrame->phase(), (uint8_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 2)
-        return _filter<uint32_t, uint16_t>((uint32_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+        ret = _filter<uint32_t, uint16_t>((uint32_t *)tofFrame->phase(), (uint16_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
       else if(tofFrame->amplitudeWordWidth() == 4)
-        return _filter<uint32_t, uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
+        ret = _filter<uint32_t, uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)tofFrame->amplitude(), (uint32_t *)o->phase());
     }
      
-    return false;
   }
   else if(depthFrame)
   {
@@ -142,10 +142,9 @@ bool BilateralFilter::_filter(const FramePtr &in, FramePtr &out)
     
     o->amplitude = depthFrame->amplitude;
     
-    return _filter<float, float>(depthFrame->depth.data(), depthFrame->amplitude.data(), o->depth.data());
+    ret = _filter<float, float>(depthFrame->depth.data(), depthFrame->amplitude.data(), o->depth.data());
   }
-  else
-    return false;
+  return ret;
 }
   
 }

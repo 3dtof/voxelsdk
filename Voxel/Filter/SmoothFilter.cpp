@@ -59,6 +59,7 @@ bool SmoothFilter::_filter(const T *in, T *out)
 
 bool SmoothFilter::_filter(const FramePtr &in, FramePtr &out)
 {
+  bool ret;
   ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
   DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());
   
@@ -87,11 +88,11 @@ bool SmoothFilter::_filter(const FramePtr &in, FramePtr &out)
     memcpy(o->flags(), tofFrame->flags(), s*tofFrame->flagsWordWidth());
     
     if(tofFrame->phaseWordWidth() == 2)
-      return _filter<uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)o->phase());
+      ret = _filter<uint16_t>((uint16_t *)tofFrame->phase(), (uint16_t *)o->phase());
     else if(tofFrame->phaseWordWidth() == 1)
-      return _filter<uint8_t>((uint8_t *)tofFrame->phase(), (uint8_t *)o->phase());
+      ret = _filter<uint8_t>((uint8_t *)tofFrame->phase(), (uint8_t *)o->phase());
     else if(tofFrame->phaseWordWidth() == 4)
-      return _filter<uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)o->phase());
+      ret = _filter<uint32_t>((uint32_t *)tofFrame->phase(), (uint32_t *)o->phase());
     else
       return false;
   }
@@ -108,10 +109,9 @@ bool SmoothFilter::_filter(const FramePtr &in, FramePtr &out)
     
     o->amplitude = depthFrame->amplitude;
     
-    return _filter<float>(depthFrame->depth.data(), o->depth.data());
+    ret = _filter<float>(depthFrame->depth.data(), o->depth.data());
   }
-  else
-    return false;
+  return ret;
 }
   
 }
