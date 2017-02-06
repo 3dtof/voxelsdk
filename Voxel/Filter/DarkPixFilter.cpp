@@ -6,6 +6,10 @@
 
 #include "DarkPixFilter.h"
 
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
+
 namespace Voxel
 {
   
@@ -79,15 +83,96 @@ template <typename T, typename T2>
 bool DarkPixFilter::_filter2(const T *in, T2 *amp, uint8_t *amb, T *out)
 {
   uint s = _size.width*_size.height;
+#ifdef x86_OPT
 
-    for (auto p = 0; p < s; p++)
-    {
-      if ( ((amp[p] < _aThrNear) && (in[p] < _phThrNear)) ||  ((amp[p] > _aThrFar) && (in[p] > _phThrFar)) || ((amb[p] < _ambThresh)) )
-         out[p] = 0;
-      else
-         out[p] = in[p];
-    }
-    return true;
+  T2 *pAmp = amp;
+  uint8_t *pAmb = amb;
+  const T *pIn = in;
+  T *pOut = out;
+
+  __m128i vIn, vOut, vAmp, vAmb;
+  __m128i vAmb8;
+  __m128i vAThrNear = _mm_set1_epi16((uint16_t)_aThrNear);
+  __m128i vPhThrNear = _mm_set1_epi16((uint16_t)_phThrNear);
+  __m128i vAThrFar = _mm_set1_epi16((uint16_t)_aThrFar);
+  __m128i vPhThrFar = _mm_set1_epi16((uint16_t)_phThrFar);
+  __m128i vAmbThresh = _mm_set1_epi16((uint16_t)_ambThresh);
+  __m128i vZeros = _mm_set1_epi16(0);
+  __m128i xor_ones = _mm_set1_epi16(0xffff);
+
+  for (auto p = 0; p < s; p += 8)
+  {
+    vIn = _mm_loadu_si128((__m128i*)pIn);
+    vAmp = _mm_loadu_si128((__m128i*)pAmp);
+    vAmb8 = _mm_loadl_epi64((__m128i*)pAmb);
+    vAmb = _mm_unpacklo_epi8(vAmb8, vZeros);
+    __m128i vC1, vC2, vC3, vValid, vInValid;
+
+    vC1 = _mm_and_si128(_mm_cmplt_epi16(vAmp, vAThrNear), _mm_cmplt_epi16(vIn, vPhThrNear));
+    vC2 = _mm_and_si128(_mm_cmpgt_epi16(vAmp, vAThrFar), _mm_cmpgt_epi16(vIn, vPhThrFar));
+    vC3 = _mm_cmplt_epi16(vAmb, vAmbThresh);
+
+    vValid = _mm_or_si128(_mm_or_si128(vC1, vC2), vC3);
+    vInValid = _mm_xor_si128(vValid, xor_ones);
+
+    vOut = _mm_or_si128(_mm_and_si128(vValid, vZeros), _mm_and_si128(vInValid, vIn));
+    _mm_storeu_si128((__m128i*)pOut, vOut);
+
+    pAmp += 8;
+    pAmb += 8;
+    pIn += 8;
+    pOut += 8;
+  }
+  
+#elif ARM_OPT
+  T2 *pAmp = amp;
+  uint8_t *pAmb = amb;
+  const T *pIn = in;
+  T *pOut = out;
+  
+  uint16x8_t vIn, vOut, vAmp, vAmb;
+  uint8x8_t vAmb8;
+  uint16x8_t vAThrNear = vdupq_n_u16((uint16_t)_aThrNear);
+  uint16x8_t vPhThrNear = vdupq_n_u16((uint16_t)_phThrNear);
+  uint16x8_t vAThrFar = vdupq_n_u16((uint16_t)_aThrFar);
+  uint16x8_t vPhThrFar = vdupq_n_u16((uint16_t)_phThrFar);
+  uint16x8_t vAmbThresh = vdupq_n_u16((uint16_t)_ambThresh);
+  uint16x8_t vZeros = vdupq_n_u16(0);
+  
+  for (auto p = 0; p < s; p+=8)
+  {
+    vIn = vld1q_u16((uint16_t*)pIn);
+    vAmp = vld1q_u16((uint16_t*)pAmp);
+    vAmb8 = vld1_u8((uint8_t*)pAmb);
+    vAmb = vmovl_u8(vAmb8);
+    uint16x8_t vC1, vC2, vC3, vValid, vInValid;
+    
+    vC1 = vandq_u16(vcltq_u16(vAmp, vAThrNear), vcltq_u16(vIn, vPhThrNear));
+    vC2 = vandq_u16(vcgtq_u16(vAmp, vAThrFar), vcgtq_u16(vIn, vPhThrFar));
+    vC3 = vcltq_u16(vAmb, vAmbThresh);
+    
+    vValid = vorrq_u16(vorrq_u16(vC1, vC2), vC3);
+    vInValid = vmvnq_u16(vValid);
+    
+    vOut = vorrq_u16(vandq_u16(vValid, vZeros), vandq_u16(vInValid, vIn));
+    vst1q_u16((uint16_t*)pOut, vOut);
+    
+    pAmp += 8;
+    pAmb += 8;
+    pIn += 8;
+    pOut += 8;
+  }
+
+#else
+  for (auto p = 0; p < s; p++)
+  {
+    if (((amp[p] < _aThrNear) && (in[p] < _phThrNear)) || ((amp[p] > _aThrFar) && (in[p] > _phThrFar)) || ((amb[p] < _ambThresh)))
+      out[p] = 0;
+    else
+      out[p] = in[p];
+  }
+#endif
+  return true;
 }
 
 bool DarkPixFilter::_filter(const FramePtr &in, FramePtr &out)

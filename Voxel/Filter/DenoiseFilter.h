@@ -29,19 +29,18 @@ protected:
    uint _order;
    float _threshold;
 
-#ifndef ARM_OPT
-   std::deque<Vector<ByteType>> _ampHistory;
-   std::deque<Vector<ByteType>> _phaseHistory;
-   std::deque<Vector<ByteType>> _ambHistory;
-   std::deque<Vector<ByteType>> _flagsHistory;
-
-#else
+#if defined(ARM_OPT) || defined(x86_OPT)
    ByteType **_ampHistory;
    ByteType **_phaseHistory; 
    ByteType **_ambHistory; 
    ByteType **_flagsHistory; 
    int denoise_frames;
    int cnt;
+#else
+   std::deque<Vector<ByteType>> _ampHistory;
+   std::deque<Vector<ByteType>> _phaseHistory;
+   std::deque<Vector<ByteType>> _ambHistory;
+   std::deque<Vector<ByteType>> _flagsHistory;
 #endif
    FrameSize _size;
   

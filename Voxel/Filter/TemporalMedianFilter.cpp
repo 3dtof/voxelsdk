@@ -13,7 +13,7 @@ TemporalMedianFilter::TemporalMedianFilter(uint order, float deadband): Filter("
     FilterParameterPtr(new UnsignedFilterParameter("order", "Order", "Order of the filter", _order, "", 1, 100)),
     FilterParameterPtr(new FloatFilterParameter("deadband", "Dead band", "Dead band", _deadband, "", 0, 1)),
   });
-#ifdef ARM_OPT
+#if defined(ARM_OPT) || defined(x86_OPT)
   _history = (ByteType **)malloc(_order * sizeof(ByteType *));
   _history[0] = NULL;
   _history[1] = NULL;
@@ -42,10 +42,7 @@ void TemporalMedianFilter::_onSet(const FilterParameterPtr &f)
 
 void TemporalMedianFilter::reset()
 {
-#ifndef ARM_OPT
-  _history.clear(); 
-  _current.clear();
-#else
+#if defined(ARM_OPT) || defined(x86_OPT)
   if(_history[0] != NULL)
     free(_history[0]);
   if(_history[1] != NULL)
@@ -59,6 +56,9 @@ void TemporalMedianFilter::reset()
   _history[2] = (ByteType *)malloc(nFrameWidth*nFrameHeight*4);
   _current = (ByteType *)malloc(nFrameWidth*nFrameHeight*4);
   memset(_current, 0, nFrameWidth*nFrameHeight*4);
+#else
+  _history.clear(); 
+  _current.clear();
 #endif
 }
 
@@ -69,46 +69,63 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
   
   T *cur, *hist;
 #ifdef x86_OPT
-  unsigned int transSize = s*sizeof(T);
-  if(_current.size() != transSize)
+
+  auto number_bytes = s*sizeof(T);
+  cur = (T *)_current;
+
+  if(frame_cnt < _order)
   {
-    _current.resize(transSize);
-    memset(_current.data(), 0, transSize);
-  }
-  
-  cur = (T *)_current.data();
-  
-  if(_history.size() < _order)
-  {
-    Vector<ByteType> h;
-    h.resize(transSize);
-    
-    memcpy(h.data(), in, transSize);
-    
-    _history.push_back(std::move(h));
-    
-    memcpy(cur, in, transSize);
-    memcpy(out, in, transSize);
+    memcpy(_history[frame_cnt], in, number_bytes);
+    memcpy(cur, in, number_bytes);
+    memcpy(out, in, number_bytes);
+    frame_cnt++;
   }
   else
   {
-    _history.pop_front();
-    
-    Vector<ByteType> h;
-    h.resize(transSize);
-    
-    memcpy(h.data(), in, transSize);
-    
-    _history.push_back(std::move(h));
-    
-    for(auto i = 0; i < s; i++)
+    int bits = 0;
+    memcpy(_history[number_frames], in, number_bytes);
+    number_frames = (number_frames==2)? 0 : ++number_frames;
+    __m128i frame1, frame2, frame3;
+    __m128i mcur, temp_mul, diff, negDiff, absDiff;
+    __m128i temp_cmp1, temp_cmp2;
+    __m128i result1, result2, result;
+    __m128i vdead = _mm_set1_epi16(13108);
+    __m128i zeros = _mm_set1_epi16(0);
+    __m128i ones = _mm_set1_epi16(0xffff);
+    __m128i shift = _mm_set1_epi16(2);
+    __m128i condition;
+    for (auto i = 0; i < s; i+=8)
     {
-      T v;
-      _getMedian(i, v);
-      if(v > 0 && fabs((float)v - cur[i]) > _deadband * cur[i])
-        out[i] = cur[i] = v;
-      else
-        out[i] = cur[i];
+      frame1 = _mm_loadu_si128((__m128i*)((uint16_t *)_history[0] + bits));
+      frame2 = _mm_loadu_si128((__m128i*)((uint16_t *)_history[1] + bits));
+      frame3 = _mm_loadu_si128((__m128i*)((uint16_t *)_history[2] + bits));
+      mcur = _mm_loadu_si128((__m128i*)((uint16_t *)cur + bits));
+      
+      vmax_min(frame1, frame2);
+      vmax_min(frame1, frame3);
+      vmax_min(frame2, frame3);
+      
+      diff = _mm_sub_epi16(frame2, mcur);
+      negDiff = _mm_sub_epi16(zeros, diff);
+      absDiff = _mm_max_epi16(diff, negDiff);
+      
+      temp_mul = _mm_mulhi_epu16(vdead, mcur);
+      temp_mul = _mm_srli_epi16(temp_mul, 2);
+      
+      temp_cmp1 = _mm_cmpgt_epi16(frame2, zeros);
+      temp_cmp2 = _mm_cmpgt_epi16(absDiff, temp_mul);
+      
+      condition = _mm_and_si128(temp_cmp1, temp_cmp2);
+      result1 = _mm_and_si128(condition, frame2);
+      
+      result2 = _mm_xor_si128(condition, ones);
+      result2 = _mm_and_si128(result2, mcur);
+      result = _mm_or_si128(result1, result2);
+      
+      _mm_storeu_si128((__m128i*)((uint16_t *)out + bits), result);
+      _mm_storeu_si128((__m128i*)((uint16_t *)cur + bits), result);
+      
+      bits = bits + 8;
     }
   }
 
@@ -244,63 +261,11 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
   return true;
 }
 
-#ifndef ARM_OPT
+#if !defined(ARM_OPT) && !defined(x86_OPT)
 template <typename T>
 void TemporalMedianFilter::_getMedian(IndexType offset, T &value)
 {
-#ifdef x86_OPT
-  if(_order == 3)
-  {
-    T v[3] = {0}, tempi;
-    int temp, isize;
-    int k, i = 0;
-    int nOffset = offset*sizeof(T);
-    for(auto &h: _history)
-    {
-      T *h1 = (T *)(h.data());
 
-      if(h.size() > nOffset)
-      {
-        v[i] = (h1[offset]);
-        i++;
-      }
-    }
-
-    int isizeb2 = i/2;
-    for(int j = 0; j <= isizeb2; j++)
-    {
-      for(k = j+1, temp = j; k < i; k++)
-      {
-        if(v[k] < v[temp])
-          temp = k;
-      }
-      if(temp != j)
-      {
-        tempi = v[j];
-        v[j] = v[temp];
-        v[temp] = tempi;
-      }
-    }
-    value = v[i/2];
-  }
-  else
-  {
-    Vector<T> v;
-
-    v.reserve(_order);
-
-    for(auto &h: _history)
-    {
-      T *h1 = (T *)(h.data());
-      if(h.size() > offset*sizeof(T))
-        v.push_back(h1[offset]);
-    }
-
-    std::nth_element(v.begin(), v.begin() + v.size()/2,  v.end());
-
-    value = v[v.size()/2];
-  }
-#else
   Vector<T> v;
   
   v.reserve(_order);
@@ -315,7 +280,7 @@ void TemporalMedianFilter::_getMedian(IndexType offset, T &value)
   std::nth_element(v.begin(), v.begin() + v.size()/2,  v.end());
   
   value = v[v.size()/2];
-#endif
+
 }
 #endif
 

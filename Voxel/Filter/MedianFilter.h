@@ -15,7 +15,11 @@
                      { uint16x8_t vtemp = a;\
                        a = vmaxq_u16(a, b);\
                        b = vminq_u16(vtemp, b);}
-
+#elif x86_OPT
+#define vmin_max(a,b) \
+                       { __m128i vtemp = a;\
+                       a = _mm_max_epi16(a, b);\
+                       b = _mm_min_epi16(vtemp, b);}
 #endif
 
 namespace Voxel

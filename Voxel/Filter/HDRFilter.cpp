@@ -6,6 +6,10 @@
 
 #include "HDRFilter.h"
 
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
+
 namespace Voxel
 {
   
@@ -92,6 +96,136 @@ bool HDRFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
    PhaseT *phaseIn = (PhaseT *)in->phase();
    PhaseT *phaseOut = (PhaseT *)out->phase();
 
+#ifdef x86_OPT
+
+  __m128i vSat = _mm_set1_epi16(0x0008);
+  __m128i vOnes = _mm_set1_epi16(0xFFFF);
+  __m128i vZeros = _mm_set1_epi16(0);
+  
+  AmpT *pAmpIn = ampIn;
+  AmpT *pAmpOut = ampOut;
+  PhaseT *pPhaseIn = phaseIn;
+  PhaseT *pPhaseOut = phaseOut;
+  
+  for (int p = 0; p < s; p+=8)
+  {
+    __m128i vMax_i = _mm_set1_epi16(0xFFFF);
+    __m128i vMax_Amp = vZeros;
+    __m128i vMax_Phase = vZeros;
+    __m128i vAmpOut, vPhaseOut, vAmpIn, vPhaseIn;
+    
+    vAmpIn = _mm_loadu_si128((__m128i*)pAmpIn);
+    vPhaseIn = _mm_loadu_si128((__m128i*)pPhaseIn);
+    
+    for (auto i = 0; i < _ampHistory.size(); i++)
+    {
+      AmpT *amp_cur = (AmpT *)_ampHistory[i].data();
+      PhaseT *phase_cur = (PhaseT *)_phaseHistory[i].data();
+      uint8_t *flags_cur = (uint8_t *)_flagsHistory[i].data();
+      __m128i vi = _mm_set1_epi16((uint16_t)i);
+      
+      __m128i vFlags_cur8 = _mm_loadl_epi64((__m128i*)(flags_cur + p));
+      __m128i vAmp_cur = _mm_loadu_si128((__m128i*)(amp_cur + p));
+      __m128i vPhase_cur = _mm_loadu_si128((__m128i*)(phase_cur + p));
+      __m128i vFlags_cur = _mm_unpacklo_epi8(vFlags_cur8, vZeros);
+      __m128i vCondition1, vCondition2, vCondition, vConditionInv;
+      
+      vCondition1 = _mm_cmpeq_epi16(_mm_and_si128(vFlags_cur, vSat), vSat);
+      vCondition1 = _mm_xor_si128(vCondition1, vOnes);
+      vCondition2 = _mm_cmpgt_epi16(vAmp_cur, vMax_Amp);
+  
+      vCondition = _mm_and_si128(vCondition1, vCondition2);
+      vConditionInv =  _mm_xor_si128(vCondition, vOnes);
+  
+      vMax_i = _mm_or_si128(_mm_and_si128(vi, vCondition), _mm_and_si128(vMax_i, vConditionInv));
+      vMax_Amp = _mm_or_si128(_mm_and_si128(vAmp_cur, vCondition), _mm_and_si128(vMax_Amp, vConditionInv));
+      vMax_Phase = _mm_or_si128(_mm_and_si128(vPhase_cur, vCondition), _mm_and_si128(vMax_Phase, vConditionInv));
+      
+    }
+    
+    __m128i valid; 
+    __m128i inValid;
+    
+    inValid = _mm_cmpeq_epi16(vMax_i, vOnes);
+    valid = _mm_xor_si128(inValid, vOnes);
+    
+    vAmpOut = _mm_or_si128(_mm_and_si128(vMax_Amp, valid), _mm_and_si128(vAmpIn, inValid));
+    vPhaseOut = _mm_or_si128(_mm_and_si128(vMax_Phase, valid), _mm_and_si128(vPhaseIn, inValid));
+    
+    _mm_storeu_si128((__m128i*)pAmpOut, vAmpOut);
+    _mm_storeu_si128((__m128i*)pPhaseOut, vPhaseOut);
+    
+    pAmpIn += 8;
+    pAmpOut += 8;
+    pPhaseIn += 8;
+    pPhaseOut += 8;
+  }
+  
+#elif ARM_OPT
+    uint16x8_t vSat = vdupq_n_u16(0x0008);
+    uint16x8_t vOnes = vdupq_n_u16(0xFFFF);
+    uint16x8_t vZeros = vdupq_n_u16(0);
+    
+    AmpT *pAmpIn = ampIn;
+    AmpT *pAmpOut = ampOut;
+    PhaseT *pPhaseIn = phaseIn;
+    PhaseT *pPhaseOut = phaseOut;
+    
+    for (int p = 0; p < s; p+=8)
+    {
+      uint16x8_t vMax_i = vdupq_n_u16(0xFFFF);
+      uint16x8_t vMax_Amp = vZeros;
+      uint16x8_t vMax_Phase = vZeros;
+      uint16x8_t vAmpOut, vPhaseOut, vAmpIn, vPhaseIn;
+      
+      vAmpIn = vld1q_u16((uint16_t*)pAmpIn);
+      vPhaseIn = vld1q_u16((uint16_t*)pPhaseIn);
+      
+      for (auto i = 0; i < _ampHistory.size(); i++)
+      {
+        AmpT *amp_cur = (AmpT *)_ampHistory[i].data();
+        PhaseT *phase_cur = (PhaseT *)_phaseHistory[i].data();
+        uint8_t *flags_cur = (uint8_t *)_flagsHistory[i].data();
+        uint16x8_t vi = vdupq_n_u16((uint16_t)i);
+        
+        uint8x8_t vFlags_cur8 = vld1_u8((uint8_t*)flags_cur + p);
+        uint16x8_t vAmp_cur = vld1q_u16((uint16_t*)amp_cur + p);
+        uint16x8_t vPhase_cur = vld1q_u16((uint16_t*)phase_cur + p);
+        uint16x8_t vFlags_cur = vmovl_u8(vFlags_cur8);
+        uint16x8_t vCondition1, vCondition2, vCondition, vConditionInv;
+        
+        vCondition1 = vceqq_u16(vandq_u16(vFlags_cur, vSat), vSat);
+        vCondition1 = vmvnq_u16(vCondition1);
+        vCondition2 = vcgtq_u16(vAmp_cur, vMax_Amp);
+
+        vCondition = vandq_u16(vCondition1, vCondition2);
+        vConditionInv =  vmvnq_u16(vCondition);
+
+        vMax_i = vorrq_u16(vandq_u16(vi, vCondition), vandq_u16(vMax_i, vConditionInv));
+        vMax_Amp = vorrq_u16(vandq_u16(vAmp_cur, vCondition), vandq_u16(vMax_Amp, vConditionInv));
+        vMax_Phase = vorrq_u16(vandq_u16(vPhase_cur, vCondition), vandq_u16(vMax_Phase, vConditionInv));
+        
+      }
+      
+      uint16x8_t valid; 
+      uint16x8_t inValid;
+      
+      inValid = vceqq_u16(vMax_i, vOnes);
+      valid = vmvnq_u16(inValid);
+      
+      vAmpOut = vorrq_u16(vandq_u16(vMax_Amp, valid), vandq_u16(vAmpIn, inValid));
+      vPhaseOut = vorrq_u16(vandq_u16(vMax_Phase, valid), vandq_u16(vPhaseIn, inValid));
+      
+      vst1q_u16((uint16_t*)pAmpOut, vAmpOut);
+      vst1q_u16((uint16_t*)pPhaseOut, vPhaseOut);
+      
+      pAmpIn += 8;
+      pAmpOut += 8;
+      pPhaseIn += 8;
+      pPhaseOut += 8;
+    }
+    
+#else
    for (int p = 0; p < s; p++) 
    {
       int max_i = -1;
@@ -132,6 +266,7 @@ bool HDRFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
       }
    }
 
+#endif
    return true;
 }
 

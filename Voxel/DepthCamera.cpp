@@ -14,7 +14,7 @@
 #include "Logger.h"
 #include "PointCloudFrameGenerator.h"
 
-#ifdef ARM_OPT
+#if defined(ARM_OPT) || defined (x86_OPT)
 int32_t nFrameWidth = 0, nFrameHeight = 0;
 #endif
 
@@ -324,7 +324,7 @@ bool DepthCamera::start()
     return false;
   }
   
-#ifdef ARM_OPT
+#if defined(ARM_OPT) || defined (x86_OPT)
   FrameSize s;
   _getFrameSize(s);
   nFrameWidth = s.width;

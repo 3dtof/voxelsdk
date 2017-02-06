@@ -8,6 +8,10 @@
 
 #include <memory.h>
 
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
+
 namespace Voxel
 {
   
@@ -37,7 +41,108 @@ template <typename T, typename T2>
 bool BilateralFilter::_filter(const  T *in, const T2 *ref, T *out)
 {
   uint s = _size.width*_size.height;
+#if defined(ARM_OPT) || defined (x86_OPT)
+
+  int tempHeight = _size.height-2;
+  int tempwidth = _size.width-2;
   
+  #pragma omp parallel for
+  for (int j = 2; j < tempHeight; j++) 
+  {
+    int jWidth = j*_size.width;
+    for (int i = 2; i < tempwidth; i++) 
+    {
+      int p = jWidth + i;
+      
+      float weight_sum = 0;
+      float sum = 0;
+      
+      for (int k = -2; k <= 2; k++) 
+      {
+        for (int m = -2; m <= 2; m++) 
+        {
+          int i2 = i+m;
+          int j2 = j+k;
+          {
+            int q = j2*_size.width + i2;
+            float weight = _discreteGuassian.valueAt(k)*_discreteGuassian.valueAt(m)*_discreteGuassian.valueAt(ref[p]-ref[q]);
+            weight_sum += weight;
+            sum += weight * in[q];
+          }
+        }
+      }
+      out[p] = (T)(sum / weight_sum);
+    }
+  }
+
+  /*** rows *****/
+
+  for(int l = 0; l < _size.height; l+=tempHeight)
+  {
+    for (int j = 0; j < 2; j++) 
+    {
+      for (int i = 0; i < _size.width; i++)
+      {
+        int p = (l+j)*_size.width + i;
+        
+        float weight_sum = 0;
+        float sum = 0;
+        
+        for (int k = -2; k <= 2; k++) 
+        {
+          for (int m = -2; m <= 2; m++) 
+          {
+            int i2 = i+m;
+            int j2 = j+k+l;
+            if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
+            {
+              int q = j2*_size.width + i2;
+              float weight = _discreteGuassian.valueAt(k)*_discreteGuassian.valueAt(m)*_discreteGuassian.valueAt(ref[p]-ref[q]);
+              weight_sum += weight;
+              sum += weight * in[q];
+            }
+          }
+        }
+        out[p] = (T)(sum / weight_sum);
+      }
+    }
+  }
+  
+  /******column*********/
+  for(int l = 0; l < 2; l++)
+  {
+    for (int j = 2; j < tempHeight; j++) 
+    {
+      for (int i = 0; i < 2; i++)
+      {
+        int p = (j+l)*_size.width + i - 2*l;
+        
+        float weight_sum = 0;
+        float sum = 0;
+        
+        for (int k = -2; k <= 2; k++) 
+        {
+          for (int m = -2; m <= 2; m++) 
+          {
+            int i2 = i+m+tempwidth*l;
+            int j2 = j+k;
+            if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
+            {
+              int q = j2*_size.width + i2;
+              float weight = _discreteGuassian.valueAt(k)*_discreteGuassian.valueAt(m)*_discreteGuassian.valueAt(ref[p]-ref[q]);
+              weight_sum += weight;
+              sum += weight * in[q];
+            }
+          }
+        }
+        out[p] = (T)(sum / weight_sum);
+      }
+    }
+  }
+  
+  
+#else
+
   #pragma omp parallel for
   for (int j = 0; j < _size.height; j++) 
   {
@@ -66,6 +171,9 @@ bool BilateralFilter::_filter(const  T *in, const T2 *ref, T *out)
       out[p] = (T)(sum / weight_sum);
     }
   }
+
+#endif
+
   return true;
 }
 

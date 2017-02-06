@@ -10,6 +10,9 @@
 #include "Filter.h"
 #ifdef ARM_OPT
 #include <arm_neon.h>
+#endif
+
+#if defined(ARM_OPT) || defined(x86_OPT)
 extern int32_t nFrameWidth, nFrameHeight;
 #endif
 
@@ -26,6 +29,11 @@ namespace Voxel
                       { uint16x8_t vtemp = a;\
                        a = vmaxq_u16(a, b);\
                        b = vminq_u16(vtemp, b);}
+#elif x86_OPT
+#define vmax_min(a,b) \
+                      { __m128i vtemp = a;\
+                        a = _mm_max_epi16(a, b);\
+                        b = _mm_min_epi16(vtemp, b);}
 #endif
 class TemporalMedianFilter: public Filter
 {
@@ -34,15 +42,14 @@ protected:
   uint _order;
   
   FrameSize _size;
-#ifndef ARM_OPT
-  List<Vector<ByteType>> _history;
-  Vector<ByteType> _current;
-  
-#else
+#if defined(x86_OPT) || defined(ARM_OPT)
   ByteType **_history;
   ByteType *_current;
   int number_frames = 0;
   int frame_cnt = 0;
+#else
+  List<Vector<ByteType>> _history;
+  Vector<ByteType> _current;
 #endif
   virtual void _onSet(const FilterParameterPtr &f);
   

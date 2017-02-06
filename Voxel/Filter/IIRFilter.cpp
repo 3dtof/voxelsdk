@@ -6,6 +6,10 @@
 
 #include "IIRFilter.h"
 
+#ifdef ARM_OPT
+#include <arm_neon.h>
+#endif
+
 namespace Voxel
 {
   
@@ -44,10 +48,63 @@ bool IIRFilter::_filter(const T *in, T *out)
   }
   
   cur = (T *)_current.data();
-  
+
+#ifdef ARM_OPT
+
+  if(_gain == 0.5)
+  {
+    uint16x8_t vIn, vOut, vCur;
+    const T *pIn = in;
+    T *pOut = out;
+    T *pCur = cur;
+
+    const int16_t nGain = _gain*2;
+    for(auto i = 0; i < s; i+=8)
+    {
+      vIn = vld1q_u16((uint16_t*)pIn);
+      vCur = vld1q_u16((uint16_t*)pCur);
+      
+      vOut = vhaddq_u16(vIn, vCur);
+      
+      vst1q_u16((uint16_t*)pOut, vOut);
+      vst1q_u16((uint16_t*)pCur, vOut);
+      
+      pIn += 8;
+      pOut += 8;
+      pCur += 8;
+    }
+  }
+
+#elif x86_OPT
+
+  if(_gain == 0.5)
+  {
+    __m128i vIn, vOut, vCur;
+    const T *pIn = in;
+    T *pOut = out;
+    T *pCur = cur;
+
+    const int16_t nGain = _gain*2;
+    for(auto i = 0; i < s; i+=8)
+    {
+      vIn = _mm_loadu_si128((__m128i*)pIn);
+      vCur = _mm_loadu_si128((__m128i*)pCur);
+      
+      vOut = _mm_srli_epi16(_mm_add_epi16(vIn, vCur), 1);
+      
+      _mm_storeu_si128((__m128i*)pOut, vOut);
+      _mm_storeu_si128((__m128i*)pCur, vOut);
+      
+      pIn += 8;
+      pOut += 8;
+      pCur += 8;
+    }
+  }
+#else 
   for(auto i = 0; i < s; i++) 
     out[i] = cur[i] = cur[i]*(1.0 - _gain) + in[i]*_gain;
   
+#endif
   return true;
 }
 
