@@ -118,13 +118,13 @@ bool DenoiseFilter::_filter(const T *in, T *out)
 template <typename PhaseT, typename AmpT>
 bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
 {
-   Vector<ByteType> buf;
+  Vector<ByteType> buf;
 
-   ToFRawFrame *in = dynamic_cast<ToFRawFrame *>(in_p.get());
-   ToFRawFrame *out = dynamic_cast<ToFRawFrame *>(out_p.get());
+  ToFRawFrame *in = dynamic_cast<ToFRawFrame *>(in_p.get());
+  ToFRawFrame *out = dynamic_cast<ToFRawFrame *>(out_p.get());
 
-   uint s = _size.width*_size.height;
- 
+  uint s = _size.width*_size.height;
+  
 #ifdef x86_OPT
    /*** amplitudeWordWidth and phaseWordWidth are same ***/
    /*** ambientWordWidth and flagsWordWidth are same ***/
@@ -235,82 +235,82 @@ bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
    }
    memcpy(phaseOut, phaseIn, size1);
 #elif ARM_OPT
-   auto phase_word_width = s*in->phaseWordWidth();
-   auto amp_word_width = phase_word_width;
-   auto flags_word_width = s*in->flagsWordWidth();
-   auto ambi_word_width = flags_word_width; 
+  auto phase_word_width = s*in->phaseWordWidth();
+  auto amp_word_width = phase_word_width;
+  auto flags_word_width = s*in->flagsWordWidth();
+  auto ambi_word_width = flags_word_width; 
 
-   memcpy(out->ambient(), in->ambient(), ambi_word_width);
-   memcpy(out->flags(), in->flags(), flags_word_width);
+  memcpy(out->ambient(), in->ambient(), ambi_word_width);
+  memcpy(out->flags(), in->flags(), flags_word_width);
 
-   memcpy(_ampHistory[denoise_frames], in->amplitude(), amp_word_width);
-   memcpy(_phaseHistory[denoise_frames], in->phase(), phase_word_width);
-   memcpy(_ambHistory[denoise_frames], in->ambient(), ambi_word_width); 
-   memcpy(_flagsHistory[denoise_frames], in->flags(), flags_word_width);
+  memcpy(_ampHistory[denoise_frames], in->amplitude(), amp_word_width);
+  memcpy(_phaseHistory[denoise_frames], in->phase(), phase_word_width);
+  memcpy(_ambHistory[denoise_frames], in->ambient(), ambi_word_width); 
+  memcpy(_flagsHistory[denoise_frames], in->flags(), flags_word_width);
 
-   denoise_frames = (denoise_frames == (_order-1)) ? 0: ++denoise_frames;
-   cnt++;
-   cnt = (cnt < _order ? cnt : _order);
+  denoise_frames = (denoise_frames == (_order-1)) ? 0: ++denoise_frames;
+  cnt++;
+  cnt = (cnt < _order ? cnt : _order);
 
-   AmpT *ampIn = (AmpT *)in->amplitude();
-   AmpT *ampOut = (AmpT *)out->amplitude();
-   PhaseT *phaseIn = (PhaseT *)in->phase();
-   PhaseT *phaseOut = (PhaseT *)out->phase();
+  AmpT *ampIn = (AmpT *)in->amplitude();
+  AmpT *ampOut = (AmpT *)out->amplitude();
+  PhaseT *phaseIn = (PhaseT *)in->phase();
+  PhaseT *phaseOut = (PhaseT *)out->phase();
 
-   uint16x8_t var1;
-   uint16x8_t var2;
-   uint16x8_t amp_out;
-   uint8_t arr[] =  {1,00,00,85, 00, 205, 171, 37};
-   uint8_t arr1[] = {1,64,32,21, 16, 12, 10, 9};
-   uint8x8_t table1;
-   uint8x8_t table2;
-   uint8x8x2_t zip;
-   uint16x8_t avg;
-   uint16x8_t thres;
-   uint8x16_t combine;
-   uint16x8_t ones16;
-   uint16x8_t ones_16;
-   uint16x8_t mask_16;
-   uint16x8_t amp_sum;
-   uint16x8_t phase_sum;
-   uint16x8_t amp_avg;
-   uint16x8_t phase_avg;
-   uint16x8_t valid_ones;
-   uint8x8_t valid_count8;
-   uint8x8_t valid_count8_1;
-   uint8x8_t valid_count8_2;
-   uint16x8_t phase_curr;
-   uint16x8_t amp_curr;
-   uint16x8_t valid;
-   uint8x8_t flags8;
-   uint16x8_t sat;
-   uint16x8_t flags16;
-   uint16x8_t ones;
-   uint16x8_t valid_count;
-   uint16x8_t max_phase;
-   uint16x8_t min_phase;
-   int bits = 0;
+  uint16x8_t var1;
+  uint16x8_t var2;
+  uint16x8_t amp_out;
+  uint8_t arr[] =  {1,00,00,85, 00, 205, 171, 37};
+  uint8_t arr1[] = {1,64,32,21, 16, 12, 10, 9};
+  uint8x8_t table1;
+  uint8x8_t table2;
+  uint8x8x2_t zip;
+  uint16x8_t avg;
+  uint16x8_t thres;
+  uint8x16_t combine;
+  uint16x8_t ones16;
+  uint16x8_t ones_16;
+  uint16x8_t mask_16;
+  uint16x8_t amp_sum;
+  uint16x8_t phase_sum;
+  uint16x8_t amp_avg;
+  uint16x8_t phase_avg;
+  uint16x8_t valid_ones;
+  uint8x8_t valid_count8;
+  uint8x8_t valid_count8_1;
+  uint8x8_t valid_count8_2;
+  uint16x8_t phase_curr;
+  uint16x8_t amp_curr;
+  uint16x8_t valid;
+  uint8x8_t flags8;
+  uint16x8_t sat;
+  uint16x8_t flags16;
+  uint16x8_t ones;
+  uint16x8_t valid_count;
+  uint16x8_t max_phase;
+  uint16x8_t min_phase;
+  int bits = 0;
 
-   mask_16 = vdupq_n_u16(32767);
-   ones16 = vdupq_n_u16(32768);
-   thres = vdupq_n_u16(_threshold);
-   table1 = vld1_u8(arr);           //table1 contains the lsb of number of frames
-   table2 = vld1_u8(arr1);          //table2 contains the msb
-   s = s / 8;
+  mask_16 = vdupq_n_u16(32767);
+  ones16 = vdupq_n_u16(32768);
+  thres = vdupq_n_u16(_threshold);
+  table1 = vld1_u8(arr);           //table1 contains the lsb of number of frames
+  table2 = vld1_u8(arr1);          //table2 contains the msb
+  s = s / 8;
 
-   for (int p = 0; p < s; p++)
-   {
-     sat = vdupq_n_u16(8);
-     amp_sum = vdupq_n_u16(0);
-     phase_sum = vdupq_n_u16(0);
-     max_phase = vdupq_n_u16(0);
-     min_phase = vdupq_n_u16(0);
-     ones = vdupq_n_u16(1);
-     valid = vdupq_n_u16(0);
-     amp_out = vdupq_n_u16(0);
-     valid_count = vdupq_n_u16(0);
+  for (int p = 0; p < s; p++)
+  {
+    sat = vdupq_n_u16(8);
+    amp_sum = vdupq_n_u16(0);
+    phase_sum = vdupq_n_u16(0);
+    max_phase = vdupq_n_u16(0);
+    min_phase = vdupq_n_u16(0);
+    ones = vdupq_n_u16(1);
+    valid = vdupq_n_u16(0);
+    amp_out = vdupq_n_u16(0);
+    valid_count = vdupq_n_u16(0);
 
-     for (auto i = 0; i < cnt; i++)
+    for (auto i = 0; i < cnt; i++)
      {
        /*--- LOADING THE VALUES OF FLAG AND STORING IT IN 16 BIT REGISTER ---*/  
        flags8 = vld1_u8(((uint8_t *)_flagsHistory[i]) + bits);   
@@ -410,94 +410,93 @@ bool DenoiseFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
          }
       }
       
-      float amp_avg = amp_sum/valid_cnt;
-      float phase_avg = phase_sum/valid_cnt;
+     float amp_avg = amp_sum/valid_cnt;
+     float phase_avg = phase_sum/valid_cnt;
 
-      if (valid) 
-      {
-         float var1 = (float)(max_phase - min_phase);
-         float var2 = _threshold * amp_avg;
-         ampOut[p] = (var1 <= var2) ? (AmpT)amp_avg : (AmpT)0;
-         //phaseOut[p] = (var1 <= var2) ? (PhaseT)phase_avg : (PhaseT)0;
-         phaseOut[p] = phaseIn[p];
-      }
-      else 
-      {
-         ampOut[p] = ampIn[p];
-         phaseOut[p] = phaseIn[p];
-      }
-   }
-
+     if (valid) 
+     {
+        float var1 = (float)(max_phase - min_phase);
+        float var2 = _threshold * amp_avg;
+        ampOut[p] = (var1 <= var2) ? (AmpT)amp_avg : (AmpT)0;
+        //phaseOut[p] = (var1 <= var2) ? (PhaseT)phase_avg : (PhaseT)0;
+        phaseOut[p] = phaseIn[p];
+     }
+     else 
+     {
+        ampOut[p] = ampIn[p];
+        phaseOut[p] = phaseIn[p];
+     }
+  }
 #endif 
-   return true;
+  return true;
 }
 
 bool DenoiseFilter::_filter(const FramePtr &in, FramePtr &out)
 {
   bool ret;
-   ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
-   DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());
+  ToFRawFrame *tofFrame = dynamic_cast<ToFRawFrame *>(in.get());
+  DepthFrame *depthFrame = dynamic_cast<DepthFrame *>(in.get());
   
-   if ((!tofFrame && !depthFrame) || !_prepareOutput(in, out))
-   {
-      logger(LOG_ERROR) << "DenoiseFilter: Input frame type is not ToFRawFrame or DepthFrame or failed get the output ready" << std::endl;
+  if ((!tofFrame && !depthFrame) || !_prepareOutput(in, out))
+  {
+    logger(LOG_ERROR) << "DenoiseFilter: Input frame type is not ToFRawFrame or DepthFrame or failed get the output ready" << std::endl;
+    return false;
+  }
+  
+  if (tofFrame)
+  {
+    _size = tofFrame->size;
+    ToFRawFrame *o = dynamic_cast<ToFRawFrame *>(out.get());
+   
+    if (!o)
+    {
+      logger(LOG_ERROR) << "DenoiseFilter: Invalid frame type. Expecting ToFRawFrame." << std::endl;
       return false;
-   }
-  
-   if (tofFrame)
-   {
-      _size = tofFrame->size;
-      ToFRawFrame *o = dynamic_cast<ToFRawFrame *>(out.get());
-    
-      if (!o)
-      {
-         logger(LOG_ERROR) << "DenoiseFilter: Invalid frame type. Expecting ToFRawFrame." << std::endl;
-         return false;
-      }
-    
-      if (tofFrame->phaseWordWidth() == 2)
-      {
-         if (tofFrame->amplitudeWordWidth() == 1)
-            ret = _filter2<uint16_t, uint8_t>(in, out);
-         else if (tofFrame->amplitudeWordWidth() == 2)
-            ret = _filter2<uint16_t, uint16_t>(in, out);
-         else if(tofFrame->amplitudeWordWidth() == 4)
-            ret = _filter2<uint16_t, uint32_t>(in, out);
-      }
-      else if (tofFrame->phaseWordWidth() == 1)
-      {
-         if (tofFrame->amplitudeWordWidth() == 1)
-            ret = _filter2<uint8_t, uint8_t>(in, out);
-         else if (tofFrame->amplitudeWordWidth() == 2)
-            ret = _filter2<uint8_t, uint16_t>(in, out);
-         else if (tofFrame->amplitudeWordWidth() == 4)
-            ret = _filter2<uint8_t, uint32_t>(in, out);
-      }
-      else if (tofFrame->phaseWordWidth() == 4)
-      {
-         if (tofFrame->amplitudeWordWidth() == 1)
-            ret = _filter2<uint32_t, uint8_t>(in, out);
-         else if (tofFrame->amplitudeWordWidth() == 2)
-            ret = _filter2<uint32_t, uint16_t>(in, out);
-         else if(tofFrame->amplitudeWordWidth() == 4)
-            ret = _filter2<uint32_t, uint32_t>(in, out);
-      }
-   }
-   else if(depthFrame)
-   {
-      _size = depthFrame->size;
-      DepthFrame *o = dynamic_cast<DepthFrame *>(out.get());
-    
-      if (!o)
-      {
-         logger(LOG_ERROR) << "DenoiseFilter: Invalid frame type. Expecting DepthFrame." << std::endl;
-         return false;
-      }
-    
-      o->amplitude = depthFrame->amplitude;
-    
-      ret = _filter<float>(depthFrame->depth.data(), o->depth.data());
-   }
+    }
+   
+    if (tofFrame->phaseWordWidth() == 2)
+    {
+      if (tofFrame->amplitudeWordWidth() == 1)
+        ret = _filter2<uint16_t, uint8_t>(in, out);
+      else if (tofFrame->amplitudeWordWidth() == 2)
+        ret = _filter2<uint16_t, uint16_t>(in, out);
+      else if(tofFrame->amplitudeWordWidth() == 4)
+        ret = _filter2<uint16_t, uint32_t>(in, out);
+    }
+    else if (tofFrame->phaseWordWidth() == 1)
+    {
+      if (tofFrame->amplitudeWordWidth() == 1)
+        ret = _filter2<uint8_t, uint8_t>(in, out);
+      else if (tofFrame->amplitudeWordWidth() == 2)
+        ret = _filter2<uint8_t, uint16_t>(in, out);
+      else if (tofFrame->amplitudeWordWidth() == 4)
+        ret = _filter2<uint8_t, uint32_t>(in, out);
+    }
+    else if (tofFrame->phaseWordWidth() == 4)
+    {
+      if (tofFrame->amplitudeWordWidth() == 1)
+        ret = _filter2<uint32_t, uint8_t>(in, out);
+      else if (tofFrame->amplitudeWordWidth() == 2)
+        ret = _filter2<uint32_t, uint16_t>(in, out);
+      else if(tofFrame->amplitudeWordWidth() == 4)
+        ret = _filter2<uint32_t, uint32_t>(in, out);
+    }
+  }
+  else if(depthFrame)
+  {
+    _size = depthFrame->size;
+    DepthFrame *o = dynamic_cast<DepthFrame *>(out.get());
+   
+    if (!o)
+    {
+      logger(LOG_ERROR) << "DenoiseFilter: Invalid frame type. Expecting DepthFrame." << std::endl;
+      return false;
+    }
+   
+    o->amplitude = depthFrame->amplitude;
+   
+    ret = _filter<float>(depthFrame->depth.data(), o->depth.data());
+  }
   return ret;
 }
   

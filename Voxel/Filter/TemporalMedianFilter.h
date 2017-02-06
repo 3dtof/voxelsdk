@@ -25,7 +25,7 @@ namespace Voxel
 #define vmax_min(a,b) \
                       { uint16x8_t vtemp = a;\
                        a = vmaxq_u16(a, b);\
-                       b = vminq_u16(vtemp, b);} 
+                       b = vminq_u16(vtemp, b);}
 #endif
 class TemporalMedianFilter: public Filter
 {

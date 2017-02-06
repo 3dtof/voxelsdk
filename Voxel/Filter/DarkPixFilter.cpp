@@ -78,7 +78,7 @@ bool DarkPixFilter::_filter(const T *in, T *out)
 template <typename T, typename T2>
 bool DarkPixFilter::_filter2(const T *in, T2 *amp, uint8_t *amb, T *out)
 {
-    uint s = _size.width*_size.height;
+  uint s = _size.width*_size.height;
 
     for (auto p = 0; p < s; p++)
     {

@@ -51,7 +51,7 @@ bool BilateralFilter::_filter(const  T *in, const T2 *ref, T *out)
       for (int k = -2; k <= 2; k++) 
       {
         for (int m = -2; m <= 2; m++) 
-        {                         
+        {
           int i2 = i+m;
           int j2 = j+k;
           if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) 
@@ -146,5 +146,5 @@ bool BilateralFilter::_filter(const FramePtr &in, FramePtr &out)
   }
   return ret;
 }
-  
+
 }

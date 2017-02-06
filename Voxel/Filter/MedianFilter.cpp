@@ -55,7 +55,7 @@ void MedianFilter::_onSet(const FilterParameterPtr &f)
     }
   }
 }
- 
+
 template <typename T>
 bool MedianFilter::_filter(const T *in, T *out)
 {
@@ -338,7 +338,7 @@ bool MedianFilter::_filter(const T *in, T *out)
         else
           out[p] = cur[p];
       }  // for (i)
-    } // for (j)    
+    } // for (j)
   }
   /* Adjust deadband until ratio is achieved */
   float diff = (float)stablePixel - _stability*_size.width*_size.height;

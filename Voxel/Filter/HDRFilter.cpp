@@ -81,10 +81,10 @@ bool HDRFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
 
    if (_ampHistory.size() > _order) 
    {
-       _ampHistory.pop_front();
-       _phaseHistory.pop_front();
-       _ambHistory.pop_front();
-       _flagsHistory.pop_front();
+     _ampHistory.pop_front();
+     _phaseHistory.pop_front();
+     _ambHistory.pop_front();
+     _flagsHistory.pop_front();
    }
 
    AmpT *ampIn = (AmpT *)in->amplitude();

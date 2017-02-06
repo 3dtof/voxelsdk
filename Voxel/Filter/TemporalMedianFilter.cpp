@@ -118,7 +118,6 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
 
   if(frame_cnt < _order)
   {
-
     memcpy(_history[frame_cnt], in, number_bytes);
     memcpy(cur, in, number_bytes);
     memcpy(out, in, number_bytes);
@@ -126,9 +125,8 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
   }
   else
   {
-
     memcpy(_history[number_frames], in, number_bytes);
-    number_frames=(number_frames==2)?0:++number_frames;
+    number_frames = (number_frames==2) ? 0 : ++number_frames;
     int bits = 0;
     int cnt = 0;
     s = s / 8;
@@ -155,7 +153,7 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
       uint16x8_t vcur = vld1q_u16((uint16_t *)cur + bits);
       
       /*--- FINDING THE MEDIAN ---*/
-      vmax_min(frame1, frame2);                       
+      vmax_min(frame1, frame2);
       vmax_min(frame1, frame3);
       vmax_min(frame2, frame3);
       
@@ -163,13 +161,13 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
       zeros = vcleq_u16(zeros,frame2); 
       
       /*--- FINDING DIFFERENCE BETWEEN CURRENT PIXEL AND THE REFERENCE PIXEL ---*/ 
-      subq = vsubq_u16(frame2,vcur);                  
+      subq = vsubq_u16(frame2,vcur);
       temp = vreinterpretq_u16_s16(vabsq_s16(vreinterpretq_s16_u16(subq)));  //FINDING THE ABSOLUTE VALUE
       
       /*--- VQDMULHQ WILL MULTIPLY TWO VECTORS(VECTOR COMPRISES OF EIGHT ELEMENT AND EACH ELEMENT SIZE IS 16-BIT) AND STORES THE RESULT IN 
             32-BIT VECTOR AND SHIFTS THE RESULT 16 TIMES TO RIGHT ---*/ 
       temp_mul = (vreinterpretq_u16_s16(vqdmulhq_s16(vreinterpretq_s16_u16(vdead),vreinterpretq_s16_u16(vcur)))); //MULTIPLYING REFERENCE PIXEL AND DEADBAND VALUE  
-      temp_mul = vshrq_n_u16(temp_mul,3);   
+      temp_mul = vshrq_n_u16(temp_mul,3); 
       
       /*--- CHECKING   fabs((float)v - cur[i]) > _deadband * cur[i]) ---*/
       temp_cmp = vcgtq_u16(temp,temp_mul);
@@ -178,16 +176,16 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
             ELSE STORE THE REFERENCE PIXEL VALUE ---*/
     
       /*--- TEMP_CMP CONATINS ONES WHEN   v > 0 &&  fabs((float)v - cur[i]) > _deadband * cur[i])==1 ---*/
-      temp_cmp = vandq_u16(zeros, temp_cmp);      
+      temp_cmp = vandq_u16(zeros, temp_cmp);
 
       /*--- PARSING ONLY THOSE ELEMENTS WHICH SATISFY THE ABOVE IF STATEMENT ---*/
-      temp_str = vandq_u16(temp_cmp, frame2);           
+      temp_str = vandq_u16(temp_cmp, frame2);
 
       /*--- PARSING ONLY THOSE ELEMENTS WHICH SATISFY THE ELSE CASE ---*/
-      temp_str1 = vandq_u16(vmvnq_u16(temp_cmp), vcur);   
+      temp_str1 = vandq_u16(vmvnq_u16(temp_cmp), vcur);
       
       /*--- COMBINING THE RESULTS OF IF AND ELSE STATEMENT ---*/
-      temp_str = vorrq_u16(temp_str, temp_str1);           
+      temp_str = vorrq_u16(temp_str, temp_str1);
       
       /*--- STORING THE RESULT IN OUT AND CUR ---*/
       vst1q_u16((uint16_t *)out + bits , temp_str);

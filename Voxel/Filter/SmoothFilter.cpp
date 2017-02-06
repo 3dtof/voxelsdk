@@ -39,8 +39,8 @@ bool SmoothFilter::_filter(const T *in, T *out)
       float weight_sum = 0;
       float sum = 0;
       for (int k = -2; k <= 2; k++) {
-        for (int m = -2; m <= 2; m++) {                         
-          int i2 = i + m; 
+        for (int m = -2; m <= 2; m++) {
+          int i2 = i + m;
           int j2 = j + k;
           
           if ((j2 >= 0 && j2 < _size.height) && (i2 >= 0 && i2 < _size.width)) {
