@@ -142,32 +142,18 @@ int getFiles(const String &dir, const String &matchString, Vector<String> &files
 }
 
 //gcf function - return gcd of two numbers
-float gcd(float n, float m)
+uint gcd(uint n, uint m)
 {
-  float gcd, remainder;
-  float h, l, t;
+  uint gcd, remainder;
   
-  if (n == m) {
-    h = n;
-    l = 0;
-  } else if (n > m) {
-    h = n;
-    l = m;
-  } else {
-    h = m;
-    l = n;
-  }
-  while (l != 0)
+  while (n != 0)
   {
-    while (h >= l) {
-      h = h - l;
-    }
-    t = h;
-    h = l;
-    l = t;
+    remainder = m % n;
+    m = n;
+    n = remainder;
   }
   
-  gcd = h;
+  gcd = m;
   
   return gcd;
 }
