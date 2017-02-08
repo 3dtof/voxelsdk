@@ -479,39 +479,20 @@ bool ToFTintinCamera::_getIlluminationFrequency(float& frequency) const
 {
   bool dealiasingEnabled;
   
-  uint modulationPS1, modulationPS2, systemClockFrequency;
+  uint ma;
   
-  uint modM1, modM2, modN1, modN2;
-  uint modMFrac1, modMFrac2;
-  int quadCount;
-  
-  if(!get(DEALIAS_EN, dealiasingEnabled))
+  if (!get(DEALIAS_EN, dealiasingEnabled))
     return false;
   
-  if(dealiasingEnabled)
-  {
-    if(!_getSystemClockFrequency(systemClockFrequency) || !get(MOD_PS1, modulationPS1) || !get(MOD_PS2, modulationPS2) ||
-      !get(QUAD_CNT_MAX, quadCount) ||
-      !get(MOD_M1, modM1) || !get(MOD_M2, modM2) ||
-      !get(MOD_N1, modN1) || !get(MOD_N2, modN2))
+  if (!get(MOD_FREQ1, frequency))
+    return false;
+
+  if (dealiasingEnabled) {
+    if (!get(MA, ma))
       return false;
-    if (!get(MOD_M_FRAC1, modMFrac1) || !get(MOD_M_FRAC2, modMFrac2))
-      return false;
-    
-    modulationPS1 ++;
-    modulationPS2 ++;
-    
-    frequency = systemClockFrequency*gcd((modM1 + (modMFrac1 * 1.0/(1 << 16)))*modN2*modulationPS2, (modM2 + (modMFrac2 * 1.0/(1 << 16)))*modN1*modulationPS1)/(modN1*modN2*modulationPS1*modulationPS2*quadCount);
-    
-    return true;
+    frequency /= ma;
   }
-  else
-  {
-    if(!get(MOD_FREQ1, frequency))
-      return false;
-    
-    return true;
-  }
+  return true;
 }
 
 bool ToFTintinCamera::_applyCalibrationParams()
