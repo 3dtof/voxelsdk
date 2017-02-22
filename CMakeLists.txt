@@ -26,9 +26,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(ARM_PLATFORM 1)
   
   if(ARM_PLATFORM)
-    add_definitions(-mtune=arm7 -mfpu=neon-vfpv4 -mfloat-abi=hard -pthread -std=c++11 -fPIC -ffast-math)
+#    add_definitions(-mtune=arm7 -mfpu=neon-vfpv4 -mfloat-abi=hard -pthread -std=c++11 -fPIC -ffast-math)
     #-DARM_OPT to enable arm optimizaions
     ADD_DEFINITIONS(-DARM_OPT)
+#OK:
+#add_definitions(-mtune=arm7 -mfloat-abi=hard -pthread -std=c++11 -fPIC -ffast-math)
+#OK:
+#add_definitions(-ffast-math -mcpu=cortex-a9 -mfloat-abi=hard -mfpu=neon-fp16 -fPIC -pthread -std=c++11)
+#OK:
+#add_definitions(-ffast-math -mcpu=cortex-a9 -mfloat-abi=hard -mfpu=neon -fPIC -pthread -std=c++11)
+
+add_definitions(-mtune=arm7 -mfpu=neon -mfloat-abi=hard -pthread -std=c++11 -fPIC -ffast-math)
+
     ADD_DEFINITIONS(-DCOMMON_OPT)
 
   else()
