@@ -1,4 +1,4 @@
-SET(GENERATE_PYTHON_BINDINGS "FALSE" CACHE BOOL "Controls generation of Python bindings")
+SET(GENERATE_PYTHON_BINDINGS "TRUE" CACHE BOOL "Controls generation of Python bindings")
 
 IF(${GENERATE_PYTHON_BINDINGS})
 
