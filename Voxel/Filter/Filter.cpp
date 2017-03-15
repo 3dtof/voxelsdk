@@ -9,7 +9,7 @@
 namespace Voxel
 {
 
-bool Filter::_addParameters(const Vector<FilterParameterPtr> &params)
+bool Filter::_addParameters(const tVector<FilterParameterPtr> &params)
 {
   for(auto &p: params)
   {

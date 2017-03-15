@@ -30,7 +30,7 @@ protected:
 public:
   USBSystem();
   
-  Vector<DevicePtr> getDevices();
+  tVector<DevicePtr> getDevices();
   
   bool isInitialized();
   

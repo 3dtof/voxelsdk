@@ -19,7 +19,7 @@ namespace Voxel
 class VOXEL_EXPORT SerializedObject
 {
 protected:
-  Vector<char> _bytes;
+  tVector<char> _bytes;
   uint _getOffset, _putOffset;
   
 public:
@@ -29,8 +29,8 @@ public:
   uint currentGetOffset() const { return _getOffset; }
   uint currentPutOffset() const { return _putOffset; }
   
-  const Vector<char> &getBytes() const { return _bytes; }
-  Vector<char> &getBytes() { return _bytes; }
+  const tVector<char> &getBytes() const { return _bytes; }
+  tVector<char> &getBytes() { return _bytes; }
   
   inline void resize(size_t size) 
   { 

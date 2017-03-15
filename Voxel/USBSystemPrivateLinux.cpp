@@ -12,9 +12,9 @@
 
 namespace Voxel
 {
-Vector<DevicePtr> USBSystemPrivate::getDevices()
+tVector<DevicePtr> USBSystemPrivate::getDevices()
 {
-  Vector<DevicePtr> devices;
+  tVector<DevicePtr> devices;
   devices.reserve(10);
   
   _iterateUDevUSB([&devices](struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)
@@ -57,7 +57,7 @@ libusb_device *USBSystemPrivate::getDeviceHandle(const USBDevice &usbd)
   return selected;
 }
 
-bool USBSystemPrivate::_iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)> process)
+bool USBSystemPrivate::_iterateUDevUSB(tFunction<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)> process)
 {
   udev *udevHandle = udev_new();
   

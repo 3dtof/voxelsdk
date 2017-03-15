@@ -27,12 +27,12 @@ bool USBSystem::isInitialized()
 }
 
   
-Vector<DevicePtr> USBSystem::getDevices()
+tVector<DevicePtr> USBSystem::getDevices()
 {
-  Vector<DevicePtr> devices = _usbPrivate->getDevices();
+  tVector<DevicePtr> devices = _usbPrivate->getDevices();
   
   // Show serial index for all those whose IDs have repeated.
-  Map<String, int> count;
+  tMap<String, int> count;
   
   for(auto &d: devices)
   {

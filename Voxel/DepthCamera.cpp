@@ -26,7 +26,7 @@ _rawFrameBuffers(MAX_FRAME_BUFFERS), _depthFrameBuffers(MAX_FRAME_BUFFERS), _poi
 _parameterInit(true), _running(false), _isPaused(false),
 _unprocessedFilters(_rawFrameBuffers), _processedFilters(_rawFrameBuffers), _depthFilters(_depthFrameBuffers),
 _pointCloudFrameGenerator(new PointCloudFrameGenerator()),
-configFile(name, "")
+configFile(name, ""), _callBackTypesRegistered(0)
 {
   _frameGenerators[2] = std::dynamic_pointer_cast<FrameGenerator>(_pointCloudFrameGenerator);
   _makeID();
@@ -64,7 +64,7 @@ bool DepthCamera::_init()
     return setCameraProfile(configFile.getDefaultCameraProfileID());
 }
   
-bool DepthCamera::_addParameters(const Vector<ParameterPtr> &params)
+bool DepthCamera::_addParameters(const tVector<ParameterPtr> &params)
 {
   _parameters.reserve(_parameters.size() + params.size());
   

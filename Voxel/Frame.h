@@ -26,8 +26,14 @@ namespace Voxel
 class VOXEL_EXPORT Frame
 {
 public:
-  TimeStampType timestamp = 0; // Unix timestamp in micro-seconds
-  int id = -1;
+  TimeStampType timestamp; // Unix timestamp in micro-seconds
+  int id;
+  
+  Frame()
+  {
+    timestamp = 0; // Unix timestamp in micro-seconds
+    id = -1;
+  }
   
   inline operator String()
   {
@@ -55,8 +61,8 @@ typedef Ptr<Frame> FramePtr;
 class VOXEL_EXPORT DepthFrame: public Frame
 {
 public:
-  Vector<float> depth; // depth frame row-wise. Unit: meters
-  Vector<float> amplitude; // amplitude of each depth pixel normalized to value between 0 and 1
+  tVector<float> depth; // depth frame row-wise. Unit: meters
+  tVector<float> amplitude; // amplitude of each depth pixel normalized to value between 0 and 1
   FrameSize size;
 
   virtual Ptr<Frame> copy() const
@@ -207,13 +213,13 @@ public:
   typedef PhaseByteType AmplitudeByteType;
   typedef AmbientByteType FlagsByteType;
   
-  Vector<PhaseByteType> _phase;
-  Vector<AmplitudeByteType> _amplitude;
+  tVector<PhaseByteType> _phase;
+  tVector<AmplitudeByteType> _amplitude;
 
-  Vector<AmbientByteType> _ambient;
-  Vector<FlagsByteType> _flags;
+  tVector<AmbientByteType> _ambient;
+  tVector<FlagsByteType> _flags;
 
-  Vector<uint16_t> _histogram;
+  tVector<uint16_t> _histogram;
 
   virtual const uint8_t *ambient() const
   {
@@ -433,8 +439,8 @@ template <typename ByteType>
 class ToFRawIQFrameTemplate : public ToFRawIQFrame
 {
 public:
-  Vector<ByteType> _i;
-  Vector<ByteType> _q;
+  tVector<ByteType> _i;
+  tVector<ByteType> _q;
   
   virtual const uint8_t *i() const
   {
@@ -564,7 +570,7 @@ public:
 class VOXEL_EXPORT RawDataFrame : public RawFrame
 {
 public:
-  Vector<ByteType> data;
+  tVector<ByteType> data;
 
   virtual Ptr<Frame> copy() const
   {
@@ -664,7 +670,7 @@ template <typename PointType>
 class PointCloudFrameTemplate : public PointCloudFrame
 {
 public:
-  Vector<PointType> points;
+  tVector<PointType> points;
   
   virtual SizeType size() const
   {

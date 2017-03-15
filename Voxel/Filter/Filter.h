@@ -17,6 +17,10 @@
 
 #include "VoxelExports.h"
 
+#ifdef x86_OPT
+#include <emmintrin.h>
+#endif
+
 namespace Voxel
 {
   
@@ -47,9 +51,9 @@ protected:
   
   DepthCameraPtr _depthCamera;
   
-  Map<String, FilterParameterPtr> _parameters;
+  tMap<String, FilterParameterPtr> _parameters;
   
-  virtual bool _addParameters(const Vector<FilterParameterPtr> &params); 
+  virtual bool _addParameters(const tVector<FilterParameterPtr> &params); 
   
   virtual bool _prepareOutput(const FramePtr &in, FramePtr &out);
   
@@ -75,7 +79,7 @@ public:
     _depthCamera = d;
   }
   
-  inline const Map<String, FilterParameterPtr> &parameters() { return _parameters; }
+  inline const tMap<String, FilterParameterPtr> &parameters() { return _parameters; }
 
   inline const String &name() { return _id; }
   inline const String &description() { return _description; }

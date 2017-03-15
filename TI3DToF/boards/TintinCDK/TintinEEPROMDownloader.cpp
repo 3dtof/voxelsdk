@@ -232,7 +232,7 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
   logger(LOG_INFO) << "TintinEEPROMDownloader: Starting EEPROM write..." << std::endl;
  _outStream << "Starting EEPROM write..." << std::endl;
   
-  Vector<uint8_t> data(filesize), dataReverse;
+  tVector<uint8_t> data(filesize), dataReverse;
   
   dataReverse.reserve(filesize);
   

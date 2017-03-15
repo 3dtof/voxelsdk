@@ -19,16 +19,16 @@ ToFCameraFactoryBase::ToFCameraFactoryBase(const String &name): DepthCameraFacto
 {
 }
 
-bool ToFCameraFactoryBase::getChannels(Device &device, Vector<int> &channels)
+bool ToFCameraFactoryBase::getChannels(Device &device, tVector<int> &channels)
 {
   channels.resize(1);
   channels[0] = 0; // This supports only one channel for all supported devices
   return true;
 }
 
-Vector<GeneratorIDType> ToFCameraFactoryBase::getSupportedGeneratorTypes()
+tVector<GeneratorIDType> ToFCameraFactoryBase::getSupportedGeneratorTypes()
 {
-  Vector<GeneratorIDType> d(2);
+  tVector<GeneratorIDType> d(2);
   d[0] = ((TI_VENDOR_ID) << 16) | DepthCamera::FRAME_DEPTH_FRAME;
   d[1] = ((TI_VENDOR_ID) << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED;
   return d;

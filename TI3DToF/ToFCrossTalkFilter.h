@@ -23,9 +23,9 @@ class ToFCrossTalkFilter: public Filter
   uint32_t _maxPhaseRange;
   float _phaseToAngleFactor, _angleToPhaseFactor;
   
-  Vector<Complex> _amplitudePhase;
+  tVector<Complex> _amplitudePhase;
   
-  Vector<Complex> _coefficients;
+  tVector<Complex> _coefficients;
 
 public:
   ToFCrossTalkFilter();

@@ -32,7 +32,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     ADD_DEFINITIONS(-DCOMMON_OPT)
 
   else()
-    add_definitions(-msse2 -pthread -std=c++11 -fPIC -ffast-math)
+    add_definitions(-msse2 -pthread -std=c++0x -fPIC -ffast-math -D_GLIBCXX_USE_NANOSLEEP)
     #-Dx86_OPT to enable x86 optimizaions
     ADD_DEFINITIONS(-Dx86_OPT)
     ADD_DEFINITIONS(-DCOMMON_OPT)

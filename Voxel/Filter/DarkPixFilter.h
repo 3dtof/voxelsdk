@@ -26,7 +26,7 @@ protected:
   float _aThrFar, _phThrFar;
   float _ambThresh;
 
-  Vector<ByteType> _current;
+  tVector<ByteType> _current;
   
   FrameSize _size;
   

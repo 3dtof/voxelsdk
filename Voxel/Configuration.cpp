@@ -40,7 +40,7 @@
 namespace Voxel
 {
 
-const Map<String, Configuration::_Path> Configuration::_pathTypes = {
+const tMap<String, Configuration::_Path> Configuration::_pathTypes = {
   { CONF_FIRMWARE_KEY,
     {
       BASE_STR DIR_SEP "share" DIR_SEP "voxel-" VERSION_STR DIR_SEP "fw",
@@ -205,7 +205,7 @@ bool Configuration::getLocalFile(const String &type, String &name)
 }
 
 
-bool Configuration::_getPaths(const String &type, Vector<String> &paths)
+bool Configuration::_getPaths(const String &type, tVector<String> &paths)
 {
   auto t = _pathTypes.find(type);
   
@@ -229,7 +229,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
   {
     String p1(p);
     
-    Vector<String> splits;
+    tVector<String> splits;
     
     split(p1, PATH_SEP, splits);
     
@@ -260,7 +260,7 @@ bool Configuration::_getPaths(const String &type, Vector<String> &paths)
 
 bool Configuration::_get(const String &type, String &name)
 {
-  Vector<String> paths;
+  tVector<String> paths;
   if(!_getPaths(type, paths))
     return false;
   
@@ -574,7 +574,7 @@ bool ConfigurationFile::_serializeAllDataFiles(OutputStream &out)
       if(i->second.compare(0, sizeof(FILE_PREFIX) - 1, FILE_PREFIX) == 0)
       {
         String f;
-        Vector<uint8_t> d;
+        tVector<uint8_t> d;
         
         if(!getFile<uint8_t>(c->first, i->first, f, d))
           return false;
@@ -625,7 +625,7 @@ bool ConfigurationFile::_saveAllDataFiles(const String &prefix)
       if(i->second.compare(0, sizeof(FILE_PREFIX) - 1, FILE_PREFIX) == 0)
       {
         String f;
-        Vector<uint8_t> d;
+        tVector<uint8_t> d;
         
         if(!getFile<uint8_t>(c->first, i->first, f, d))
           return false;
@@ -950,7 +950,7 @@ bool MainConfigurationFile::read(const String &configFile)
   
   cameraProfiles = get("core", CAMERA_PROFILES);
   
-  Vector<String> cp;
+  tVector<String> cp;
   split(cameraProfiles, ',', cp);
   
   for(auto i = 0; i < cp.size(); i++)
@@ -1572,8 +1572,8 @@ bool MainConfigurationFile::writeToHardware()
 
 bool MainConfigurationFile::saveCameraProfileToHardware(int &id, bool saveParents, bool setAsDefault, const String &namePrefix)
 {
-  Vector<int> newIDsAdded;
-  Vector<ConfigurationFile> oldIDsModified;
+  tVector<int> newIDsAdded;
+  tVector<ConfigurationFile> oldIDsModified;
   if(!_saveCameraProfileToHardware(id, newIDsAdded, oldIDsModified, saveParents, true, setAsDefault, namePrefix))
   {
     _rollbackCameraProfiles(newIDsAdded, oldIDsModified);
@@ -1584,7 +1584,7 @@ bool MainConfigurationFile::saveCameraProfileToHardware(int &id, bool saveParent
   
 }
 
-bool MainConfigurationFile::_saveCameraProfileToHardware(int &id, Vector<int> &newIDsAdded, Vector<ConfigurationFile> &oldIDsModified, bool saveParents, bool updateHardware, bool setAsDefault, const String &namePrefix)
+bool MainConfigurationFile::_saveCameraProfileToHardware(int &id, tVector<int> &newIDsAdded, tVector<ConfigurationFile> &oldIDsModified, bool saveParents, bool updateHardware, bool setAsDefault, const String &namePrefix)
 {
   ConfigurationFile *config = getCameraProfile(id);
   
@@ -1674,7 +1674,7 @@ bool MainConfigurationFile::_saveCameraProfileToHardware(int &id, Vector<int> &n
   return true;
 }
 
-bool MainConfigurationFile::_rollbackCameraProfiles(const Vector< int >& newIDsAdded, const Vector< ConfigurationFile >& oldIDsModified)
+bool MainConfigurationFile::_rollbackCameraProfiles(const tVector< int >& newIDsAdded, const tVector< ConfigurationFile >& oldIDsModified)
 {
   // Roll back old IDs
   for(auto &c: oldIDsModified)

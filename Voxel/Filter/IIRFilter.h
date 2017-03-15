@@ -23,7 +23,7 @@ class VOXEL_EXPORT IIRFilter: public Filter
 {
 protected:
   float _gain;
-  Vector<ByteType> _current;
+  tVector<ByteType> _current;
   
   FrameSize _size;
   

@@ -55,7 +55,7 @@ bool HDRFilter::_filter(const T *in, T *out)
 template <typename PhaseT, typename AmpT>
 bool HDRFilter::_filter2(const FramePtr &in_p, FramePtr &out_p)
 {
-   Vector<ByteType> buf;
+   tVector<ByteType> buf;
 
    ToFRawFrame *in = dynamic_cast<ToFRawFrame *>(in_p.get());
    ToFRawFrame *out = dynamic_cast<ToFRawFrame *>(out_p.get());

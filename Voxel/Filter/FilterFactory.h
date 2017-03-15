@@ -20,7 +20,7 @@ namespace Voxel
 
 class FilterDescription
 {
-  typedef Function<FilterPtr()> _CreateFilter;
+  typedef tFunction<FilterPtr()> _CreateFilter;
 protected:
   _CreateFilter _createFilter;
 public:
@@ -45,8 +45,8 @@ class VOXEL_EXPORT FilterFactory
 {
   
 protected:
-  Map<String, FilterDescription> _supportedFilters;
-  bool _addSupportedFilters(const Vector<FilterDescription> &f);
+  tMap<String, FilterDescription> _supportedFilters;
+  bool _addSupportedFilters(const tVector<FilterDescription> &f);
   
   String _name;
   
@@ -55,7 +55,7 @@ public:
   
   inline const String &name() const { return _name; }
   
-  inline const Map<String, FilterDescription> &getSupportedFilters() const { return _supportedFilters; }
+  inline const tMap<String, FilterDescription> &getSupportedFilters() const { return _supportedFilters; }
   
   virtual FilterPtr createFilter(const String &name, DepthCamera::FrameType type);
 };

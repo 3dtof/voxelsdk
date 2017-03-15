@@ -42,7 +42,7 @@ public:
   
   virtual bool isInitialized();
   
-  virtual bool getSupportedVideoModes(Vector<VideoMode> &videoModes);
+  virtual bool getSupportedVideoModes(tVector<VideoMode> &videoModes);
   
   virtual bool getCurrentVideoMode(VideoMode &videoMode);
   virtual bool setVideoMode(const VideoMode &videoMode);

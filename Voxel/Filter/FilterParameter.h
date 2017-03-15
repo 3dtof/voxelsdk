@@ -129,12 +129,12 @@ template <typename T>
 class FilterParameterEnumTemplate: public FilterParameterTemplate<T>
 {
 protected:
-  Vector<T> _values;
-  Vector<String> _valueMeaning, _valueDescription;
+  tVector<T> _values;
+  tVector<String> _valueMeaning, _valueDescription;
   
 public:
   FilterParameterEnumTemplate(const String &name, const String &displayName, const String &description, const T &defaultValue,
-    const Vector<T> &values, const Vector<String> &valueMeaning, const Vector<String> &valueDescription):
+    const tVector<T> &values, const tVector<String> &valueMeaning, const tVector<String> &valueDescription):
     FilterParameterTemplate<T>(name, displayName, description, defaultValue),
     _values(values), _valueMeaning(valueMeaning), _valueDescription(valueDescription) {}
     
@@ -143,9 +143,9 @@ public:
     return std::dynamic_pointer_cast<FilterParameterEnumTemplate<T>>(other);
   }
     
-  inline const Vector<String> &valueMeaning() const { return _valueMeaning; }
-  inline const Vector<String> &valueDescription() const { return _valueDescription; }
-  inline const Vector<T> &values() const { return _values; }
+  inline const tVector<String> &valueMeaning() const { return _valueMeaning; }
+  inline const tVector<String> &valueDescription() const { return _valueDescription; }
+  inline const tVector<T> &values() const { return _values; }
   
   virtual bool validate(const T &v) const
   {
@@ -174,7 +174,7 @@ class BoolFilterParameter: public FilterParameterEnumTemplate<bool>
 {
 public:
   BoolFilterParameter(const String &name, const String &displayName, const String &description, const bool &defaultValue,
-    const Vector<String> &valueMeaning, const Vector<String> &valueDescription):
+    const tVector<String> &valueMeaning, const tVector<String> &valueDescription):
   FilterParameterEnumTemplate<bool>(name, displayName, description, defaultValue, {false, true},
     valueMeaning, valueDescription) {}
     

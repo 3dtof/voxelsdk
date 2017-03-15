@@ -319,7 +319,7 @@ bool ToFTintinCamera::_init()
 {
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {"coeff_illum", "coeff_sensor", CALIB_PREC};
+    tVector<String> params = {"coeff_illum", "coeff_sensor", CALIB_PREC};
     calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end());
   }
   
@@ -351,7 +351,7 @@ bool ToFTintinCamera::_init()
   
   ParameterDMLParser p(*_programmer, name);
   
-  Vector<ParameterPtr> params;
+  tVector<ParameterPtr> params;
   
   if(!p.getParameters(params))
   {
@@ -544,7 +544,7 @@ bool ToFTintinCamera::_applyCalibrationParams()
       configFile.get("calib", X_CROSS_TALK_COEFF_F2) + " " +
       configFile.get("calib", Y_CROSS_TALK_COEFF_F2);
       
-    Vector<Complex> coefficients;
+    tVector<Complex> coefficients;
     
     coefficients.reserve(4);
     
@@ -606,7 +606,7 @@ bool ToFTintinCamera::_applyCalibrationParams()
   if(nonlinearityCalibEnable && configFile.isPresent("calib", NONLINEARITY_COEFF_F1) && configFile.isPresent("calib", NONLINEARITY_COEFF_F2) &&
     configFile.isPresent("calib", NONLINEARITY_PHASE_PERIOD))
   {
-    Vector<uint> nlCoeff1, nlCoeff2;
+    tVector<uint> nlCoeff1, nlCoeff2;
     
     nlCoeff1.reserve(16);
     nlCoeff2.reserve(16);

@@ -18,7 +18,7 @@ namespace Voxel
   
 FrameStreamWriter::FrameStreamWriter(const String &filename, GeneratorIDType processedRawFrameGeneratorID, 
                                        GeneratorIDType depthFrameGeneratorID, GeneratorIDType pointCloudFrameGeneratorID)
-  :_stream(_internalStream)
+  :_stream(_internalStream), _isPaused(false)
 {
   _stream.open(filename, std::ios::binary | std::ios::out);
   
@@ -50,7 +50,7 @@ bool FrameStreamWriter::_init(GeneratorIDType processedRawFrameGeneratorID, Gene
 
 FrameStreamWriter::FrameStreamWriter(OutputFileStream &stream, GeneratorIDType processedRawFrameGeneratorID, 
                                      GeneratorIDType depthFrameGeneratorID, GeneratorIDType pointCloudFrameGeneratorID)
-:_stream(stream)
+:_stream(stream), _isPaused(false)
 {
   _init(processedRawFrameGeneratorID, depthFrameGeneratorID, pointCloudFrameGeneratorID);
 }

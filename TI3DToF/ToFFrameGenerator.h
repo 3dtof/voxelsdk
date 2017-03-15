@@ -30,12 +30,12 @@ class TI3DTOF_EXPORT ToFFrameGenerator: public FrameGenerator
   
   uint32_t _quadCount;
   
-  Vector<double> _sineTable, _cosineTable;
+  tVector<double> _sineTable, _cosineTable;
   
   uint32_t _histogramEnabled;
   
   String _phaseOffsetFileName;
-  Vector<int16_t> _phaseOffsetCorrectionData;
+  tVector<int16_t> _phaseOffsetCorrectionData;
   
   ToFFrameType _frameType;
   
@@ -50,7 +50,7 @@ protected:
   virtual bool _createCrossTalkFilter();
   virtual bool _applyCrossTalkFilter(FramePtr &out);
   virtual bool _readPhaseOffsetCorrection();
-  virtual bool _applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData);
+  virtual bool _applyPhaseOffsetCorrection(tVector<uint16_t> &phaseData);
   
   bool _generateToFRawFrame(const FramePtr &in, FramePtr &out);
   bool _generateToFRawIQFrame(const FramePtr &in, FramePtr &out);
@@ -61,7 +61,7 @@ public:
   virtual bool generate(const ToFRawIQFramePtr &in, FramePtr &out); // Convert IQ to amplitude-phase
   virtual bool generate(const FramePtr &in, FramePtr &out);
   
-  bool setParameters(const String &phaseOffsetFileName, const Vector<int16_t> &phaseOffsets, uint32_t bytesPerPixel, 
+  bool setParameters(const String &phaseOffsetFileName, const tVector<int16_t> &phaseOffsets, uint32_t bytesPerPixel, 
                      uint32_t dataArrangeMode,
                      const RegionOfInterest &roi, const FrameSize &maxFrameSize,
                      const FrameSize &frameSize, 

@@ -32,7 +32,7 @@ enum Options
   XML_FILE = 0,
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { XML_FILE,    "-x", SO_REQ_SEP, "XML file name"},
   SO_END_OF_OPTIONS
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
-    Vector<String> splits;
+    tVector<String> splits;
     switch (s.OptionId())
     {
       case XML_FILE:
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
   
   ParameterDMLParser p(r, xmlFile);
   
-  Vector<ParameterPtr> params;
+  tVector<ParameterPtr> params;
   
   p.getParameters(params);
   

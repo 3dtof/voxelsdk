@@ -42,7 +42,7 @@ protected:
   Ptr<pcl::visualization::PCLVisualizer> _viewer;
   Ptr<pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>> _handler;
   
-  bool _stopLoop = false;
+  bool _stopLoop;
   
   Ptr<pcl::Grabber> _grabber; // This will link to our Voxel::PCLGrabber
   

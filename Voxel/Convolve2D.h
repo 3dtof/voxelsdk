@@ -13,14 +13,14 @@ namespace Voxel
 class VOXEL_EXPORT Convolve2D
 {
 protected:
-  Vector<float> _coefficients;
+  tVector<float> _coefficients;
   
   SizeType _rows, _columns;
   
 public:
-  Convolve2D(const Vector<float> &coefficients, SizeType rows, SizeType columns);
+  Convolve2D(const tVector<float> &coefficients, SizeType rows, SizeType columns);
   
-  bool convolve(const Vector<float> &in, SizeType rows, SizeType columns, Vector<float> &out);
+  bool convolve(const tVector<float> &in, SizeType rows, SizeType columns, tVector<float> &out);
   
 };
   

@@ -21,10 +21,11 @@ class DepthCameraLibraryPrivate
 {
 public:
 #ifdef LINUX
-  void *handle = 0;
+  void *handle;
 #elif defined(WINDOWS)
   HINSTANCE handle;
 #endif
+  DepthCameraLibraryPrivate(){handle = NULL;}
 };
 
 String dynamicLoadError()
@@ -200,7 +201,7 @@ int DepthCameraLibrary::getABIVersion()
     return 0;
   }
     
-  Vector<String> splits;
+  tVector<String> splits;
   
   split(soName, '.', splits);
   
@@ -213,7 +214,7 @@ int DepthCameraLibrary::getABIVersion()
 
   if (verSize != NULL)
   {
-    Vector<char> verData;
+    tVector<char> verData;
     verData.resize(verSize);
 
     if (GetFileVersionInfo(_libName.c_str(), verHandle, verSize, verData.data()))

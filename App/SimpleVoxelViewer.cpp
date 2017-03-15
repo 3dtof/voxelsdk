@@ -18,7 +18,7 @@ int main ()
   Voxel::CameraSystem sys;
   Voxel::DepthCameraPtr depthCamera;
   
-  const Voxel::Vector<Voxel::DevicePtr> &devices = sys.scan();
+  const std::vector<Voxel::DevicePtr> &devices = sys.scan();
   
   if(devices.size() > 0)
     depthCamera = sys.connect(devices[0]); // Connect to first available device

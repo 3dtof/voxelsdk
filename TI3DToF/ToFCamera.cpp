@@ -94,7 +94,7 @@ bool ToFCamera::_init()
     calibInfo.name = ToF_CALIB_SECT_TEMPERATURE;
     calibInfo.id = ToF_CALIB_SECT_TEMPERATURE_ID;
     calibInfo.definingParameters = {"unambiguous_range", "frame_rate", "sub_frame_cnt_max", "quad_cnt_max", "mix_volt", "intg_time"};
-    Vector<String> params = {"disable_temp_corr"};
+    tVector<String> params = {"disable_temp_corr"};
     calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end()); 
   }
   
@@ -241,7 +241,7 @@ bool ToFCamera::_setFrameSize(const FrameSize &s, bool resetROI)
   toSet.width = (s.width <= roi.width)?s.width:roi.width;
   toSet.height = (s.height <= roi.height)?s.height:roi.height;
   
-  Vector<SupportedVideoMode> supportedVideoModes;
+  tVector<SupportedVideoMode> supportedVideoModes;
   
   uint bytesPerPixel;
   
@@ -460,7 +460,7 @@ bool ToFCamera::_initStartParams()
     return false;
   }
   
-  Vector<int16_t> phaseOffsets;
+  tVector<int16_t> phaseOffsets;
   String phaseOffsetFileName;
   
   bool pixelwiseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_PIXELWISE_PHASE_OFFSET_ID)) == 0;
@@ -493,7 +493,7 @@ bool ToFCamera::_initStartParams()
 
 bool ToFCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const
 {
-  Vector<SupportedVideoMode> supportedVideoModes;
+  tVector<SupportedVideoMode> supportedVideoModes;
   
   uint bytesPerPixel;
   

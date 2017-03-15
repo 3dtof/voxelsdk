@@ -21,24 +21,30 @@ namespace Voxel
 class USBBulkStreamer::USBBulkStreamerPrivate
 {
 public:
-  bool initialized = true;
+  bool initialized;
 
   USBIOPtr usbIO;
 
   Ptr<Thread> captureThread;
-  bool captureRunning = false;
+  bool captureRunning;
 
-  long transferred = 0, bufSize = 0;
-  Vector<uint8_t> usbBuffer;
+  long transferred, bufSize;
+  tVector<uint8_t> usbBuffer;
   
-  unsigned int validFrames = 0, droppedFrames = 0, resetCount = 0, retriesCount = 0;
+  unsigned int validFrames, droppedFrames, resetCount, retriesCount;
 
   uint8_t endpoint;
 
-  long timeout = 200;
+  long timeout;
 
   USBBulkStreamerPrivate(USBIOPtr &usbIO, DevicePtr device, uint8_t endpoint) : _rawBuffers(10), usbIO(usbIO), endpoint(endpoint), bufSize(0)
   {
+    initialized = true;
+    captureRunning = false;
+    transferred = 0, bufSize = 0;
+    validFrames = 0, droppedFrames = 0, resetCount = 0, retriesCount = 0;
+    timeout = 200;
+    _sampleStart = 0;
   }
 
   virtual ~USBBulkStreamerPrivate()
@@ -133,12 +139,12 @@ public:
   }
 
 protected:
-  TimeStampType _sampleStart = 0;
+  TimeStampType _sampleStart;
   Timer _timer;
 
   FrameBufferManager<RawDataFrame> _rawBuffers;
 
-  List<FrameBuffer<RawDataFrame>> _inUseBuffers;
+  tList<FrameBuffer<RawDataFrame>> _inUseBuffers;
 
   Mutex _dataAccessMutex;
   ConditionVariable _dataAvailableCondition;
@@ -251,7 +257,7 @@ bool USBBulkStreamer::isInitialized()
   return true;
 }
 
-bool USBBulkStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
+bool USBBulkStreamer::getSupportedVideoModes(tVector<VideoMode> &videoModes)
 {
   videoModes.clear();
   return true; // No specific video modes

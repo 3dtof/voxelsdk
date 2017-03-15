@@ -28,26 +28,26 @@ namespace Voxel
 class VOXEL_EXPORT CameraSystem
 {
 protected:
-  Vector<DepthCameraLibraryPtr> _libraries;
-  Map<String, DepthCameraFactoryPtr> _factories; // Key = device ID as returned by Device::id()
-  Map<String, DepthCameraPtr> _depthCameras; // Key = device ID as returned by Device::id()
+  tVector<DepthCameraLibraryPtr> _libraries;
+  tMap<String, DepthCameraFactoryPtr> _factories; // Key = device ID as returned by Device::id()
+  tMap<String, DepthCameraPtr> _depthCameras; // Key = device ID as returned by Device::id()
   
-  Map<String, FilterFactoryPtr> _filterFactories; // Key = filter name
+  tMap<String, FilterFactoryPtr> _filterFactories; // Key = filter name
   
-  Map<String, DownloaderFactoryPtr> _downloaderFactories;// Key = device ID as returned by Device::id()
+  tMap<String, DownloaderFactoryPtr> _downloaderFactories;// Key = device ID as returned by Device::id()
   
-  Map<GeneratorIDType, DepthCameraFactoryPtr> _factoryForGeneratorID; // Key = frame generator ID
+  tMap<GeneratorIDType, DepthCameraFactoryPtr> _factoryForGeneratorID; // Key = frame generator ID
   
   void _init();
   
-  void _loadLibraries(const Vector<String> &paths);
+  void _loadLibraries(const tVector<String> &paths);
   
 public:
   CameraSystem();
   
   bool addDepthCameraFactory(DepthCameraFactoryPtr factory);
   
-  Vector<DevicePtr> scan();
+  tVector<DevicePtr> scan();
   
   DepthCameraPtr connect(const DevicePtr &device);
   // Remove local reference. Outside calling function should remove reference to its DepthCamera as well
@@ -57,11 +57,11 @@ public:
   
   bool addFilterFactory(FilterFactoryPtr filterFactory);
   
-  Vector<String> getSupportedFilters();
+  tVector<String> getSupportedFilters();
   bool getFilterDescription(const String &filterName, FilterDescription &description);
   FilterPtr createFilter(const String &name, DepthCamera::FrameType type);
   
-  Vector<DevicePtr> getProgrammableDevices();
+  tVector<DevicePtr> getProgrammableDevices();
   bool addDownloaderFactory(DownloaderFactoryPtr downloaderFactory);
   DownloaderPtr getDownloader(const DevicePtr &device);
   

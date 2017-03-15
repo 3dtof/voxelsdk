@@ -23,7 +23,7 @@ namespace Voxel
 class VOXEL_EXPORT Downloader
 {
 public:
-  typedef Function<void(float)> ProgressFunctionType;
+  typedef tFunction<void(float)> ProgressFunctionType;
   
 protected:
   DevicePtr _device;
@@ -33,7 +33,7 @@ protected:
   
   virtual bool _locateFile(String &file);
   
-  float _progress = 0;
+  float _progress;// = 0;
   inline void _setProgress(float progress /* percentage */) 
   { 
     _progress = (progress > 100?100:progress); 
@@ -51,7 +51,7 @@ protected:
   }
   
 public:
-  Downloader(DevicePtr device): _device(device) {}
+  Downloader(DevicePtr device): _device(device) {_progress = 0;}
   
   virtual bool download(const String &file) = 0;
   

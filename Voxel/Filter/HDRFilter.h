@@ -25,10 +25,10 @@ class VOXEL_EXPORT HDRFilter: public Filter
 protected:
    uint _order;
 
-   std::deque<Vector<ByteType>> _ampHistory;
-   std::deque<Vector<ByteType>> _phaseHistory;
-   std::deque<Vector<ByteType>> _ambHistory;
-   std::deque<Vector<ByteType>> _flagsHistory;
+   std::deque<tVector<ByteType>> _ampHistory;
+   std::deque<tVector<ByteType>> _phaseHistory;
+   std::deque<tVector<ByteType>> _ambHistory;
+   std::deque<tVector<ByteType>> _flagsHistory;
 
    FrameSize _size;
   

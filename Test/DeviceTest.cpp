@@ -14,7 +14,7 @@ int main()
 {
   logger.setDefaultLogLevel(LOG_ERROR);
   
-  Vector<DevicePtr> devices = DeviceScanner::scan();
+  tVector<DevicePtr> devices = DeviceScanner::scan();
   
   USBSystem usbsys;
   

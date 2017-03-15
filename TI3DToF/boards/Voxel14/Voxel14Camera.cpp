@@ -89,7 +89,7 @@ bool Voxel14Camera::_init()
   
   if(d.productID() == VOXEL_14_PRODUCT_ID1)
   {
-    Vector<DevicePtr> devices = DeviceScanner::scan();
+    tVector<DevicePtr> devices = DeviceScanner::scan();
     
     uint repeatCount = 0;
     for(auto &d1: devices)
@@ -143,13 +143,13 @@ bool Voxel14Camera::_init()
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
-    Vector<String> params = {ILLUM_VOLTAGE};
+    tVector<String> params = {ILLUM_VOLTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {ILLUM_VOLTAGE};
+    tVector<String> params = {ILLUM_VOLTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
@@ -211,9 +211,9 @@ bool Voxel14Camera::_setStreamerFrameSize(const FrameSize &s)
   return true;
 }
 
-bool Voxel14Camera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool Voxel14Camera::_getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
-  supportedVideoModes = Vector<SupportedVideoMode> {
+  supportedVideoModes = tVector<SupportedVideoMode> {
     SupportedVideoMode(320,240,25,1,4),
     SupportedVideoMode(160,240,50,1,4),
     SupportedVideoMode(160,120,100,1,4),

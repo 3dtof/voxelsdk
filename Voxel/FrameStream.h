@@ -51,7 +51,7 @@ class VOXEL_EXPORT FrameStreamWriter
   
   Mutex _mutex;
   
-  bool _isPaused = false;
+  bool _isPaused;
   
   size_t _frameCount;
   FrameStreamHeader _header;
@@ -92,9 +92,9 @@ class VOXEL_EXPORT FrameStreamReader
   InputFileStream &_stream;
   InputFileStream _internalStream;
   
-  Vector<FileOffsetType> _allPacketOffsets;
+  tVector<FileOffsetType> _allPacketOffsets;
   
-  Vector<IndexType> _dataPacketLocation, _configPacketLocation;
+  tVector<IndexType> _dataPacketLocation, _configPacketLocation;
   
   FrameStreamHeader _header;
   
@@ -120,7 +120,7 @@ public:
   
   inline bool isStreamGood() { return _stream.good(); }
   
-  Vector<FramePtr> frames; // 4 entries - raw (2 types), depth and point cloud corresponding to currently read frame index
+  tVector<FramePtr> frames; // 4 entries - raw (2 types), depth and point cloud corresponding to currently read frame index
   
   bool readNext();
   bool seekTo(size_t position);

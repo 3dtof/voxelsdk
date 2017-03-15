@@ -18,6 +18,7 @@ namespace Voxel
 
 PCLViewer::PCLViewer()
 {
+  _stopLoop = false;
 }
 
 void PCLViewer::_renderLoop()

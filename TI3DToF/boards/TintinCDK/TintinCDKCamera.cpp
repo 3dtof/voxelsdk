@@ -275,10 +275,10 @@ public:
 
 class TintinCDKDummyDelayFBCorrModeParameter: public IntegerParameter
 {
-  int _value = 0;
+  int _value;
 public:
   TintinCDKDummyDelayFBCorrModeParameter(RegisterProgrammer &programmer):
-  IntegerParameter(programmer, DELAY_FB_CORR_MODE, "", 0x5CB1, 24, 22, 21, -2, 1, 0, "", "Dummy parameter for delay fb correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
+  IntegerParameter(programmer, DELAY_FB_CORR_MODE, "", 0x5CB1, 24, 22, 21, -2, 1, 0, "", "Dummy parameter for delay fb correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}), _value(0) {}
   virtual bool get(int &value, bool refresh = false)
   {
     value = _value;
@@ -296,10 +296,10 @@ public:
 
 class TintinCDKDummyDelayFBDCCorrModeParameter: public IntegerParameter
 {
-  int _value = 0;
+  int _value;
 public:
   TintinCDKDummyDelayFBDCCorrModeParameter(RegisterProgrammer &programmer):
-  IntegerParameter(programmer, DELAY_FB_DC_CORR_MODE, "", 0x5CB1, 24, 20, 19, -2, 1, 0, "", "Dummy parameter for delay fb duty cycle correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
+  IntegerParameter(programmer, DELAY_FB_DC_CORR_MODE, "", 0x5CB1, 24, 20, 19, -2, 1, 0, "", "Dummy parameter for delay fb duty cycle correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}), _value(0) {}
   virtual bool get(int &value, bool refresh = false)
   {
     value = _value;
@@ -426,19 +426,19 @@ bool TintinCDKCamera::_init()
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
-    Vector<String> params = {ILLUM_POWER_PERCENTAGE, DELAY_FB_CORR_MODE, DELAY_FB_DC_CORR_MODE};
+    tVector<String> params = {ILLUM_POWER_PERCENTAGE, DELAY_FB_CORR_MODE, DELAY_FB_DC_CORR_MODE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {ILLUM_POWER_PERCENTAGE};
+    tVector<String> params = {ILLUM_POWER_PERCENTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
-    Vector<String> params = {ILLUM_POWER_PERCENTAGE};
+    tVector<String> params = {ILLUM_POWER_PERCENTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
@@ -578,13 +578,13 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   return true;
 }
 
-bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool TintinCDKCamera::_getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
   USBDevice &d = (USBDevice &)*_device;
 
   if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
   {
-    supportedVideoModes = Vector<SupportedVideoMode> {
+    supportedVideoModes = tVector<SupportedVideoMode> {
       SupportedVideoMode(320,240,25,1,4),
       SupportedVideoMode(160,240,50,1,4),
       SupportedVideoMode(160,120,100,1,4),

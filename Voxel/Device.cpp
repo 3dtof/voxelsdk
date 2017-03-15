@@ -11,21 +11,21 @@ namespace Voxel
 {
 
 // TODO Only USB device scanning for now. Add other interfaces later
-Vector<DevicePtr> DeviceScanner::scan()
+tVector<DevicePtr> DeviceScanner::scan()
 {
   USBDeviceScanner usb;
   return usb._scan();
 }
 
-Vector<DevicePtr> USBDeviceScanner::_scan()
+tVector<DevicePtr> USBDeviceScanner::_scan()
 {
   USBSystem sys;
   return sys.getDevices();
 }
 
-Vector<DevicePtr> USBDevice::getDevices(const Vector<int> &channels) const
+tVector<DevicePtr> USBDevice::getDevices(const tVector<int> &channels) const
 {
-  Vector<DevicePtr> devices;
+  tVector<DevicePtr> devices;
   for(auto i = 0; i < channels.size(); i++)
   {
     devices.push_back(DevicePtr(new USBDevice(vendorID(), productID(), serialNumber(), channels[i], description(), serialIndex(), _showSerialIndex)));

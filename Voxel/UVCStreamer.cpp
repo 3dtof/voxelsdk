@@ -95,7 +95,7 @@ public:
     CAPTURE_STREAMING // This is an intermediate which will be used to decide whether CAPTURE_MMAP or CAPTURE_USER_POINTER can be used
   } captureMode;
 
-  Vector<UVCRawData> rawDataBuffers;
+  tVector<UVCRawData> rawDataBuffers;
 
   size_t frameByteSize;
 
@@ -127,14 +127,14 @@ public:
   IAMDroppedFrames *droppedFrames = 0;
   IAMVideoProcAmp *videoProcAmp = 0;
 #endif
-  bool initialized = true;
+  bool initialized;
   Ptr<UVC> uvc;
 
   UVCStreamerPrivate(UVCStreamer &uvcStreamer):
 #ifdef WINDOWS
     _rawBuffers(2),
 #endif
-    _uvcStreamer(uvcStreamer)
+    _uvcStreamer(uvcStreamer), initialized(true)
   {
   }
 
@@ -161,7 +161,7 @@ protected:
 
   FrameBufferManager<RawDataFrame> _rawBuffers;
 
-  List<FrameBuffer<RawDataFrame>> _inUseBuffers;
+  tList<FrameBuffer<RawDataFrame>> _inUseBuffers;
 
   Mutex _dataAccessMutex;
   ConditionVariable _dataAvailableCondition;
@@ -1001,7 +1001,7 @@ bool UVCStreamer::_capture(RawDataFramePtr &p)
 #endif
 }
 
-bool UVCStreamer::getSupportedVideoModes(Vector<VideoMode> &videoModes)
+bool UVCStreamer::getSupportedVideoModes(tVector<VideoMode> &videoModes)
 {
   if(!isInitialized())
     return false;

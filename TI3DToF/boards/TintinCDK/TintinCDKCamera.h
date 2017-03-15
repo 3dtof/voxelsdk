@@ -42,7 +42,7 @@ protected:
   bool _init();
   
   virtual bool _getFieldOfView(float &fovHalfAngle) const;
-  virtual bool _getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const;
+  virtual bool _getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const;
   virtual bool _setStreamerFrameSize(const FrameSize &s);
   
   virtual bool _getMaximumVideoMode(VideoMode &videoMode) const;

@@ -20,7 +20,7 @@ class VOXEL_EXPORT DiscreteGaussian
 {
   float _sigma, _squaredSigma;
   
-  Vector<float> _values;
+  tVector<float> _values;
   
   inline void _computeValues();
   

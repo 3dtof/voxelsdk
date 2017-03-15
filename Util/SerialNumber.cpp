@@ -23,7 +23,7 @@ enum Options
   SERIAL_NUMBER = 2,
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { VENDOR_ID,    "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
   { PRODUCT_ID,   "-p", SO_REQ_SEP, "Comma separated list of Product IDs of the USB devices (hexadecimal)"},
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   
   uint16_t vid = 0;
   
-  Vector<uint16_t> pids;
+  tVector<uint16_t> pids;
   String serialNumber;
 
   char *endptr;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
-    Vector<String> splits;
+    tVector<String> splits;
     switch (s.OptionId())
     {
       case VENDOR_ID:
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   CameraSystem sys;
   
   // Get all valid detected devices
-  const Vector<DevicePtr> &devices = sys.scan();
+  const tVector<DevicePtr> &devices = sys.scan();
   
   DevicePtr toConnect;
   

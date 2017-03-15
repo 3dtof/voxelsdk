@@ -60,7 +60,7 @@ public:
   }
   
   // Need to implement in all derived classes
-  virtual Vector<Ptr<Device>> getDevices(const Vector<int> &channels) const { return Vector<Ptr<Device>>(); }
+  virtual tVector<Ptr<Device>> getDevices(const tVector<int> &channels) const { return tVector<Ptr<Device>>(); }
   
   inline const String &id() const { return _id; }
   
@@ -85,7 +85,7 @@ public:
   USBDevice(uint16_t vendorid, uint16_t productid, const String &serialnumber, int channelID = -1, const String &description = "", const String &serialIndex = "", bool showSerialIndex = false): 
     Device(Device::USB, getHex(vendorid) + ":" + getHex(productid), serialnumber, channelID, description, serialIndex, showSerialIndex), _vendorID(vendorid), _productID(productid) {}
   
-  virtual Vector<DevicePtr> getDevices(const Vector<int> &channels) const;
+  virtual tVector<DevicePtr> getDevices(const tVector<int> &channels) const;
   
   inline uint16_t vendorID() const { return _vendorID; }
   inline uint16_t productID() const { return _productID; }
@@ -96,9 +96,9 @@ public:
 class VOXEL_EXPORT DeviceScanner
 {
 protected:
-  virtual Vector<DevicePtr> _scan() = 0;
+  virtual tVector<DevicePtr> _scan() = 0;
 public:
-  static Vector<DevicePtr> scan();
+  static tVector<DevicePtr> scan();
   
   virtual ~DeviceScanner() {}
 };
@@ -106,7 +106,7 @@ public:
 class VOXEL_EXPORT USBDeviceScanner : public DeviceScanner
 {
 protected:
-  virtual Vector<DevicePtr> _scan();
+  virtual tVector<DevicePtr> _scan();
   friend class DeviceScanner;
   
   virtual ~USBDeviceScanner() {}

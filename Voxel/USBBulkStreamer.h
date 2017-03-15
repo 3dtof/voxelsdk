@@ -38,7 +38,7 @@ public:
   virtual bool setBufferSize(size_t bufferSize);
   
   // All these three are dummy
-  virtual bool getSupportedVideoModes(Vector<VideoMode> &videoModes);
+  virtual bool getSupportedVideoModes(tVector<VideoMode> &videoModes);
   virtual bool getCurrentVideoMode(VideoMode &videoMode);
   virtual bool setVideoMode(const VideoMode &videoMode);
 

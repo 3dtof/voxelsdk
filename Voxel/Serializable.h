@@ -113,11 +113,11 @@ namespace Voxel {
 
 // NOTE: Key is expected to be derived from Serializable
 template <typename Key>
-class SerializableMap: public Map<Key, SerializablePtr>, Serializable
+class SerializableMap: public tMap<Key, SerializablePtr>, Serializable
 {
 public:
-  SerializableMap(Map<Key, SerializablePtr> &other): Map<Key, SerializablePtr>(other) {}
-  SerializableMap(SerializableMap &other): Map<Key, SerializablePtr>(other) {}
+  SerializableMap(tMap<Key, SerializablePtr> &other): tMap<Key, SerializablePtr>(other) {}
+  SerializableMap(SerializableMap &other): tMap<Key, SerializablePtr>(other) {}
   SerializableMap() {}
   
   virtual size_t serializedSize() const

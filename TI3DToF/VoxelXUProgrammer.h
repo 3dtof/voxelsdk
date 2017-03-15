@@ -21,7 +21,7 @@ class TI3DTOF_EXPORT VoxelXUProgrammer: public VoxelProgrammerBase
 protected:
   UVCXUPtr _xu;
 
-  const int _XU_ID = 3;
+  const int _XU_ID;// = 3;
   
   uint8_t _majorVersion, _minorVersion;
   

@@ -343,7 +343,7 @@ bool ToFCalculusCamera::_init()
   
   ParameterDMLParser p(*_programmer, name);
   
-  Vector<ParameterPtr> params;
+  tVector<ParameterPtr> params;
   
   if(!p.getParameters(params))
   {
@@ -391,7 +391,7 @@ bool ToFCalculusCamera::_init()
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {COEFF_ILLUM, COEFF_SENSOR, CALIB_PREC};
+    tVector<String> params = {COEFF_ILLUM, COEFF_SENSOR, CALIB_PREC};
     calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end());
     
     auto f = std::find(calibInfo.definingParameters.begin(), calibInfo.definingParameters.end(), "quad_cnt_max");
@@ -623,7 +623,7 @@ bool ToFCalculusCamera::_applyCalibrationParams()
   if(nonlinearityCalibEnable && configFile.isPresent("calib", NONLINEARITY_COEFF) &&
     configFile.isPresent("calib", NONLINEARITY_PHASE_PERIOD))
   {
-    Vector<uint> nlCoeff1;
+    tVector<uint> nlCoeff1;
     
     nlCoeff1.reserve(9);
     

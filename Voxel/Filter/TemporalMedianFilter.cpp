@@ -19,6 +19,8 @@ TemporalMedianFilter::TemporalMedianFilter(uint order, float deadband): Filter("
   _history[1] = NULL;
   _history[2] = NULL;
   _current = NULL;
+  number_frames = 0;
+  frame_cnt = 0;
 #endif
 }
 
@@ -224,7 +226,7 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
   
   if(_history.size() < _order)
   {
-    Vector<ByteType> h;
+    tVector<ByteType> h;
     h.resize(s*sizeof(T));
     
     memcpy(h.data(), in, s*sizeof(T));
@@ -238,7 +240,7 @@ bool TemporalMedianFilter::_filter(const T *in, T *out)
   {
     _history.pop_front();
     
-    Vector<ByteType> h;
+    tVector<ByteType> h;
     h.resize(s*sizeof(T));
     
     memcpy(h.data(), in, s*sizeof(T));
@@ -266,7 +268,7 @@ template <typename T>
 void TemporalMedianFilter::_getMedian(IndexType offset, T &value)
 {
 
-  Vector<T> v;
+  tVector<T> v;
   
   v.reserve(_order);
   

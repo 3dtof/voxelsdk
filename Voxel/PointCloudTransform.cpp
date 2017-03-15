@@ -152,10 +152,10 @@ bool PointCloudTransform::_computeConcaveMirrorBorders(int width, int height,
                                                        double &minX, double &maxX,
                                                        double &minY, double &maxY)
 {
-  Vector<double> leftArr;
-  Vector<double> rightArr;
-  Vector<double> topArr;
-  Vector<double> bottomArr;
+  tVector<double> leftArr;
+  tVector<double> rightArr;
+  tVector<double> topArr;
+  tVector<double> bottomArr;
 
   _computeConcaveMirror(width, height, leftArr, rightArr, topArr, bottomArr);
   
@@ -175,10 +175,10 @@ bool PointCloudTransform::_computeConcaveMirrorBorders(int width, int height,
 bool PointCloudTransform::_computeConcaveMirrorBordersOuter(int width, int height, double &minX, double &maxX,
     double &minY, double &maxY)
 {
-  Vector<double> leftArr;
-  Vector<double> rightArr;
-  Vector<double> topArr;
-  Vector<double> bottomArr;
+  tVector<double> leftArr;
+  tVector<double> rightArr;
+  tVector<double> topArr;
+  tVector<double> bottomArr;
 
   _computeConcaveMirror(width, height, leftArr, rightArr, topArr, bottomArr);
   if(leftArr.size() == 0 || rightArr.size() == 0 || topArr.size() == 0 || bottomArr.size() == 0)
@@ -194,8 +194,8 @@ bool PointCloudTransform::_computeConcaveMirrorBordersOuter(int width, int heigh
   return true;
 }
 
-void PointCloudTransform::_computeConcaveMirror(int width, int height, Vector<double> &leftArr, Vector<double> &rightArr,
-    Vector<double> &topArr, Vector<double> &bottomArr)
+void PointCloudTransform::_computeConcaveMirror(int width, int height, tVector<double> &leftArr, tVector<double> &rightArr,
+    tVector<double> &topArr, tVector<double> &bottomArr)
 {
   leftArr.clear();
   rightArr.clear();
@@ -360,7 +360,7 @@ Point PointCloudTransform::imageToWorld(const Point &p, float depth)
   }
 }
 
-bool PointCloudTransform::depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame)
+bool PointCloudTransform::depthToPointCloud(const tVector<float> &distances, PointCloudFrame &pointCloudFrame)
 {
 #if defined(ARM_OPT) || defined (x86_OPT)
   uint w, h;

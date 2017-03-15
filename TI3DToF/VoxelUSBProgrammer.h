@@ -25,7 +25,7 @@ public:
     uint8_t leftShiftBits;
   };
   
-  typedef Map<uint, RequestParams> SlaveAddressToRequestParamsMap;
+  typedef tMap<uint, RequestParams> SlaveAddressToRequestParamsMap;
 protected:
   USBIOPtr _usbIO;
   SlaveAddressToRequestParamsMap _slaveAddressToRequestParamsMap;

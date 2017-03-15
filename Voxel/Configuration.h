@@ -40,12 +40,12 @@ protected:
   String _sdkPath;
   String _sdkVersion;
   
-  Vector<String> _pathKeys;
-  Vector<String> _pathValues;
+  tVector<String> _pathKeys;
+  tVector<String> _pathValues;
   
-  static const Map<String, _Path> _pathTypes;
+  static const tMap<String, _Path> _pathTypes;
   
-  bool _getPaths(const String &type, Vector<String> &paths);
+  bool _getPaths(const String &type, tVector<String> &paths);
   
   bool _get(const String &type, String &name);
 
@@ -56,9 +56,9 @@ public:
   
   Configuration();
   
-  inline bool getFirmwarePaths(Vector<String> &paths) { return _getPaths("fw", paths); }
-  inline bool getConfPaths(Vector<String> &paths) { return _getPaths("conf", paths); }
-  inline bool getLibPaths(Vector<String> &paths) { return _getPaths("lib", paths); }
+  inline bool getFirmwarePaths(tVector<String> &paths) { return _getPaths("fw", paths); }
+  inline bool getConfPaths(tVector<String> &paths) { return _getPaths("conf", paths); }
+  inline bool getLibPaths(tVector<String> &paths) { return _getPaths("lib", paths); }
 
   inline static bool addFirmwarePath(const String &path) { return _addPath("fw", path); }
   inline static bool addConfPath(const String &path) { return _addPath("conf", path); }
@@ -103,8 +103,8 @@ protected:
   bool _set(const String &name, const String &value);
   
 public:
-  Map<String, String> params;
-  Vector<String> paramNames;
+  tMap<String, String> params;
+  tVector<String> paramNames;
   
   bool remove(const String &name);
   
@@ -145,7 +145,7 @@ protected:
   
   String _fileName;
   
-  Map<String, Vector<ByteType>> _dataFiles;
+  tMap<String, tVector<ByteType>> _dataFiles;
   
   MainConfigurationFile *_mainConfigurationFile;
   
@@ -158,15 +158,15 @@ protected:
   bool _saveAllDataFiles(const String &prefix);
   
   template <typename T>
-  bool _getData(const String &fileName, Vector<T> &data);
+  bool _getData(const String &fileName, tVector<T> &data);
   
   template <typename T>
-  bool _setData(const String &fileName, const Vector<T> &data);  
+  bool _setData(const String &fileName, const tVector<T> &data);  
   
   bool _copyFromParentIfNotPresent(ConfigurationFile *other, bool recurse = true);
 
 public:
-  typedef Map<String, ConfigSet> ConfigSetMap;
+  typedef tMap<String, ConfigSet> ConfigSetMap;
   
   enum Location
   {
@@ -193,7 +193,7 @@ public:
   inline void setParentID(const int id) { _parentID = id; setInteger("global", "parent", id); }
   
   template <typename T>
-  bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
+  bool getFile(const String &section, const String &name, String &fileName, tVector<T> &data);
   
   int getInteger(const String &section, const String &name) const;
   float getFloat(const String &section, const String &name) const;
@@ -202,7 +202,7 @@ public:
   virtual bool set(const String &section, const String &name, const String &value);
   
   template <typename T>
-  bool setFile(const String &section, const String &name, const String &fileName, const Vector<T> &data);
+  bool setFile(const String &section, const String &name, const String &fileName, const tVector<T> &data);
   
   bool setInteger(const String &section, const String &name, int value);
   bool setFloat(const String &section, const String &name, float value);
@@ -227,7 +227,7 @@ public:
   
   inline const String &getConfigFileName() { return _fileName; }
   
-  ConfigurationFile(): ConfigurationFile(0) {}
+  ConfigurationFile():_mainConfigurationFile(0), _id(-1), _parentID(-1), _location(IN_HOST) {}
   ConfigurationFile(MainConfigurationFile *mainConfigurationFile): 
   _mainConfigurationFile(mainConfigurationFile), _id(-1), _parentID(-1), _location(IN_HOST) {}
   
@@ -265,7 +265,7 @@ public:
 };
 
 template <typename T>
-bool ConfigurationFile::getFile(const String &section, const String &name, String &fileName, Vector<T> &data)
+bool ConfigurationFile::getFile(const String &section, const String &name, String &fileName, tVector<T> &data)
 {
   String v = get(section, name);
   
@@ -281,13 +281,13 @@ bool ConfigurationFile::getFile(const String &section, const String &name, Strin
 }
 
 template <typename T>
-bool ConfigurationFile::setFile(const String &section, const String &name, const String &fileName, const Vector<T> &data)
+bool ConfigurationFile::setFile(const String &section, const String &name, const String &fileName, const tVector<T> &data)
 {
   return _setData(fileName, data) && set(section, name, "file:" + fileName);
 }
 
 template <typename T>
-bool ConfigurationFile::_setData(const String &fileName, const Vector<T> &data)
+bool ConfigurationFile::_setData(const String &fileName, const tVector<T> &data)
 {
   Configuration c;
   
@@ -321,15 +321,15 @@ struct CalibrationInformation
 {
   String name;
   int id;
-  Vector<String> definingParameters;
-  Vector<String> calibrationParameters;
+  tVector<String> definingParameters;
+  tVector<String> calibrationParameters;
 };
 
 class VOXEL_EXPORT MainConfigurationFile: public ConfigurationFile
 {
 protected:
-  Map<int, ConfigurationFile> _cameraProfiles;
-  Map<int, String> _cameraProfileNames;
+  tMap<int, ConfigurationFile> _cameraProfiles;
+  tMap<int, String> _cameraProfileNames;
   int _defaultCameraProfileID, _defaultCameraProfileIDInHardware;
   int _currentCameraProfileID;
   ConfigurationFile *_currentCameraProfile;
@@ -346,11 +346,11 @@ protected:
   
   int _quantizationFactor;
   
-  Map<String, CalibrationInformation> _calibrationInformation;
+  tMap<String, CalibrationInformation> _calibrationInformation;
   
   bool _removeCameraProfile(const int id, bool updateHardware = true);
-  bool _saveCameraProfileToHardware(int &id, Vector<int> &newIDsAdded, Vector<ConfigurationFile> &oldIDsModified, bool saveParents = false, bool updateHardware = true, bool setAsDefault = false, const String &namePrefix = "");
-  bool _rollbackCameraProfiles(const Vector<int> &newIDsAdded, const Vector<ConfigurationFile> &oldIDsModified);
+  bool _saveCameraProfileToHardware(int &id, tVector<int> &newIDsAdded, tVector<ConfigurationFile> &oldIDsModified, bool saveParents = false, bool updateHardware = true, bool setAsDefault = false, const String &namePrefix = "");
+  bool _rollbackCameraProfiles(const tVector<int> &newIDsAdded, const tVector<ConfigurationFile> &oldIDsModified);
     
 public:
   MainConfigurationFile(const String &name, const String &hardwareID, int quantizationFactor = 4, HardwareSerializerPtr hardwareSerializer = nullptr): 
@@ -385,7 +385,7 @@ public:
   ConfigurationFile *getCameraProfile(const int id);
   
   template <typename T>
-  bool getFile(const String &section, const String &name, String &fileName, Vector<T> &data);
+  bool getFile(const String &section, const String &name, String &fileName, tVector<T> &data);
   
   inline int getDefaultCameraProfileID() 
   { 
@@ -416,9 +416,9 @@ public:
   
   bool getCameraProfileName(const int id, String &cameraProfileName);
   
-  inline const Map<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
+  inline const tMap<int, String> &getCameraProfileNames() { return _cameraProfileNames; }
   
-  inline const Map<String, CalibrationInformation> &getCalibrationInformation() const { return _calibrationInformation; }
+  inline const tMap<String, CalibrationInformation> &getCalibrationInformation() const { return _calibrationInformation; }
  
   virtual ~MainConfigurationFile() {}
   
@@ -427,7 +427,7 @@ public:
 };
 
 template <typename T>
-bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
+bool ConfigurationFile::_getData(const String &fileName, tVector<T> &data)
 {
   bool loadFromFile = false;
   if(_dataFiles.find(fileName) == _dataFiles.end())
@@ -473,7 +473,7 @@ bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
       return false;
     }
     
-    Vector<ByteType> &d = _dataFiles[fileName];
+    tVector<ByteType> &d = _dataFiles[fileName];
     
     d.resize(size);
     fs.seekg(std::ios::beg);
@@ -481,7 +481,7 @@ bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
     fs.read((char *)d.data(), size);
   }
   
-  Vector<ByteType> &d = _dataFiles[fileName];
+  tVector<ByteType> &d = _dataFiles[fileName];
   
   data.resize((d.size() + sizeof(T)/2)/sizeof(T));
   
@@ -491,7 +491,7 @@ bool ConfigurationFile::_getData(const String &fileName, Vector<T> &data)
 }
 
 template <typename T>
-bool MainConfigurationFile::getFile(const String &section, const String &name, String &fileName, Vector<T> &data)
+bool MainConfigurationFile::getFile(const String &section, const String &name, String &fileName, tVector<T> &data)
 {
   if(!_currentCameraProfile || !_currentCameraProfile->getFile(section, name, fileName, data))
     return ConfigurationFile::getFile(section, name, fileName, data);

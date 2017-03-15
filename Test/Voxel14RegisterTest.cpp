@@ -27,7 +27,7 @@ enum Options
   MSB = 9
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { VENDOR_ID,    "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
   { PRODUCT_ID,   "-p", SO_REQ_SEP, "Product ID of the USB device (hexadecimal)"},

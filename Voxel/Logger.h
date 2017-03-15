@@ -35,7 +35,7 @@ typedef OutputStream &(*OStreamManipulator)(OutputStream &);
 class VOXEL_EXPORT LoggerOutStream
 {
 public:
-  typedef Function<void(const String &)> LoggerOutStreamFunctionType;
+  typedef tFunction <void(const String &)> LoggerOutStreamFunctionType;
 protected:
   LoggerOutStreamFunctionType _outputFunction;
   
@@ -43,6 +43,10 @@ protected:
   
 public:
   LoggerOutStream() {}
+  LoggerOutStream(const LoggerOutStream& p):_s(p._s.str())
+  {
+    
+  }
   
   void setOutputFunction(LoggerOutStreamFunctionType o) { _outputFunction = o; }
   
@@ -73,7 +77,6 @@ public:
 class VOXEL_EXPORT Logger
 {
 protected:
-  OutputStream &_out = std::cerr;
   
   mutable Mutex _mutex;
 
@@ -82,12 +85,12 @@ protected:
   
   static const String _logLevelNames[5];
   
-  Map<IndexType, LoggerOutStream> _outputStreams;
-  IndexType _outputStreamCount = 0;
+  tMap<IndexType, LoggerOutStream> _outputStreams;
+  IndexType _outputStreamCount;
   
 public:
   Logger(LogLevel loglevel = LOG_ERROR): _logLevel(loglevel), _currentLogLevel(loglevel)
-  {}
+  {_outputStreamCount = 0;} 
   
   Logger &operator =(const Logger &other) { _logLevel = other._logLevel; _currentLogLevel = other._currentLogLevel; return *this; }
   
@@ -114,7 +117,7 @@ public:
   
   inline OutputStream &getStream()
   {
-    return _out;
+    return std::cerr;
   }
   
   inline IndexType addOutputStream(LoggerOutStream::LoggerOutStreamFunctionType f)
@@ -142,7 +145,7 @@ public:
   {
     if(_currentLogLevel <= _logLevel)
     {
-      _out << value;
+      std::cerr << value;
       
       for(auto &x: _outputStreams)
         x.second << value;
@@ -164,7 +167,7 @@ public:
   {
     if(_currentLogLevel <= _logLevel)
     {
-      (*manip)(_out);
+      (*manip)(std::cerr);
       
       for(auto &x: _outputStreams)
         x.second << manip;

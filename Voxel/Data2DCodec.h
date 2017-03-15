@@ -42,10 +42,10 @@ class VOXEL_EXPORT Data2DCodec
   int _quantization;
   
 public:
-  typedef Vector<ByteType> ByteArray;
-  typedef Vector<uint8_t> ArrayBool2D;
+  typedef tVector<ByteType> ByteArray;
+  typedef tVector<uint8_t> ArrayBool2D;
   typedef int16_t Array2DElementType;
-  typedef Vector<Array2DElementType> Array2D;
+  typedef tVector<Array2DElementType> Array2D;
   
   
   Data2DCodec(int quantization = 4): _quantization(quantization) {}

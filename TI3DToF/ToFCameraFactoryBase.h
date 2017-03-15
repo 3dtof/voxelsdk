@@ -22,9 +22,9 @@ class TI3DTOF_EXPORT ToFCameraFactoryBase: public DepthCameraFactory
 public:
   ToFCameraFactoryBase(const String &name);
   
-  virtual bool getChannels(Device &device, Vector<int> &channels);
+  virtual bool getChannels(Device &device, tVector<int> &channels);
   
-  virtual Vector<GeneratorIDType> getSupportedGeneratorTypes();
+  virtual tVector<GeneratorIDType> getSupportedGeneratorTypes();
   virtual bool getFrameGenerator(uint8_t frameType, GeneratorIDType generatorID, FrameGeneratorPtr &frameGenerator);
   
   virtual ~ToFCameraFactoryBase() {}

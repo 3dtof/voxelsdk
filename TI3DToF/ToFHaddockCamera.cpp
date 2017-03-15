@@ -345,7 +345,7 @@ bool ToFHaddockCamera::_init()
 {
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {"coeff_illum_1", "coeff_sensor_1", "coeff_illum_2", "coeff_sensor_2"};
+    tVector<String> params = {"coeff_illum_1", "coeff_sensor_1", "coeff_illum_2", "coeff_sensor_2"};
     calibInfo.calibrationParameters.insert(calibInfo.calibrationParameters.end(), params.begin(), params.end());
   }
   
@@ -361,7 +361,7 @@ bool ToFHaddockCamera::_init()
   
   ParameterDMLParser p(*_programmer, name);
   
-  Vector<ParameterPtr> params;
+  tVector<ParameterPtr> params;
   
   if(!p.getParameters(params))
   {

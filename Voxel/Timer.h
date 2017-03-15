@@ -20,13 +20,15 @@ namespace Voxel
   
 class VOXEL_EXPORT Timer
 {
-  TimeStampType _realTimeStart = 0, _monoticStart = 0;
+  TimeStampType _realTimeStart, _monoticStart;
   
-  bool _initialized = false;
+  bool _initialized;
   
 public:
   Timer()
   {
+    _realTimeStart = 0, _monoticStart = 0;
+    _initialized = false;
     init();
   }
   

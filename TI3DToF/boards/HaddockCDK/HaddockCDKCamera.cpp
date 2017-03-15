@@ -147,13 +147,13 @@ bool HaddockCDKCamera::_init()
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
-    Vector<String> params = {ILLUM_POWER_PERCENTAGE};
+    tVector<String> params = {ILLUM_POWER_PERCENTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {ILLUM_POWER_PERCENTAGE};
+    tVector<String> params = {ILLUM_POWER_PERCENTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
@@ -231,7 +231,7 @@ bool HaddockCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   return true;
 }
 
-bool HaddockCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool HaddockCDKCamera::_getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
   supportedVideoModes.clear();
   return true;

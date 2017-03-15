@@ -40,16 +40,16 @@ template <typename FrameType>
 class FilterSet
 {
 protected:
-  Vector<int> _indices;
+  tVector<int> _indices;
   int _filterCounter;
-  Map<int, FilterPtr> _filters;
+  tMap<int, FilterPtr> _filters;
   
   mutable Mutex _accessMutex;
   
   FrameBufferManager<FrameType> &_frameBufferManager;
   
 public:  
-  class FrameSequence: public List<FrameBuffer<FrameType>>
+  class FrameSequence: public tList<FrameBuffer<FrameType>>
   {
   public:
     ~FrameSequence()

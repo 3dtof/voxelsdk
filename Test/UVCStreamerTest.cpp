@@ -22,7 +22,7 @@ enum Options
   NUM_OF_FRAMES = 4
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { VENDOR_ID,    "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
   { PRODUCT_ID,   "-p", SO_REQ_SEP, "Product ID of the USB device (hexadecimal)"},
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
     return -1;
   }
   
-  Vector<VideoMode> videoModes;
+  tVector<VideoMode> videoModes;
   
   if(streamer.getSupportedVideoModes(videoModes))
   {

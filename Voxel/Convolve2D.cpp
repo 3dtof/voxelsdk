@@ -10,7 +10,7 @@
 namespace Voxel
 {
 
-Convolve2D::Convolve2D(const Vector<float> &coefficients, SizeType rows, SizeType columns):_rows(rows), _columns(columns)
+Convolve2D::Convolve2D(const tVector<float> &coefficients, SizeType rows, SizeType columns):_rows(rows), _columns(columns)
 {
   if(coefficients.size() != _rows*_columns)
   {
@@ -35,7 +35,7 @@ Convolve2D::Convolve2D(const Vector<float> &coefficients, SizeType rows, SizeTyp
 
 #define COEFF(r, c) _coefficients[(rc + r)*_columns + (cc + c)]
 
-bool Convolve2D::convolve(const Vector<float> &in, SizeType rows, SizeType columns, Vector<float> &out)
+bool Convolve2D::convolve(const tVector<float> &in, SizeType rows, SizeType columns, tVector<float> &out)
 {
   if(_coefficients.size() == 0 || in.size() != rows*columns)
   {

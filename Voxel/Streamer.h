@@ -27,17 +27,22 @@ protected:
   
   Timer _time;
   
-  int _currentID = -1;
-  TimeStampType _currentTimeStamp = 0;
+  int _currentID;
+  TimeStampType _currentTimeStamp;
   
-  bool _isRunning = false;
+  bool _isRunning;
   
   virtual bool _start() = 0;
   virtual bool _capture(RawDataFramePtr &p) = 0;
   virtual bool _stop() = 0;
   
 public:
-  Streamer(DevicePtr device): _device(device) {}
+  Streamer(DevicePtr device): _device(device) {
+    _currentID = -1;
+    _currentTimeStamp = 0;
+    
+    _isRunning = false;
+  }
   
   virtual ~Streamer();
   
@@ -48,7 +53,7 @@ public:
   virtual bool capture(RawDataFramePtr &p);
   virtual bool stop();
   
-  virtual bool getSupportedVideoModes(Vector<VideoMode> &videoModes) = 0;
+  virtual bool getSupportedVideoModes(tVector<VideoMode> &videoModes) = 0;
   
   virtual bool getCurrentVideoMode(VideoMode &videoMode) = 0;
   virtual bool setVideoMode(const VideoMode &videoMode) = 0;

@@ -21,7 +21,7 @@ enum Options
   DUMP_FILE = 3,
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { DUMP_FILE,    "-f", SO_REQ_SEP, "Name of the file to dump extracted frames"},
   SO_END_OF_OPTIONS
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
-    Vector<String> splits;
+    tVector<String> splits;
     switch (s.OptionId())
     {
       case DUMP_FILE:

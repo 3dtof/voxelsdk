@@ -46,21 +46,21 @@ namespace Voxel
  * @{
  */
 
-#ifndef SWIG
+#if 0
 template <typename T>
-using Vector = std::vector<T>;
+using tVector = std::vector<T>;
 
 template <typename T>
-using List = std::list<T>;
+using tList = std::list<T>;
 
 template <typename T>
-using Set = std::set<T>;
+using tSet = std::set<T>;
 
 template <typename K, typename V>
-using Map = std::unordered_map<K, V>;
+using tMap = std::unordered_map<K, V>;
 
 template <typename T>
-using Function = std::function<T>;
+using tFunction = std::function<T>;
 
 template <typename T>
 using Atomic = std::atomic<T>;
@@ -71,11 +71,11 @@ using Lock = std::unique_lock<T>;
 template <typename T>
 using shared_ptr = Ptr<T>;
 #else
-#define Vector std::vector
-#define List std::list
-#define Set std::set
-#define Map std::unordered_map
-#define Function std::function
+#define tVector std::vector
+#define tList std::list
+#define tSet std::set
+#define tMap std::unordered_map
+#define tFunction std::function
 #define Atomic std::atomic
 #define Lock std::unique_lock
 #endif
@@ -109,7 +109,7 @@ struct Version { uint8_t major, minor; };
 
 /// String functions
 String VOXEL_EXPORT getHex(uint16_t value);
-void VOXEL_EXPORT split(const String &str, const char delimiter, Vector<String> &split);
+void VOXEL_EXPORT split(const String &str, const char delimiter, tVector<String> &split);
 void VOXEL_EXPORT breakLines(const String &str, std::ostream &out, const uint maxPerLine, const String &newlinePrefix);
 
 /// Array handling template
@@ -186,7 +186,7 @@ inline String& trim(String& s) {
 }
 
 /// Filesystem functions -- returns the number of files read or else -1 for error. Only those files whose name matches "matchString" partially (sub-string) are returned "files"
-int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, Vector<String> &files);
+int VOXEL_EXPORT getFiles(const String &dir, const String &matchString, tVector<String> &files);
 
 bool VOXEL_EXPORT isFilePresent(const String &filename);
 bool VOXEL_EXPORT isDirectory(const String &filename);
@@ -194,7 +194,7 @@ bool VOXEL_EXPORT makeDirectory(const String &filename);
 String VOXEL_EXPORT dirname(const String &filename);
 String VOXEL_EXPORT basename(const String &filename);
 
-String VOXEL_EXPORT substitute(const String &s, const Vector<String> &keys, const Vector<String> &values);
+String VOXEL_EXPORT substitute(const String &s, const tVector<String> &keys, const tVector<String> &values);
 
 /**
  * @}

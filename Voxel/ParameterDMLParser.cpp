@@ -56,7 +56,7 @@ bool ParameterDMLParser::_prepare()
   return true;
 }
 
-TinyXML2::XMLElement *ParameterDMLParser::_goTo(TinyXML2::XMLElement *current, const Vector<String> &nodeNameList, bool report)
+TinyXML2::XMLElement *ParameterDMLParser::_goTo(TinyXML2::XMLElement *current, const tVector<String> &nodeNameList, bool report)
 {
   TinyXML2::XMLElement *x = current;
   
@@ -206,7 +206,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
     {
       bool defaultValue = property->BoolAttribute("default");
       
-      Vector<String> valueMeaning, valueDescription;
+      tVector<String> valueMeaning, valueDescription;
       
       valueMeaning.resize(2);
       valueDescription.resize(2);
@@ -253,8 +253,8 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
       if(strobe)
         logger(LOG_WARNING) << "ParameterDMLParser: Found a non-boolean parameter with id ='" << id << "' marked as strobe. Ignoring 'strobe' for this." << std::endl;
       
-      Vector<String> valueMeaning, valueDescription;
-      Vector<int> values;
+      tVector<String> valueMeaning, valueDescription;
+      tVector<int> values;
       
       for(; value; value = value->NextSiblingElement())
       {
@@ -287,7 +287,7 @@ ParameterPtr ParameterDMLParser::_getParameter(TinyXML2::XMLElement *property, S
 
 
 
-bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
+bool ParameterDMLParser::getParameters(tVector<ParameterPtr> &parameters)
 {
   if(!isInitialized())
     return false;
@@ -295,7 +295,7 @@ bool ParameterDMLParser::getParameters(Vector<ParameterPtr> &parameters)
   if(!_prepare())
     return false;
   
-  Map<String, ParameterPtr> paramMap; // id -> paramter
+  tMap<String, ParameterPtr> paramMap; // id -> paramter
   
   String id;
   

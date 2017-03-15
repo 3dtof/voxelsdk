@@ -36,7 +36,7 @@ protected:
   float _stability, _deadband, _deadbandStep; 
   uint _halfKernelSize;
   
-  Vector<ByteType> _current, _hist;
+  tVector<ByteType> _current, _hist;
   
   FrameSize _size;
   

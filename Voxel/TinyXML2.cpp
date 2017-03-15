@@ -131,7 +131,7 @@ char* StrPair::ParseText( char* p, const char* endTag, int strFlags )
     // Inner loop of text parsing.
     while ( *p ) {
         if ( *p == endChar && strncmp( p, endTag, length ) == 0 ) {
-            Set( start, p, strFlags );
+            Set1( start, p, strFlags );
             return p + length;
         }
         ++p;
@@ -153,7 +153,7 @@ char* StrPair::ParseName( char* p )
     }
 
     if ( p > start ) {
-        Set( start, p, 0 );
+        Set1( start, p, 0 );
         return p;
     }
     return 0;

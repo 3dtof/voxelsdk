@@ -27,10 +27,11 @@ namespace Voxel
 CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
 {
   Configuration conf;
+  _keepRunning = true;
   _commandHistoryFileName = "history.txt";
   conf.getLocalFile("cli", _commandHistoryFileName);
   
-  _commandGroups = Vector<CommandGroup>({
+  _commandGroups = tVector<CommandGroup>({
     {"CLI Controls", {"help", "exit"}},
     {"Parameter/Register Handling", {"get", "set", "cap", "getr", "setr"}},
     {"Device/Camera Handling", {"list", "connect", "disconnect", "reset"}},
@@ -40,7 +41,7 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
   });
   
   
-  _commands = Map<String, Command>({
+  _commands = tMap<String, Command>({
     {"list",                  Command(_H(&CLIManager::_listHelp),                   _P(&CLIManager::_list),                   nullptr)},
     {"status",                Command(_H(&CLIManager::_currentHelp),                _P(&CLIManager::_current),                nullptr)},
     {"connect",               Command(_H(&CLIManager::_connectHelp),                _P(&CLIManager::_connect),                _C(&CLIManager::_connectCompletion))},
@@ -73,13 +74,13 @@ CLIManager::CLIManager(CameraSystem &sys): _sys(sys)
     {"profilehwremovedefault",Command(_H(&CLIManager::_profileHWRemoveDefaultHelp), _P(&CLIManager::_profileHWRemoveDefault), nullptr)},
   });
   
-  _specialParameters = Map<String, Command>({
+  _specialParameters = tMap<String, Command>({
     {"roi",       Command(_H(&CLIManager::_roiCapabilities),         _P(&CLIManager::_roi),         nullptr)},
     {"video_mode",Command(_H(&CLIManager::_videoModeCapabilities),   _P(&CLIManager::_videoMode),   nullptr)},
   });
   
   // Scan and connect to the first device available
-  Vector<DevicePtr> devices = sys.scan();
+  tVector<DevicePtr> devices = sys.scan();
   
   if(devices.size() > 0)
     _currentDepthCamera = sys.connect(devices[0]);
@@ -119,7 +120,7 @@ void CLIManager::_commandLoop()
   
   
   char *line;
-  Vector<String> tokens;
+  tVector<String> tokens;
   
   String prompt;
   
@@ -171,7 +172,7 @@ void CLIManager::_commandLoop()
   }
 }
 
-void CLIManager::_getTokens(const char *command, Vector<String> &tokens)
+void CLIManager::_getTokens(const char *command, tVector<String> &tokens)
 {
   const char *c = command;
   
@@ -291,7 +292,7 @@ void CLIManager::_profileHWFetchHelp()         { std::cout << "profilehwfetch <i
 void CLIManager::_profileHWRemoveDefaultHelp() { std::cout << "profilehwremovedefault    Remove default setting of profile in depth camera hardware" << std::endl; }                                                           
                                                            
 
-void CLIManager::_help(const Vector<String> &tokens)
+void CLIManager::_help(const tVector<String> &tokens)
 {
   if(tokens.size() >= 2)
   {
@@ -335,7 +336,7 @@ void CLIManager::_help(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_helpCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_helpCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(tokens.size() == 1)
   {
@@ -369,15 +370,15 @@ void CLIManager::_helpCompletion(const Vector<String> &tokens, linenoiseCompleti
 }
 
 
-void CLIManager::_exit(const Vector<String> &tokens)
+void CLIManager::_exit(const tVector<String> &tokens)
 {
   _keepRunning = false;
   _disconnect(tokens);
 }
 
-void CLIManager::_list(const Vector<String> &tokens)
+void CLIManager::_list(const tVector<String> &tokens)
 {
-  Vector<DevicePtr> devices = _sys.scan();
+  tVector<DevicePtr> devices = _sys.scan();
   
   if(!devices.size())
   {
@@ -396,7 +397,7 @@ void CLIManager::_list(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_connect(const Vector<String> &tokens)
+void CLIManager::_connect(const tVector<String> &tokens)
 {
   if(tokens.size() < 2)
   {
@@ -406,7 +407,7 @@ void CLIManager::_connect(const Vector<String> &tokens)
   
   std::cout << "Searching for '" << tokens[1] << "'..." << std::endl;
   
-  Vector<DevicePtr> devices = _sys.scan();
+  tVector<DevicePtr> devices = _sys.scan();
   
   for(auto &d: devices)
   {
@@ -444,7 +445,7 @@ void CLIManager::_connect(const Vector<String> &tokens)
   logger(LOG_ERROR) << "Could not find a valid device with specified ID" << std::endl;
 }
 
-void CLIManager::_current(const Vector<String> &tokens)
+void CLIManager::_current(const tVector<String> &tokens)
 {
   if(_currentDepthCamera)
   {
@@ -459,7 +460,7 @@ void CLIManager::_current(const Vector<String> &tokens)
     std::cout << "No device is current in use by this CLI" << std::endl;
 }
 
-void CLIManager::_start(const Vector<String> &tokens)
+void CLIManager::_start(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -485,7 +486,7 @@ void CLIManager::_start(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_stop(const Vector<String> &tokens)
+void CLIManager::_stop(const tVector<String> &tokens)
 {
   if(!_viewer)
     return;
@@ -493,7 +494,7 @@ void CLIManager::_stop(const Vector<String> &tokens)
    _viewer->stop();
 }
 
-void CLIManager::_getParameter(const Vector<String> &tokens)
+void CLIManager::_getParameter(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -540,7 +541,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     }
     std::cout << tokens[1] << " = " << (value?"true":"false");
     
-    const Vector<String> &meaning = boolParam->valueMeaning();
+    const tVector<String> &meaning = boolParam->valueMeaning();
     
     if(meaning.size() == 2 && meaning[value].size())
       std::cout << " (" << meaning[value] << ")";
@@ -599,7 +600,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
     }
     std::cout << tokens[1] << " = "  << std::dec << value;
     
-    const Vector<String> &meaning = enumParam->valueMeaning();
+    const tVector<String> &meaning = enumParam->valueMeaning();
     
     if(meaning.size() > value && meaning[value].size())
       std::cout << " (" << meaning[value] << ")";
@@ -611,7 +612,7 @@ void CLIManager::_getParameter(const Vector<String> &tokens)
   logger(LOG_ERROR) << "Unknown type of parameter '" << tokens[1] << "'. Don't know how to handle" << std::endl;
 }
 
-void CLIManager::_setParameter(const Vector<String> &tokens)
+void CLIManager::_setParameter(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -758,7 +759,7 @@ void CLIManager::_setParameter(const Vector<String> &tokens)
   logger(LOG_ERROR) << "Unknown type of parameter '" << tokens[1] << "'. Don't know how to handle" << std::endl;
 }
 
-void CLIManager::_getRegister(const Vector<String> &tokens)
+void CLIManager::_getRegister(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -792,7 +793,7 @@ void CLIManager::_getRegister(const Vector<String> &tokens)
     std::cout << "Register @0x" << std::hex << address << " = 0x" << std::hex << value << std::endl;
 }
 
-void CLIManager::_setRegister(const Vector<String> &tokens)
+void CLIManager::_setRegister(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -837,7 +838,7 @@ void CLIManager::_setRegister(const Vector<String> &tokens)
     std::cout << "Successfully set register @0x" << std::hex << address << std::endl;
 }
 
-void CLIManager::_capabilities(const Vector<String> &tokens)
+void CLIManager::_capabilities(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -854,7 +855,7 @@ void CLIManager::_capabilities(const Vector<String> &tokens)
         sp.second.help();
     }
     
-    const Map<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
+    const tMap<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
     for(auto &p: parameters)
     {
       _showParameterInfo(p.second);
@@ -885,7 +886,7 @@ void CLIManager::_capabilities(const Vector<String> &tokens)
         sp.second.help();
     }
     
-    const Map<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
+    const tMap<String, ParameterPtr> &parameters = _currentDepthCamera->getParameters();
     for(auto &p: parameters)
     {
       const String &n = p.second->name();
@@ -1031,7 +1032,7 @@ void CLIManager::_showParameterInfo(const ParameterPtr &param)
 
 void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
 {
-  Vector<String> tokens;
+  tVector<String> tokens;
   
   _getTokens(buf, tokens);
   
@@ -1080,11 +1081,11 @@ void CLIManager::_completionCallback(const char *buf, linenoiseCompletions *lc)
   }
 }
 
-void CLIManager::_connectCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_connectCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(tokens.size() == 2)
   {
-    Vector<DevicePtr> devices = _sys.scan();
+    tVector<DevicePtr> devices = _sys.scan();
     
     for(auto &d: devices)
     {
@@ -1094,7 +1095,7 @@ void CLIManager::_connectCompletion(const Vector<String> &tokens, linenoiseCompl
   }
   else if(tokens.size() == 1)
   {
-    Vector<DevicePtr> devices = _sys.scan();
+    tVector<DevicePtr> devices = _sys.scan();
     
     for(auto &d: devices)
     {
@@ -1103,7 +1104,7 @@ void CLIManager::_connectCompletion(const Vector<String> &tokens, linenoiseCompl
   }
 }
 
-void CLIManager::_paramCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_paramCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
@@ -1151,18 +1152,18 @@ void CLIManager::_paramCompletion(const Vector<String> &tokens, linenoiseComplet
   }
 }
 
-void CLIManager::_capabilitiesCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_capabilitiesCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   _paramCompletion(tokens, lc);
 }
 
 
-void CLIManager::_getParameterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_getParameterCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   _paramCompletion(tokens, lc);
 }
 
-void CLIManager::_setParameterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_setParameterCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   _paramCompletion(tokens, lc);
 }
@@ -1289,7 +1290,7 @@ bool CLIManager::_saveFrameToFile<XYZIPointCloudFrame>(const Frame *frame, Outpu
 }
 
 
-void CLIManager::_save(const Vector<String> &tokens)
+void CLIManager::_save(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera || !_viewer->isRunning())
   {
@@ -1471,7 +1472,7 @@ void CLIManager::_save(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_saveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_saveCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
@@ -1489,7 +1490,7 @@ void CLIManager::_saveCompletion(const Vector<String> &tokens, linenoiseCompleti
   }
   else if(tokens.size() == 2)
   {
-    Vector<String> types = {"raw", "phase", "amplitude", "ambient", "flags", "depth", "pointcloud", "vxl"};
+    tVector<String> types = {"raw", "phase", "amplitude", "ambient", "flags", "depth", "pointcloud", "vxl"};
     
     for(auto &t: types)
     {
@@ -1502,7 +1503,7 @@ void CLIManager::_saveCompletion(const Vector<String> &tokens, linenoiseCompleti
   }
 }
 
-void CLIManager::_disconnect(const Vector<String> &tokens)
+void CLIManager::_disconnect(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -1541,7 +1542,7 @@ void CLIManager::_roiCapabilities()
   }
 }
 
-void CLIManager::_roi(const Vector<String> &tokens)
+void CLIManager::_roi(const tVector<String> &tokens)
 {
   if(tokens.size() < 2)
   {
@@ -1613,8 +1614,8 @@ void CLIManager::_videoModeCapabilities()
     std::cout << "Current video mode:" << std::dec << m.frameSize.width << "X" << m.frameSize.height << "@" << m.getFrameRate() << "\n\t\t\t\t";
   }
   
-  Vector<SupportedVideoMode> videoModes;
-  Set<uint> pixelCounts;
+  tVector<SupportedVideoMode> videoModes;
+  tSet<uint> pixelCounts;
   
   std::cout << "Supported Video Modes: (FPS given below is maximum allowed value) \n\t\t\t\t";
   
@@ -1637,7 +1638,7 @@ void CLIManager::_videoModeCapabilities()
   }
 }
 
-void CLIManager::_videoMode(const Vector<String> &tokens)
+void CLIManager::_videoMode(const tVector<String> &tokens)
 {
   if(tokens.size() < 2)
   {
@@ -1670,7 +1671,7 @@ void CLIManager::_videoMode(const Vector<String> &tokens)
     
     char *endptr;
     
-    Vector<String> splits;
+    tVector<String> splits;
     
     split(tokens[3], 'X', splits);
     
@@ -1711,7 +1712,7 @@ void CLIManager::_videoMode(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_reset(const Vector<String> &tokens)
+void CLIManager::_reset(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -1803,7 +1804,7 @@ void CLIManager::_showFilterSet(const FilterSet<T> &filterSet)
 }
 
 
-void CLIManager::_filters(const Vector<String> &tokens)
+void CLIManager::_filters(const tVector<String> &tokens)
 {
   const auto &m = _sys.getSupportedFilters();
   
@@ -1868,7 +1869,7 @@ void CLIManager::_addFilter2(const String &name, int position, DepthCamera::Fram
 }
 
 
-void CLIManager::_addFilter(const Vector<String> &tokens)
+void CLIManager::_addFilter(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -1896,7 +1897,7 @@ void CLIManager::_addFilter(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_addFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_addFilterCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(tokens.size() == 1)
   {
@@ -1915,7 +1916,7 @@ void CLIManager::_addFilterCompletion(const Vector<String> &tokens, linenoiseCom
     }
     else
     {
-      Vector<String> f = { "raw", "raw_processed", "depth" };
+      tVector<String> f = { "raw", "raw_processed", "depth" };
       
       for(auto &x: f)
         if(x.size() > tokens[1].size() && x.compare(0, tokens[1].size(), tokens[1]) == 0)
@@ -1944,7 +1945,7 @@ void CLIManager::_removeFilter2(int filterID, DepthCamera::FrameType type)
 }
 
 
-void CLIManager::_removeFilter(const Vector<String> &tokens)
+void CLIManager::_removeFilter(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -1972,7 +1973,7 @@ void CLIManager::_removeFilter(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_removeFilterCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_removeFilterCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(tokens.size() == 1)
   {
@@ -1982,7 +1983,7 @@ void CLIManager::_removeFilterCompletion(const Vector<String> &tokens, linenoise
   }
   else if(tokens.size() == 2)
   {
-    Vector<String> f = { "raw", "raw_processed", "depth" };
+    tVector<String> f = { "raw", "raw_processed", "depth" };
       
     for(auto &x: f)
       if(x.size() > tokens[1].size() && x.compare(0, tokens[1].size(), tokens[1]) == 0)
@@ -2071,7 +2072,7 @@ void CLIManager::_setFilterParam2(int filterID, DepthCamera::FrameType type, con
 }
 
 
-void CLIManager::_setFilterParam(const Vector<String> &tokens)
+void CLIManager::_setFilterParam(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2099,7 +2100,7 @@ void CLIManager::_setFilterParam(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_setFilterParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_setFilterParamCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(tokens.size() == 1)
   {
@@ -2109,7 +2110,7 @@ void CLIManager::_setFilterParamCompletion(const Vector<String> &tokens, linenoi
   }
   else if(tokens.size() == 2)
   {
-    Vector<String> f = { "raw", "raw_processed", "depth" };
+    tVector<String> f = { "raw", "raw_processed", "depth" };
     
     for(auto &x: f)
       if(x.size() > tokens[1].size() && x.compare(0, tokens[1].size(), tokens[1]) == 0)
@@ -2163,7 +2164,7 @@ void CLIManager::_setFilterParamCompletion(const Vector<String> &tokens, linenoi
   }
 }
 
-void CLIManager::_vxlToRaw(const Vector<String> &tokens)
+void CLIManager::_vxlToRaw(const tVector<String> &tokens)
 {
   if(tokens.size() < 4)
   {
@@ -2235,7 +2236,7 @@ void CLIManager::_vxlToRaw(const Vector<String> &tokens)
   _saveFile.close();
 }
 
-void CLIManager::_vxlToRawCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_vxlToRawCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(tokens.size() == 1)
   {
@@ -2249,7 +2250,7 @@ void CLIManager::_vxlToRawCompletion(const Vector<String> &tokens, linenoiseComp
   }
   else if(tokens.size() == 2)
   {
-    Vector<String> types = {"raw", "phase", "amplitude", "ambient", "flags", "depth", "pointcloud"};
+    tVector<String> types = {"raw", "phase", "amplitude", "ambient", "flags", "depth", "pointcloud"};
     
     for(auto &t: types)
     {
@@ -2262,7 +2263,7 @@ void CLIManager::_vxlToRawCompletion(const Vector<String> &tokens, linenoiseComp
   }
 }
 
-void CLIManager::_profileList(const Vector<String> &tokens)
+void CLIManager::_profileList(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2293,7 +2294,7 @@ void CLIManager::_profileList(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_getProfileIDs(const String &partialID, Vector<String> &ids, const unsigned int type)
+void CLIManager::_getProfileIDs(const String &partialID, tVector<String> &ids, const unsigned int type)
 {
   auto &names = _currentDepthCamera->configFile.getCameraProfileNames();
   
@@ -2321,12 +2322,12 @@ void CLIManager::_getProfileIDs(const String &partialID, Vector<String> &ids, co
 }
 
 
-void CLIManager::_profileSetCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileSetCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
   
-  Vector<String> ids;
+  tVector<String> ids;
   
   if(tokens.size() > 1)
     _getProfileIDs(tokens[1], ids);
@@ -2337,7 +2338,7 @@ void CLIManager::_profileSetCompletion(const Vector<String> &tokens, linenoiseCo
     linenoiseAddCompletion(lc, (tokens[0] + " " + id).c_str());
 }
 
-void CLIManager::_profileSet(const Vector<String> &tokens)
+void CLIManager::_profileSet(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2375,12 +2376,12 @@ void CLIManager::_profileSet(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileAddCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileAddCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
   
-  Vector<String> parentIDs;
+  tVector<String> parentIDs;
   
   if(tokens.size() >= 2)
   {
@@ -2394,7 +2395,7 @@ void CLIManager::_profileAddCompletion(const Vector<String> &tokens, linenoiseCo
   }
 }
 
-void CLIManager::_profileAdd(const Vector<String> &tokens)
+void CLIManager::_profileAdd(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2432,12 +2433,12 @@ void CLIManager::_profileAdd(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileRemoveCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   _profileSetCompletion(tokens, lc);
 }
 
-void CLIManager::_profileRemove(const Vector<String> &tokens)
+void CLIManager::_profileRemove(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2482,12 +2483,12 @@ void CLIManager::_profileRemove(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileParamCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileParamCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
   
-  Vector<String> ids;
+  tVector<String> ids;
   
   if(tokens.size() == 1)
   {
@@ -2554,7 +2555,7 @@ void CLIManager::_profileParamCompletion(const Vector<String> &tokens, linenoise
   }
 }
 
-void CLIManager::_profileParam(const Vector<String> &tokens)
+void CLIManager::_profileParam(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2652,13 +2653,13 @@ void CLIManager::_profileParam(const Vector<String> &tokens)
   }
 }
 
-void CLIManager::_profileParamRemoveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileParamRemoveCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   _profileParamCompletion(tokens, lc);
 }
 
 
-void CLIManager::_profileParamRemove(const Vector<String> &tokens)
+void CLIManager::_profileParamRemove(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2734,12 +2735,12 @@ void CLIManager::_profileParamRemove(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileSetDefaultCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileSetDefaultCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   _profileSetCompletion(tokens, lc);
 }
 
-void CLIManager::_profileSetDefault(const Vector<String> &tokens)
+void CLIManager::_profileSetDefault(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2770,12 +2771,12 @@ void CLIManager::_profileSetDefault(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileHWFetchCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileHWFetchCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
   
-  Vector<String> ids;
+  tVector<String> ids;
   
   if(tokens.size() > 1)
     _getProfileIDs(tokens[1], ids, 1 << ConfigurationFile::IN_CAMERA);
@@ -2787,7 +2788,7 @@ void CLIManager::_profileHWFetchCompletion(const Vector<String> &tokens, linenoi
 }
 
 
-void CLIManager::_profileHWFetch(const Vector<String> &tokens)
+void CLIManager::_profileHWFetch(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2827,12 +2828,12 @@ void CLIManager::_profileHWFetch(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileHWSaveCompletion(const Vector<String> &tokens, linenoiseCompletions *lc)
+void CLIManager::_profileHWSaveCompletion(const tVector<String> &tokens, linenoiseCompletions *lc)
 {
   if(!_currentDepthCamera)
     return;
   
-  Vector<String> ids;
+  tVector<String> ids;
   
   if(tokens.size() > 1)
     _getProfileIDs(tokens[1], ids, 1 << ConfigurationFile::IN_HOST);
@@ -2844,7 +2845,7 @@ void CLIManager::_profileHWSaveCompletion(const Vector<String> &tokens, linenois
 }
 
 
-void CLIManager::_profileHWSave(const Vector<String> &tokens)
+void CLIManager::_profileHWSave(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {
@@ -2884,7 +2885,7 @@ void CLIManager::_profileHWSave(const Vector<String> &tokens)
 }
 
 
-void CLIManager::_profileHWRemoveDefault(const Vector<String> &tokens)
+void CLIManager::_profileHWRemoveDefault(const tVector<String> &tokens)
 {
   if(!_currentDepthCamera)
   {

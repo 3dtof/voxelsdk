@@ -50,7 +50,7 @@ public:
     FRAME_TYPE_COUNT = 4 // This is just used for number of callback types
   };
   
-  typedef Function<void (DepthCamera &camera, const Frame &frame, FrameType callBackType)> CallbackType;
+  typedef tFunction<void (DepthCamera &camera, const Frame &frame, FrameType callBackType)> CallbackType;
   
 private:
   mutable Mutex _accessMutex; // This is locked by getters and setters which are public
@@ -61,7 +61,7 @@ protected:
   
   String _name, _id, _chipset;
   
-  Map<String, ParameterPtr> _parameters;
+  tMap<String, ParameterPtr> _parameters;
   
   Ptr<RegisterProgrammer> _programmer;
   Ptr<Streamer> _streamer;
@@ -83,11 +83,11 @@ protected:
   
   FrameStreamWriterPtr _frameStreamWriter;
   
-  bool _addParameters(const Vector<ParameterPtr> &params);
+  bool _addParameters(const tVector<ParameterPtr> &params);
   
   CallbackType _callback[FRAME_TYPE_COUNT];
   
-  uint32_t _callBackTypesRegistered = 0;
+  uint32_t _callBackTypesRegistered;
   
   ThreadPtr _captureThread;
   
@@ -125,7 +125,7 @@ protected:
   virtual bool _getFrameSize(FrameSize &s) const = 0;
   virtual bool _getMaximumFrameSize(FrameSize &s) const = 0;
   virtual bool _getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const = 0;
-  virtual bool _getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const = 0;
+  virtual bool _getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const = 0;
   virtual bool _getMaximumVideoMode(VideoMode &videoMode) const = 0;
   
   virtual bool _getBytesPerPixel(uint &bpp) const = 0;
@@ -150,7 +150,7 @@ protected:
   
   bool _init();
   
-  inline Map<String, CalibrationInformation> &_getCalibrationInformationStructure() { return configFile._calibrationInformation; }
+  inline tMap<String, CalibrationInformation> &_getCalibrationInformationStructure() { return configFile._calibrationInformation; }
   
 public:
   MainConfigurationFile configFile; // This corresponds to camera specific configuration file
@@ -194,7 +194,7 @@ public:
   
   // WARNING: Avoid using get() and set() on ParameterPtr, obtained via getParam() or getParameters(). It is not thread-safe. Instead use get() and set() on DepthCamera
   inline const ParameterPtr getParam(const String &name) const;
-  inline const Map<String, ParameterPtr> &getParameters() const { return _parameters; }
+  inline const tMap<String, ParameterPtr> &getParameters() const { return _parameters; }
   
   inline bool setFrameRate(const FrameRate &r);
   inline bool getFrameRate(FrameRate &r) const;
@@ -203,7 +203,7 @@ public:
   inline bool getFrameSize(FrameSize &s) const;
   inline bool getMaximumFrameSize(FrameSize &s) const;
   inline bool getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const;
-  inline bool getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const;
+  inline bool getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const;
   inline bool getMaximumVideoMode(VideoMode &videoMode) const;
   
   inline bool getBytesPerPixel(uint &bpp) const;
@@ -248,7 +248,7 @@ public:
   inline Ptr<Streamer> getStreamer() { return _streamer; } // Streamer may not be thread-safe
   
   inline bool reloadConfiguration() { return configFile.read(_name + ".conf"); }
-  inline const Map<int, String> &getCameraProfileNames() { return configFile.getCameraProfileNames(); }
+  inline const tMap<int, String> &getCameraProfileNames() { return configFile.getCameraProfileNames(); }
   inline int getCurrentCameraProfileID() { return configFile.getCurrentProfileID(); }
   
   int addCameraProfile(const String &profileName, const int parentID);
@@ -317,7 +317,7 @@ bool DepthCamera::getMaximumFrameRate(FrameRate &frameRate, const FrameSize &for
 }
 
 
-bool DepthCamera::getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool DepthCamera::getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
   Lock<Mutex> _(_accessMutex);
   return _getSupportedVideoModes(supportedVideoModes);

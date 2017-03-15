@@ -26,30 +26,43 @@ public:
   {
     char bfType[2];
     uint32_t bfSize;
-    uint16_t bfReserved1 = 0, bfReserved2 = 0;
+    uint16_t bfReserved1, bfReserved2;
     uint32_t bfOffset;
     
-    BITMAPFILEHEADER() { bfType[0] = 'B'; bfType[1] = 'M'; }
+    BITMAPFILEHEADER() { bfType[0] = 'B'; bfType[1] = 'M'; bfReserved1 = 0, bfReserved2 = 0;}
   };
   
 #pragma pack(pop)   /* restore original alignment from stack */
   
   struct BITMAPINFOHEADER
   {
-    uint32_t biSize = 40;
+    uint32_t biSize;
     uint32_t biWidth;
     uint32_t biHeight;
-    uint16_t biPlanes = 1;
-    uint16_t biBitCount = 24;
-    uint32_t biCompression = 0;
-    uint32_t biSizeImage = 0;
-    uint32_t biXPelsPerMeter = 0;
-    uint32_t biYPelsPerMeter = 0;
-    uint32_t biClrUsed = 0;
-    uint32_t biClrImportant = 0;
+    uint16_t biPlanes;
+    uint16_t biBitCount;
+    uint32_t biCompression;
+    uint32_t biSizeImage;
+    uint32_t biXPelsPerMeter;
+    uint32_t biYPelsPerMeter;
+    uint32_t biClrUsed;
+    uint32_t biClrImportant;
+    
+    BITMAPINFOHEADER()
+    {
+      biSize = 40;
+      biPlanes = 1;
+      biBitCount = 24;
+      biCompression = 0;
+      biSizeImage = 0;
+      biXPelsPerMeter = 0;
+      biYPelsPerMeter = 0;
+      biClrUsed = 0;
+      biClrImportant = 0; 
+    }
   };
   
-  bool readGrayscale(const String &filename, Vector<int16_t> &data)
+  bool readGrayscale(const String &filename, tVector<int16_t> &data)
   {
     int i;
     InputFileStream f(filename, std::ios::in | std::ios::binary);
@@ -62,7 +75,7 @@ public:
     
     unsigned char info[54];
     
-    Vector<char> fullHeader;
+    tVector<char> fullHeader;
     
     int width, height;
     
@@ -103,7 +116,7 @@ public:
     
     pixelWidth = *(short int *)&info[28];
     
-    Vector<unsigned char> d;
+    tVector<unsigned char> d;
     
     if(pixelWidth == 24)
     {
@@ -133,7 +146,7 @@ public:
     return true;
   }
   
-  bool writeGrayScale(const String &filename, const Vector<int16_t> &data, const uint16_t rows, const uint16_t columns)
+  bool writeGrayScale(const String &filename, const tVector<int16_t> &data, const uint16_t rows, const uint16_t columns)
   {
     int i;
     
@@ -167,7 +180,7 @@ public:
     
     short int pixelWidth;
     
-    Vector<unsigned char> d;
+    tVector<unsigned char> d;
     d.resize(size*3);
     
     const int16_t *dat = &data[2];
@@ -232,12 +245,12 @@ bool Data2DCodec::compress(const Array2D &in, const ArrayBool2D &invalidPixels, 
   uint16_t octetRows = (rows + 7)/8;
   uint16_t octetColumns = (columns + 7)/8;
   
-  Vector<int32_t> averages(octetRows*octetColumns);
-  Vector<int32_t> averageCount(octetRows*octetColumns);
+  tVector<int32_t> averages(octetRows*octetColumns);
+  tVector<int32_t> averageCount(octetRows*octetColumns);
   
-  List<EightBitOffset> offsets;
+  tList<EightBitOffset> offsets;
   
-  Vector<int8_t> fourBitOffsets;
+  tVector<int8_t> fourBitOffsets;
   fourBitOffsets.resize(rows*columns);
   
   for(auto i = 0; i < averages.size(); i++)
@@ -393,7 +406,7 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   
   logger(LOG_DEBUG) << "Data2DCodec: rows = " << rows << ", columns = " << columns << std::endl;
   
-  Vector<int16_t> averages(octetRows*octetColumns);
+  tVector<int16_t> averages(octetRows*octetColumns);
   
   so.get((char *)averages.data(), averages.size()*sizeof(averages[0]));
   
@@ -417,7 +430,7 @@ bool Data2DCodec::decompress(const ByteArray &in, Array2D &out)
   
   //writeGrayBMPImage("trialI0.bmp", out, rows, columns);
   
-  Vector<uint8_t> fourBitOffsets;
+  tVector<uint8_t> fourBitOffsets;
   fourBitOffsets.resize(rows*columns/2);
   
   so.get((char *)fourBitOffsets.data(), fourBitOffsets.size());

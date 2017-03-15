@@ -35,7 +35,7 @@ public:
   float k1, k2, k3;           // radial distortion parameters
   float p1, p2;             // tangential distortion parameters
   
-  Vector<Point> directions; // Directional array
+  tVector<Point> directions; // Directional array
 
   // Clippings
   Point leftClippingNormal;
@@ -67,7 +67,7 @@ public:
   Point worldToImage(const Point &p);
   Point imageToWorld(const Point &p, float depth);
   
-  bool depthToPointCloud(const Vector<float> &distances, PointCloudFrame &pointCloudFrame);
+  bool depthToPointCloud(const tVector<float> &distances, PointCloudFrame &pointCloudFrame);
   
 private:
   Point _screenToNormalizedScreen(const Point &screen, bool verify);
@@ -78,8 +78,8 @@ private:
   bool _computeConcaveMirrorBordersOuter(int width, int height, double &minX, double &maxX,
                                           double &minY, double &maxY);
   void _computeConcaveMirror(int width, int height, 
-                             Vector<double> &leftArr, Vector<double> &rightArr,
-                             Vector<double> &topArr, Vector<double> &bottomArr);
+                             tVector<double> &leftArr, tVector<double> &rightArr,
+                             tVector<double> &topArr, tVector<double> &bottomArr);
   
   void _init();
   

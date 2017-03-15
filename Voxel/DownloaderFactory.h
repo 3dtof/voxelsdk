@@ -22,9 +22,9 @@ namespace Voxel
 class VOXEL_EXPORT DownloaderFactory
 {
 protected:
-  Vector<DevicePtr> _supportedDevices;
+  tVector<DevicePtr> _supportedDevices;
   
-  inline void _addSupportedDevices(const Vector<DevicePtr> &devices);
+  inline void _addSupportedDevices(const tVector<DevicePtr> &devices);
   
   String _name;
   
@@ -33,7 +33,7 @@ public:
   
   inline const String &name() const { return _name; }
   
-  inline const Vector<DevicePtr> &getSupportedDevices() const { return _supportedDevices; }
+  inline const tVector<DevicePtr> &getSupportedDevices() const { return _supportedDevices; }
   
   // Instantiate a depth camera for the specified device
   virtual DownloaderPtr getDownloader(DevicePtr device) = 0;
@@ -41,7 +41,7 @@ public:
   virtual ~DownloaderFactory() {}
 };
 
-void DownloaderFactory::_addSupportedDevices(const Vector<DevicePtr> &devices)
+void DownloaderFactory::_addSupportedDevices(const tVector<DevicePtr> &devices)
 {
   _supportedDevices.reserve(_supportedDevices.size() + devices.size());
   _supportedDevices.insert(_supportedDevices.end(), devices.begin(), devices.end());

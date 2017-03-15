@@ -35,7 +35,7 @@ void VoxelXUProgrammer::init()
   logger(LOG_INFO) << "VoxelXUProgrammer: XU controller version " << (int)_majorVersion << "." << (int)_minorVersion << std::endl;
 }
   
-VoxelXUProgrammer::VoxelXUProgrammer(const SlaveAddressToByteMap &map, DevicePtr device): VoxelProgrammerBase(map, device)
+VoxelXUProgrammer::VoxelXUProgrammer(const SlaveAddressToByteMap &map, DevicePtr device): _XU_ID(3), VoxelProgrammerBase(map, device)
 {
   if(device->interfaceID() != Device::USB)
   {

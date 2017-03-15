@@ -21,7 +21,7 @@ enum Options
   OUTPUT_FILE_NAME = 3
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { PHASE_OFFSET_FILE_NAME,  "-p", SO_REQ_SEP, "Phase offset input file name"}, 
   { OUTPUT_FILE_NAME,        "-o", SO_REQ_SEP, "Output file name"},
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
-    Vector<String> splits;
+    tVector<String> splits;
     switch (s.OptionId())
     {
       case PHASE_OFFSET_FILE_NAME:

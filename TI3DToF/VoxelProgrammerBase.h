@@ -21,7 +21,7 @@ namespace TI
 class TI3DTOF_EXPORT VoxelProgrammerBase: public RegisterProgrammer
 {
 public:
-  typedef Map<uint, uint> SlaveAddressToByteMap;
+  typedef tMap<uint, uint> SlaveAddressToByteMap;
   
 protected:
   DevicePtr _device;

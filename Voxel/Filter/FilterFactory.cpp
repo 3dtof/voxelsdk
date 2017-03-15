@@ -38,7 +38,7 @@ FilterPtr FilterFactory::createFilter(const String &name, DepthCamera::FrameType
   return p;
 }
 
-bool FilterFactory::_addSupportedFilters(const Vector<FilterDescription> &f)
+bool FilterFactory::_addSupportedFilters(const tVector<FilterDescription> &f)
 {
   _supportedFilters.reserve(_supportedFilters.size() + f.size());
   

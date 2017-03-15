@@ -25,13 +25,13 @@ class BMP
 {
   unsigned char _info[54];
   
-  Vector<char> _fullHeader;
+  tVector<char> _fullHeader;
   
 public:
   
   int width, height;
   
-  bool read(const String &filename, Vector<int16_t> &data)
+  bool read(const String &filename, tVector<int16_t> &data)
   {
     int i;
     InputFileStream f(filename, std::ios::in | std::ios::binary);
@@ -79,7 +79,7 @@ public:
     
     pixelWidth = *(short int *)&_info[28];
     
-    Vector<unsigned char> d;
+    tVector<unsigned char> d;
     
     if(pixelWidth == 24)
     {
@@ -109,7 +109,7 @@ public:
     return true;
   }
   
-  bool write(const String &filename, Vector<int16_t> &data)
+  bool write(const String &filename, tVector<int16_t> &data)
   {
     int i;
     OutputFileStream f(filename, std::ios::out | std::ios::binary);
@@ -151,7 +151,7 @@ public:
     
     pixelWidth = *(short int *)&_info[28];
     
-    Vector<unsigned char> d;
+    tVector<unsigned char> d;
     
     if(pixelWidth == 24)
     {
@@ -202,7 +202,7 @@ public:
   }
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { INPUT_FILE_NAME,         "-i", SO_REQ_SEP, "Input image file name [Only BMP supported]"}, 
   { OUTPUT_FILE_NAME,        "-o", SO_REQ_SEP, "Output image file name [Only BMP supported]"},
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
-    Vector<String> splits;
+    tVector<String> splits;
     switch (s.OptionId())
     {
       case INPUT_FILE_NAME:
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
   
   BMP bmp;
   
-  Vector<int16_t> data;
+  tVector<int16_t> data;
   
   if(!bmp.read(inputFileName, data))
   {

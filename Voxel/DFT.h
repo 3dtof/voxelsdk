@@ -23,8 +23,8 @@ namespace Voxel
  * @{
  */
 
-typedef Vector<ComplexDouble> Complex1D;
-typedef Vector<Vector<ComplexDouble>> Complex2D;
+typedef tVector<ComplexDouble> Complex1D;
+typedef tVector<tVector<ComplexDouble>> Complex2D;
 
 class VOXEL_EXPORT DFT
 {
@@ -38,7 +38,7 @@ public:
 protected:
   Complex2D _internal;
   
-  Map<SizeType, Complex2D> _expTable;
+  tMap<SizeType, Complex2D> _expTable;
   
   void _computeExpTable(SizeType size, Direction dir);
   

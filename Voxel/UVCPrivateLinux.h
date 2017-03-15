@@ -25,11 +25,11 @@ namespace Voxel
 class UVCPrivate
 {
 protected:
-  int _fd = -1;
+  int _fd;
   String _deviceNode;
   DevicePtr _usb;
   
-  Vector<UVCRawData> _mappedRawData;
+  tVector<UVCRawData> _mappedRawData;
   
   bool _munmap(UVCRawData &data);
   

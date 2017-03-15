@@ -153,7 +153,7 @@ bool ToFFrameGenerator::_onReadConfiguration()
   return true;
 }
 
-bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const Vector<int16_t> &phaseOffsets, uint32_t bytesPerPixel, 
+bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const tVector<int16_t> &phaseOffsets, uint32_t bytesPerPixel, 
                                       uint32_t dataArrangeMode, 
                                       const RegionOfInterest &roi, const FrameSize &maxFrameSize, 
                                       const FrameSize &frameSize,
@@ -180,7 +180,7 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
   
   if(phaseOffsets.size() == maxFrameSize.width*maxFrameSize.height + 2) // Ignore the first two elements if present
   {
-    Vector<int16_t>(_phaseOffsetCorrectionData.begin() + 2, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
+    tVector<int16_t>(_phaseOffsetCorrectionData.begin() + 2, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
     _dealiasedPhaseMaskInPhaseOffset = 0;
   }
   else if(phaseOffsets.size() == maxFrameSize.width*maxFrameSize.height + 3)
@@ -191,7 +191,7 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
     if(_dealiasedPhaseMaskInPhaseOffset > 7)
       _dealiasedPhaseMaskInPhaseOffset = _dealiasedPhaseMaskInPhaseOffset - 16;
     
-    Vector<int16_t>(_phaseOffsetCorrectionData.begin() + 3, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
+    tVector<int16_t>(_phaseOffsetCorrectionData.begin() + 3, _phaseOffsetCorrectionData.end()).swap(_phaseOffsetCorrectionData);
   }
   else
     _dealiasedPhaseMaskInPhaseOffset = _dealiasedPhaseMask;
@@ -358,7 +358,7 @@ bool ToFFrameGenerator::_readPhaseOffsetCorrection()
   return true;
 }
 
-bool ToFFrameGenerator::_applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData)
+bool ToFFrameGenerator::_applyPhaseOffsetCorrection(tVector<uint16_t> &phaseData)
 {
   if(!_phaseOffsetCorrectionData.size())
     return true; // Nothing to do

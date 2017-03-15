@@ -33,7 +33,7 @@ enum Options
   SAVE_FILE_TO_HOST = 12,
 };
 
-Vector<CSimpleOpt::SOption> argumentSpecifications = 
+tVector<CSimpleOpt::SOption> argumentSpecifications = 
 {
   { VENDOR_ID,        "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
   { PRODUCT_ID,       "-p", SO_REQ_SEP, "Comma separated list of Product IDs of the USB devices (hexadecimal)"},
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   
   uint16_t vid = 0;
   
-  Vector<uint16_t> pids;
+  tVector<uint16_t> pids;
   String serialNumber;
   
   bool listProfiles = false;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   String section, paramName, paramValue;
   
   char *endptr;
-  Vector<String> splits;
+  tVector<String> splits;
   
   
   while (s.Next())
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     
     //std::cout << s.OptionId() << ": " << s.OptionArg() << std::endl;
     
-    Vector<String> splits;
+    tVector<String> splits;
     switch (s.OptionId())
     {
       case VENDOR_ID:
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
   CameraSystem sys;
   
   // Get all valid detected devices
-  const Vector<DevicePtr> &devices = sys.scan();
+  const tVector<DevicePtr> &devices = sys.scan();
   
   DevicePtr toConnect;
   
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
   
   if(listProfiles)
   {
-    const Map<int, String> &profiles = depthCamera->getCameraProfileNames();
+    const tMap<int, String> &profiles = depthCamera->getCameraProfileNames();
     
     for(auto &p: profiles)
     {

@@ -58,8 +58,8 @@ public:
   typedef FrameBuffer<BufferType> FrameBufferType;
   
 protected:
-  List<BufferPtr> _inUse;
-  List<BufferPtr> _available;
+  tList<BufferPtr> _inUse;
+  tList<BufferPtr> _available;
   
   SizeType _minimumBufferCount;
   

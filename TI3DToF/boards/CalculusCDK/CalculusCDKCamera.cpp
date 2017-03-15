@@ -299,7 +299,7 @@ bool CalculusCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   return streamer->setBufferSize(s.width*s.height*bytesPerPixel);
 }
 
-bool CalculusCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool CalculusCDKCamera::_getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
   supportedVideoModes.clear();
   return true;

@@ -32,11 +32,11 @@ protected:
   
   RegisterProgrammer &_registerProgrammer;
   
-  bool _initialized = false;
+  bool _initialized;
   
   bool _prepare();
   
-  TinyXML2::XMLElement *_goTo(TinyXML2::XMLElement *current, const Vector<String> &nodeNameList, bool report = true); // by default report error
+  TinyXML2::XMLElement *_goTo(TinyXML2::XMLElement *current, const tVector<String> &nodeNameList, bool report = true); // by default report error
   
   ParameterPtr _getParameter(TinyXML2::XMLElement *property, String &id, bool &skipIfNull); // Get parameter and ID
   
@@ -45,7 +45,7 @@ public:
   
   inline bool isInitialized() { return _initialized; }
   
-  bool getParameters(Vector<ParameterPtr> &parameters);
+  bool getParameters(tVector<ParameterPtr> &parameters);
   
   virtual ~ParameterDMLParser() {}
 };

@@ -40,7 +40,7 @@ String getHex(uint16_t value)
   return s.str();
 }
 
-void split(const String &str, const char delimiter, Vector<String> &split)
+void split(const String &str, const char delimiter, tVector<String> &split)
 {
   split.clear();
   
@@ -83,7 +83,7 @@ void breakLines(const String &str, std::ostream &out, const uint maxPerLine, con
 }
 
 
-int getFiles(const String &dir, const String &matchString, Vector<String> &files)
+int getFiles(const String &dir, const String &matchString, tVector<String> &files)
 {
   files.clear();
 
@@ -196,7 +196,8 @@ String dirname(const String &filename)
   }
   if (*(s.rbegin() + 1) == DIR_SEP) //Remove trailing slash if it exists.
   {
-    s.pop_back();
+    if (!s.empty())
+      s.erase (s.size()-1);
   }
   s.erase(std::find(s.rbegin(), s.rend(), DIR_SEP).base(), s.end());
   return s;
@@ -212,7 +213,8 @@ String basename(const String &filename)
   }
   if (*(s.rbegin() + 1) == DIR_SEP) //Remove trailing slash if it exists.
   {
-    s.pop_back();
+    if (!s.empty())
+      s.erase (s.size()-1);
   }
   s.erase(s.begin(), std::find(s.rbegin(), s.rend(), DIR_SEP).base());
   return s;
@@ -250,7 +252,7 @@ bool makeDirectory(const String &filename)
 #endif
 }
 
-String substitute(const String &s, const Vector<String> &keys, const Vector<String> &values)
+String substitute(const String &s, const tVector<String> &keys, const tVector<String> &values)
 {
   String result = s;
   for(auto i = 0; i < keys.size(); i++)

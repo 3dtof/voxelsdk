@@ -78,7 +78,7 @@ bool USBSystemPrivate::_getDeviceProperty(HDEVINFO devClassInfo, DeviceInfo &dev
 }
 
 template <typename T>
-bool USBSystemPrivate::_getDeviceProperty(HANDLE devHandle, DWORD prop, Ptr<T> &result, Function<void(T &t)> init)
+bool USBSystemPrivate::_getDeviceProperty(HANDLE devHandle, DWORD prop, Ptr<T> &result, tFunction<void(T &t)> init)
 {
   ULONG nBytes = 0;
 
@@ -103,7 +103,7 @@ bool USBSystemPrivate::_getDeviceProperty(HANDLE devHandle, DWORD prop, Ptr<T> &
   return DeviceIoControl(devHandle, prop, &*result, nBytes, &*result, nBytes, &nBytes, NULL);
 }
 
-bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process)
+bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, tFunction<void(HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex)> process)
 {
   DWORD flags = DIGCF_PRESENT;
   
@@ -161,7 +161,7 @@ bool USBSystemPrivate::_iterateSetupAPI(LPGUID guid, Function<void(HDEVINFO devC
   return true;
 }
 
-void USBSystemPrivate::_enumerateHub(int busIndex, const String &hubIndex, const String &hubName, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
+void USBSystemPrivate::_enumerateHub(int busIndex, const String &hubIndex, const String &hubName, tFunction<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
 {
   String deviceName = "\\\\.\\" + hubName;
 
@@ -324,7 +324,7 @@ bool USBSystemPrivate::_getStringDescriptor(HANDLE devHandle, ULONG index, UCHAR
   return true;
 }
 
-bool USBSystemPrivate::_iterateOverAllDevices(LPGUID guid, Function<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
+bool USBSystemPrivate::_iterateOverAllDevices(LPGUID guid, tFunction<void(HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device)> process)
 {
   return _iterateSetupAPI(guid, [this, &process](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
     HANDLE hHCDev = CreateFile(devInfo.devInterfaceDetailData->DevicePath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
@@ -346,9 +346,9 @@ bool USBSystemPrivate::_iterateOverAllDevices(LPGUID guid, Function<void(HANDLE 
   });
 }
 
-Vector<DevicePtr> USBSystemPrivate::getDevices()
+tVector<DevicePtr> USBSystemPrivate::getDevices()
 {
-  Vector<DevicePtr> devices;
+  tVector<DevicePtr> devices;
   devices.reserve(10); // Reserve some 10 slots
 
   bool ret = _iterateOverAllDevices((LPGUID)&GUID_CLASS_USB_HOST_CONTROLLER, [&devices](HANDLE hubDevice, ULONG portIndex, const String &driverKeyName, DevicePtr &device) {
@@ -360,7 +360,7 @@ Vector<DevicePtr> USBSystemPrivate::getDevices()
 
 String USBSystemPrivate::getDeviceNode(const USBDevice &usbd)
 {
-  Map<String, DeviceInfo> deviceMap; // driver key name -> DeviceInfo map
+  tMap<String, DeviceInfo> deviceMap; // driver key name -> DeviceInfo map
 
   bool ret = _iterateSetupAPI((LPGUID)&GUID_DEVINTERFACE_USB_DEVICE, [this, &deviceMap](HDEVINFO devClassInfo, DeviceInfo &devInfo, ULONG hubIndex) {
     String driverKeyName;

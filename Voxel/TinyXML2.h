@@ -178,7 +178,7 @@ public:
     StrPair() : _flags( 0 ), _start( 0 ), _end( 0 ) {}
     ~StrPair();
 
-    void Set( char* start, char* end, int flags ) {
+    void Set1( char* start, char* end, int flags ) {
         Reset();
         _start  = start;
         _end    = end;

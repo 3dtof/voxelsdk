@@ -83,10 +83,10 @@ public:
 class VoxelDIlluminationPolarityParameter: public BoolParameter
 {
   VoxelDCamera &_voxelDCamera;
-  bool _value = false;
+  bool _value;
 public:
   VoxelDIlluminationPolarityParameter(VoxelDCamera &depthCamera, RegisterProgrammer &programmer):
-  BoolParameter(programmer, ILLUM_EN_POL, 0x5C35, 24, 23, {"", ""}, {"", ""}, 0, "", "Invert the polarity of illum_en.", Parameter::IO_READ_WRITE, {}), _voxelDCamera(depthCamera) {}
+  BoolParameter(programmer, ILLUM_EN_POL, 0x5C35, 24, 23, {"", ""}, {"", ""}, 0, "", "Invert the polarity of illum_en.", Parameter::IO_READ_WRITE, {}), _voxelDCamera(depthCamera), _value(false) {}
 
   virtual bool get(bool &value, bool refresh=false)
   {
@@ -146,7 +146,7 @@ bool VoxelDCamera::_init()
   
   if(d.productID() == VOXEL_D_PRODUCT_ID1)
   {
-    Vector<DevicePtr> devices = DeviceScanner::scan();
+    tVector<DevicePtr> devices = DeviceScanner::scan();
     
     uint repeatCount = 0;
     for(auto &d1: devices)
@@ -204,19 +204,19 @@ bool VoxelDCamera::_init()
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
-    Vector<String> params = {ILLUM_VOLTAGE, DELAY_FB_CORR_MODE, DELAY_FB_DC_CORR_MODE};
+    tVector<String> params = {ILLUM_VOLTAGE, DELAY_FB_CORR_MODE, DELAY_FB_DC_CORR_MODE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {ILLUM_VOLTAGE};
+    tVector<String> params = {ILLUM_VOLTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_NON_LINEARITY];
-    Vector<String> params = {ILLUM_VOLTAGE};
+    tVector<String> params = {ILLUM_VOLTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
@@ -291,9 +291,9 @@ bool VoxelDCamera::_setStreamerFrameSize(const FrameSize &s)
   return true;
 }
 
-bool VoxelDCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool VoxelDCamera::_getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
-  supportedVideoModes = Vector<SupportedVideoMode> {
+  supportedVideoModes = tVector<SupportedVideoMode> {
     SupportedVideoMode(320,240,25,1,4),
     SupportedVideoMode(160,240,50,1,4),
     SupportedVideoMode(160,120,100,1,4),

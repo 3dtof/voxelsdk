@@ -45,11 +45,11 @@ protected:
 #if defined(x86_OPT) || defined(ARM_OPT)
   ByteType **_history;
   ByteType *_current;
-  int number_frames = 0;
-  int frame_cnt = 0;
+  int number_frames;
+  int frame_cnt;
 #else
-  List<Vector<ByteType>> _history;
-  Vector<ByteType> _current;
+  tList<tVector<ByteType>> _history;
+  tVector<ByteType> _current;
 #endif
   virtual void _onSet(const FilterParameterPtr &f);
   

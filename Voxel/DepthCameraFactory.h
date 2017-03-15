@@ -21,9 +21,9 @@ namespace Voxel
 class VOXEL_EXPORT DepthCameraFactory
 {
 protected:
-  Vector<DevicePtr> _supportedDevices;
+  tVector<DevicePtr> _supportedDevices;
   
-  inline void _addSupportedDevices(const Vector<DevicePtr> &devices);
+  inline void _addSupportedDevices(const tVector<DevicePtr> &devices);
   
   String _name;
   
@@ -32,21 +32,21 @@ public:
   
   inline const String &name() const { return _name; }
   
-  inline const Vector<DevicePtr> &getSupportedDevices() const { return _supportedDevices; }
+  inline const tVector<DevicePtr> &getSupportedDevices() const { return _supportedDevices; }
   
   // Get the list of channels supported by this device
-  virtual bool getChannels(Device &device, Vector<int> &channels) = 0;
+  virtual bool getChannels(Device &device, tVector<int> &channels) = 0;
   
   // Instantiate a depth camera for the specified device
   virtual DepthCameraPtr getDepthCamera(DevicePtr device) = 0;
   
   virtual bool getFrameGenerator(uint8_t frameType, GeneratorIDType generatorID, FrameGeneratorPtr &frameGenerator) = 0;
-  virtual Vector<GeneratorIDType> getSupportedGeneratorTypes() = 0; 
+  virtual tVector<GeneratorIDType> getSupportedGeneratorTypes() = 0; 
   
   virtual ~DepthCameraFactory() {}
 };
 
-void DepthCameraFactory::_addSupportedDevices(const Vector<DevicePtr> &devices)
+void DepthCameraFactory::_addSupportedDevices(const tVector<DevicePtr> &devices)
 {
   _supportedDevices.reserve(_supportedDevices.size() + devices.size());
   _supportedDevices.insert(_supportedDevices.end(), devices.begin(), devices.end());

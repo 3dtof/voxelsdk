@@ -24,13 +24,14 @@ namespace Voxel
 class USBSystemPrivate
 {
 protected:
-  libusb_context *_context = 0;
+  libusb_context *_context;
   
-  bool _iterateUDevUSB(Function<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)> process);
+  bool _iterateUDevUSB(tFunction<void(struct udev_device *dev, uint16_t vendorID, uint16_t productID, const String &serial, const String &serialIndex, const String &description)> process);
   
 public:
   USBSystemPrivate()
   {
+    _context = NULL;
     int ret = libusb_init(&_context);
     
     if(ret != LIBUSB_SUCCESS)
@@ -51,7 +52,7 @@ public:
   /// This does not look at the channel to determine which channel to use
   libusb_device *getDeviceHandle(const USBDevice &usbd);
   
-  Vector<DevicePtr> getDevices();
+  tVector<DevicePtr> getDevices();
   
   // Return /dev/videoX string corresponding to device
   String getDeviceNode(const USBDevice &usbd);

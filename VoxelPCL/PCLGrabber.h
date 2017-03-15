@@ -58,7 +58,7 @@ public:
   
   virtual void stop() { _depthCamera.stop(); _depthCamera.wait(); }
   
-  virtual ~PCLGrabber() 
+  virtual ~PCLGrabber() throw()
   {
     if(isRunning())
       stop();

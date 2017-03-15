@@ -33,16 +33,16 @@ void CameraSystem::_init()
   
   Configuration c;
   
-  Vector<String> paths;
+  tVector<String> paths;
   
   c.getLibPaths(paths);
   
   _loadLibraries(paths);
 }
 
-void CameraSystem::_loadLibraries(const Vector<String> &paths)
+void CameraSystem::_loadLibraries(const tVector<String> &paths)
 {
-  Vector<String> files;
+  tVector<String> files;
   
   int numberOfLoadLibraries = 0;
   
@@ -116,7 +116,7 @@ void CameraSystem::_loadLibraries(const Vector<String> &paths)
 bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
 {
   // Adding factory to the "_factories" map for later query
-  const Vector<DevicePtr> &devices = factory->getSupportedDevices();
+  const tVector<DevicePtr> &devices = factory->getSupportedDevices();
   
   if(!devices.size()) // No devices?
     return false;
@@ -149,7 +149,7 @@ bool CameraSystem::addDepthCameraFactory(DepthCameraFactoryPtr factory)
     return false;
   }
   
-  Vector<GeneratorIDType> supportedGeneratorIDs = factory->getSupportedGeneratorTypes();
+  tVector<GeneratorIDType> supportedGeneratorIDs = factory->getSupportedGeneratorTypes();
   
   for(auto &d: supportedGeneratorIDs)
   {
@@ -206,9 +206,9 @@ bool CameraSystem::addFilterFactory(FilterFactoryPtr filterFactory)
   return true;
 }
 
-Vector<String> CameraSystem::getSupportedFilters()
+tVector<String> CameraSystem::getSupportedFilters()
 {
-  Vector<String> f;
+  tVector<String> f;
   f.reserve(_filterFactories.size());
   
   for(auto &x: _filterFactories)
@@ -237,13 +237,13 @@ bool CameraSystem::getFilterDescription(const String &filterName, FilterDescript
 }
 
 
-Vector<DevicePtr> CameraSystem::scan()
+tVector<DevicePtr> CameraSystem::scan()
 {
-  Vector<DevicePtr> devices = DeviceScanner::scan();
+  tVector<DevicePtr> devices = DeviceScanner::scan();
   
-  Vector<DevicePtr> toReturn;
+  tVector<DevicePtr> toReturn;
   
-  Vector<int> channels;
+  tVector<int> channels;
   
   for(auto &device: devices)
   {
@@ -262,7 +262,7 @@ Vector<DevicePtr> CameraSystem::scan()
         toReturn.push_back(device);
       else
       {
-        const Vector<DevicePtr> &ds = device->getDevices(channels);
+        const tVector<DevicePtr> &ds = device->getDevices(channels);
         toReturn.insert(toReturn.end(), ds.begin(), ds.end());
       }
     }
@@ -338,11 +338,11 @@ bool CameraSystem::disconnect(const DepthCameraPtr &depthCamera, bool reset)
   return false;
 }
 
-Vector<DevicePtr> CameraSystem::getProgrammableDevices()
+tVector<DevicePtr> CameraSystem::getProgrammableDevices()
 {
-  Vector<DevicePtr> devices = DeviceScanner::scan();
+  tVector<DevicePtr> devices = DeviceScanner::scan();
   
-  Vector<DevicePtr> toReturn;
+  tVector<DevicePtr> toReturn;
   
   for(auto &device: devices)
   {
@@ -361,7 +361,7 @@ Vector<DevicePtr> CameraSystem::getProgrammableDevices()
 bool CameraSystem::addDownloaderFactory(DownloaderFactoryPtr factory)
 {
   // Adding factory to the "_downloaderFactories" map for later query
-  const Vector<DevicePtr> &devices = factory->getSupportedDevices();
+  const tVector<DevicePtr> &devices = factory->getSupportedDevices();
   
   if(!devices.size()) // No devices?
     return false;

@@ -83,7 +83,7 @@ public:
 class RTS5825CameraUVCStreamer : public UVCStreamer
 {
 protected:
-  bool _isReallyRunning = false;
+  bool _isReallyRunning;
 public:
   bool start()
   {
@@ -108,6 +108,7 @@ public:
 
   RTS5825CameraUVCStreamer(DevicePtr device) : UVCStreamer(device)
   {
+    _isReallyRunning = false;
     VideoMode m;
     m.frameSize.width = 320*2;
     m.frameSize.height = 240;
@@ -154,13 +155,13 @@ bool RTS5825Camera::_init()
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_COMMON_PHASE_OFFSET];
-    Vector<String> params = {ILLUM_VOLTAGE};
+    tVector<String> params = {ILLUM_VOLTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
   {
     CalibrationInformation &calibInfo = _getCalibrationInformationStructure()[ToF_CALIB_SECT_TEMPERATURE];
-    Vector<String> params = {ILLUM_VOLTAGE};
+    tVector<String> params = {ILLUM_VOLTAGE};
     calibInfo.definingParameters.insert(calibInfo.definingParameters.end(), params.begin(), params.end());
   }
   
@@ -210,9 +211,9 @@ bool RTS5825Camera::_setStreamerFrameSize(const FrameSize &s)
   return true;
 }
 
-bool RTS5825Camera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
+bool RTS5825Camera::_getSupportedVideoModes(tVector<SupportedVideoMode> &supportedVideoModes) const
 {
-  supportedVideoModes = Vector<SupportedVideoMode> {
+  supportedVideoModes = tVector<SupportedVideoMode> {
     SupportedVideoMode(320,240,30,1,4),
   };
   return true;

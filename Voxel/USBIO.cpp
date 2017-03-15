@@ -38,7 +38,7 @@ typedef Ptr<CCyUSBDevice> USBHandle;
   
   bool _initialized;
 
-  long lastTransferSize = 0;
+  long lastTransferSize;
   
   USBIOPrivate(DevicePtr device);
   inline bool isInitialized() { return _initialized && handle != 0; }
@@ -60,6 +60,7 @@ USBIO::USBIOPrivate::USBIOPrivate(DevicePtr device): device(device), handle(0), 
   , deviceHandle(INVALID_HANDLE_VALUE)
 #endif
 {
+  lastTransferSize = 0;
   if(device->interfaceID() != Device::USB)
   {
     logger(LOG_ERROR) << "USBIO: cannot download to a non-USB device" << std::endl;
