@@ -151,7 +151,7 @@ public:
     T val;
     if(_address == 0 && _registerLength == 0) // dummy register?
     {
-      value == _value;
+      value = _value;
       return true;
     }
     else if(!_programmer.getValue(*this, v))
