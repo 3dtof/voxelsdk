@@ -9,6 +9,7 @@
 
 #include <ToFTintinCamera.h>
 #include <Downloader.h>
+#include <TintinCDKCameraCommon.h>
 
 #define TINTIN_CDK_VENDOR_ID 0x0451U
 #define TINTIN_CDK_PRODUCT_BULK 0x9105U
