@@ -57,35 +57,6 @@ public:
   virtual ~TintinCDKMixVoltageParameter() {}
 };
 
-
-class TintinCDKPVDDParameterRev1: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    if(value > 0x80U)
-      return (value - 0x80U)*50 + 500;
-    else
-      return 500;
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    if(value > 500)
-      return (value - 500)/50 + 0x80U;
-    else
-      return 0x80U;
-  }
-  
-public:
-  TintinCDKPVDDParameterRev1(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, PVDD, "mV", 0x2D0E, 8, 7, 0, 2000, 3600, 3300, "Pixel VDD", 
-                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~TintinCDKPVDDParameterRev1() {}
-};
-
 class TintinCDKPVDDParameterRev2: public UnsignedIntegerParameter
 {
 protected:
@@ -273,49 +244,6 @@ public:
   virtual ~TintinCDKMainCurrentParameter() {}
 };
 
-class TintinCDKDummyDelayFBCorrModeParameter: public IntegerParameter
-{
-  int _value = 0;
-public:
-  TintinCDKDummyDelayFBCorrModeParameter(RegisterProgrammer &programmer):
-  IntegerParameter(programmer, DELAY_FB_CORR_MODE, "", 0x5CB1, 24, 22, 21, -2, 1, 0, "", "Dummy parameter for delay fb correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
-  virtual bool get(int &value, bool refresh = false)
-  {
-    value = _value;
-    return true;
-  }
-
-  virtual bool set(const int &value)
-  {
-    _value = value;
-    return true;
-  }
-
-  virtual ~TintinCDKDummyDelayFBCorrModeParameter() {}
-};
-
-class TintinCDKDummyDelayFBDCCorrModeParameter: public IntegerParameter
-{
-  int _value = 0;
-public:
-  TintinCDKDummyDelayFBDCCorrModeParameter(RegisterProgrammer &programmer):
-  IntegerParameter(programmer, DELAY_FB_DC_CORR_MODE, "", 0x5CB1, 24, 20, 19, -2, 1, 0, "", "Dummy parameter for delay fb duty cycle correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
-  virtual bool get(int &value, bool refresh = false)
-  {
-    value = _value;
-    return true;
-  }
-
-  virtual bool set(const int &value)
-  {
-    _value = value;
-    return true;
-  }
-
-  virtual ~TintinCDKDummyDelayFBDCCorrModeParameter() {}
-};
-
-
 class TintinCDKModulationFrequencyParameter: public TintinModulationFrequencyParameter
 {
 public:
@@ -350,7 +278,6 @@ bool TintinCDKCamera::_init()
       controlDevice));
     _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
     
-    _boardRevision[0] = _boardRevision[1] = 0;
   } 
   else 
   {
@@ -368,15 +295,6 @@ bool TintinCDKCamera::_init()
         {0x54, {0x04, 0x03, 8}}
       }, usbIO, controlDevice));
     _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
-    
-    uint16_t length = 2;
-    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, TINTIN_CDK_USBIO_BOARD_REVISION, 0, 0, _boardRevision, length))
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Failed to get board revision" << std::endl;
-      return false;
-    }
-    
-    logger(LOG_INFO) << "TintinCDKCamera: Board revision = " << (int)_boardRevision[0] << "." << (int)_boardRevision[1] << std::endl;
     
     // Initialize serializer block
     configFile.setHardwareConfigSerializer(new HardwareSerializer(usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
@@ -405,13 +323,8 @@ bool TintinCDKCamera::_init()
     return false;
   }
 
-  if ((int) _boardRevision[0] == 1) {
-    if (!_addParameters({ParameterPtr(new TintinCDKPVDDParameterRev1(*_programmer)),}))
-      return false;
-  } else {
     if (!_addParameters({ParameterPtr(new TintinCDKPVDDParameterRev2(*_programmer)),}))
       return false;
-  }
 
   /* INA226 initializations: note byteswapped for now */
   if (!_programmer->writeRegister(0x4B00, 0x274F) ||
@@ -461,24 +374,6 @@ bool TintinCDKCamera::_init()
   _parameters.erase(ILLUM_DC_CORR);
   _parameters.erase(ILLUM_DC_CORR_DIR);
 
-  /*
-   * On the first revision of boards, these two parameters should not be set;
-   * but we would like to keep a single set of calibration conf files for
-   * both revisions of the board.
-   * So use dummy parameters for now that mask the register writes till we find
-   * a more elegant solution.
-   */
-  if ((int) _boardRevision[0] == 1) {
-    _parameters.erase(DELAY_FB_CORR_MODE);
-    _parameters.erase(DELAY_FB_DC_CORR_MODE);
-    if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBCorrModeParameter(*_programmer)),}))
-      return false;
-    if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBDCCorrModeParameter(*_programmer)),}))
-      return false;
-    if (!set(DELAY_FB_COEFF1, 0U))
-      return false;
-  }
-  
   if (!set(COMP_VREF, 1405U))
     return false;
   
