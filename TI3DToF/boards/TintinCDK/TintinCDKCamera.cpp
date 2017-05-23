@@ -8,7 +8,6 @@
 #include "VoxelXUProgrammer.h"
 #include "VoxelUSBProgrammer.h"
 #include <Logger.h>
-#include <UVCStreamer.h>
 #include <USBBulkStreamer.h>
 
 #include <Parameter.h>
@@ -271,16 +270,6 @@ bool TintinCDKCamera::_init()
   
   DevicePtr controlDevice = _device;
   
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
-  {
-    _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(
-      { {0x2D, 1}, {0x52, 1}, {0x54, 1}, {0x4B, 2}, {0x4E, 2}, {0x58, 3}, {0x5C, 3} },
-      controlDevice));
-    _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
-    
-  } 
-  else 
-  {
     USBIOPtr usbIO(new USBIO(controlDevice));
 
     _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
@@ -295,11 +284,10 @@ bool TintinCDKCamera::_init()
         {0x54, {0x04, 0x03, 8}}
       }, usbIO, controlDevice));
     _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
-    
-    // Initialize serializer block
+
     configFile.setHardwareConfigSerializer(new HardwareSerializer(usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
-  }
   
+
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
@@ -412,7 +400,6 @@ bool TintinCDKCamera::_getFieldOfView(float &fovHalfAngle) const
 
 bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
 {
-  UVCStreamer *uvcStreamer = dynamic_cast<UVCStreamer *>(&*_streamer);
   USBBulkStreamer *bulkStreamer = dynamic_cast<USBBulkStreamer *>(&*_streamer);
   USBDevice &d = (USBDevice &)*_device;
   
@@ -435,24 +422,7 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
     return false;
   }
   
-  if ((d.productID() == TINTIN_CDK_PRODUCT_UVC)) 
-  {
-    if(bytesPerPixel == 4)
-      m.frameSize.width *= 2;
-    if (!uvcStreamer) 
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type UVC" << std::endl;
-      return false;
-    }
-    
-    if(!uvcStreamer->setVideoMode(m)) 
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Could not set video mode for UVC" << std::endl;
-      return false;
-    }
-  } 
-  else if ((d.productID() == TINTIN_CDK_PRODUCT_BULK)) 
-  {
+
     if (!bulkStreamer) 
     {
       logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type Bulk" << std::endl;
@@ -468,34 +438,13 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
       logger(LOG_ERROR) << "TintinCDKCamera: Could not set buffer size for bulk transfer" << std::endl;
       return false;
     }
-  }
   
   return true;
 }
 
 bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
-  USBDevice &d = (USBDevice &)*_device;
-
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
-  {
-    supportedVideoModes = Vector<SupportedVideoMode> {
-      SupportedVideoMode(320,240,25,1,4),
-      SupportedVideoMode(160,240,50,1,4),
-      SupportedVideoMode(160,120,100,1,4),
-      SupportedVideoMode(80,120,200,1,4),
-      SupportedVideoMode(80,60,400,1,4),
-      SupportedVideoMode(320,240,50,1,2),
-      SupportedVideoMode(320,120,100,1,2),
-      SupportedVideoMode(160,120,200,1,2),
-      SupportedVideoMode(160,60,400,1,2),
-      SupportedVideoMode(80,60,400,1,2),
-    };
-  } 
-  else 
-  {
-    supportedVideoModes.clear();
-  }
+	supportedVideoModes.clear();
 
   return true;
 }
@@ -513,11 +462,7 @@ bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
   videoMode.frameSize.width = 320;
   videoMode.frameSize.height = 240;
   videoMode.frameRate.denominator = 1;
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
-    videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
-  } else {
-    videoMode.frameRate.numerator = 60;
-  }
+  videoMode.frameRate.numerator = 60;
 
   return true;
 }
