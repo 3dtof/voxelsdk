@@ -8,7 +8,6 @@
 #include "VoxelXUProgrammer.h"
 #include "VoxelUSBProgrammer.h"
 #include <Logger.h>
-#include <UVCStreamer.h>
 #include <USBBulkStreamer.h>
 
 #include <Parameter.h>
@@ -29,334 +28,15 @@ TintinCDKCamera::TintinCDKCamera(Voxel::DevicePtr device): ToFTintinCamera("Tint
   _init();
 }
 
-class TintinCDKMixVoltageParameter: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    if(value > 0x80U)
-      return (value - 0x80U)*50 + 500;
-    else
-      return 500;
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    if(value > 500)
-      return (value - 500)/50 + 0x80U;
-    else
-      return 0x80U;
-  }
-  
-public:
-  TintinCDKMixVoltageParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, MIX_VOLTAGE, "mV", 0x2D05, 8, 7, 0, 1200, 2000, 1500, "Mixing voltage", 
-                           "Mixing voltage?", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~TintinCDKMixVoltageParameter() {}
-};
-
-
-class TintinCDKPVDDParameterRev1: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    if(value > 0x80U)
-      return (value - 0x80U)*50 + 500;
-    else
-      return 500;
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    if(value > 500)
-      return (value - 500)/50 + 0x80U;
-    else
-      return 0x80U;
-  }
-  
-public:
-  TintinCDKPVDDParameterRev1(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, PVDD, "mV", 0x2D0E, 8, 7, 0, 2000, 3600, 3300, "Pixel VDD", 
-                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~TintinCDKPVDDParameterRev1() {}
-};
-
-class TintinCDKPVDDParameterRev2: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    if (value > 0xBC)
-      return (value - 0xBC)*100 + 3000;
-    else if (value > 0xA0)
-      return (value - 0xA0)*50 + 1600;
-    else if(value > 0x80U)
-      return (value - 0x80U)*25 + 800;
-    else
-      return 800;
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    if(value >= 3000)
-      return (value - 3000)/100 + 0xBCU;
-    else if(value >= 1600)
-      return (value - 1600)/50 + 0xA0U;
-    else if(value >= 800)
-      return (value - 800)/25 + 0x80U;
-    else
-      return 0x80U;
-  }
-  
-public:
-  TintinCDKPVDDParameterRev2(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, PVDD, "mV", 0x2D1E, 8, 7, 0, 2000, 3300, 3300, "Pixel VDD", 
-                           "Reset voltage level of pixel.", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~TintinCDKPVDDParameterRev2() {}
-};
-
-class TintinCDKIlluminationPowerParameter: public UnsignedIntegerParameter
-{
-protected:
-  // Relations derived by Subhash
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    float R = value*100.0/255; //Digipot resistance in kOhms for given register setting
-    float Rlim = R*113.0/(R+113)+51.1; //Effective current limiting resistor in kOhms for the given digipot resistance
-    float I = 118079.0e-3/Rlim; //Current limit implemented by the linear current limiting IC for the given limiting resistance. This has a small variation as compared to the datasheet. That assumption has been made for the purpose of simplification.
-    
-    uint retVal = uint(4*(I-0.2)*1100); //Subtracting the threshold current and multiplying by the power gain of the laser diode.
-
-    if (retVal < lowerLimit())
-      return lowerLimit();
-    else if (retVal > upperLimit())
-      return upperLimit();
-    else
-      return retVal;
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    float v = value/1000.0/4;
-    return uint32_t(((130000/(v + 0.22))-51.1e3)*28815e3/((164.1e3 - 130000/(v + 0.22))*100e3));
-  }
-  
-public:
-  TintinCDKIlluminationPowerParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ILLUM_POWER, "mW", 0x5401, 8, 7, 0, 4*1000, 4*2200, 4*1129, "Illumination Power", 
-                           "These power numbers are approximate (+- 20%) and the actual power numbers are subject to component tolerances.", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~TintinCDKIlluminationPowerParameter() {}
-};
-
-
-class TintinCDKIlluminationPowerPercentParameter: public UnsignedIntegerParameter
-{
-protected:
-  TintinCDKCamera &_depthCamera;
-  
-public:
-  TintinCDKIlluminationPowerPercentParameter(TintinCDKCamera &depthCamera, RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, ILLUM_POWER_PERCENTAGE, "%", 0, 0, 0, 0, 48, 100, 51, "Illumination Power", 
-                           "These power numbers are approximate (+- 20%) and the actual power numbers are subject to component tolerances.", Parameter::IO_READ_WRITE, {}),
-                           _depthCamera(depthCamera)
-  {}
-  
-  virtual bool get(uint &value, bool refresh = false)
-  {
-    uint v;
-    TintinCDKIlluminationPowerParameter *p = dynamic_cast<TintinCDKIlluminationPowerParameter *>(_depthCamera.getParam(ILLUM_POWER).get());
-    if(!p || !p->get(v))
-      return false;
-    
-    value = (uint)((v*100.0f)/p->upperLimit() + 0.5); // Rounded value
-    return true;
-  }
-  
-  virtual bool set(const uint &value)
-  {
-    TintinCDKIlluminationPowerParameter *p = dynamic_cast<TintinCDKIlluminationPowerParameter *>(_depthCamera.getParam(ILLUM_POWER).get());
-    if(!p)
-      return false;
-    
-    uint v = (value*p->upperLimit())/100;
-    
-    if(!p->set(v))
-      return false;
-    
-    return true;
-  }
-  
-  virtual ~TintinCDKIlluminationPowerPercentParameter() {}
-};
-
-class TintinCDKIllumVrefParameter: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    return (3300U * value / 255U);
-  }
-  
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    return (255U * value / 3300U);
-  }
-  
-public:
-  TintinCDKIllumVrefParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, COMP_VREF, "mV", 0x5400, 8, 7, 0, 0, 3300, 1405, "Comp Vref", 
-                           "This voltage is the reference voltage used for comparing the laser voltage in the illumination delay compensation loop.", Parameter::IO_READ_WRITE, {})
-  {}
-  
-  virtual ~TintinCDKIllumVrefParameter() {}
-};
-
-class TintinCDKIllumCurrentParameter: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    uint8_t lsbyte = value & 0xFF;
-    uint8_t msbyte = (value >> 8) & 0xFF;
-    uint current = (lsbyte << 8) + msbyte;
-    // Calibration register is set to 6991 to get about 122.07 uA/bit
-    return (current * 0.12207);
-  }
-  
-//   virtual uint32_t _toRawValue(uint value) const
-//   {
-//     return (255U * value / 3300U);
-//   }
-  
-public:
-  TintinCDKIllumCurrentParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, "illum_current", "mA", 0x4E04, 8, 7, 0, 0, 8000, 0000, "Illumination Current", 
-                           "This is the current on the illumination 5V rail.", Parameter::IO_READ_ONLY, {})
-  {}
-  
-  virtual ~TintinCDKIllumCurrentParameter() {}
-};
-
-class TintinCDKMainCurrentParameter: public UnsignedIntegerParameter
-{
-protected:
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    uint8_t lsbyte = value & 0xFF;
-    uint8_t msbyte = (value >> 8) & 0xFF;
-    uint current = (lsbyte << 8) + msbyte;
-
-    // Calibration register is set to 1864 to get about 61.035 uA/bit
-    return (current * 0.061035);
-  }
-  
-//   virtual uint32_t _toRawValue(uint value) const
-//   {
-//     return (255U * value / 3300U);
-//   }
-  
-public:
-  TintinCDKMainCurrentParameter(RegisterProgrammer &programmer):
-  UnsignedIntegerParameter(programmer, "main_current", "mA", 0x4B04, 8, 7, 0, 0, 2000, 0000, "Main Board Current", 
-                           "This is the current drawn by the main board.", Parameter::IO_READ_ONLY, {})
-  {}
-  
-  virtual ~TintinCDKMainCurrentParameter() {}
-};
-
-class TintinCDKDummyDelayFBCorrModeParameter: public IntegerParameter
-{
-  int _value = 0;
-public:
-  TintinCDKDummyDelayFBCorrModeParameter(RegisterProgrammer &programmer):
-  IntegerParameter(programmer, DELAY_FB_CORR_MODE, "", 0x5CB1, 24, 22, 21, -2, 1, 0, "", "Dummy parameter for delay fb correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
-  virtual bool get(int &value, bool refresh = false)
-  {
-    value = _value;
-    return true;
-  }
-
-  virtual bool set(const int &value)
-  {
-    _value = value;
-    return true;
-  }
-
-  virtual ~TintinCDKDummyDelayFBCorrModeParameter() {}
-};
-
-class TintinCDKDummyDelayFBDCCorrModeParameter: public IntegerParameter
-{
-  int _value = 0;
-public:
-  TintinCDKDummyDelayFBDCCorrModeParameter(RegisterProgrammer &programmer):
-  IntegerParameter(programmer, DELAY_FB_DC_CORR_MODE, "", 0x5CB1, 24, 20, 19, -2, 1, 0, "", "Dummy parameter for delay fb duty cycle correction (rev1 CDK only).", Parameter::IO_READ_WRITE, {}) {}
-  virtual bool get(int &value, bool refresh = false)
-  {
-    value = _value;
-    return true;
-  }
-
-  virtual bool set(const int &value)
-  {
-    _value = value;
-    return true;
-  }
-
-  virtual ~TintinCDKDummyDelayFBDCCorrModeParameter() {}
-};
-
-
-class TintinCDKModulationFrequencyParameter: public TintinModulationFrequencyParameter
-{
-public:
-  TintinCDKModulationFrequencyParameter(ToFTintinCamera &depthCamera, RegisterProgrammer &programmer, const String &name, const String &vcoFreq, const String &modPS, const float &defaultValue = 48):
-    TintinModulationFrequencyParameter(depthCamera, programmer, name, vcoFreq, modPS, defaultValue) {}
-    
-  virtual const float getOptimalMaximum() { return 60; }
-  virtual const float getOptimalMinimum() { return 39; }
-  
-  virtual ~TintinCDKModulationFrequencyParameter() {}
-};
-
-#define DEFAULT_UNAMBIGUOUS_RANGE 4095*SPEED_OF_LIGHT/1E6f/2/48/(1 << 12)
-class TintinCDKUnambiguousRangeParameter: public TintinUnambiguousRangeParameter
-{
-public:
-  TintinCDKUnambiguousRangeParameter(ToFTintinCamera& depthCamera, RegisterProgrammer& programmer):
-    TintinUnambiguousRangeParameter(depthCamera, programmer, 3, 50, DEFAULT_UNAMBIGUOUS_RANGE, 1, 0) {}
-  virtual ~TintinCDKUnambiguousRangeParameter() {}
-};
-
 bool TintinCDKCamera::_init()
 {
   USBDevice &d = (USBDevice &)*_device;
   
   DevicePtr controlDevice = _device;
   
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
-  {
-    _programmer = Ptr<RegisterProgrammer>(new VoxelXUProgrammer(
-      { {0x2D, 1}, {0x52, 1}, {0x54, 1}, {0x4B, 2}, {0x4E, 2}, {0x58, 3}, {0x5C, 3} },
-      controlDevice));
-    _streamer = Ptr<Streamer>(new UVCStreamer(controlDevice));
-    
-    _boardRevision[0] = _boardRevision[1] = 0;
-  } 
-  else 
-  {
-    USBIOPtr usbIO(new USBIO(controlDevice));
+  USBIOPtr usbIO(new USBIO(controlDevice));
 
-    _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
+  _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
       { {0x2D, 1}, {0x52, 1}, {0x54, 1}, {0x4B, 2}, {0x4E, 2}, {0x58, 3}, {0x5C, 3} },
       {
         {0x58, {0x08, 0x09, 0}},
@@ -367,21 +47,13 @@ bool TintinCDKCamera::_init()
         {0x52, {0x04, 0x03, 8}},
         {0x54, {0x04, 0x03, 8}}
       }, usbIO, controlDevice));
-    _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
-    
-    uint16_t length = 2;
-    if(!usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, TINTIN_CDK_USBIO_BOARD_REVISION, 0, 0, _boardRevision, length))
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Failed to get board revision" << std::endl;
-      return false;
-    }
-    
-    logger(LOG_INFO) << "TintinCDKCamera: Board revision = " << (int)_boardRevision[0] << "." << (int)_boardRevision[1] << std::endl;
-    
-    // Initialize serializer block
-    configFile.setHardwareConfigSerializer(new HardwareSerializer(usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
-  }
+  _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
+
+  // Initialize serializer block
+
+  configFile.setHardwareConfigSerializer(new HardwareSerializer(usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
   
+
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
   
@@ -405,13 +77,8 @@ bool TintinCDKCamera::_init()
     return false;
   }
 
-  if ((int) _boardRevision[0] == 1) {
-    if (!_addParameters({ParameterPtr(new TintinCDKPVDDParameterRev1(*_programmer)),}))
-      return false;
-  } else {
     if (!_addParameters({ParameterPtr(new TintinCDKPVDDParameterRev2(*_programmer)),}))
       return false;
-  }
 
   /* INA226 initializations: note byteswapped for now */
   if (!_programmer->writeRegister(0x4B00, 0x274F) ||
@@ -461,24 +128,6 @@ bool TintinCDKCamera::_init()
   _parameters.erase(ILLUM_DC_CORR);
   _parameters.erase(ILLUM_DC_CORR_DIR);
 
-  /*
-   * On the first revision of boards, these two parameters should not be set;
-   * but we would like to keep a single set of calibration conf files for
-   * both revisions of the board.
-   * So use dummy parameters for now that mask the register writes till we find
-   * a more elegant solution.
-   */
-  if ((int) _boardRevision[0] == 1) {
-    _parameters.erase(DELAY_FB_CORR_MODE);
-    _parameters.erase(DELAY_FB_DC_CORR_MODE);
-    if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBCorrModeParameter(*_programmer)),}))
-      return false;
-    if (!_addParameters({ParameterPtr(new TintinCDKDummyDelayFBDCCorrModeParameter(*_programmer)),}))
-      return false;
-    if (!set(DELAY_FB_COEFF1, 0U))
-      return false;
-  }
-  
   if (!set(COMP_VREF, 1405U))
     return false;
   
@@ -517,7 +166,6 @@ bool TintinCDKCamera::_getFieldOfView(float &fovHalfAngle) const
 
 bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
 {
-  UVCStreamer *uvcStreamer = dynamic_cast<UVCStreamer *>(&*_streamer);
   USBBulkStreamer *bulkStreamer = dynamic_cast<USBBulkStreamer *>(&*_streamer);
   USBDevice &d = (USBDevice &)*_device;
   
@@ -540,39 +188,21 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
     return false;
   }
   
-  if ((d.productID() == TINTIN_CDK_PRODUCT_UVC)) 
+
+  if (!bulkStreamer)
   {
-    if(bytesPerPixel == 4)
-      m.frameSize.width *= 2;
-    if (!uvcStreamer) 
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type UVC" << std::endl;
-      return false;
-    }
-    
-    if(!uvcStreamer->setVideoMode(m)) 
-    {
-      logger(LOG_ERROR) << "TintinCDKCamera: Could not set video mode for UVC" << std::endl;
-      return false;
-    }
-  } 
-  else if ((d.productID() == TINTIN_CDK_PRODUCT_BULK)) 
-  {
-    if (!bulkStreamer) 
-    {
       logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type Bulk" << std::endl;
       return false;
-    }
+  }
   
-    uint scaleFactor = bytesPerPixel;
-    if (frameType == ToF_QUAD)
-      scaleFactor = quadCount * 2;
+  uint scaleFactor = bytesPerPixel;
+  if (frameType == ToF_QUAD)
+    scaleFactor = quadCount * 2;
 
-    if (!bulkStreamer->setBufferSize(s.width * s.height * scaleFactor)) 
-    {
+  if (!bulkStreamer->setBufferSize(s.width * s.height * scaleFactor))
+  {
       logger(LOG_ERROR) << "TintinCDKCamera: Could not set buffer size for bulk transfer" << std::endl;
       return false;
-    }
   }
   
   return true;
@@ -580,27 +210,7 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
 
 bool TintinCDKCamera::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
-  USBDevice &d = (USBDevice &)*_device;
-
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) 
-  {
-    supportedVideoModes = Vector<SupportedVideoMode> {
-      SupportedVideoMode(320,240,25,1,4),
-      SupportedVideoMode(160,240,50,1,4),
-      SupportedVideoMode(160,120,100,1,4),
-      SupportedVideoMode(80,120,200,1,4),
-      SupportedVideoMode(80,60,400,1,4),
-      SupportedVideoMode(320,240,50,1,2),
-      SupportedVideoMode(320,120,100,1,2),
-      SupportedVideoMode(160,120,200,1,2),
-      SupportedVideoMode(160,60,400,1,2),
-      SupportedVideoMode(80,60,400,1,2),
-    };
-  } 
-  else 
-  {
-    supportedVideoModes.clear();
-  }
+	supportedVideoModes.clear();
 
   return true;
 }
@@ -618,11 +228,7 @@ bool TintinCDKCamera::_getMaximumVideoMode(VideoMode &videoMode) const
   videoMode.frameSize.width = 320;
   videoMode.frameSize.height = 240;
   videoMode.frameRate.denominator = 1;
-  if (d.productID() == TINTIN_CDK_PRODUCT_UVC) {
-    videoMode.frameRate.numerator = (bytesPerPixel == 4)?25:50;
-  } else {
-    videoMode.frameRate.numerator = 60;
-  }
+  videoMode.frameRate.numerator = 60;
 
   return true;
 }
@@ -653,3 +259,4 @@ bool TintinCDKCamera::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize
   
 }
 }
+

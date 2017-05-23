@@ -8,6 +8,7 @@
 #include <Logger.h>
 
 #include "TintinCDKCamera.h"
+#include "TintinCDKCameraUVC.h"
 
 #include "SymbolExports.h"
 
@@ -33,10 +34,12 @@ DepthCameraPtr TintinCDKCameraFactory::getDepthCamera(DevicePtr device)
     USBDevice &d = (USBDevice &)*device;
     
     if(d.vendorID() == TINTIN_CDK_VENDOR_ID && 
-      (d.productID() == TINTIN_CDK_PRODUCT_BULK || d.productID() == TINTIN_CDK_PRODUCT_UVC))
-    {
+      (d.productID() == TINTIN_CDK_PRODUCT_BULK))
       return DepthCameraPtr(new TintinCDKCamera(device));
-    }
+
+    if (d.vendorID() == TINTIN_CDK_VENDOR_ID &&
+    		(d.productID() == TINTIN_CDK_PRODUCT_UVC))
+    	return DepthCameraPtr(new TintinCDKCameraUVC(device));
   }
   
   return 0;

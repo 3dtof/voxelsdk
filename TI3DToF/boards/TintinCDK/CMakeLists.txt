@@ -1,5 +1,6 @@
 add_library(tintincdk SHARED
   TintinCDKCamera.cpp
+  TintinCDKCameraUVC.cpp
   TintinCDKCameraFactory.cpp
   TintinCDKDownloaderFactory.cpp
   TintinEEPROMDownloader.cpp

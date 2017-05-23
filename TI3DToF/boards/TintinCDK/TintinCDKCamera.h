@@ -9,6 +9,7 @@
 
 #include <ToFTintinCamera.h>
 #include <Downloader.h>
+#include <TintinCDKCameraCommon.h>
 
 #define TINTIN_CDK_VENDOR_ID 0x0451U
 #define TINTIN_CDK_PRODUCT_BULK 0x9105U
@@ -24,8 +25,6 @@
 #define DELAY_FB_DC_CORR_MODE "delay_fb_dc_corr_mode"
 #define COMP_VREF "comp_vref"
 
-#define TINTIN_CDK_USBIO_BOARD_REVISION 0x30
-
 namespace Voxel
 {
   
@@ -36,8 +35,6 @@ class TintinCDKCamera: public ToFTintinCamera
 {
 protected:
   Ptr<Downloader> _downloader;
-  
-  uint8_t _boardRevision[2];
   
   bool _init();
   
