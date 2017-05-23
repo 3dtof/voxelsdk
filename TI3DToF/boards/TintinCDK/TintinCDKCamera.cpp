@@ -34,9 +34,9 @@ bool TintinCDKCamera::_init()
   
   DevicePtr controlDevice = _device;
   
-    USBIOPtr usbIO(new USBIO(controlDevice));
+  USBIOPtr usbIO(new USBIO(controlDevice));
 
-    _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
+  _programmer = Ptr<RegisterProgrammer>(new VoxelUSBProgrammer(
       { {0x2D, 1}, {0x52, 1}, {0x54, 1}, {0x4B, 2}, {0x4E, 2}, {0x58, 3}, {0x5C, 3} },
       {
         {0x58, {0x08, 0x09, 0}},
@@ -47,9 +47,11 @@ bool TintinCDKCamera::_init()
         {0x52, {0x04, 0x03, 8}},
         {0x54, {0x04, 0x03, 8}}
       }, usbIO, controlDevice));
-    _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
+  _streamer = Ptr<Streamer>(new USBBulkStreamer(usbIO, controlDevice, 0x82));
 
-    configFile.setHardwareConfigSerializer(new HardwareSerializer(usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
+  // Initialize serializer block
+
+  configFile.setHardwareConfigSerializer(new HardwareSerializer(usbIO, REQUEST_EEPROM_DATA, REQUEST_EEPROM_SIZE));
   
 
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
@@ -187,21 +189,21 @@ bool TintinCDKCamera::_setStreamerFrameSize(const FrameSize &s)
   }
   
 
-    if (!bulkStreamer) 
-    {
+  if (!bulkStreamer)
+  {
       logger(LOG_ERROR) << "TintinCDKCamera: Streamer is not of type Bulk" << std::endl;
       return false;
-    }
+  }
   
-    uint scaleFactor = bytesPerPixel;
-    if (frameType == ToF_QUAD)
-      scaleFactor = quadCount * 2;
+  uint scaleFactor = bytesPerPixel;
+  if (frameType == ToF_QUAD)
+    scaleFactor = quadCount * 2;
 
-    if (!bulkStreamer->setBufferSize(s.width * s.height * scaleFactor)) 
-    {
+  if (!bulkStreamer->setBufferSize(s.width * s.height * scaleFactor))
+  {
       logger(LOG_ERROR) << "TintinCDKCamera: Could not set buffer size for bulk transfer" << std::endl;
       return false;
-    }
+  }
   
   return true;
 }
