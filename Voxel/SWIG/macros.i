@@ -65,4 +65,6 @@ typedef unsigned int uint;
 %apply unsigned int &INPUT { const unsigned int &VarName };
 %apply bool &OUTPUT { bool &VarName };
 %apply bool &INPUT { const bool &VarName };
+%apply std::string &INPUT { const std::string &VarName };
+%apply std::string &OUTPUT { std::string &VarName };
 %enddef
