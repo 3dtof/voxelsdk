@@ -7,8 +7,9 @@
 #ifndef VOXEL_TI_TINTINCDKCAMERAUVC_H
 #define VOXEL_TI_TINTINCDKCAMERAUVC_H
 
-#include <TintinCDKCamera.h>
+#include <ToFTintinCamera.h>
 #include <Downloader.h>
+#include <TintinCDKCameraCommon.h>
 #define TINTIN_CDK_VENDOR_ID 0x0451U
 #define TINTIN_CDK_PRODUCT_UVC 0x9106U
 
@@ -29,7 +30,7 @@ namespace Voxel
 namespace TI
 {
 
-class TintinCDKCameraUVC: public TintinCDKCamera
+class TintinCDKCameraUVC: public ToFTintinCamera
 {
 protected:
   Ptr<Downloader> _downloader;
@@ -37,9 +38,14 @@ protected:
 
   bool _init();
 
+  virtual bool _getFieldOfView(float &fovHalfAngle) const;
   virtual bool _getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const;
   virtual bool _setStreamerFrameSize(const FrameSize &s);
+
   virtual bool _getMaximumVideoMode(VideoMode &videoMode) const;
+  virtual bool _getMaximumFrameRate(FrameRate& frameRate, const FrameSize& forFrameSize) const;
+
+  virtual bool _initStartParams();
 
 public:
   TintinCDKCameraUVC(DevicePtr device);
