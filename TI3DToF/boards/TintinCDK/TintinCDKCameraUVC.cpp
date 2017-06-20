@@ -22,7 +22,7 @@ namespace Voxel
 namespace TI
 {
 
-TintinCDKCameraUVC::TintinCDKCameraUVC(Voxel::DevicePtr device): TintinCDKCamera(device)
+TintinCDKCameraUVC::TintinCDKCameraUVC(Voxel::DevicePtr device): ToFTintinCamera("TintinCDKCamera", device)
 {
   _init();
 }
@@ -164,6 +164,26 @@ bool TintinCDKCameraUVC::_setStreamerFrameSize(const FrameSize &s)
   return true;
 }
 
+bool TintinCDKCameraUVC::_initStartParams()
+{
+  FrameSize s;
+  USBDevice &d = (USBDevice &)*_device;
+
+  if (!_getFrameSize(s) || !_setStreamerFrameSize(s))
+    return false;
+
+  if(!ToFTintinCamera::_initStartParams())
+    return false;
+
+  return true;
+}
+
+bool TintinCDKCameraUVC::_getFieldOfView(float &fovHalfAngle) const
+{
+  fovHalfAngle = (87/2.0f)*(M_PI/180.0f);
+  return true;
+}
+
 bool TintinCDKCameraUVC::_getSupportedVideoModes(Vector<SupportedVideoMode> &supportedVideoModes) const
 {
   USBDevice &d = (USBDevice &)*_device;
@@ -202,6 +222,30 @@ bool TintinCDKCameraUVC::_getMaximumVideoMode(VideoMode &videoMode) const
 
 
   return true;
+}
+
+bool TintinCDKCameraUVC::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &forFrameSize) const
+{
+  int opClockFrequency, bytesPerPixel;
+
+  if(!_get(OP_CLK_FREQ, opClockFrequency) || !_get(PIXEL_DATA_SIZE, bytesPerPixel))
+  {
+    logger(LOG_ERROR) << "TintinCDKCamera: Could not get " << OP_CLK_FREQ << " or " << PIXEL_DATA_SIZE << std::endl;
+    return false;
+  }
+
+  opClockFrequency = 24/(1 << opClockFrequency);
+
+  uint numerator = opClockFrequency*1000000,
+  denominator = bytesPerPixel*forFrameSize.width*forFrameSize.height;
+
+  uint g = gcd(numerator, denominator);
+
+  frameRate.numerator = 0.8*numerator/g; // 90% of maximum
+  frameRate.denominator = denominator/g;
+
+  return true;
+
 }
 
 }
