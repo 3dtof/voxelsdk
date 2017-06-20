@@ -107,24 +107,34 @@ USBIO::USBIOPrivate::USBIOPrivate(DevicePtr device): device(device), handle(0), 
     return;
   }
 #elif defined(WINDOWS)
-  String devicePath = sys.getDeviceNode(d);
   
-  if (!devicePath.size())
+  handle = new CCyUSBDevice();
+  int numDevices = handle->DeviceCount();
+  int vid, pid;
+  wchar_t *serialNumber; //Return type of CCyUSB.SerialNumber is wchar, need to compare it with String
+  String serialNo, deviceSerialNumber;
+  int dev = 0;
+  do
   {
-    logger(LOG_ERROR) << "USBIO: Could not get device path for '" << d.id() << "'" << std::endl;
-    return;
-  }
+    handle->Open(dev);
+    vid = handle->VendorID;
+    pid = handle->ProductID;
+    serialNumber = handle->SerialNumber;
+    std::wstring sno(serialNumber);
+    String s(sno.begin(), sno.end()); //Converting wide string to string
+    serialNo = s;
+    deviceSerialNumber = d.serialNumber();
+    dev++;
+  } while((dev<numDevices) && ((vid != d.vendorID()) || (pid != d.productID()) || (serialNo != deviceSerialNumber)));
   
-  deviceHandle = CreateFile(devicePath.c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
-  
-  if (deviceHandle == INVALID_HANDLE_VALUE)
+  if (dev > numDevices || (vid != d.vendorID()) || (pid != d.productID()) || (serialNo != deviceSerialNumber))
   {
-    logger(LOG_ERROR) << "USBIO: Failed to open device path '" << devicePath << "' for device '" << d.id() << "'" << std::endl;
-    return;
+    logger(LOG_ERROR) << "USBIO: Failed to open device with ID'" << d.id() << "'" << std::endl;
+	handle->Close();
+	return;
   }
-  
-  handle = Ptr<CCyUSBDevice>(new CCyUSBDevice(deviceHandle));
-  
+
+
   if(handle->IsOpen())
   {
     _initialized = true;
