@@ -15,6 +15,10 @@ add_executable(VoxelCLI VoxelCLI.cpp CLIManager.cpp LineNoise.cpp PCLViewer.cpp)
 target_include_directories(VoxelCLI PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})
 target_link_libraries(VoxelCLI voxelpcl ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES})
 
+add_executable(VXLDecoder VXLDecoder.cpp)
+target_include_directories(VXLDecoder PUBLIC ${PCL_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIRS})
+target_link_libraries(VXLDecoder voxelpcl ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
+
 install(TARGETS SimpleVoxelViewer VoxelCLI
   RUNTIME DESTINATION bin
   COMPONENT apps
@@ -27,7 +31,7 @@ IF(LINUX)
   create_cpack_config(libvoxel-apps ${VOXEL_VERSION})
 ELSEIF(WINDOWS)
   
-  INSTALL(PROGRAMS VoxelCLIStart.cmd CLIStart.cmd SimpleVoxelViewer.cmd
+  INSTALL(PROGRAMS VoxelCLIStart.cmd CLIStart.cmd SimpleVoxelViewer.cmd FrameDecoder.cmd
     DESTINATION bin
     COMPONENT apps
   )
