@@ -8,6 +8,7 @@
 #include "SimpleOpt.h"
 #include "Common.h"
 #include "Logger.h"
+#include "CameraSystem.h"
 
 using namespace Voxel;
 
@@ -89,22 +90,29 @@ int main(int argc, char *argv[])
     };
   }
   
-  if(vid == 0 || pid == 0 || firmwareFileName.size() == 0)
+  if(vid == 0 || pid == 0 || firmwareFileName.size() == 0 || serialNumber.size() == 0)
   {
     logger(LOG_ERROR) << "Required argument missing." << std::endl;
     help();
     return -1;
   }
-  
+ 
+  CameraSystem sys; 
   DevicePtr ud(new USBDevice(vid, pid, serialNumber));
-  
-  USBDownloader d(ud);
-  
-  if(d.download(firmwareFileName))
-  {
-    std::cout << "Download successful!" << std::endl;
-    return 0;
+  DownloaderPtr d = sys.getDownloader(ud);
+
+ if (!d)
+ {
+   logger(LOG_ERROR) << "DownloaderTest: Could not get downloader for camera" << ud->deviceID() << std::endl;
+   return -1;
   }
-  else
-    return -1;
+  
+if(d->download(firmwareFileName))
+{
+  std::cout << "Download successful!" << std::endl;
+  return 0;
+}
+ 
+std::cout << "Download Unsuccessful" << std::endl;
+return -1;
 }
