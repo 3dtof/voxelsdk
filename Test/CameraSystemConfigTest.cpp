@@ -31,23 +31,25 @@ enum Options
   REMOVE_PROFILE = 10,
   WRITE_TO_EEPROM = 11,
   SAVE_FILE_TO_HOST = 12,
+  SET_DEFAULT_PROFILE = 13,
 };
 
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
 {
-  { VENDOR_ID,        "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
-  { PRODUCT_ID,       "-p", SO_REQ_SEP, "Comma separated list of Product IDs of the USB devices (hexadecimal)"},
-  { SERIAL_NUMBER,    "-s", SO_REQ_SEP, "Serial number of the USB device (string)"},
-  { CREATE_PROFILE,   "-c", SO_REQ_SEP, "Should create a new profile? If given, then name is to specified"},
-  { PARENT_PROFILE_ID,"-d", SO_REQ_SEP, "Parent profile ID used while creating a new profile [default = -1]."},
-  { PROFILE_ID,       "-i", SO_REQ_SEP, "ID of the camera profile"},
-  { SECTION,          "-t", SO_REQ_SEP, "Name of the configuration section"},
-  { PARAM_NAME,       "-n", SO_REQ_SEP, "Name of the parameter to read/write"},
-  { PARAM_VALUE,      "-u", SO_REQ_SEP, "Value for the parameter. This will be written. If not given, then the parameter will be read."},
-  { LIST_PROFILES,    "-l", SO_NONE,    "List all profiles for this camera"},
-  { REMOVE_PROFILE,   "-r", SO_NONE,    "Remove profile selected with -i option"},
-  { WRITE_TO_EEPROM,  "-w", SO_NONE,    "Write to EEPROM, the profile selected with -i option"},
-  { SAVE_FILE_TO_HOST,"-z", SO_NONE,    "Save selected profile (present in EEPROM) to host"},
+  { VENDOR_ID,            "-v", SO_REQ_SEP, "Vendor ID of the USB device (hexadecimal)"}, // Only worker count is needed here
+  { PRODUCT_ID,           "-p", SO_REQ_SEP, "Comma separated list of Product IDs of the USB devices (hexadecimal)"},
+  { SERIAL_NUMBER,        "-s", SO_REQ_SEP, "Serial number of the USB device (string)"},
+  { CREATE_PROFILE,       "-c", SO_REQ_SEP, "Should create a new profile? If given, then name is to specified"},
+  { PARENT_PROFILE_ID,    "-d", SO_REQ_SEP, "Parent profile ID used while creating a new profile [default = -1]."},
+  { PROFILE_ID,           "-i", SO_REQ_SEP, "ID of the camera profile"},
+  { SECTION,              "-t", SO_REQ_SEP, "Name of the configuration section"},
+  { PARAM_NAME,           "-n", SO_REQ_SEP, "Name of the parameter to read/write"},
+  { PARAM_VALUE,          "-u", SO_REQ_SEP, "Value for the parameter. This will be written. If not given, then the parameter will be read."},
+  { LIST_PROFILES,        "-l", SO_NONE,    "List all profiles for this camera"},
+  { REMOVE_PROFILE,       "-r", SO_NONE,    "Remove profile selected with -i option"},
+  { WRITE_TO_EEPROM,      "-w", SO_NONE,    "Write to EEPROM, the profile selected with -i option"},
+  { SAVE_FILE_TO_HOST,    "-z", SO_NONE,    "Save selected profile (present in EEPROM) to host"},
+  { SET_DEFAULT_PROFILE,  "-e", SO_NONE,    "Set the default profile to the value given with -i. If a value of 0   is given, the hardware will have no default profile."},
   SO_END_OF_OPTIONS
 };
 
@@ -84,6 +86,7 @@ int main(int argc, char *argv[])
   
   bool readParam = true;
   String section, paramName, paramValue;
+  bool changeDefault = false;
   
   char *endptr;
   Vector<String> splits;
@@ -166,6 +169,10 @@ int main(int argc, char *argv[])
       case SAVE_FILE_TO_HOST:
         saveToHost = true;
         break;
+
+      case SET_DEFAULT_PROFILE:
+        changeDefault = true;
+        break;
         
       default:
         help();
@@ -246,6 +253,31 @@ int main(int argc, char *argv[])
     return 0;
   }
   
+  if(changeDefault)
+  {
+    if (profileID == 0)
+    {
+      if(!depthCamera->configFile.removeDefaultCameraProfileIDInCamera())
+      {
+        logger(LOG_ERROR) << "Cannot reset the default profile in camera." << std::endl;
+        return -1;
+      }
+      std::cout << "Successfully reset the default camera profile in hardware." << std::endl;
+      return 0; 
+    }
+
+    else
+    {
+      if(!depthCamera->configFile.setDefaultCameraProfile(profileID))
+      {
+        logger(LOG_ERROR) << "Failed to set default profile to: " << profileID << ". Check if the profile is available" << std::endl;
+        return -1;
+      }
+      std::cout << "Successfully changed the default camera profile to: " << profileID << std::endl;
+      return 0;
+    }
+  }
+
   int id;
   
   if(createProfile)
