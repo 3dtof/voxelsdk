@@ -32,6 +32,7 @@ enum Options
   WRITE_TO_EEPROM = 11,
   SAVE_FILE_TO_HOST = 12,
   SET_DEFAULT_PROFILE = 13,
+  PARAM_REMOVE = 14,
 };
 
 Vector<CSimpleOpt::SOption> argumentSpecifications = 
@@ -50,6 +51,7 @@ Vector<CSimpleOpt::SOption> argumentSpecifications =
   { WRITE_TO_EEPROM,      "-w", SO_NONE,    "Write to EEPROM, the profile selected with -i option"},
   { SAVE_FILE_TO_HOST,    "-z", SO_NONE,    "Save selected profile (present in EEPROM) to host"},
   { SET_DEFAULT_PROFILE,  "-e", SO_NONE,    "Set the default profile to the value given with -i. If a value of 0   is given, the hardware will have no default profile."},
+  { PARAM_REMOVE,         "-a", SO_NONE,    "Remove the parameter given by -n."},
   SO_END_OF_OPTIONS
 };
 
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
   bool readParam = true;
   String section, paramName, paramValue;
   bool changeDefault = false;
+  bool removeParameter = false;
   
   char *endptr;
   Vector<String> splits;
@@ -172,6 +175,10 @@ int main(int argc, char *argv[])
 
       case SET_DEFAULT_PROFILE:
         changeDefault = true;
+        break;
+
+      case PARAM_REMOVE:
+        removeParameter = true;
         break;
         
       default:
@@ -311,13 +318,28 @@ int main(int argc, char *argv[])
   }
   else
   {
-    if(readParam)
+    if(readParam && removeParameter == false)
     {
       if(configFile->isPresent(section, paramName))
         std::cout << "Param value for section = " << section << ", name = " << paramName 
           << ", value = " << configFile->get(section, paramName) << std::endl;
       else
         logger(LOG_ERROR) << "Param not found, section = " << section << ", name = " << paramName << std::endl;
+    }
+    else if (readParam && removeParameter == true)
+    {
+      if(configFile->isPresent(section,paramName))
+      {
+        auto val = configFile->get(section, paramName);
+        configFile->remove(section, paramName);
+        needToWrite = true;
+        std::cout << "Successfully removed the parameter: " << paramName << " for id: " << id << std::endl;
+        std::cout << "Previous Value of the parameter = " << val << std::endl;
+      }
+      else
+      {
+        logger(LOG_ERROR) << "Param not found, section = " << section << ", name = " << paramName << std::endl;
+      }
     }
     else
     {
