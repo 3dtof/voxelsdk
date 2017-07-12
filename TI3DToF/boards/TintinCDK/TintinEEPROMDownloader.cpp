@@ -162,9 +162,10 @@ bool TintinEEPROMDownloader::_configureForDownload()
   _setProgress(15);
   
   // Wait for 30 seconds
-  logger(LOG_INFO) << "TintinEEPROMDownloader: Waiting for erase..." << std::endl;
+  logger(LOG_ERROR) << "TintinEEPROMDownloader: Waiting for erase...";
   _outStream << "Waiting for erase..." << std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(30));
+  logger(LOG_ERROR) << "done." << std::endl;
   
   if(!_getEEPROMStatus(eepromStatus))
     return false;
@@ -274,6 +275,7 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
       _outStream << "Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;
       return false;
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
     
     if(i % 8192 == 0)
     {
@@ -303,4 +305,4 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
   
 }
 }
-  
+
