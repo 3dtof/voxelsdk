@@ -40,7 +40,7 @@ public:
     
     float modMf = modM + ((float)modMFrac)/(1 << 16);
     
-    float v = systemClockFrequency*modMf/modN;
+    float v = 2*systemClockFrequency*modMf/(1<<modN);
     
     if(!validate(v))
       return false;
@@ -68,7 +68,7 @@ public:
     if(systemClockFrequency == 0)
       return false;
     
-    float modMf = value*modN/systemClockFrequency;
+    float modMf = value*(1<<modN)/(2*systemClockFrequency);
     modM = (uint)modMf;
     modMFrac = (uint)((modMf - modM)*(1 << 16));
     
