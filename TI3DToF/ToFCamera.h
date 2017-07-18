@@ -93,6 +93,8 @@
 #define DISABLE_TEMP_CORR "disable_temp_corr"
 #define CALIB_PREC "calib_prec"
 
+#define DISABLE_PIXEL_OFFSETS "disable_per_pixel_offsets"
+
 #define ToF_FRAME_TYPE "output_mode"
 #define SOFTWARE_RESET "software_reset"
 
@@ -163,7 +165,7 @@ protected:
   virtual bool _saveCurrentProfileID(const int id);
   
   virtual bool _reset();
-  
+
   Ptr<ToFFrameGenerator> _tofFrameGenerator;
   
 public:
