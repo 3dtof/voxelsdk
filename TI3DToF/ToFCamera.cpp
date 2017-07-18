@@ -17,7 +17,31 @@ namespace Voxel
   
 namespace TI
 {
-  
+class TI3DTOF_EXPORT DisablePerPixelOffsetsParameter: public BoolParameter
+{
+	bool _value;
+public:
+	DisablePerPixelOffsetsParameter(bool value, RegisterProgrammer &programmer):
+	BoolParameter(programmer, DISABLE_PIXEL_OFFSETS, 0, 0, 0, {"Enable pixelwise phase offsets", "Disable pixelwise phase offsets"},
+				{"Enable Offsets", "Disable Offsets"}, value, "Disable pixelWise offsets", "This parameter disables the pixelwise phase offsets", Parameter::IO_READ_WRITE, {DISABLE_PIXEL_OFFSETS})
+	{}
+
+	virtual bool get(bool &value, bool refresh = true)
+	{
+	  value = _value;
+	  return true;
+	}
+
+	virtual bool set(const bool &value)
+	{
+	  _value = value;
+	  return true;
+	}
+
+	virtual ~DisablePerPixelOffsetsParameter() {}
+};
+
+
 class IntegrationTimeParameter: public UnsignedIntegerParameter
 {
   ToFCamera &_depthCamera;
@@ -119,6 +143,11 @@ bool ToFCamera::_init()
   }))
     return false;
   
+  if(!_addParameters({
+	  ParameterPtr(new DisablePerPixelOffsetsParameter(true, *_programmer))
+  }))
+	return false;
+
   if(!ToFCameraBase::_init())
   {
     return false;
@@ -250,7 +279,7 @@ bool ToFCamera::_setFrameSize(const FrameSize &s, bool resetROI)
     logger(LOG_ERROR) << "ToFCamera: Could not get supported video modes or current bytes per pixel, to get nearest valid frame size" << std::endl;
     return false;
   }
-  
+
   int maxScore = 0;
   IndexType index = -1;
   int area = toSet.height*toSet.width;
@@ -472,10 +501,14 @@ bool ToFCamera::_initStartParams()
     return false;
   }
   
+  bool disablePhaseOffsets;
+  if(!_get(DISABLE_PIXEL_OFFSETS, disablePhaseOffsets))
+    return false;
+  
   if(!_tofFrameGenerator->setParameters(phaseOffsetFileName, phaseOffsets, bytesPerPixel, 
     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
                                         crossTalkCalibEnable?configFile.get("calib", "soft_filt_coeff"):"",
-                                        type, (uint32_t)quadCount, dealiased16BitMode, dealiasedPhaseMask))
+                                        type, (uint32_t)quadCount, dealiased16BitMode, dealiasedPhaseMask, disablePhaseOffsets))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;
     return false;

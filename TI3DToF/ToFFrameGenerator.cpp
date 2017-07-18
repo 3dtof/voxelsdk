@@ -40,6 +40,8 @@
 
 #define PARAM_DEALIASED_16BIT_MODE "dealiased16BitMode"
 
+/* Parameter for enabling/disabling phase offsets.*/
+#define PARAM_PHASE_OFFSETS_DISABLE "disablePhaseOffsets"
 namespace Voxel
 {
   
@@ -47,7 +49,7 @@ namespace TI
 {
   
 ToFFrameGenerator::ToFFrameGenerator(): 
-  FrameGenerator((TI_VENDOR_ID << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0, 4),
+  FrameGenerator((TI_VENDOR_ID << 16) | DepthCamera::FRAME_RAW_FRAME_PROCESSED, DepthCamera::FRAME_RAW_FRAME_PROCESSED, 0, 5),
 _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
 {
   _frameGeneratorParameters[PARAM_BYTES_PER_PIXEL] = SerializablePtr(new SerializableUnsignedInt());
@@ -71,6 +73,7 @@ _bytesPerPixel(-1), _dataArrangeMode(-1), _histogramEnabled(false)
   _frameGeneratorParameters[PARAM_CROSS_TALK_COEFF] = SerializablePtr(new SerializableString());
   
   _frameGeneratorParameters[PARAM_DEALIASED_16BIT_MODE] = SerializablePtr(new SerializableUnsignedInt());
+  _frameGeneratorParameters[PARAM_PHASE_OFFSETS_DISABLE] = SerializablePtr(new SerializableUnsignedInt());
 }
 
 bool ToFFrameGenerator::_onWriteConfiguration()
@@ -144,6 +147,8 @@ bool ToFFrameGenerator::_onReadConfiguration()
     memcpy(_phaseOffsetCorrectionData.data(), p.data(), p.size());
   }
   
+	_disablePhaseOffsets = false;
+
   if(!_createCrossTalkFilter())
     return false;
   return true;
@@ -158,7 +163,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
                                       ToFFrameType type, 
                                       uint32_t quadCount,
                                       bool dealiased16BitMode,
-                                      int dealiasedPhaseMask)
+                                      int dealiasedPhaseMask,
+                                      bool disablePhaseOffsets)
 {
   if(_phaseOffsetFileName == phaseOffsetFileName && bytesPerPixel == _bytesPerPixel && 
     _dataArrangeMode == dataArrangeMode && 
@@ -167,12 +173,15 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
     && _histogramEnabled == histogramEnabled &&
     _crossTalkCoefficients == crossTalkCoefficients && 
     _frameType == type && _quadCount == quadCount &&
-  _dealiased16BitMode == dealiased16BitMode && _dealiasedPhaseMask == dealiasedPhaseMask)
+  _dealiased16BitMode == dealiased16BitMode && _dealiasedPhaseMask == dealiasedPhaseMask &&
+  _disablePhaseOffsets == disablePhaseOffsets)
+
     return true;
   
   _phaseOffsetFileName = phaseOffsetFileName;
   _phaseOffsetCorrectionData = phaseOffsets;
   _dealiasedPhaseMask = dealiasedPhaseMask;
+  _disablePhaseOffsets = disablePhaseOffsets;
   
   if(phaseOffsets.size() == maxFrameSize.width*maxFrameSize.height + 2) // Ignore the first two elements if present
   {
@@ -269,6 +278,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
   
   uint32_t frameType = type;
   uint32_t d = _dealiased16BitMode;
+  uint32_t p = _disablePhaseOffsets;
+
   if(
     !_set(PARAM_TOF_FRAME_TYPE, frameType) ||
     !_set(PARAM_QUAD_COUNT, quadCount) ||
@@ -288,7 +299,8 @@ bool ToFFrameGenerator::setParameters(const String &phaseOffsetFileName, const V
     !_set(PARAM_FRAME_HEIGHT, _frameSize.height) ||
     !_set(PARAM_ROWS_TO_MERGE, _rowsToMerge) ||
     !_set(PARAM_COLUMNS_TO_MERGE, _columnsToMerge) ||
-    !_set(PARAM_DEALIASED_16BIT_MODE, d))
+    !_set(PARAM_DEALIASED_16BIT_MODE, d) ||
+    !_set(PARAM_PHASE_OFFSETS_DISABLE, p))
     return false;
   
   return writeConfiguration();
@@ -356,9 +368,9 @@ bool ToFFrameGenerator::_readPhaseOffsetCorrection()
 
 bool ToFFrameGenerator::_applyPhaseOffsetCorrection(Vector<uint16_t> &phaseData)
 {
-  if(!_phaseOffsetCorrectionData.size())
+  if(!_phaseOffsetCorrectionData.size() || _disablePhaseOffsets)
     return true; // Nothing to do
-    
+  
   int16_t *_phaseOffsetCorrection;
     
   if(_phaseOffsetCorrectionData.size() == _maxFrameSize.height*_maxFrameSize.width)
