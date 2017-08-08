@@ -230,17 +230,17 @@ bool TintinEEPROMDownloader::_printEEPROMFirst64Bytes()
 bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int filesize)
 {
   logger(LOG_INFO) << "TintinEEPROMDownloader: Starting EEPROM write..." << std::endl;
- _outStream << "Starting EEPROM write..." << std::endl;
+  _outStream << "Starting EEPROM write..." << std::endl;
   
-  Vector<uint8_t> data(filesize), dataReverse;
+  Vector<uint8_t> data(filesize);
   
-  dataReverse.reserve(filesize);
+  _dataReverse.reserve(filesize);
   
   file.read((char *)data.data(), filesize);
   
   // bit-reverse all the bytes
   for(auto d: data)
-    dataReverse.push_back(bitReverseTable[d]);
+    _dataReverse.push_back(bitReverseTable[d]);
   
   
   uint32_t stepSize = 64, startAddress = 0, bytesRemaining = filesize, i = 0, bytesToSend;
@@ -268,7 +268,7 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
     
     length = bytesToSend;
     if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE, 
-      0x18, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, dataReverse.data() + startAddress, length))
+      0x18, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, _dataReverse.data() + startAddress, length))
     {
       logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;
       _outStream << "Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;
@@ -285,7 +285,7 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
     startAddress += bytesToSend;
     i++;
     
-    _setProgress(p + (100 - p)*(startAddress*1.0/filesize));
+    _setProgress(p + (90 - p)*(startAddress*1.0/filesize));
   }
   
   logger(LOG_INFO) << "TintinEEPROMDownloader: EEPROM writes finished..." << std::endl;
@@ -293,13 +293,172 @@ bool TintinEEPROMDownloader::_download(InputFileStream &file, long unsigned int 
 
   if(!_printEEPROMFirst64Bytes())
     return false;
+
+  if(!_readDataFromEEPROM(filesize))
+    return false;
   
+  if(!_checkandRewrite(filesize))
+    return false;
+
+  _setProgress(100);
   logger(LOG_INFO) << "TintinEEPROMDownloader: Done!" << std::dec << std::endl;
   _outStream << "Done!" << std::dec << std::endl;
 
   return true;
 }
 
+bool TintinEEPROMDownloader::_readDataFromEEPROM(long unsigned int filesize)
+{
+   uint32_t stepSize = 64, startAddress = 0, bytesRemaining = filesize, i = 0, bytesToReceive;
+
+  logger(LOG_INFO) << "TintinEEPROMDownloader: Verifying Written Data. Reading back from device" << std::endl;
+  _outStream << "Verifying Written Data. Reading back from device" << std::endl;
+  _eepromData.reserve(filesize);
+
+  while(bytesRemaining)
+  {
+    if(bytesRemaining > stepSize)
+      bytesToReceive = stepSize;
+    else
+      bytesToReceive = bytesRemaining;
+
+    uint16_t length = bytesToReceive;
+    uint8_t bytes[64];
+
+    if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE,
+      0x19, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, bytes, length))
+    {
+      logger(LOG_ERROR) << "TintinEEPROMDownloader: Could not read back data from the EEPROM @0x" << startAddress << std::endl;
+      _outStream << "Could not read back data from the EEPROM @0x" << startAddress << std::endl;
+    }
+
+    for (auto idx=0; idx < length; idx++)
+      _eepromData.push_back(bytes[idx]);
+
+    bytesRemaining -= bytesToReceive;
+    startAddress += bytesToReceive;
+    i++;
+  }
+  logger(LOG_INFO) << "TintinEEPROMDownloader: EEPROM readback complete"<<std::endl;
+  _outStream << "EEPROM readback complete" << std::endl;
+
+  return true;
+}
+
+bool TintinEEPROMDownloader::_checkandRewrite(long unsigned int filesize)
+{
+  if (_eepromData == _dataReverse)
+  {
+    logger(LOG_INFO) << "TintinEEPROMDownloader: Data verified successfully" << std::endl;
+    _outStream << "Data verified successfully" << std::endl;
+
+    return true;
+  }
+
+  uint32_t stepSize = 64, startAddress = 0, bytesRemaining = filesize, bytesToCheck;
+  bool check, verify;
+
+  while(bytesRemaining)
+  {
+    if (bytesRemaining > stepSize)
+      bytesToCheck = stepSize;
+    else
+      bytesToCheck = bytesRemaining;
+
+    check = _verifyBlock(startAddress, bytesToCheck);
+
+    if(!check)
+    {
+      for (auto tries = 0; tries < 3; tries ++)
+      {
+        logger(LOG_ERROR) << "TintinEEPROMDownloader: retry try: " << tries << std::endl;
+        if(!(_rewriteBlock(startAddress, bytesToCheck)))
+        {
+          logger(LOG_ERROR) << "TintinEEPROMDownloader: Write Failed" << std::endl;
+          _outStream << "Write failed" << std::endl;
+
+          return false;
+        }
+
+        verify = _verifyBlock(startAddress, bytesToCheck);
+        if(verify)
+          break;
+      }
+
+      if (!verify)
+      {
+        logger(LOG_ERROR) << "TintinEEPROMDownloader: Write unsuccessful for block with start address = " << startAddress << std::endl;
+        _outStream << "Write unsuccessful for block with start address = " << startAddress << std::endl;
+        return false;
+      }
+    }
+
+    bytesRemaining -= bytesToCheck;
+    startAddress += bytesToCheck;
+    check = true;
+  }
+
+  logger(LOG_INFO) << "TintinEEPROMDownloader: Data verified successfully" << std::endl;
+  _outStream << "Data verified successfully" << std::endl;
+
+  return true;
+}
+
+bool TintinEEPROMDownloader::_rewriteBlock(uint32_t startAddress, uint16_t len)
+{
+  uint16_t length = 1;
+  uint8_t writeInit[] = { 0x06 };
+
+  if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE,
+    0x1E, 0x00, 0x00, writeInit, length))
+  {
+    logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to enable write" << std::endl;
+    _outStream << "Failed to enable write" << std::endl;
+    return false;
+  }
+
+  if(!_usbIO->controlTransfer(USBIO::TO_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE,
+      0x18, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, _dataReverse.data() + startAddress, len))
+  {
+    logger(LOG_ERROR) << "TintinEEPROMDownloader: Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;
+    _outStream << "Failed to write bytes at address 0x" << std::hex << startAddress << std::endl;
+    return false;
+  }
+
+  logger(LOG_INFO) << "TintinEEPROMDownloader: Rewrote block with startAddress 0x" << startAddress << std::endl;
+  _outStream << "Rewrote block with startAddress 0x" << startAddress << std::endl;
+
+  // update the data after rewrite
+  uint8_t bytes[64];
+  if(!_usbIO->controlTransfer(USBIO::FROM_DEVICE, USBIO::REQUEST_VENDOR, USBIO::RECIPIENT_DEVICE,
+    0x19, startAddress & 0xFFFF, (startAddress >> 16) & 0x00FF, bytes, len))
+  {
+    logger(LOG_ERROR) << "TintinEEPROMDownloader: Could not read data from the EEPROM" << std::endl;
+    _outStream << "Could not read data back from the EEPROM" << std::endl;
+  }
+
+  for (auto idx = 0; idx < 64; idx++)
+  {
+    _eepromData[startAddress + idx] = bytes[idx];
+  }
+
+  return true;
+}
+
+bool TintinEEPROMDownloader::_verifyBlock(uint32_t startAddress, uint32_t bytesToCheck)
+{
+  bool check = true;
+  uint8_t *dataPointer = _dataReverse.data() + startAddress;
+  uint8_t *writtenPointer = _eepromData.data() + startAddress;
+
+  for (auto idx = 0; idx < bytesToCheck; idx++ )
+  {
+    if (*(dataPointer + idx) != *(writtenPointer + idx))
+      check = false;
+  }
+
+  return check;
+}
   
 }
 }
