@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
   CSimpleOpt s(argc, argv, argumentSpecifications);
   
-  logger.setDefaultLogLevel(LOG_ERROR);
+  logger.setDefaultLogLevel(LOG_INFO);
   
   uint16_t vid = 0, pid = 0;
   String serialNumber;
