@@ -55,7 +55,7 @@ bool VoxelSPCAXUProgrammer::_readRegister(uint16_t slaveAddress, uint16_t regist
     logger(LOG_ERROR) << "VoxelSPCAXUProgrammer: Could not set read register address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
     return false;
   }
-  if (length == 3)
+  if (length <= 3)
   {
     uint8_t data[3];
     data[0] = 0x0;
@@ -69,6 +69,7 @@ bool VoxelSPCAXUProgrammer::_readRegister(uint16_t slaveAddress, uint16_t regist
 
     value = data[0] + (data[1] << 8) + (data[2] << 16);
   }
+
   else
   {
     logger(LOG_ERROR) << "VoxelSPCAXUProgrammer: Don't know how to read '" << std::dec << length << "' bytes. Required for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
@@ -81,8 +82,8 @@ bool VoxelSPCAXUProgrammer::_readRegister(uint16_t slaveAddress, uint16_t regist
 bool VoxelSPCAXUProgrammer::_writeRegister(uint16_t slaveAddress, uint16_t registerAddress, uint32_t value, uint8_t length)
 {
  if(length == 3) // ToF
-  {
-	uint8_t addr[2];
+ {
+    uint8_t addr[2];
     uint8_t data[3];
     addr[0] = registerAddress;
     addr[1] = 2*slaveAddress;
@@ -100,12 +101,38 @@ bool VoxelSPCAXUProgrammer::_writeRegister(uint16_t slaveAddress, uint16_t regis
       logger(LOG_ERROR) << "VoxelSPCAXUProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
       return false;
     }
-  }
-  else
-  {
-    logger(LOG_ERROR) << "VoxelSPCAXUProgrammer: Don't know how to write '" << std::dec << length << "' bytes. Required for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
-    return false;
-  }
+ }
+
+ else if(length == 1)
+ {
+	uint8_t addr[2];
+	uint8_t data[3];
+	addr[0] = registerAddress;
+	addr[1] = 2*slaveAddress;
+	data[0] = (value & 0xFF);
+	data[1] = 0x0;
+	data[2] = 0x0;
+
+	if (!_xu->setControl(CONTROL_WRITE_REGISTER_2, arraySize(addr), addr))
+	{
+	  logger(LOG_ERROR) <<  "VoxelSPCAXUProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
+	  return false;
+    }
+
+	if(!_xu->setControl(CONTROL_READ_WRITE_REGISTER_3, arraySize(data), data))
+	{
+	  logger(LOG_ERROR) << "VoxelSPCAXUProgrammer: Could not read register for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
+	  return false;
+	}
+
+ }
+
+
+ else
+ {
+   logger(LOG_ERROR) << "VoxelSPCAXUProgrammer: Don't know how to write '" << std::dec << length << "' bytes. Required for address 0x" << std::hex << slaveAddress << registerAddress << std::endl;
+   return false;
+ }
 
   logger(LOG_DEBUG) << "VoxelSPCAXUProgrammer: register write @0x" << std::hex << slaveAddress << registerAddress << " = " << value << std::endl;
 
