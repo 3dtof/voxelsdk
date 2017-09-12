@@ -21,7 +21,7 @@ bool VoxelXUProgrammer::isInitialized() const
 
 void VoxelXUProgrammer::init()
 {
-  _xu = UVCXUPtr(new UVCXU(_device, _XU_ID));
+  _xu = UVCXUPtr(new UVCXU(_device, _XU_ID, 0)); // index 0 for devices with FX2
 
   uint8_t data[4];
   if (!_xu->getControl(CONTROL_GET_VERSION, arraySize(data), data))
