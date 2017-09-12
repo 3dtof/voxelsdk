@@ -4,6 +4,7 @@ add_library(ti3dtof SHARED
   VoxelProgrammerBase.cpp
   VoxelUSBProgrammer.cpp
   VoxelXUProgrammer.cpp
+  VoxelSPCAXUProgrammer.cpp
   ToFCameraBase.cpp
   ToFCamera.cpp
   ToFDepthFrameGenerator.cpp
@@ -126,6 +127,7 @@ install(FILES
   VoxelProgrammerBase.h
   VoxelUSBProgrammer.h
   VoxelXUProgrammer.h
+  VoxelSPCAXUProgrammer.h
   ${CMAKE_CURRENT_BINARY_DIR}/TI3DToFExports.h
   DESTINATION include/voxel-${VOXEL_VERSION}/ti3dtof
   COMPONENT ti3dtof_dev
