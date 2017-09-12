@@ -25,7 +25,9 @@
 #include <comdef.h>
 
 DEFINE_GUIDSTRUCT("8A0F88DD-BA1C-5449-8A25-F7875967F0F7", PROPSETID_FX2_XU);
+DEFINE_GUIDSTRUCT("0FB885C3-68C2-4547-90F7-8F47579D95FC", PROPSETID_SUNPLUS_XU);
 #define PROPSETID_FX2_XU DEFINE_GUIDNAMED(PROPSETID_FX2_XU)
+#define PROPSETID_SUNPLUS_XU DEFINE_GUIDNAMED(PROPSETID_SUNPLUS_XU)
 #define STATIC_IID_IKsControl \
 0x28F54685L, 0x06FD, 0x11D2, 0xB2, 0x7A, 0x00, 0xA0, 0xC9, 0x22, 0x31, 0x96
 DEFINE_GUID(IID_IKsControl,
@@ -46,7 +48,7 @@ public:
   virtual ~UVCXUPrivate() {}
 };
   
-UVCXU::UVCXU(DevicePtr usb, int xuID): UVC(usb), _xuID(xuID), _uvcXUPrivate(Ptr<UVCXUPrivate>(new UVCXUPrivate())) 
+UVCXU::UVCXU(DevicePtr usb, int xuID, uint8_t index): UVC(usb), _xuID(xuID), _uvcXUPrivate(Ptr<UVCXUPrivate>(new UVCXUPrivate())), _index(index)
 {
 #ifdef WINDOWS
   if (!UVC::isInitialized())
@@ -84,7 +86,10 @@ UVCXU::UVCXU(DevicePtr usb, int xuID): UVC(usb), _xuID(xuID), _uvcXUPrivate(Ptr<
     {
       if ((hr = ksTopologyInfo->CreateNodeInstance(i, IID_IKsControl, (void **)&p)) == S_OK)
       {
-        ExtensionProp.Property.Set = PROPSETID_FX2_XU; // FIXME: This seems to be specific to Voxel-14. Need to handle this separately
+    	if (_index == 0)
+		  ExtensionProp.Property.Set = PROPSETID_FX2_XU;// FIXME: This seems to be specific to Voxel-14. Need to handle this separately
+    	else if (_index ==1)
+		  ExtensionProp.Property.Set = PROPSETID_SUNPLUS_XU;
         ExtensionProp.Property.Id = 0;
         ExtensionProp.Property.Flags = KSPROPERTY_TYPE_SETSUPPORT | KSPROPERTY_TYPE_TOPOLOGY;
         ExtensionProp.NodeId = i;
@@ -153,7 +158,10 @@ bool UVCXU::getControl(int controlnumber, int size, uint8_t *value)
 
   HRESULT hr;
   
-  ExtensionProp.Property.Set = PROPSETID_FX2_XU;
+  if (_index == 0)
+	ExtensionProp.Property.Set = PROPSETID_FX2_XU;// FIXME: This seems to be specific to Voxel-14. Need to handle this separately
+  else if (_index ==1)
+		ExtensionProp.Property.Set = PROPSETID_SUNPLUS_XU;
   ExtensionProp.Property.Id = controlnumber;
   ExtensionProp.Property.Flags = KSPROPERTY_TYPE_GET | KSPROPERTY_TYPE_TOPOLOGY;
   ExtensionProp.NodeId = _xuID;
@@ -200,7 +208,10 @@ bool UVCXU::setControl(int controlnumber, int size, uint8_t *value)
   KSP_NODE ExtensionProp;
   ULONG bytesReturned = 0;
 
-  ExtensionProp.Property.Set = PROPSETID_FX2_XU;
+  if (_index == 0)
+	ExtensionProp.Property.Set = PROPSETID_FX2_XU;// FIXME: This seems to be specific to Voxel-14. Need to handle this separately
+  else if (_index ==1)
+	ExtensionProp.Property.Set = PROPSETID_SUNPLUS_XU;
   ExtensionProp.Property.Id = controlnumber;
   ExtensionProp.Property.Flags = KSPROPERTY_TYPE_SET | KSPROPERTY_TYPE_TOPOLOGY;
   ExtensionProp.NodeId = _xuID;
