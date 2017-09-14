@@ -4,6 +4,7 @@ add_subdirectory(TintinCDK)
 add_subdirectory(RTS5825Camera)
 add_subdirectory(VoxelD)
 add_subdirectory(Voxel14)
+add_subdirectory(VoxelVader)
 
 set(CONF_FILES "${CONF_FILES}" PARENT_SCOPE)
 set(UDEV_FILES "${UDEV_FILES}" PARENT_SCOPE)

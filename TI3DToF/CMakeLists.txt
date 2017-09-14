@@ -33,6 +33,7 @@ add_subdirectory(boards)
 
 list(APPEND CONF_FILES
   OPT8320.dml
+  Vader.dml
   OPT9220.dml
   OPT9221.dml
 )
