@@ -40,6 +40,7 @@ add_library(voxel SHARED
   Filter/Filter.cpp
   Filter/DarkPixFilter.cpp
   Filter/DenoiseFilter.cpp
+  Filter/FlypixFilter.cpp
   Filter/HDRFilter.cpp
   Filter/IIRFilter.cpp
   Filter/MedianFilter.cpp
@@ -128,6 +129,7 @@ install(FILES
   Filter/FilterFactory.h
   Filter/DarkPixFilter.h
   Filter/DenoiseFilter.h
+  Filter/Flypixfilter.h
   Filter/HDRFilter.h
   Filter/IIRFilter.h
   Filter/MedianFilter.h
