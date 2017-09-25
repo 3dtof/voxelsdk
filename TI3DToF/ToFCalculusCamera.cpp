@@ -582,6 +582,12 @@ bool ToFCalculusCamera::_getDealiasedPhaseMask(int &dealiasedPhaseMask)
   return true;
 }
 
+bool ToFCalculusCamera:: _getDataToReplace(uint32_t &dataToReplace)
+{
+  dataToReplace = ToFFrameGenerator::FLAGS_DATA;
+  return true;
+}
+
 bool ToFCalculusCamera::_applyCalibrationParams()
 {
   bool commonPhaseCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_COMMON_PHASE_OFFSET_ID)) == 0;

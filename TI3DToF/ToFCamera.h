@@ -166,6 +166,8 @@ protected:
   
   virtual bool _reset();
 
+  virtual bool _getDataToReplace(uint32_t &dataToReplace); // phase data replaces either ambient or phase data in 16 bit mode. This parameter defines that data
+
   Ptr<ToFFrameGenerator> _tofFrameGenerator;
   
 public:

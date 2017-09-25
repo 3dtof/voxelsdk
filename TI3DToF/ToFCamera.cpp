@@ -421,6 +421,12 @@ bool ToFCamera::_getDealiasedPhaseMask(int &dealiasedPhaseMask)
   return get(DEALIASED_PHASE_MASK, dealiasedPhaseMask);
 }
 
+bool ToFCamera::_getDataToReplace(uint32_t &dataToReplace)
+{
+  dataToReplace = ToFFrameGenerator::AMBIENT_DATA;
+  return true;
+}
+
 bool ToFCamera::_processRawFrame(const RawFramePtr &rawFrameInput, RawFramePtr &rawFrameOutput)
 {
   FramePtr p1 = std::dynamic_pointer_cast<Frame>(rawFrameInput);
@@ -504,11 +510,15 @@ bool ToFCamera::_initStartParams()
   bool disablePhaseOffsets;
   if(!_get(DISABLE_PIXEL_OFFSETS, disablePhaseOffsets))
     return false;
+
+  uint32_t dataToReplace;
+  if(!_getDataToReplace(dataToReplace))
+    return false;
   
   if(!_tofFrameGenerator->setParameters(phaseOffsetFileName, phaseOffsets, bytesPerPixel, 
     dataArrangeMode, roi, maxFrameSize, frameSize, rowsToMerge, columnsToMerge, _isHistogramEnabled(),
                                         crossTalkCalibEnable?configFile.get("calib", "soft_filt_coeff"):"",
-                                        type, (uint32_t)quadCount, dealiased16BitMode, dealiasedPhaseMask, disablePhaseOffsets))
+                                        type, (uint32_t)quadCount, dealiased16BitMode, dealiasedPhaseMask, disablePhaseOffsets, dataToReplace))
   {
     logger(LOG_ERROR) << "ToFCamera: Could not set parameters to ToFFrameGenerator" << std::endl;
     return false;

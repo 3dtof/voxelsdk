@@ -96,6 +96,8 @@ protected:
   
   virtual bool _applyCalibrationParams();
 
+  virtual bool _getDataToReplace(uint32_t &dataToReplace);
+
   bool _updateEasyConf();
   
   virtual bool _getCurrentProfileRegisterName(String& name);

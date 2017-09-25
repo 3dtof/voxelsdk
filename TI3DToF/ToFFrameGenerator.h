@@ -43,6 +43,7 @@ class TI3DTOF_EXPORT ToFFrameGenerator: public FrameGenerator
   ToFCrossTalkFilterPtr _crossTalkFilter;
   String _crossTalkCoefficients;
   FramePtr _filterInputFrame;
+  uint32_t _dataToReplace;
   
 protected:
   virtual bool _onReadConfiguration();
@@ -57,6 +58,13 @@ protected:
   bool _generateToFRawIQFrame(const FramePtr &in, FramePtr &out);
   
 public:
+
+  enum DataToReplace
+  {
+    AMBIENT_DATA = 0,
+    FLAGS_DATA = 1
+  };
+
   ToFFrameGenerator();
   
   virtual bool generate(const ToFRawIQFramePtr &in, FramePtr &out); // Convert IQ to amplitude-phase
@@ -71,7 +79,7 @@ public:
                      const String &crossTalkCoefficients, ToFFrameType type, 
                      uint32_t quadCount,
                      bool dealiased16BitMode,
-                     int dealiasedPhaseMask, bool phaseOffsetsDisable);
+                     int dealiasedPhaseMask, bool phaseOffsetsDisable, uint32_t dataToReplace);
   
   virtual ~ToFFrameGenerator() {}
 };
