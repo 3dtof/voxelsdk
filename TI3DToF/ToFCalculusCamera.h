@@ -98,6 +98,8 @@ protected:
 
   virtual bool _getDataToReplace(uint32_t &dataToReplace);
 
+  virtual bool _getDepthScalingFactor(float& factor);
+
   bool _updateEasyConf();
   
   virtual bool _getCurrentProfileRegisterName(String& name);

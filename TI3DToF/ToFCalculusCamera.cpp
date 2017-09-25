@@ -698,7 +698,40 @@ bool ToFCalculusCamera::_getSubFrameCount(int &subframeCount) const
   return true;
 }
 
+bool ToFCalculusCamera::_getDepthScalingFactor(float& factor)
+{
+  bool dealiasingEnabled;
+  
+  if(!get(DEALIAS_EN, dealiasingEnabled))
+    return false;
+  
+  float illuminationFrequency;
+  
+  if(!_getIlluminationFrequency(illuminationFrequency))
+    return false;
+  
+  bool frequencyCorrectionPresent = false;
+  float frequencyCorrection = 1.0f;
+  
+  bool frequencyCalibEnable = (configFile.getInteger("calib", CALIB_DISABLE) & (1 << ToF_CALIB_SECT_FREQUENCY_ID)) == 0;
+  
+  if(frequencyCalibEnable && configFile.isPresent("calib", "freq_corr"))
+  {
+    frequencyCorrection = configFile.getFloat("calib", "freq_corr");
+    
+    if(frequencyCorrection < FLOAT_EPSILON)
+      frequencyCorrectionPresent = false;
+    else
+      frequencyCorrectionPresent = true;
+  }
 
+  if(frequencyCorrectionPresent)
+    illuminationFrequency *= frequencyCorrection;
+  
+  factor = SPEED_OF_LIGHT/1E6f/2/illuminationFrequency/(1 << 12)*1.0f;
+  return true;
+
+}
  
 }
 }
