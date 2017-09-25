@@ -572,7 +572,14 @@ bool ToFCalculusCamera::_getIlluminationFrequency(float& frequency) const
 
 bool ToFCalculusCamera::_is16BitModeEnabled(bool &mode16Bit)
 {
-  mode16Bit = false;
+  bool dealiasEnabled;
+  if (!get(DEALIAS_EN, dealiasEnabled))
+    return false; 
+  
+  if (dealiasEnabled)
+    mode16Bit = true;
+  else
+    mode16Bit = false;
   return true;
 }
 
