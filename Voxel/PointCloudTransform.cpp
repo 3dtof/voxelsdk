@@ -19,7 +19,7 @@ namespace Voxel
 
 Point &PointCloudTransform::getDirection(int row, int col)
 {
-  return directions[col * width + row];
+  return directions[row * width + col];
 }
 
 PointCloudTransform::PointCloudTransform(uint32_t left, uint32_t top, uint32_t width, uint32_t height, 
