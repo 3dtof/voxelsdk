@@ -129,7 +129,7 @@ install(FILES
   Filter/FilterFactory.h
   Filter/DarkPixFilter.h
   Filter/DenoiseFilter.h
-  Filter/Flypixfilter.h
+  Filter/FlypixFilter.h
   Filter/HDRFilter.h
   Filter/IIRFilter.h
   Filter/MedianFilter.h
