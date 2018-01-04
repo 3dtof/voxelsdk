@@ -13,6 +13,12 @@
 #include <Parameter.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+#define SP_SERIAL_NUMBER_SIZE 14 //14 characters is the maximum size for serial number
+#define SP_SERIAL_NUMBER_SECTOR_ADDRESS 0x8000 //0x8000 is the address for the serial number sector
+#define SP_SERIAL_NUMBER_ADDRESS 0x8000 //8004 is the acutal address, but reading from 8000. 
+#define SP_BYTES_TO_UPDATE 4096 //SP Flash memory requirement of 4 kB to be updated
+
 namespace Voxel
 {
   
@@ -37,18 +43,6 @@ protected:
   {
     return true;
   }
-
-#if 0
-  virtual uint _fromRawValue(uint32_t value) const
-  {
-    return uint(299);
-  }
-
-  virtual uint32_t _toRawValue(uint value) const
-  {
-    return uint32_t(299);
-  }
-#endif
 
 public:
   VoxelVaderIlluminationPowerParameter(RegisterProgrammer &programmer):
@@ -137,6 +131,8 @@ bool VoxelVader::_init()
   USBDevice &d = (USBDevice &)*_device;
   
   DevicePtr controlDevice = _device;
+
+  _xu = UVCXUPtr(new UVCXU(_device, _XU_ID, 1));
   
   _programmer = Ptr<RegisterProgrammer>(new VoxelSPCAXUProgrammer(
     { {0x58, 3} ,{0x60, 1} } ,
@@ -145,6 +141,7 @@ bool VoxelVader::_init()
   
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
+
   
   if (!_addParameters({
       ParameterPtr(new CalculusModulationFrequencyParameter(*this, *_programmer, 12, 37, 18)),
@@ -266,7 +263,134 @@ bool VoxelVader::_getMaximumFrameRate(FrameRate &frameRate, const FrameSize &for
   return true;
 }
 
+bool VoxelVader::setSerialNumber(const String &serialNumber)
+{
+  if(serialNumber.size() > SP_SERIAL_NUMBER_SIZE)
+  {
+    logger(LOG_ERROR) << "VoxelVader: Please specify serial number with at most '" << SP_SERIAL_NUMBER_SIZE << "' bytes." << std::endl;
+    return false;
+  }
+    
+    uint16_t length = serialNumber.size();
+    uint8_t buffer[SP_BYTES_TO_UPDATE];
+    uint32_t remaining = SP_BYTES_TO_UPDATE;
+    uint8_t data[3]; // for the start address
+    uint32_t offset = 0;
+    while (remaining)
+    {
+      int size = remaining%32?remaining%32:32;
+      data[0] = (SP_SERIAL_NUMBER_SECTOR_ADDRESS + offset) & 0xFF;
+      data[1] = ((SP_SERIAL_NUMBER_SECTOR_ADDRESS + offset) >> 8) & 0xFF;
+      data[2] = ((SP_SERIAL_NUMBER_SECTOR_ADDRESS + offset) >> 16) & 0xFF; 
+      
+      if (!_xu->setControl(CONTROL_READ_WRITE_REGISTER_START, sizeof(data), data))
+      {
+        logger(LOG_ERROR) << "VoxelVader: Could not initialize XU control." << std::endl;
+        return false; 
+      }
 
+      if(!_xu->getControl(CONTROL_READ_WRITE_REGISTER_32, size, (buffer + offset)))
+      {
+        logger(LOG_ERROR) << "VoxelVader: Could not set serial number from depth camera. "<< std::endl;
+        return false;
+      }
+
+      offset = offset + size;
+      remaining = remaining - size;
+    }
+  
+  for (auto i = 0; i<length;i++)
+  {
+    buffer[4+2*i] = (uint8_t)serialNumber[i];
+    buffer[4+2*i+1] = 0x00;
+  }
+
+  if(length < SP_SERIAL_NUMBER_SIZE)
+  {
+    for(auto i = 2*length; i < 2*SP_SERIAL_NUMBER_SIZE; i++)
+      buffer[4+i] = 0x00;
+  }
+
+
+  for (auto i = 2*SP_SERIAL_NUMBER_SIZE; i < SP_BYTES_TO_UPDATE - 4; i++)
+    buffer[4+i] = 0xFF;
+
+  data[0] = SP_SERIAL_NUMBER_SECTOR_ADDRESS & 0xff;
+  data[1] = (SP_SERIAL_NUMBER_SECTOR_ADDRESS >> 8) & 0xff;
+  data[2] = (SP_SERIAL_NUMBER_SECTOR_ADDRESS >> 16) & 0xff;
+
+  if(!_xu->setControl(CONTROL_ERASE_DATA, sizeof(data), data))
+  {
+    logger(LOG_ERROR) << "VoxelVader: Cannot erase data before writing" << std::endl;
+    return false;
+  }
+
+  remaining = SP_BYTES_TO_UPDATE; 
+  offset = 0;
+  while(remaining)
+  {
+   {
+      int size = remaining%32 ? remaining%32:32;
+      data[0] = (SP_SERIAL_NUMBER_SECTOR_ADDRESS + offset) & 0xFF;
+      data[1] = ((SP_SERIAL_NUMBER_SECTOR_ADDRESS + offset) >> 8) & 0xFF;
+      data[2] = ((SP_SERIAL_NUMBER_SECTOR_ADDRESS + offset) >> 16) & 0xFF; 
+      
+      if (!_xu->setControl(CONTROL_READ_WRITE_REGISTER_START, sizeof(data), data))
+      {
+        logger(LOG_ERROR) << "VoxelVader: Could not initialize XU control." << std::endl;
+        return false; 
+      }
+
+      if(!_xu->setControl(CONTROL_READ_WRITE_REGISTER_32, size, (buffer + offset)))
+      {
+        logger(LOG_ERROR) << "VoxelVader: Could not write serial number to depth camera." <<  std::endl;
+        return false;
+      }
+
+      offset = offset + size;
+      remaining = remaining - size;
+    }
+
+    _device->setSerialNumber(serialNumber);
+    return true;
+
+  }
+
+  return DepthCamera::setSerialNumber(serialNumber);
+}
+
+bool VoxelVader::getSerialNumber(String &serialNumber) const 
+{ 
+  uint8_t data[3];
+  data[0] = (SP_SERIAL_NUMBER_ADDRESS) & 0xFF;
+  data[1] = ((SP_SERIAL_NUMBER_ADDRESS) >> 8) & 0xFF;
+  data[2] = ((SP_SERIAL_NUMBER_ADDRESS) >> 16) & 0xFF;   
+
+  if (!_xu->setControl(CONTROL_READ_WRITE_REGISTER_START, sizeof(data), data))
+      {
+        logger(LOG_ERROR) << "VoxelVader: Could not initialize XU control." << std::endl;
+        return false; 
+      }
+
+  int size = 32; 
+  uint8_t buffer[32];
+  if(!_xu->getControl(CONTROL_READ_WRITE_REGISTER_32, size, buffer))
+  {
+    logger(LOG_ERROR) << "VoxelVader: Could not read serial number from depth camera." << std::endl;
+    return false;
+  }
+
+  char sn[SP_SERIAL_NUMBER_SIZE +1];
+
+  for (auto i = 0; i<SP_SERIAL_NUMBER_SIZE; i++)
+  {
+    sn[i] = buffer[4+2*i];
+  }  
+  sn[SP_SERIAL_NUMBER_SIZE] = '\0';
+  serialNumber = sn;
+
+  return true;
+}
   
 }
 }

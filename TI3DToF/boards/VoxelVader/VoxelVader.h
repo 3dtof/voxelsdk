@@ -9,6 +9,8 @@
 
 #include <ToFCalculusCamera.h>
 #include <Downloader.h>
+#include "UVCXU.h"
+
 
 #define VOXELVADER_VENDOR_ID 0x0451U
 #define VOXELVADER_PRODUCT_ID 0x9108U
@@ -26,6 +28,15 @@ class VoxelVader: public ToFCalculusCamera
 {
 protected:
   Ptr<Downloader> _downloader;
+  UVCXUPtr _xu;
+  const int _XU_ID = 3;
+
+  enum FlashControl
+  {
+    CONTROL_READ_WRITE_REGISTER_START = 7, //Start address for reading/writing
+    CONTROL_READ_WRITE_REGISTER_32 = 8, //Read/Write 32 bytes
+    CONTROL_ERASE_DATA = 9 //Erase a sector before write 
+  };
   
   bool _init();
   
@@ -42,6 +53,9 @@ public:
   VoxelVader(DevicePtr device);
   
   virtual ~VoxelVader() {}
+
+  virtual bool setSerialNumber(const String& serialNumber);
+  virtual bool getSerialNumber(String &serialNumber) const;
 };
 
 }
