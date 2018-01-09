@@ -24,7 +24,8 @@ install(TARGETS voxelvader
 list(APPEND CONF_FILES
   boards/VoxelVader/VoxelVader.conf
   boards/VoxelVader/VoxelVaderLensOnly.conf
-  boards/VoxelVader/VoxelVaderNormal.conf
+  boards/VoxelVader/VoxelVaderHFR.conf
+  boards/VoxelVader/VoxelVaderLFR.conf
 )
 
 set(CONF_FILES "${CONF_FILES}" PARENT_SCOPE)
