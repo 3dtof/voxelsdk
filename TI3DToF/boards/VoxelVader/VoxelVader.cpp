@@ -142,6 +142,9 @@ bool VoxelVader::_init()
   if(!_programmer->isInitialized() || !_streamer->isInitialized())
     return false;
 
+  // Initialize serializer block
+  configFile.setHardwareConfigSerializer(new HardwareSerializer(_xu));
+  configFile.setSerializationQuantizationFactor(1);
   
   if (!_addParameters({
       ParameterPtr(new CalculusModulationFrequencyParameter(*this, *_programmer, 12, 37, 18)),
