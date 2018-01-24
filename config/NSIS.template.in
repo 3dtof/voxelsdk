@@ -862,7 +862,7 @@ FunctionEnd
 
   ; This function must be defined after components, sections and section groups are defined
   Function isPCLSelected
-    ${If} ${SectionIsSelected} ${voxelpcl_lib}
+    ${If} ${SectionIsSelected} ${voxelpcl}
       goto noispclselectedabort
     ${EndIf}
     abort

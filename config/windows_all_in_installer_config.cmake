@@ -19,7 +19,7 @@ SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
   \\\${EndIf}\n
 
       
-  \\\${If}  \\\${SectionIsSelected} \\\${ti3dtof_lib}\n
+  \\\${If}  \\\${SectionIsSelected} \\\${ti3dtof}\n
     ExecWait '\\\"$INSTDIR\\\\Prerequisites\\\\WinDrivers\\\\dpinst${ARCHSUFFIX}.exe\\\" /SW /PATH \\\"\\\$INSTDIR\\\\Prerequisites\\\\WinDrivers\\\\${XARCHSUFFIX}\\\"'\n
   \\\${EndIf}\n
   "
