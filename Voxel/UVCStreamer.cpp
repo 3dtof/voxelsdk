@@ -546,6 +546,7 @@ bool UVCStreamer::setVideoMode(const VideoMode &videoMode)
   
   fmt.fmt.pix.width = videoMode.frameSize.width;
   fmt.fmt.pix.height = videoMode.frameSize.height;
+  fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
   
   if(_uvcStreamerPrivate->uvc->getUVCPrivate().xioctl(VIDIOC_S_FMT, &fmt) == -1)
   {
