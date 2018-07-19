@@ -110,7 +110,8 @@ if(DOXYGEN_FOUND)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Generating API documentation with Doxygen" VERBATIM
   )
-  install(CODE "execute_process(COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_BINARY_DIR})"
+  SET (EXECUTE_ARG "${CMAKE_BINARY_DIR}/Doxyfile")
+  install(CODE "execute_process(COMMAND ${DOXYGEN_EXECUTABLE} \"${EXECUTE_ARG}\" WORKING_DIRECTORY \"${CMAKE_BINARY_DIR}\")"
         COMPONENT voxel_dev)
   
   if(LINUX)
