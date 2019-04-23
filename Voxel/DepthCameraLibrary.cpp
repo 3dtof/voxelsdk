@@ -190,12 +190,20 @@ int DepthCameraLibrary::getABIVersion()
   
   ELFIO::dynamic_section_accessor d(reader, dynamicSection);
     
-  ELFIO::Elf_Xword tag = DT_SONAME, value;
+  ELFIO::Elf_Xword tag, value;
     
   String soName;
-    
-  if(!d.get_entry(0, tag, value, soName))
-  {
+  bool hasSoname = false;
+
+  for(int i = 0; i < d.get_entries_num(); i++) {
+
+    if (d.get_entry(i, tag, value, soName) && tag == DT_SONAME)
+    {
+      hasSoname = true;
+      break;
+    }
+  }
+  if (!hasSoname) {
     logger(LOG_DEBUG) << "DepthCameraLibrary: Could not find SONAME in " << _libName << std::endl;
     return 0;
   }

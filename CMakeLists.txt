@@ -25,7 +25,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_definitions(-msse2 -pthread -std=c++11 -fPIC -ffast-math)
   ADD_DEFINITIONS(-DLINUX)  
 
-  set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl)
+  set(COMMON_LIBS ${COMMON_LIBS} usb-1.0 dl udev)
   SET(COMMON_LIBS_PRIVATE "")
   set(COMMON_INCLUDE
     ${COMMON_INCLUDE}
@@ -136,10 +136,10 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main 
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 add_subdirectory(Voxel)
-add_subdirectory(VoxelPCL)
+#add_subdirectory(VoxelPCL)
 add_subdirectory(TI3DToF)
 add_subdirectory(Test)
-add_subdirectory(App)
+#add_subdirectory(App)
 add_subdirectory(Util)
 
 
