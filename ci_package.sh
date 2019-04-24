@@ -1,7 +1,12 @@
 #!/bin/bash
 
-set -e
+mkdir -p build; cd build
+rm -rf doc
 
-sudo apt update
-sudo apt install libusb-1.0.0-dev libudev-dev -y
-./build-all-deb.sh
+if [ -e ../Voxel/SWIG/Voxel.i ]; then touch ../Voxel/SWIG/Voxel.i; fi
+
+cmake -DCMAKE_BUILD_TYPE=Release -DGENERATE_PYTHON_BINDINGS=FALSE ..
+make clean
+make -j`nproc`
+. make_deb.sh
+sudo dpkg -i *.deb
