@@ -22,10 +22,13 @@ install(TARGETS voxelvader
 )
 
 list(APPEND CONF_FILES
+  boards/VoxelVader/Vader.dml
   boards/VoxelVader/VoxelVader.conf
   boards/VoxelVader/VoxelVaderLensOnly.conf
   boards/VoxelVader/VoxelVaderHFR.conf
   boards/VoxelVader/VoxelVaderLFR.conf
+  boards/VoxelVader/VoxelVaderV1A1.conf
+  boards/VoxelVader/VoxelVaderV1A1PhaseOffset.bin
 )
 
 set(CONF_FILES "${CONF_FILES}" PARENT_SCOPE)
