@@ -141,13 +141,13 @@ set_target_properties(ti3dtof PROPERTIES
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL ti3dtof)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Support libraries for ToF depth camera from Texas Instruments")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION})")
-  create_cpack_config(libti3dtof ${VOXEL_VERSION})
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_DEBIAN_VERSION})")
+  create_cpack_config(libti3dtof ${VOXEL_DEBIAN_VERSION})
 
   set(CPACK_COMPONENTS_ALL ti3dtof_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Header files for ToF depth camera from Texas Instruments.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_VERSION})")
-  create_cpack_config(libti3dtof-dev ${VOXEL_VERSION})
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel-dev (>= ${VOXEL_DEBIAN_VERSION})")
+  create_cpack_config(libti3dtof-dev ${VOXEL_DEBIAN_VERSION})
 ENDIF()
 
 create_cmake_config(TI3DToF "ti3dtof" ti3dtof_dev TI3DToF)

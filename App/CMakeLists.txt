@@ -27,8 +27,8 @@ install(TARGETS SimpleVoxelViewer VoxelCLI VXLDecoder
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL apps)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel sample applications")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION}), libvoxel-pcl (>= ${VOXEL_VERSION})")
-  create_cpack_config(libvoxel-apps ${VOXEL_VERSION})
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_DEBIAN_VERSION}), libvoxel-pcl (>= ${VOXEL_DEBIAN_VERSION})")
+  create_cpack_config(libvoxel-apps ${VOXEL_DEBIAN_VERSION})
 ELSEIF(WINDOWS)
   
   INSTALL(PROGRAMS VoxelCLIStart.cmd CLIStart.cmd SimpleVoxelViewer.cmd

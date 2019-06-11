@@ -1,5 +1,3 @@
-SET(VOXEL_TEST_VERSION ${VOXEL_VERSION})
-
 add_executable(DeviceTest DeviceTest.cpp)
 target_link_libraries(DeviceTest voxel)
 
@@ -53,6 +51,6 @@ install(TARGETS
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL test)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library test programs.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION})")
-  create_cpack_config(libvoxel-test ${VOXEL_TEST_VERSION})
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_DEBIAN_VERSION})")
+  create_cpack_config(libvoxel-test ${VOXEL_DEBIAN_VERSION})
 ENDIF()

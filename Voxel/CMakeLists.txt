@@ -155,17 +155,17 @@ IF(LINUX)
   set(CPACK_COMPONENTS_ALL voxel)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library package. Contains the main Voxel library.")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb-1.0-0, libudev1")
-  create_cpack_config(libvoxel ${VOXEL_VERSION})
+  create_cpack_config(libvoxel ${VOXEL_DEBIAN_VERSION})
 
   set(CPACK_COMPONENTS_ALL voxel_dev)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library developer package. Contains header files needed to compile applications linking to Voxel library.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
-  create_cpack_config(libvoxel-dev ${VOXEL_VERSION})
-  
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_DEBIAN_VERSION}), libusb-1.0-0-dev, libudev-dev, linux-libc-dev")
+  create_cpack_config(libvoxel-dev ${VOXEL_DEBIAN_VERSION})
+
   set(CPACK_COMPONENTS_ALL voxel_python)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Python bindings for Voxel library.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_VERSION}), python2.7 (>= 2.7.0)")
-  create_cpack_config(libvoxel-python ${VOXEL_VERSION})
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (= ${VOXEL_DEBIAN_VERSION}), python2.7 (>= 2.7.0)")
+  create_cpack_config(libvoxel-python ${VOXEL_DEBIAN_VERSION})
 ENDIF()
 
 create_cmake_config(Voxel voxel voxel_dev Voxel)

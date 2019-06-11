@@ -1,5 +1,3 @@
-SET(VOXEL_UTIL_VERSION ${VOXEL_VERSION})
-
 add_executable(SerialNumber SerialNumber.cpp)
 target_link_libraries(SerialNumber voxel)
 
@@ -13,6 +11,6 @@ install(TARGETS
 IF(LINUX)
   set(CPACK_COMPONENTS_ALL util)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Voxel library utility programs.")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_VERSION})")
-  create_cpack_config(libvoxel-util ${VOXEL_UTIL_VERSION})
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libvoxel (>= ${VOXEL_DEBIAN_VERSION})")
+  create_cpack_config(libvoxel-util ${VOXEL_DEBIAN_VERSION})
 ENDIF()
